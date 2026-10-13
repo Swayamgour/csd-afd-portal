@@ -54,7 +54,7 @@ export default function ProductCard({ p, list }) {
             {appl && p.mrp && <><s>{inr(p.mrp)}</s></>}
             {!appl && <small>Ex-showroom*</small>}
           </p>
-          <Stars v={p.rating} />
+          {/* <Stars v={p.rating} /> */}
         </div>
         <div className="row">
           <Link className="btn out" to={`/products/${p.id}`}>View details</Link>

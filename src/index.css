@@ -27,6 +27,7 @@
     --hdr-h: 0px;
 }
 
+
 /* ---------- base ---------- */
 * {
     box-sizing: border-box
@@ -3188,6 +3189,11 @@ section.hero {
         padding: 1rem
     }
 
+    section.hero {
+        min-height: 250px;
+        /* margin:1rem; */
+    }
+
     .perks {
         grid-template-columns: 1fr
     }
@@ -4140,4 +4146,27 @@ section.hero {
     .news-go {
         display: none
     }
+}
+
+.csd-logo {
+    width: 300px;
+}
+
+@media (max-width: 640px) {
+    .wrap {
+        padding: 1rem
+    }
+
+    section.hero {
+        width: calc(100% - 2rem);
+        /* left + right 1rem, perks cards ke saath aligned */
+        min-height: 250px;
+        margin: 1rem auto 1.5rem;
+    }
+
+    .csd-logo {
+        width: 170px;
+    }
+
+    /* baaki rules same rehne do */
 }
