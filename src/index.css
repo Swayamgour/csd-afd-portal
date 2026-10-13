@@ -4165,8 +4165,15 @@ section.hero {
     }
 
     .csd-logo {
-        width: 170px;
+        width: 150px;
     }
 
     /* baaki rules same rehne do */
+}
+
+
+@media (max-width: 640px) {
+    .csd-logo {
+        width: 130px;
+    }
 }
