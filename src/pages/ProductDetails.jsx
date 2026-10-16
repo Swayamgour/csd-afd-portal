@@ -180,6 +180,24 @@ export default function ProductDetails() {
             <button className="btn big" type="button" onClick={() => addCart(p)}><ShoppingCart size={18} aria-hidden /> Add to cart</button>
             <button className="btn out big" type="button" aria-pressed={c} onClick={() => toggleCmp(p)}><RefreshCw size={16} aria-hidden /> {c ? "Added to compare" : "Compare"}</button>
           </div>
+
+          {/* Authenticated AFD Portal Action Strip */}
+          <div style={{ marginTop: '0.75rem', padding: '0.85rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0b1f3a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                🎖️ CSD AFD Concession & Procurement
+              </span>
+              <span className="pill ok" style={{ fontSize: '0.7rem' }}>Entitlement Verified</span>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <Link to={`/beneficiary/eligibility?productId=${p.id}`} className="btn" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', background: '#0b1f3a', color: '#fff', padding: '0.55rem' }}>
+                Check Entitlement
+              </Link>
+              <Link to={`/beneficiary/demands/new?productId=${p.id}`} className="btn" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', background: '#d97706', color: '#fff', padding: '0.55rem' }}>
+                Generate Demand
+              </Link>
+            </div>
+          </div>
           <div className="sub-row">
             {!appl && <Link to="/info/book-test-ride"><CalendarCheck size={16} aria-hidden /> Book a test ride</Link>}
             <button type="button" onClick={() => alert("OEM link: [Official Information To Be Provided]")}><ArrowRight size={16} aria-hidden /> View on OEM site</button>

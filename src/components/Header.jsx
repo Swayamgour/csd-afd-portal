@@ -10,6 +10,7 @@ import {
   Phone,
 } from "lucide-react";
 import { useStore } from "../context/Store.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import SearchBox from "./SearchBox.jsx";
 
 const nav = [
@@ -31,6 +32,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const loc = useLocation(),
     { cart, wish } = useStore();
+  const { isAuthenticated, user, roleHome } = useAuth();
   const cur = loc.pathname + loc.search;
   const isActive = (to) =>
     to === "/"
@@ -109,10 +111,17 @@ export default function Header() {
             {cart.length > 0 && <b>{cart.length}</b>}
             <span>Cart</span>
           </Link>
-          <Link to="/login" className="act" aria-label="Login">
-            <User size={20} />
-            <span>Login</span>
-          </Link>
+          {isAuthenticated ? (
+            <Link to={roleHome || "/beneficiary/dashboard"} className="act" aria-label="Portal Dashboard">
+              <User size={20} color="var(--brand)" />
+              <span style={{ fontWeight: 600, color: "var(--brand)" }}>{user?.name ? user.name.split(" ")[0] : "Portal"}</span>
+            </Link>
+          ) : (
+            <Link to="/login" className="act" aria-label="Login">
+              <User size={20} />
+              <span>Login</span>
+            </Link>
+          )}
         </div>
       </div>
 

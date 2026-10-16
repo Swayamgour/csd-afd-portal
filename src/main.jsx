@@ -10,7 +10,16 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { StoreProvider } from './context/Store.jsx'
+import { AuthProvider } from './context/AuthContext.jsx'
 import './index.css'
 createRoot(document.getElementById('root')).render(
-  <React.StrictMode><BrowserRouter><StoreProvider><App /></StoreProvider></BrowserRouter></React.StrictMode>
+  <React.StrictMode>
+    <BrowserRouter>
+      <AuthProvider>
+        <StoreProvider>
+          <App />
+        </StoreProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 )
