@@ -1,0 +1,3186 @@
+/* =====================================================================
+   CSD AFD Portal – Beneficiary Checkout & Demand Tracking Stylesheet
+   Clean, responsive enterprise government design system
+   ===================================================================== */
+
+:root {
+  /* Brand / Primary */
+  --color-primary: #1e4fd8;
+  --color-primary-hover: #173fb0;
+  --color-primary-soft: #eff6ff;
+  --color-primary-border: #93c5fd;
+
+  /* Navy / Dark */
+  --color-navy: #0b1f3a;
+  --color-navy-dark: #071527;
+  --color-navy-light: #1e293b;
+
+  /* Neutrals / Greys / Slates */
+  --color-white: #ffffff;
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  /* Success / Green */
+  --color-success: #16a34a;
+  --color-success-dark: #15803d;
+  --color-success-soft: #f0fdf4;
+  --color-success-badge: #dcfce7;
+  --color-success-border: #bbf7d0;
+
+  /* Danger / Error / Red */
+  --color-danger: #dc2626;
+  --color-danger-dark: #b91c1c;
+  --color-danger-soft: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-danger-light: #fff5f5;
+
+  /* Warning / Amber */
+  --color-warning: #d97706;
+  --color-warning-dark: #92400e;
+  --color-warning-soft: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-warning-badge: #fef3c7;
+
+  /* Sky / Info / Teal / Purple */
+  --color-info: #0284c7;
+  --color-info-soft: #eff6ff;
+  --color-info-badge: #e0f2fe;
+  --color-teal: #0f766e;
+  --color-teal-soft: #f0fdfa;
+  --color-teal-border: #99f6e4;
+  --color-teal-hover: #ccfbf1;
+  --color-purple: #6d28d9;
+  --color-indigo: #6366f1;
+  --color-indigo-hover: #4f46e5;
+  --color-lime: #84cc16;
+  --color-lime-dark: #1a2e05;
+}
+
+/* -------------------------------------------------------------
+   1. Document Upload Component (<DocumentUpload />)
+   ------------------------------------------------------------- */
+.doc-upload-field {
+  margin-bottom: 1rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.doc-upload-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-slate-800);
+}
+
+.doc-upload-required-star {
+  color: var(--color-danger);
+  margin-left: 2px;
+}
+
+.doc-upload-dropzone {
+  border: 2px dashed var(--color-slate-300);
+  background: var(--color-slate-50);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.doc-upload-dropzone:hover {
+  border-color: var(--color-slate-400);
+  background: var(--color-slate-100);
+}
+
+.doc-upload-dropzone.dragging {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.doc-upload-dropzone.has-error {
+  border-color: var(--color-danger);
+  background: var(--color-danger-light);
+}
+
+.doc-upload-dropzone.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.doc-upload-dropzone-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.doc-upload-icon-wrapper {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: var(--color-slate-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-slate-500);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.doc-upload-dropzone.dragging .doc-upload-icon-wrapper {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.doc-upload-text-content {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.doc-upload-primary-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-slate-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-upload-highlight {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.doc-upload-helper-text {
+  font-size: 0.74rem;
+  color: var(--color-slate-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.doc-upload-browse-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-300);
+  border-radius: 6px;
+  color: var(--color-slate-700);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* File Loaded / Preview Card */
+.doc-upload-preview-card {
+  border: 1px solid var(--color-success-border);
+  background: var(--color-success-soft);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.doc-upload-preview-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.doc-upload-file-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: var(--color-success-badge);
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.doc-upload-file-details {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.doc-upload-filename {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--color-success-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  display: block;
+}
+
+.doc-upload-meta-status {
+  font-size: 0.74rem;
+  color: var(--color-success-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.doc-upload-meta-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.doc-upload-btn-replace {
+  background: var(--color-white);
+  border: 1px solid var(--color-success-border);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-success-dark);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.doc-upload-btn-replace:hover {
+  background: var(--color-success-badge);
+}
+
+.doc-upload-btn-remove {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.doc-upload-btn-remove:hover {
+  background: var(--color-danger-border);
+}
+
+.doc-upload-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--color-danger);
+  margin-top: 0.35rem;
+  font-weight: 500;
+}
+
+/* -------------------------------------------------------------
+   2. Checkout Page Layout & Components
+   ------------------------------------------------------------- */
+.checkout-page-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.checkout-breadcrumb-list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  color: var(--color-slate-500);
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem 0;
+}
+
+.checkout-breadcrumb-link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.checkout-breadcrumb-active {
+  color: var(--color-slate-900);
+  font-weight: 600;
+}
+
+/* 5-Step Progress Tracker */
+.checkout-progress-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.checkout-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.checkout-step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkout-step-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+.checkout-step-badge.completed {
+  background: var(--color-success);
+}
+
+.checkout-step-badge.current {
+  background: var(--color-primary);
+}
+
+.checkout-step-badge.upcoming {
+  background: var(--color-slate-200);
+  color: var(--color-slate-500);
+}
+
+.checkout-step-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-slate-500);
+}
+
+.checkout-step-label.current {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.checkout-step-label.completed {
+  color: var(--color-success-dark);
+}
+
+/* Two-Column Responsive Layout */
+.checkout-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(320px, 1.15fr);
+  gap: 1.75rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 960px) {
+  .checkout-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Clean Government Section Cards */
+.checkout-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.checkout-card-header {
+  border-bottom: 1px solid var(--color-slate-100);
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.checkout-card-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Selected Product Summary Card */
+.checkout-product-summary-box {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+@media (max-width: 580px) {
+  .checkout-product-summary-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.checkout-product-img {
+  width: 140px;
+  height: 95px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--color-slate-200);
+  flex-shrink: 0;
+}
+
+.checkout-product-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-slate-900);
+  margin: 0 0 4px 0;
+}
+
+.checkout-product-specs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.82rem;
+  color: var(--color-slate-600);
+  margin-top: 6px;
+}
+
+.checkout-spec-pill {
+  background: var(--color-slate-100);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Read-Only Beneficiary Grid */
+.beneficiary-read-only-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.beneficiary-field-box {
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+}
+
+.beneficiary-field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 2px;
+}
+
+.beneficiary-field-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-slate-900);
+  word-break: break-word;
+}
+
+/* Form Two Column Grids with Auto Shrink */
+.checkout-form-row-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .checkout-form-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkout-form-row-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Radio Cards (Previous Purchase, Loan, Payment Method) */
+.checkout-radio-card-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.checkout-radio-card {
+  flex: 1;
+  min-width: 130px;
+  border: 1.5px solid var(--color-slate-300);
+  background: var(--color-slate-50);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.checkout-radio-card.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.checkout-radio-card input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.checkout-radio-card-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-slate-800);
+}
+
+.checkout-radio-card.active .checkout-radio-card-title {
+  color: var(--color-primary);
+}
+
+/* Dealer Price Validation Box */
+.dealer-price-validation-box {
+  background: var(--color-slate-50);
+  padding: 1rem 1.15rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-slate-300);
+  margin-bottom: 1rem;
+}
+
+.dealer-price-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+.dealer-price-input.matched {
+  border: 1.5px solid var(--color-success);
+  color: var(--color-success-dark);
+  background: var(--color-white);
+}
+
+.dealer-price-input.mismatched {
+  border: 2px solid var(--color-danger);
+  color: var(--color-danger-dark);
+  background: var(--color-white);
+}
+
+.price-mismatch-alert-banner {
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
+  border-radius: 6px;
+  color: var(--color-danger);
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Right Sticky "Your Demand" Summary Sidebar */
+.checkout-summary-sticky {
+  position: sticky;
+  top: 1.5rem;
+}
+
+.demand-summary-header {
+  border-bottom: 2px solid var(--color-slate-900);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.15rem;
+}
+
+.demand-summary-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-slate-900);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.demand-summary-product-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--color-slate-800);
+  margin: 0 0 6px 0;
+}
+
+.demand-summary-meta-line {
+  font-size: 0.82rem;
+  color: var(--color-slate-500);
+  margin-bottom: 3px;
+}
+
+.demand-summary-dealer-box {
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin: 0.85rem 0;
+  font-size: 0.82rem;
+}
+
+.demand-summary-calc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.85rem;
+}
+
+.demand-summary-calc-table td {
+  padding: 6px 0;
+  font-size: 0.88rem;
+  color: var(--color-slate-600);
+}
+
+.demand-summary-calc-table td:last-child {
+  text-align: right;
+  font-weight: 600;
+  color: var(--color-slate-900);
+}
+
+.demand-summary-net-row td {
+  border-top: 2px solid var(--color-slate-200);
+  padding-top: 10px;
+  font-size: 1.12rem !important;
+  font-weight: 800 !important;
+  color: var(--color-slate-900) !important;
+}
+
+.demand-summary-net-price {
+  color: var(--color-success) !important;
+}
+
+.btn-submit-demand {
+  width: 100%;
+  padding: 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-white);
+  background: var(--color-primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(30, 79, 216, 0.25);
+  transition: all 0.15s ease;
+  margin-top: 1rem;
+}
+
+.btn-submit-demand:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-submit-demand:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------
+   3. Modals Design System (Enterprise / CSD Style)
+   ------------------------------------------------------------- */
+.csd-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.csd-modal-window {
+  background: var(--color-white);
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: csdModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.csd-modal-window.large {
+  max-width: 820px;
+}
+
+@keyframes csdModalPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.csd-modal-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-slate-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-slate-50);
+}
+
+.csd-modal-title {
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+}
+
+.csd-modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-slate-500);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.csd-modal-close-btn:hover {
+  background: var(--color-slate-200);
+  color: var(--color-slate-900);
+}
+
+.csd-modal-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.csd-modal-footer {
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--color-slate-200);
+  background: var(--color-slate-50);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Modal Form Fields */
+.csd-modal-form-group {
+  margin-bottom: 0.85rem;
+}
+
+.csd-modal-form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-slate-600);
+  margin-bottom: 0.25rem;
+}
+
+.csd-modal-form-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-slate-300);
+  border-radius: 6px;
+  font-size: 0.88rem;
+  background: var(--color-slate-50);
+  color: var(--color-slate-800);
+  box-sizing: border-box;
+}
+
+.csd-modal-form-input:read-only {
+  background: var(--color-slate-100);
+  color: var(--color-slate-700);
+  cursor: default;
+}
+
+/* -------------------------------------------------------------
+   4. Demands Page & Demand Details Styles
+   ------------------------------------------------------------- */
+.demands-page-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.demands-top-notice {
+  background: var(--color-navy);
+  color: var(--color-white);
+  padding: 0.65rem 1rem;
+  font-size: 0.84rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.demands-filter-bar {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 10px;
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.demands-table-wrapper {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  margin-bottom: 2rem;
+}
+
+.demands-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 850px;
+}
+
+.demands-table th {
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-slate-600);
+  text-transform: uppercase;
+  background: var(--color-slate-50);
+  border-bottom: 2px solid var(--color-slate-200);
+}
+
+.demands-table td {
+  padding: 16px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--color-slate-100);
+}
+
+.demands-action-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.btn-action-view {
+  background: var(--color-purple);
+  color: var(--color-white);
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-action-summary {
+  background: var(--color-info);
+  color: var(--color-white);
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-action-upload-details {
+  background: var(--color-lime);
+  color: var(--color-lime-dark);
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-action-cancel {
+  background: var(--color-danger);
+  color: var(--color-white);
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-action-notes {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Timeline Components */
+.demand-timeline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.timeline-step-card {
+  border-radius: 10px;
+  padding: 1rem;
+  border: 1.5px solid var(--color-slate-200);
+  background: var(--color-slate-50);
+}
+
+.timeline-step-card.is-current {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
+.timeline-step-card.is-completed {
+  background: var(--color-success-soft);
+  border-color: var(--color-success-border);
+}
+
+/* Eligibility Modal */
+.eligibility-header-eligible {
+  background: var(--color-success-soft);
+}
+
+.eligibility-header-ineligible {
+  background: var(--color-danger-soft);
+}
+
+.eligibility-icon-circle-eligible {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-success-badge);
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.eligibility-icon-circle-ineligible {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-danger-border);
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.eligibility-details-box {
+  background: var(--color-slate-50);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-slate-200);
+  font-size: 0.82rem;
+  color: var(--color-slate-600);
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.eligibility-reason-ineligible {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-danger-dark);
+  line-height: 1.5;
+  margin: 0 0 0.75rem;
+}
+
+/* Demand Confirmation Modal & Bank Instructions */
+.modal-navy-header {
+  background: var(--color-navy) !important;
+  color: var(--color-white) !important;
+}
+
+.modal-navy-header .csd-modal-title {
+  color: var(--color-white) !important;
+}
+
+.modal-navy-header .csd-modal-close-btn {
+  color: var(--color-slate-400) !important;
+}
+
+.modal-navy-header .csd-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--color-white) !important;
+}
+
+.confirm-net-price-box {
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.confirm-disclaimer-box {
+  background: var(--color-warning-soft);
+  border: 1px solid var(--color-warning-border);
+  border-radius: 8px;
+  padding: 0.85rem;
+}
+
+.bank-info-table-box {
+  background: var(--color-slate-50);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-slate-300);
+  margin-bottom: 1.25rem;
+}
+
+.bank-info-grid {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  row-gap: 6px;
+  font-size: 0.88rem;
+}
+
+/* -------------------------------------------------------------
+   5. General Form Elements & Utility Classes
+   ------------------------------------------------------------- */
+.csd-form-group {
+  margin-bottom: 1.15rem;
+  width: 100%;
+}
+
+.csd-form-label {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-slate-700);
+  margin-bottom: 0.35rem;
+}
+
+.csd-form-label-required::after {
+  content: ' *';
+  color: var(--color-danger);
+}
+
+.csd-form-input,
+.csd-form-select,
+.csd-form-textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--color-slate-300);
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: var(--color-slate-800);
+  background-color: var(--color-white);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+}
+
+.csd-form-input:focus,
+.csd-form-select:focus,
+.csd-form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 79, 216, 0.15);
+}
+
+.csd-form-input.has-error,
+.csd-form-select.has-error,
+.csd-form-textarea.has-error {
+  border-color: var(--color-danger);
+  background-color: var(--color-danger-light);
+}
+
+.csd-form-error-text {
+  font-size: 0.76rem;
+  color: var(--color-danger);
+  margin-top: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.csd-form-helper-text {
+  font-size: 0.75rem;
+  color: var(--color-slate-500);
+  margin-top: 0.25rem;
+}
+
+.csd-alert-banner {
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
+}
+
+.csd-alert-banner.info {
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary-hover);
+}
+
+.csd-alert-banner.warning {
+  background: var(--color-warning-soft);
+  border: 1px solid var(--color-warning-border);
+  color: var(--color-warning-dark);
+}
+
+.csd-alert-banner.error {
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger-dark);
+}
+
+.csd-alert-banner.success {
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-success-dark);
+}
+
+/* -------------------------------------------------------------
+   6. Checkout Success Page Styles
+   ------------------------------------------------------------- */
+.checkout-success-container {
+  max-width: 860px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  min-height: 75vh;
+}
+
+.success-top-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.success-icon-badge {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--color-success-badge);
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  box-shadow: 0 0 0 8px var(--color-success-soft);
+}
+
+.success-tag-pill {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.success-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--color-slate-900);
+  margin: 0 0 0.5rem 0;
+}
+
+.success-description {
+  color: var(--color-slate-500);
+  font-size: 0.98rem;
+  max-width: 580px;
+  margin: 0 auto 1.5rem;
+}
+
+.success-demand-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-slate-50);
+  border: 2px dashed var(--color-slate-300);
+  border-radius: 12px;
+  padding: 0.85rem 2.2rem;
+  margin-bottom: 1rem;
+}
+
+.success-demand-box-label {
+  font-size: 0.8rem;
+  color: var(--color-slate-500);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.success-demand-box-value {
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
+.success-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 14px;
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.success-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  margin: 0 0 1.25rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-slate-100);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.success-actions-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-primary-action {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(30, 79, 216, 0.25);
+  transition: all 0.15s ease;
+}
+
+.btn-primary-action:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary-action {
+  background: var(--color-white);
+  color: var(--color-slate-700);
+  border: 1.5px solid var(--color-slate-300);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.btn-secondary-action:hover {
+  background: var(--color-slate-50);
+  border-color: var(--color-slate-400);
+}
+
+/* -------------------------------------------------------------
+   7. Demand Details View Styles (<DemandDetail />)
+   ------------------------------------------------------------- */
+.demand-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.demand-detail-header-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 14px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.demand-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1.2fr);
+  gap: 1.75rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 960px) {
+  .demand-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.demand-detail-section {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.demand-detail-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--color-slate-100);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.demand-detail-meta-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.demand-detail-meta-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-slate-50);
+  font-size: 0.88rem;
+}
+
+.demand-detail-meta-table td:first-child {
+  font-weight: 600;
+  color: var(--color-slate-500);
+  width: 35%;
+}
+
+.demand-detail-meta-table td:last-child {
+  font-weight: 600;
+  color: var(--color-slate-900);
+}
+
+/* -------------------------------------------------------------
+   8. Online Payment Gateway (Razorpay Simulator) Styles
+   ------------------------------------------------------------- */
+.razorpay-modal-box {
+  background: var(--color-white);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  animation: csdModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.razorpay-header {
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.razorpay-header-merchant {
+  font-size: 0.82rem;
+  opacity: 0.9;
+}
+
+.razorpay-header-order {
+  font-size: 0.74rem;
+  opacity: 0.75;
+}
+
+.razorpay-header-amount {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.razorpay-header-amount small {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.razorpay-header-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.razorpay-header-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.razorpay-content {
+  padding: 1.25rem;
+}
+
+.razorpay-success-body {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.razorpay-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-success-badge);
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.razorpay-success-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  color: var(--color-success-dark);
+  font-weight: 700;
+}
+
+.razorpay-success-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-slate-500);
+}
+
+.razorpay-methods-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-slate-500);
+  text-transform: uppercase;
+  margin-bottom: 0.65rem;
+  letter-spacing: 0.04em;
+}
+
+.razorpay-methods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.razorpay-method-card {
+  border: 1.5px solid var(--color-slate-200);
+  background: var(--color-white);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.razorpay-method-card:hover {
+  border-color: var(--color-primary-border);
+  background: var(--color-slate-50);
+}
+
+.razorpay-method-card.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.razorpay-method-text {
+  flex: 1;
+}
+
+.razorpay-method-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-slate-900);
+}
+
+.razorpay-method-desc {
+  font-size: 0.74rem;
+  color: var(--color-slate-500);
+}
+
+.razorpay-card-form {
+  background: var(--color-slate-50);
+  padding: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-slate-200);
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.razorpay-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-slate-300);
+  font-size: 0.85rem;
+  box-sizing: border-box;
+  color: var(--color-slate-800);
+  background: var(--color-white);
+}
+
+.razorpay-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.razorpay-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.razorpay-popular-banks-box {
+  background: var(--color-slate-50);
+  padding: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-slate-200);
+  margin-bottom: 1rem;
+}
+
+.razorpay-popular-banks-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-slate-600);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.razorpay-banks-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.razorpay-bank-btn {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-slate-300);
+  background: var(--color-white);
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--color-slate-700);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.razorpay-bank-btn:hover {
+  border-color: var(--color-primary-border);
+  color: var(--color-primary);
+}
+
+.razorpay-bank-btn.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.razorpay-pay-btn {
+  width: 100%;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 6px -1px rgba(29, 78, 216, 0.3);
+  transition: background 0.15s ease;
+}
+
+.razorpay-pay-btn:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.razorpay-pay-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.razorpay-secured-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 0.85rem;
+  font-size: 0.75rem;
+  color: var(--color-slate-500);
+}
+
+/* -------------------------------------------------------------
+   9. Product Details Page (Procurement Form) Classes
+   ------------------------------------------------------------- */
+.pdp-eyebrow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.pdp-eyebrow-text {
+  margin: 0;
+}
+
+.pdp-eyebrow-sku-badge {
+  background: var(--color-slate-100);
+  color: var(--color-navy);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.pdp-title-heading {
+  margin: 0 0 0.5rem;
+}
+
+.pdp-spec-box {
+  background: var(--color-white);
+  border: 1.5px solid var(--color-slate-300);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.pdp-spec-box-header {
+  border-bottom: 1px solid var(--color-slate-200);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.pdp-spec-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pdp-spec-header-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-navy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pdp-spec-header-sku {
+  font-size: 0.75rem;
+  color: var(--color-slate-500);
+}
+
+.pdp-spec-desc-text {
+  margin: 0.25rem 0 0;
+}
+
+.pdp-spec-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.pdp-form-label {
+  font-size: 0.82rem;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.pdp-form-label-inline {
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.pdp-req-star {
+  color: var(--color-danger);
+}
+
+.pdp-form-select {
+  width: 100%;
+  padding: 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-slate-300);
+  font-size: 0.9rem;
+  background: var(--color-white);
+  color: var(--color-slate-800);
+  box-sizing: border-box;
+}
+
+.pdp-form-select.has-error {
+  border: 1.5px solid var(--color-danger);
+}
+
+.pdp-error-text {
+  display: block;
+  margin-top: 2px;
+}
+
+.pdp-count-badge {
+  background: var(--color-info-badge);
+  color: var(--color-info);
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+}
+
+.pdp-input-action-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pdp-input-flex-1 {
+  flex: 1;
+}
+
+.btn-view-dealer {
+  padding: 0.55rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-border);
+  background: var(--color-primary-soft);
+  border-radius: 6px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-view-dealer:hover {
+  background: var(--color-primary-border);
+}
+
+.btn-view-urc {
+  padding: 0.55rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-teal);
+  border: 1px solid var(--color-teal-border);
+  background: var(--color-teal-soft);
+  border-radius: 6px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-view-urc:hover {
+  background: var(--color-teal-hover);
+}
+
+.pdp-price-box {
+  border-top: 1px solid var(--color-slate-200);
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+.pdp-price-range {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--color-danger);
+}
+
+.pdp-price-subtext {
+  margin-top: 2px;
+}
+
+.btn-checkout-cta {
+  width: 100%;
+  background: var(--color-indigo);
+  color: var(--color-white);
+  border: none;
+  padding: 0.85rem;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+  transition: all 0.15s ease;
+  margin-top: 0.25rem;
+}
+
+.btn-checkout-cta:hover:not(:disabled) {
+  background: var(--color-indigo-hover);
+}
+
+.btn-checkout-cta:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.pdp-footer-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--color-slate-500);
+}
+
+.btn-copy-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--color-primary);
+  font-size: inherit;
+}
+
+.pdp-subrow-mt {
+  margin-top: 1rem;
+}
+
+/* -------------------------------------------------------------
+   10. Modal Helper Specific Classes
+   ------------------------------------------------------------- */
+.modal-header-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.price-box-title {
+  font-size: 0.78rem;
+  color: var(--color-success-dark);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.price-box-amount {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-success-dark);
+}
+
+.price-box-meta {
+  font-size: 0.8rem;
+  color: var(--color-slate-600);
+  text-align: right;
+}
+
+.account-type-badge {
+  background: var(--color-warning-badge);
+  color: var(--color-warning-dark);
+  padding: 0.35rem 0.65rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+  display: inline-block;
+}
+
+.btn-modal-close {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.86rem;
+}
+
+.btn-modal-submit-red {
+  background: var(--color-danger) !important;
+  color: var(--color-white) !important;
+  padding: 0.5rem 1.5rem !important;
+  font-size: 0.86rem !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+.btn-modal-submit-red:hover:not(:disabled) {
+  background: var(--color-danger-dark) !important;
+}
+
+.confirm-summary-box {
+  background: var(--color-slate-50);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-slate-200);
+  margin-bottom: 1rem;
+}
+
+.confirm-summary-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--color-navy);
+  font-weight: 700;
+}
+
+.confirm-summary-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--color-slate-600);
+}
+
+.confirm-grid-span-2 {
+  grid-column: span 2;
+}
+
+.confirm-net-amount-title {
+  font-size: 0.8rem;
+  color: var(--color-success-dark);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.confirm-net-amount-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--color-success-dark);
+}
+
+.confirm-mode-meta {
+  text-align: right;
+}
+
+.confirm-mode-meta span {
+  font-size: 0.78rem;
+  color: var(--color-success-dark);
+}
+
+.confirm-mode-meta div {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-slate-900);
+}
+
+.confirm-disclaimer-label {
+  margin: 0;
+}
+
+.confirm-disclaimer-checkbox {
+  margin-top: 3px;
+}
+
+.confirm-disclaimer-text {
+  font-size: 0.84rem;
+  color: var(--color-warning-dark);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.btn-confirm-submit {
+  padding: 0.55rem 1.5rem !important;
+  background: var(--color-primary);
+  color: var(--color-white);
+  cursor: pointer;
+}
+
+.btn-confirm-submit:disabled {
+  background: var(--color-slate-400) !important;
+  color: var(--color-white) !important;
+  cursor: not-allowed !important;
+}
+
+.bank-info-body {
+  line-height: 1.6;
+  font-size: 0.92rem;
+  color: var(--color-slate-800);
+}
+
+.bank-info-p-header {
+  margin: 0 0 1rem;
+  font-weight: 500;
+}
+
+.bank-info-p-footer {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-slate-600);
+}
+
+.bank-info-label-muted {
+  color: var(--color-slate-500);
+}
+
+.bank-info-ifsc-val {
+  color: var(--color-primary);
+}
+
+.bank-info-acc-val {
+  font-size: 1.05rem;
+  color: var(--color-navy);
+}
+
+.bank-info-price-val {
+  color: var(--color-success);
+  font-size: 1.1rem;
+}
+
+.bank-btn-ok {
+  background: var(--color-danger) !important;
+  color: var(--color-white) !important;
+  padding: 0.55rem 1.5rem !important;
+}
+
+.eligibility-body-center {
+  text-align: center;
+}
+
+.eligibility-title-success {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-success-dark);
+  margin: 0 0 0.5rem;
+}
+
+.eligibility-text-success {
+  font-size: 0.92rem;
+  color: var(--color-slate-700);
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.eligibility-meta-row {
+  margin-bottom: 4px;
+}
+
+.eligibility-text-sub {
+  font-size: 0.82rem;
+  color: var(--color-slate-500);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.eligibility-footer-split {
+  justify-content: space-between;
+}
+
+.textarea-no-resize {
+  resize: none;
+}
+
+.bg-white {
+  background: var(--color-white);
+}
+
+.mb-1 {
+  margin-bottom: 1rem;
+}
+
+.mt-1 {
+  margin-top: 1rem;
+}
+
+.mt-125 {
+  margin-top: 1.25rem;
+}
+
+/* -------------------------------------------------------------
+   11. Accessibility Font Size Resizer Controller (| A- A A+ |)
+   ------------------------------------------------------------- */
+.font-resizer-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  user-select: none;
+  line-height: 1;
+}
+
+.font-resizer-sep {
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 300;
+  font-size: 0.95rem;
+  padding: 0 1px;
+}
+
+.font-resizer-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-white);
+  padding: 3px 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  letter-spacing: -0.2px;
+}
+
+.font-resizer-btn sup {
+  font-size: 0.72em;
+  line-height: 0;
+  vertical-align: super;
+  margin-left: 1px;
+  font-weight: 800;
+}
+
+.font-resizer-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-warning-border);
+}
+
+.font-resizer-btn.active {
+  color: var(--color-warning-border);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 -2px 0 var(--color-warning);
+}
+
+.font-resizer-btn:focus-visible {
+  outline: 2px solid var(--color-warning);
+  outline-offset: 1px;
+}
+
+/* -------------------------------------------------------------
+   12. Depot Manual "Received Demands" Stylesheet (CSD Depot Manual)
+   ------------------------------------------------------------- */
+.depot-manual-page {
+  padding: 1rem 1.5rem 3rem;
+  max-width: 1540px;
+  margin: 0 auto;
+}
+
+.depot-manual-toast {
+  margin-bottom: 1rem;
+}
+
+.depot-manual-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-slate-200);
+}
+
+.depot-manual-page-title {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--color-slate-900);
+}
+
+.depot-manual-count-badge {
+  font-size: 0.88rem;
+  color: var(--color-slate-600);
+  margin-top: 3px;
+  display: block;
+}
+
+.depot-manual-filter-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.depot-filter-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-slate-700);
+}
+
+.depot-filter-select {
+  padding: 0.4rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-slate-300);
+  background: var(--color-white);
+  color: var(--color-slate-800);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.depot-search-input-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.depot-search-input {
+  padding: 0.4rem 2rem 0.4rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-slate-300);
+  background: var(--color-white);
+  font-size: 0.82rem;
+  color: var(--color-slate-800);
+  width: 170px;
+  transition: width 0.2s ease;
+}
+
+.depot-search-input:focus {
+  width: 220px;
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.depot-search-btn {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-slate-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.depot-search-btn:hover {
+  color: var(--color-primary);
+}
+
+.depot-step4-instruction-bar {
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.84rem;
+  color: var(--color-slate-800);
+}
+
+.depot-step4-checks {
+  margin-left: 6px;
+  color: var(--color-slate-600);
+}
+
+/* Received Demands Table (Fig. 3) */
+.depot-table-container {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.depot-received-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.depot-received-table th {
+  background: var(--color-slate-50);
+  color: var(--color-slate-700);
+  font-weight: 700;
+  padding: 10px 14px;
+  border-bottom: 1.5px solid var(--color-slate-200);
+  white-space: nowrap;
+}
+
+.depot-received-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-slate-200);
+  vertical-align: top;
+}
+
+.depot-received-table tr:hover td {
+  background: var(--color-slate-50);
+}
+
+/* Column 1: Demand Number */
+.th-demand-no, .td-demand-no {
+  width: 140px;
+  min-width: 130px;
+}
+
+.depot-demand-id-link {
+  color: var(--color-primary);
+  font-size: 0.92rem;
+  display: block;
+}
+
+.depot-indent-date {
+  font-size: 0.76rem;
+  color: var(--color-slate-500);
+  margin-top: 3px;
+  display: block;
+}
+
+/* Column 2: PO details */
+.th-po-details, .td-po-details {
+  min-width: 260px;
+}
+
+.depot-po-customer-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.depot-customer-link {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.btn-depot-view-customer {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-depot-view-customer:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.depot-po-metadata-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.8rem;
+}
+
+.depot-po-meta-item {
+  display: flex;
+  gap: 6px;
+}
+
+.depot-po-meta-item .meta-key {
+  color: var(--color-slate-500);
+  min-width: 78px;
+  font-weight: 500;
+}
+
+.depot-po-meta-item .meta-val {
+  color: var(--color-slate-900);
+}
+
+.depot-po-meta-item.highlight-price {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--color-slate-200);
+}
+
+.depot-po-meta-item.highlight-price .meta-val {
+  color: var(--color-danger);
+  font-size: 0.92rem;
+}
+
+/* Column 3: Payment from Beneficiary */
+.th-pay-beneficiary, .td-pay-beneficiary {
+  min-width: 220px;
+}
+
+.depot-beneficiary-payment-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.depot-pay-method-header {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-slate-600);
+}
+
+.depot-beneficiary-card {
+  background: var(--color-warning-soft);
+  border: 1px solid var(--color-warning-border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+}
+
+.depot-pay-card-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-warning-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px dashed var(--color-warning-border);
+  padding-bottom: 0.25rem;
+}
+
+.depot-pay-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  margin-bottom: 2px;
+}
+
+.depot-pay-row span:first-child {
+  color: var(--color-slate-600);
+}
+
+.depot-pay-row span:last-child {
+  color: var(--color-slate-900);
+  font-weight: 500;
+  text-align: right;
+}
+
+.btn-depot-payment-receipt {
+  background: var(--color-danger);
+  color: var(--color-white);
+  border: none;
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-top: 4px;
+  transition: opacity 0.15s ease;
+}
+
+.btn-depot-payment-receipt:hover {
+  opacity: 0.9;
+}
+
+/* Column 4: Payment Received */
+.th-pay-received, .td-pay-received {
+  min-width: 210px;
+}
+
+.depot-csd-payment-entered-box {
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+}
+
+.depot-csd-pay-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-success-dark);
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px dashed var(--color-success-border);
+  padding-bottom: 0.25rem;
+}
+
+.depot-csd-payment-empty {
+  background: var(--color-slate-50);
+  border: 1px dashed var(--color-slate-300);
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+/* Column 5: Demand Status */
+.th-demand-status, .td-demand-status {
+  width: 130px;
+  min-width: 120px;
+}
+
+.depot-status-col-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.depot-status-pill {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-block;
+  text-align: center;
+}
+
+.status-processing {
+  background: var(--color-warning-badge);
+  color: var(--color-warning-dark);
+}
+
+.status-supply-issued {
+  background: var(--color-success-badge);
+  color: var(--color-success-dark);
+}
+
+.status-rejected {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.btn-depot-status-view {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: 9999px;
+  padding: 3px 14px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-depot-status-view:hover {
+  opacity: 0.9;
+}
+
+/* Column 6: Action Buttons Stack (Fig. 3 & Fig. 4) */
+.th-action, .td-action {
+  width: 190px;
+  min-width: 180px;
+}
+
+.depot-action-btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.btn-depot-action {
+  width: 100%;
+  border: none;
+  border-radius: 9999px;
+  padding: 5px 10px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-action-payment-received {
+  background: linear-gradient(135deg, var(--color-danger), #e11d48);
+  color: var(--color-white);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+}
+
+.btn-action-payment-received:hover {
+  filter: brightness(1.1);
+}
+
+.btn-action-upload-supply {
+  background: linear-gradient(135deg, var(--color-primary), #2563eb);
+  color: var(--color-white);
+  box-shadow: 0 2px 4px rgba(30, 79, 216, 0.2);
+}
+
+.btn-action-upload-supply:hover {
+  filter: brightness(1.1);
+}
+
+.btn-action-approve {
+  background: var(--color-success);
+  color: var(--color-white);
+}
+
+.btn-action-approve:hover:not(:disabled) {
+  background: var(--color-success-dark);
+}
+
+.btn-action-approve:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-action-reject {
+  background: var(--color-danger-dark);
+  color: var(--color-white);
+}
+
+.btn-action-reject:hover:not(:disabled) {
+  background: #7f1d1d;
+}
+
+.btn-action-reject:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-action-summary {
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.btn-action-summary:hover {
+  background: var(--color-slate-800);
+}
+
+.btn-action-notes {
+  background: var(--color-indigo);
+  color: var(--color-white);
+}
+
+.btn-action-notes:hover {
+  background: var(--color-indigo-hover);
+}
+
+/* Modals Styling (Fig. 5 & Fig. 6) */
+.depot-payment-modal-box {
+  max-width: 680px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.depot-manual-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem 1rem;
+}
+
+@media (max-width: 640px) {
+  .depot-manual-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.depot-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.depot-form-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-slate-700);
+}
+
+.depot-form-input {
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-slate-300);
+  background: var(--color-white);
+  color: var(--color-slate-900);
+  font-size: 0.84rem;
+  box-sizing: border-box;
+}
+
+.depot-form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.depot-form-input.has-error {
+  border-color: var(--color-danger);
+}
+
+.depot-error-msg {
+  color: var(--color-danger);
+  font-size: 0.72rem;
+  margin-top: 1px;
+}
+
+.depot-manual-footer-center {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-top: 1px solid var(--color-slate-200);
+}
+
+.btn-depot-manual-close {
+  background: var(--color-slate-500);
+  color: var(--color-white);
+  border: none;
+  border-radius: 9999px;
+  padding: 0.55rem 2rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-depot-manual-close:hover {
+  background: var(--color-slate-600);
+}
+
+.btn-depot-manual-submit {
+  background: linear-gradient(135deg, var(--color-primary), #2563eb);
+  color: var(--color-white);
+  border: none;
+  border-radius: 9999px;
+  padding: 0.55rem 2.2rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-depot-manual-submit:hover {
+  filter: brightness(1.1);
+}
+
+.btn-depot-manual-submit.btn-gradient-red {
+  background: linear-gradient(135deg, var(--color-danger), #e11d48);
+}
+
+/* Upload Supply Order Modal (Fig. 6) */
+.depot-upload-modal-box {
+  max-width: 520px;
+  width: 95%;
+}
+
+.depot-upload-guideline-note {
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-slate-700);
+}
+
+.depot-upload-field-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.depot-upload-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.depot-upload-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-slate-700);
+}
+
+.depot-file-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid var(--color-slate-300);
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: var(--color-white);
+}
+
+.depot-real-file-input {
+  display: none;
+}
+
+.btn-depot-choose-file {
+  background: var(--color-slate-100);
+  color: var(--color-slate-800);
+  border: 1px solid var(--color-slate-300);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-depot-choose-file:hover {
+  background: var(--color-slate-200);
+}
+
+.depot-chosen-filename {
+  font-size: 0.78rem;
+  color: var(--color-slate-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Approve / Reject Modal */
+.depot-decision-modal-box {
+  max-width: 560px;
+  width: 95%;
+}
+
+.depot-decision-demand-summary {
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.82rem;
+  margin-bottom: 1rem;
+}
+
+.depot-step-instruction {
+  font-size: 0.85rem;
+  color: var(--color-slate-800);
+  margin: 0 0 0.75rem;
+}
+
+.depot-checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.82rem;
+  color: var(--color-slate-700);
+}
+
+.depot-checklist-item input[type="checkbox"] {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.depot-checklist-item label {
+  cursor: pointer;
+}
+
+.depot-status-transition-notice {
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-success-dark);
+  margin-top: 1rem;
+}
+
+.depot-refund-alert {
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--color-danger-dark);
+}
+
+.btn-depot-action-approve {
+  background: var(--color-success);
+  color: var(--color-white);
+  border: none;
+  border-radius: 9999px;
+  padding: 0.55rem 1.75rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-depot-action-approve:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-depot-action-reject {
+  background: var(--color-danger);
+  color: var(--color-white);
+  border: none;
+  border-radius: 9999px;
+  padding: 0.55rem 1.75rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Summary & Notes Modals */
+.depot-summary-modal-box {
+  max-width: 720px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.depot-summary-header-card {
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.depot-summary-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .depot-summary-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.depot-summary-section {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 8px;
+  padding: 0.85rem;
+}
+
+.depot-summary-heading {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  border-bottom: 1px solid var(--color-slate-100);
+  padding-bottom: 0.35rem;
+}
+
+.depot-summary-meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.depot-summary-meta-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--color-slate-50);
+}
+
+.depot-summary-meta-table td:first-child {
+  color: var(--color-slate-500);
+  font-weight: 500;
+}
+
+.btn-depot-action-print {
+  background: var(--color-slate-800);
+  color: var(--color-white);
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* Notes Modal */
+.depot-notes-modal-box {
+  max-width: 580px;
+  width: 95%;
+}
+
+.depot-notes-history-list {
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.depot-note-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 6px;
+  padding: 0.65rem;
+}
+
+.depot-note-header {
+  border-bottom: 1px solid var(--color-slate-100);
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.depot-note-body {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-slate-800);
+  line-height: 1.4;
+}
+
+/* Customer & Receipt Modals */
+.depot-customer-modal-box,
+.depot-receipt-modal-box {
+  max-width: 520px;
+  width: 95%;
+}
+
+.depot-customer-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 8px;
+  padding: 0.85rem;
+}
+
+.depot-customer-avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-primary-border);
+}
+
+.depot-customer-name {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+}
+
+.depot-receipt-preview-card {
+  background: var(--color-white);
+  border: 2px dashed var(--color-slate-300);
+  border-radius: 8px;
+  padding: 1.25rem;
+  position: relative;
+}
+
+.depot-receipt-stamp {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--color-success-badge);
+  color: var(--color-success-dark);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.depot-receipt-amount-banner {
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+  margin: 0.75rem 0;
+}
+
+

@@ -18,6 +18,10 @@ const Register = lazy(() => import('./pages/Register.jsx'));
 const Cart = lazy(() => import('./pages/Cart.jsx'));
 const Info = lazy(() => import('./pages/Info.jsx'));
 const NotFound = lazy(() => import('./pages/NotFound.jsx'));
+const Checkout = lazy(() => import('./pages/Checkout.jsx'));
+const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess.jsx'));
+const Demands = lazy(() => import('./pages/Demands.jsx'));
+const DemandDetail = lazy(() => import('./pages/DemandDetail.jsx'));
 
 // Failsafe lazy-import helper supporting default exports, named exports, and mixed bundlers
 const lazyImport = (importFn, name) =>
@@ -133,6 +137,7 @@ const HelpdeskProfile = lazyImport(() => import('./features/helpdesk/HelpdeskPro
 // 8. Admin Pages
 const AdminDashboard = lazyImport(() => import('./features/admin/AdminDashboard.jsx'), 'AdminDashboard');
 const AdminUsers = lazyImport(() => import('./features/admin/AdminUsers.jsx'), 'AdminUsers');
+const AdminAddUser = lazyImport(() => import('./features/admin/AdminAddUser.jsx'), 'AdminAddUser');
 const AdminRoles = lazyImport(() => import('./features/admin/AdminRoles.jsx'), 'AdminRoles');
 const AdminPermissions = lazyImport(() => import('./features/admin/AdminPermissions.jsx'), 'AdminPermissions');
 const AdminSystemSettings = lazyImport(() => import('./features/admin/AdminSystemSettings.jsx'), 'AdminSystemSettings');
@@ -164,20 +169,27 @@ export default function App() {
           <Route path="/categories" element={<Products />} />
           <Route path="/register" element={<Register />} />
           <Route path="/info/:topic" element={<Info />} />
-        </Route>
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/demands" element={<Demands />} />
+          <Route path="/demands/:id" element={<DemandDetail />} />
+          <Route path="/payment/:demandId" element={<DemandDetail />} />
 
-        {/* AUTH SECURITY LAYER */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<PasswordReset />} />
-        <Route path="/reset-password" element={<PasswordReset />} />
-        <Route path="/unauthorized" element={<Unauthorized />} />
-        <Route path="/session-expired" element={<SessionExpired />} />
+
+          {/* AUTH SECURITY LAYER */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<PasswordReset />} />
+          <Route path="/reset-password" element={<PasswordReset />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/session-expired" element={<SessionExpired />} />
+
+        </Route>
 
         {/* =========================================================
             AUTHENTICATED ENTERPRISE PORTAL (Wrapped in AppShell)
             ========================================================= */}
         <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-          
+
           {/* 1. BENEFICIARY PORTAL */}
           <Route path="/beneficiary/dashboard" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiaryDashboard /></RoleRoute>} />
           <Route path="/beneficiary/profile" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiaryProfile /></RoleRoute>} />
@@ -276,6 +288,7 @@ export default function App() {
           {/* 8. SYSTEM ADMINISTRATOR PORTAL */}
           <Route path="/admin/dashboard" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminDashboard /></RoleRoute>} />
           <Route path="/admin/users" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminUsers /></RoleRoute>} />
+          <Route path="/admin/users/new" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminAddUser /></RoleRoute>} />
           <Route path="/admin/roles" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminRoles /></RoleRoute>} />
           <Route path="/admin/permissions" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminPermissions /></RoleRoute>} />
           <Route path="/admin/system-settings" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminSystemSettings /></RoleRoute>} />

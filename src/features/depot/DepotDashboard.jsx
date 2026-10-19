@@ -69,7 +69,7 @@ export default function DepotDashboard() {
         actions={
           <div className="row gap-1">
             <Link to="/depot/demands" className="btn btn-primary">
-              Process Sanction Queue
+              Open Received Demands
             </Link>
           </div>
         }

@@ -95,10 +95,10 @@ export default function Home() {
           <Catalog cat={cat} onCat={setCat} embedded title={{ car: "Cars", bike: "Bikes", "white-goods": "Home appliances" }[cat]} />
         </section>
 
-        <section aria-labelledby="deals">
+        {/* <section aria-labelledby="deals">
           <div className="sec-h"><h2 id="deals">Top discounts</h2><Link to="/products?cat=white-goods" className="more">All appliances <ArrowRight size={15} aria-hidden /></Link></div>
           <div className="pgrid five">{deals.map((p) => <ProductCard key={p.id} p={p} />)}</div>
-        </section>
+        </section> */}
 
         <section aria-labelledby="brands">
           <div className="sec-h"><h2 id="brands">Popular brands</h2></div>

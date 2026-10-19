@@ -1,15 +1,42 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, RefreshCw, KeyRound, ShieldAlert, CheckCircle2 } from 'lucide-react';
-import Button from '../../components/common/Button.jsx';
-import Input from '../../components/common/Input.jsx';
-import Select from '../../components/common/Select.jsx';
+import {
+  User, Lock, Eye, EyeOff, RefreshCw, KeyRound, ShieldAlert, ArrowLeft,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ROLES, ROLE_LABELS, ROLE_HOMES } from '../../permissions/roles.js';
 
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const makeCaptcha = () =>
   Array.from({ length: 5 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
+
+const DEMO_USERNAMES = {
+  [ROLES.BENEFICIARY]: 'JC-765432X',
+  [ROLES.CSD]: 'CSD_HO_089',
+  [ROLES.DEPOT]: 'DEPOT_MGR_DEL',
+  [ROLES.URC]: 'URC_OFF_CANTT',
+  [ROLES.OEM]: 'OEM_TATA_AFD',
+  [ROLES.DEALER]: 'DLR_PRATHAM_DEL',
+  [ROLES.HELPDESK_AGENT]: 'HD_AGENT_104',
+  [ROLES.HELPDESK_SUPERVISOR]: 'HD_SUP_002',
+  [ROLES.ADMIN]: 'SYS_ADMIN_CSD',
+};
+
+function Field({ id, label, req, hint, err, children }) {
+  return (
+    <div className="fgrp">
+      <label htmlFor={id}>
+        {label}
+        {req && <span aria-hidden> *</span>}
+      </label>
+      {children}
+      {hint && <p className="small hint">{hint}</p>}
+      <p className="err" role={err ? 'alert' : undefined}>
+        {err && `⚠ ${err}`}
+      </p>
+    </div>
+  );
+}
 
 export default function LoginForm({ onNeedOtp }) {
   const [searchParams] = useSearchParams();
@@ -24,7 +51,6 @@ export default function LoginForm({ onNeedOtp }) {
   const [captchaInput, setCaptchaInput] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [accountLocked, setAccountLocked] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -32,38 +58,7 @@ export default function LoginForm({ onNeedOtp }) {
   const handleRoleChange = (e) => {
     const selected = e.target.value;
     setRole(selected);
-    // Autofill representative username for convenience
-    switch (selected) {
-      case ROLES.BENEFICIARY:
-        setUsername('JC-765432X');
-        break;
-      case ROLES.CSD:
-        setUsername('CSD_HO_089');
-        break;
-      case ROLES.DEPOT:
-        setUsername('DEPOT_MGR_DEL');
-        break;
-      case ROLES.URC:
-        setUsername('URC_OFF_CANTT');
-        break;
-      case ROLES.OEM:
-        setUsername('OEM_TATA_AFD');
-        break;
-      case ROLES.DEALER:
-        setUsername('DLR_PRATHAM_DEL');
-        break;
-      case ROLES.HELPDESK_AGENT:
-        setUsername('HD_AGENT_104');
-        break;
-      case ROLES.HELPDESK_SUPERVISOR:
-        setUsername('HD_SUP_002');
-        break;
-      case ROLES.ADMIN:
-        setUsername('SYS_ADMIN_CSD');
-        break;
-      default:
-        break;
-    }
+    if (DEMO_USERNAMES[selected]) setUsername(DEMO_USERNAMES[selected]);
   };
 
   const refreshCaptcha = () => {
@@ -104,157 +99,126 @@ export default function LoginForm({ onNeedOtp }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="enterprise-login-form">
-      <div className="form-head mb-2">
-        <h2 className="login-heading">Sign In to AFD Portal</h2>
-        <p className="login-subheading muted small">
-          Select your portal role and enter authorized credentials.
-        </p>
+    <form className="panel logincard authcard" onSubmit={handleSubmit} noValidate aria-labelledby="lh">
+      <div className="between">
+        <Link to="/register" className="vli">
+          New user? Register
+        </Link>
+        <button type="button" className="circle" aria-label="Go back" onClick={() => navigate(-1)}>
+          <ArrowLeft />
+        </button>
       </div>
 
+      <h1 id="lh">Login</h1>
+      <p className="reg-warn">
+        Select your portal role and enter authorized credentials to sign in to the AFD Portal.
+      </p>
+
       {reason === 'session-expired' && (
-        <div className="alert-banner warning mb-2 small" role="alert">
+        <div className="alert-banner warning small" role="alert">
           <ShieldAlert size={16} />
           <span>Your previous secure session expired due to inactivity. Please log in again.</span>
         </div>
       )}
 
       {errors.form && (
-        <div className="alert-banner danger mb-2 small" role="alert">
+        <div className="alert-banner danger small" role="alert">
           <ShieldAlert size={16} />
           <span>{errors.form}</span>
         </div>
       )}
 
-      {/* Role Selection */}
-      <div className="form-field mb-2">
-        <label htmlFor="portalRole" className="form-label font-semibold small">
-          Login As (Role Authority) <span className="req-star">*</span>
-        </label>
+      <Field id="portalRole" label="Login As (Role Authority)" req>
+        <select id="portalRole" value={role} onChange={handleRoleChange}>
+          {Object.entries(ROLE_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field id="username" label="Service No / User ID / Mobile" req err={errors.username}>
         <div className="fld">
-          <select
-            id="portalRole"
-            value={role}
-            onChange={handleRoleChange}
-            className="select-input"
-          >
-            {Object.entries(ROLE_LABELS).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <User size={18} aria-hidden />
+          <input
+            id="username"
+            autoComplete="username"
+            placeholder="e.g. JC-765432X or registered email"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            aria-invalid={!!errors.username}
+          />
         </div>
-      </div>
+      </Field>
 
-      {/* User ID / Service Number */}
-      <Input
-        id="username"
-        label="Service No / User ID / Mobile"
-        placeholder="e.g. JC-765432X or registered email"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        icon={User}
-        error={errors.username}
-        required
-        className="mb-2"
-      />
-
-      {/* Password */}
-      <div className="form-field mb-2">
-        <label htmlFor="passwordInput" className="form-label font-semibold small">
-          Password <span className="req-star">*</span>
-        </label>
-        <div className={`fld ${errors.password ? 'has-error' : ''}`}>
-          <Lock size={18} className="fld-icon" aria-hidden="true" />
+      <Field id="passwordInput" label="Password" req err={errors.password}>
+        <div className="fld has-eye">
+          <Lock size={18} aria-hidden />
           <input
             id="passwordInput"
             type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
+            aria-invalid={!!errors.password}
           />
           <button
             type="button"
-            className="fld-end-btn icon-btn"
-            onClick={() => setShowPassword(!showPassword)}
+            className="eye"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
+            onClick={() => setShowPassword(!showPassword)}
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
-        {errors.password && <p className="err small">⚠ {errors.password}</p>}
-      </div>
+      </Field>
 
-      {/* Remember Me & Forgot Password */}
-      <div className="between mb-2 small">
-        <label className="checkbox-label row align-center gap-1 cursor-pointer">
+      <div className="between">
+        <label className="inline agree">
           <input
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-          />
-          <span>Remember credentials</span>
+          />{' '}
+          Remember credentials
         </label>
-        <Link to="/forgot-password" className="link small">
+        <Link to="/forgot-password" className="vli">
           Forgot Password?
         </Link>
       </div>
 
-      {/* Captcha Verification */}
-      <div className="captcha-group mb-2">
-        <label htmlFor="captchaInput" className="form-label font-semibold small">
-          Security Verification <span className="req-star">*</span>
-        </label>
-        <div className="captcha-box row align-center gap-1 mb-1">
-          <div className="captcha-display" aria-label={`Captcha code: ${captcha}`}>
-            {captcha}
-          </div>
-          <button
-            type="button"
-            onClick={refreshCaptcha}
-            className="icon-btn circle"
-            title="Refresh Captcha Code"
-            aria-label="Refresh captcha"
-          >
-            <RefreshCw size={16} />
-          </button>
-        </div>
-        <div className={`fld ${errors.captcha ? 'has-error' : ''}`}>
-          <KeyRound size={16} className="fld-icon" aria-hidden="true" />
-          <input
-            id="captchaInput"
-            type="text"
-            placeholder="Enter the 5 characters above"
-            maxLength={5}
-            value={captchaInput}
-            onChange={(e) => setCaptchaInput(e.target.value)}
-            required
-          />
-        </div>
-        {errors.captcha && <p className="err small">⚠ {errors.captcha}</p>}
+      <label htmlFor="captchaInput">
+        Captcha <span aria-hidden>*</span>
+      </label>
+      <div className="captcha-row">
+        <span className="captcha-img" aria-label={`Captcha ${captcha.split('').join(' ')}`}>
+          {captcha}
+        </span>
+        <button type="button" className="icon sm" aria-label="Refresh captcha" onClick={refreshCaptcha}>
+          <RefreshCw size={18} />
+        </button>
       </div>
-
-      {/* Submit Button */}
-      <Button
-        type="submit"
-        variant="primary"
-        size="lg"
-        loading={loading}
-        className="wide mb-2"
-      >
-        Sign In & Verify Session
-      </Button>
-
-      {/* Beneficiary Registration Link */}
-      <div className="register-callout text-center pt-2 border-top small">
-        <span className="muted">New to CSD AFD Online? </span>
-        <Link to="/register" className="font-semibold link">
-          New Defence Beneficiary Registration
-        </Link>
+      <div className="fld">
+        <KeyRound size={18} aria-hidden />
+        <input
+          id="captchaInput"
+          autoComplete="off"
+          maxLength={5}
+          placeholder="Type the captcha text displayed above"
+          value={captchaInput}
+          onChange={(e) => setCaptchaInput(e.target.value)}
+          aria-invalid={!!errors.captcha}
+        />
       </div>
+      <p className="err" role={errors.captcha ? 'alert' : undefined}>
+        {errors.captcha && `⚠ ${errors.captcha}`}
+      </p>
+
+      <button className="btn big wide" type="submit" disabled={loading}>
+        {loading ? 'Please wait...' : 'Sign In & Verify Session'}
+      </button>
     </form>
   );
 }

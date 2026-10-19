@@ -6,7 +6,9 @@ export function LoadingState({ message, text, className = '' }) {
   const displayMsg = text || message || 'Loading records...';
   return (
     <div className={`panel state-box ${className}`} role="status">
-      <Loader2 className="spin text-brand" size={36} aria-hidden="true" />
+      <div className="state-spinner-wrap">
+        <Loader2 className="spin text-brand" size={28} aria-hidden="true" />
+      </div>
       <p className="state-message font-medium">{displayMsg}</p>
     </div>
   );

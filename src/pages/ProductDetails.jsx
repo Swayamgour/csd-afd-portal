@@ -1,17 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   RefreshCw, ShoppingCart, Copy, Heart, Check, ChevronRight, ShieldCheck, BadgePercent, Truck, Fuel, Gauge, Zap,
   Cog, Package, Armchair, Disc3, Palette, CircleDollarSign, Share2, CalendarCheck, Cpu, BadgeCheck, ArrowRight,
+  Eye, AlertCircle, Building2, Store, Lock
 } from "lucide-react";
 import { Stars } from "../components/ProductCard.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import { Loader, EmptyState, ErrorState } from "../components/States.jsx";
 import { fetchProduct, fetchProducts } from "../data/api.js";
 import { useStore } from "../context/Store.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import { COLOR_HEX } from "../data/art.js";
 import { FEATURES, STEPS } from "../data/details.js";
 import { CAT_LABEL, CAT_PLURAL, inr, priceText, priceFrom, rupees, onImgError } from "../data/utils.js";
+import { MOCK_PRICE_ZONES, MOCK_DEPOTS_LIST, MOCK_URCS_LIST, MOCK_DEALERS_LIST } from "../data/mock/locations.mock.js";
+import { eligibilityService } from "../services/eligibility.service.js";
+import { DealerDetailsModal } from "../components/modals/DealerDetailsModal.jsx";
+import { URCDetailsModal } from "../components/modals/URCDetailsModal.jsx";
+import { EligibilityModal } from "../components/modals/EligibilityModal.jsx";
 
 const val = (v) => (Array.isArray(v) ? v.join(" / ") : v && v !== "-" ? v : null);
 
@@ -70,13 +77,36 @@ function Emi({ p }) {
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { addCart, toggleCmp, toggleWish, cmp, wish } = useStore();
-  const [p, setP] = useState(undefined), [err, setErr] = useState(false), [all, setAll] = useState([]);
-  const [color, setColor] = useState(""), [fuel, setFuel] = useState(""), [drive, setDrive] = useState("");
-  const [main, setMain] = useState(0), [tab, setTab] = useState("overview"), [zoom, setZoom] = useState(null), [copied, setCopied] = useState(false);
-  const imgs = useGallery(p);
+  const { user } = useAuth();
 
-  console.log(imgs)
+  const [p, setP] = useState(undefined);
+  const [err, setErr] = useState(false);
+  const [all, setAll] = useState([]);
+  const [color, setColor] = useState("");
+  const [fuel, setFuel] = useState("");
+  const [drive, setDrive] = useState("");
+  const [main, setMain] = useState(0);
+  const [tab, setTab] = useState("overview");
+  const [zoom, setZoom] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  // CSD AFD Selection states (Fig. 6)
+  const [selectedZone, setSelectedZone] = useState('DELHI NCR (DELHI GREATER NOIDA FARIDABAD GURGAON)');
+  const [selectedDealer, setSelectedDealer] = useState('AAA VEHICLEADES PVT. LTD. MUNDKA (PILLAR)');
+  const [selectedDepot, setSelectedDepot] = useState('DELHI');
+  const [selectedUrc, setSelectedUrc] = useState('7 WING AF');
+
+  // Modals state
+  const [dealerModalOpen, setDealerModalOpen] = useState(false);
+  const [urcModalOpen, setUrcModalOpen] = useState(false);
+  const [eligibilityModalOpen, setEligibilityModalOpen] = useState(false);
+  const [eligibilityResult, setEligibilityResult] = useState(null);
+  const [checkoutErrors, setCheckoutErrors] = useState({});
+  const [checkingEligibility, setCheckingEligibility] = useState(false);
+
+  const imgs = useGallery(p);
 
   const load = () => {
     setErr(false); setP(undefined);
@@ -86,15 +116,26 @@ export default function ProductDetails() {
     }).catch(() => setErr(true));
   };
   useEffect(load, [id]);
-  useEffect(() => { fetchProducts().then(setAll).catch(() => {}); }, []);
+  useEffect(() => { fetchProducts().then(setAll).catch(() => { }); }, []);
   useEffect(() => { if (p) document.title = `${p.name} - CSD AFD Online Portal`; }, [p]);
 
   const similar = useMemo(() => p ? all.filter((x) => x.id !== p.id && x.category === p.category)
     .sort((a, b) => (b.brand === p.brand) - (a.brand === p.brand) || (b.type === p.type) - (a.type === p.type) || Math.abs(rupees(a) - rupees(p)) - Math.abs(rupees(b) - rupees(p))).slice(0, 4) : [], [all, p]);
 
+  const currentDealer = useMemo(() => {
+    return MOCK_DEALERS_LIST.find((d) => d.name === selectedDealer) || MOCK_DEALERS_LIST[0];
+  }, [selectedDealer]);
+
+  const currentUrc = useMemo(() => {
+    return MOCK_URCS_LIST.find((u) => u.name === selectedUrc) || MOCK_URCS_LIST[0];
+  }, [selectedUrc]);
+
   if (err) return <ErrorState onRetry={load} />;
   if (p === undefined) return <Loader />;
   if (!p) return <EmptyState title="Product not found" text="This product is not available." action={<Link className="btn" to="/products">Browse products</Link>} />;
+
+  const skuNumber = p?.sku || '64224';
+  const mfgCode = p?.mfgCode || '7116';
 
   const car = p.category === "car", bike = p.category === "bike", appl = p.category === "white-goods";
   const w = wish.includes(p.id), c = cmp.includes(p.id);
@@ -109,12 +150,12 @@ export default function ProductDetails() {
 
   const specGroups = car
     ? [["General", [["Brand", p.brand], ["Body type", p.type], ["Transmission", p.trans], ["Fuel type", val(p.fuel)], ["Colours", val(p.colors)]]],
-       ["Engine & performance", [["Engine", p.engine], ["Max power", p.power], ["Mileage (ARAI)", p.mileage]]],
-       ["Dimensions & safety", [["Boot space", p.boot], ["Airbags", p.airbags]]]]
+    ["Engine & performance", [["Engine", p.engine], ["Max power", p.power], ["Mileage (ARAI)", p.mileage]]],
+    ["Dimensions & safety", [["Boot space", p.boot], ["Airbags", p.airbags]]]]
     : bike
       ? [["General", [["Brand", p.brand], ["Type", p.type], ["Fuel type", val(p.fuel)], ["Colours", val(p.colors)]]],
-         ["Engine & performance", [["Engine", p.engine], ["Max power", p.power], ["Mileage", p.mileage]]],
-         ["Chassis", [["Brakes (front / rear)", p.brakes]]]]
+      ["Engine & performance", [["Engine", p.engine], ["Max power", p.power], ["Mileage", p.mileage]]],
+      ["Chassis", [["Brakes (front / rear)", p.brakes]]]]
       : [["General", [["Brand", p.brand], ["Type", p.type]]], ["Pricing", [["Offer price", inr(p.lo)], ["MRP", p.mrp ? inr(p.mrp) : null], ["You save", p.mrp ? `${inr(p.mrp - p.lo)} (${p.discount}%)` : null]]]];
 
   const about = car || bike
@@ -123,6 +164,67 @@ export default function ProductDetails() {
 
   const tabs = [["overview", "Overview"], ["specs", "Specifications"], ["features", "Features"], ["buy", "How to buy"]];
   const copy = () => { navigator.clipboard?.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 1800); };
+
+  const handleCheckoutClick = async () => {
+    const errs = {};
+    if (!color) errs.color = 'Please select Color';
+    if (!selectedZone) errs.zone = 'Please select Price Zone';
+    if (!selectedDealer) errs.dealer = 'Please select Dealer';
+    if (!selectedDepot) errs.depot = 'Please select Depot';
+    if (!selectedUrc) errs.urc = 'Please select URC';
+
+    if (Object.keys(errs).length > 0) {
+      setCheckoutErrors(errs);
+      return;
+    }
+    setCheckoutErrors({});
+
+    setCheckingEligibility(true);
+    const res = await eligibilityService.validateEligibility(
+      user || {
+        username: 'JC-765432X',
+        name: 'Subedar Major Rajesh Kumar',
+        dateOfEnrollment: '2015-11-23',
+        payLevel: 'Level 8 (Pay Band 2)',
+        entitlementCategory: 'JCO (Pay level 7-9)'
+      },
+      p,
+      {
+        price: p.lo || 548917,
+        zone: selectedZone,
+        dealer: selectedDealer,
+        depot: selectedDepot,
+        urc: selectedUrc
+      }
+    );
+    setEligibilityResult(res);
+    setCheckingEligibility(false);
+    setEligibilityModalOpen(true);
+  };
+
+  const handleContinueToCheckout = () => {
+    setEligibilityModalOpen(false);
+    const checkoutData = {
+      productId: p.id,
+      productName: p.name,
+      sku: skuNumber,
+      manufacturerCode: mfgCode,
+      productImage: gallery[0] || p.image,
+      category: p.category,
+      brand: p.brand,
+      selectedColor: color || (p.colors?.[0] || 'Standard'),
+      selectedZone,
+      selectedDealer,
+      selectedDepot,
+      selectedUrc,
+      productPrice: rupees(p) || p.lo || 548917,
+      quantity: 1,
+      taxClass: MOCK_PRICE_ZONES.find((z) => z.name === selectedZone)?.taxClass || 'tax-class-8'
+    };
+
+    sessionStorage.setItem('csd_checkout_product', JSON.stringify(checkoutData));
+    navigate('/checkout', { state: { productData: checkoutData } });
+  };
 
   return (
     <div className="wrap pdp">
@@ -161,44 +263,215 @@ export default function ProductDetails() {
           </ul>
         </div>
 
-        {/* ---------- buy box ---------- */}
+        {/* ---------- buy box (Step 6, Fig. 6) ---------- */}
         <section className="buybox" aria-labelledby="pn">
-          <p className="eyebrow">{p.brand} · {p.type}</p>
-          <h1 id="pn">{p.name}</h1>
-          <div className="rate-row"><Stars v={p.rating} /><span className="muted small">{p.reviews?.toLocaleString("en-IN") || 0} reviews</span><span className="pill ok"><Check size={13} aria-hidden /> Available on CSD</span></div>
-
-          <div className="pricebox">
-            <p className="big-price">{priceText(p)}{car && <sup>*</sup>}</p>
-            {appl && p.mrp ? <p className="save"><s>{inr(p.mrp)}</s> <b>You save {inr(p.mrp - p.lo)} ({p.discount}%)</b></p> : <p className="muted small">{car ? "*Ex-showroom price range across variants." : "Ex-showroom price range across variants."}</p>}
+          <div className="pdp-eyebrow-row">
+            <p className="eyebrow pdp-eyebrow-text">{p.brand} · {p.type}</p>
+            <span className="badge pdp-eyebrow-sku-badge">
+              SKU: {skuNumber} · Mfr Code: {mfgCode}
+            </span>
           </div>
 
-          <Choice label="Colour" options={p.colors} value={color} set={setColor} swatch />
-          <Choice label="Fuel type" options={p.fuel} value={fuel} set={setFuel} />
-          {car && p.trans && <Choice label="Transmission" options={p.trans.split(" / ")} value={drive} set={setDrive} />}
-
-          <div className="cta-row">
-            <button className="btn big" type="button" onClick={() => addCart(p)}><ShoppingCart size={18} aria-hidden /> Add to cart</button>
-            <button className="btn out big" type="button" aria-pressed={c} onClick={() => toggleCmp(p)}><RefreshCw size={16} aria-hidden /> {c ? "Added to compare" : "Compare"}</button>
+          <h1 id="pn" className="pdp-title-heading">{p.name}</h1>
+          <div className="rate-row">
+            <Stars v={p.rating} />
+            <span className="muted small">{p.reviews?.toLocaleString("en-IN") || 0} reviews</span>
+            <span className="pill ok"><Check size={13} aria-hidden /> Available on CSD</span>
           </div>
 
-          {/* Authenticated AFD Portal Action Strip */}
-          <div style={{ marginTop: '0.75rem', padding: '0.85rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0b1f3a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                🎖️ CSD AFD Concession & Procurement
-              </span>
-              <span className="pill ok" style={{ fontSize: '0.7rem' }}>Entitlement Verified</span>
+          {/* CSD Beneficiary Procurement Selection Form matching Fig. 6 */}
+          <div className="pdp-spec-box">
+            <div className="pdp-spec-box-header">
+              <div className="pdp-spec-header-top">
+                <span className="pdp-spec-header-title">
+                  CSD AFD DEMAND SPECIFICATIONS
+                </span>
+                <span className="pdp-spec-header-sku">
+                  SKU: <strong>{skuNumber}</strong> · Manufacturer Code: <strong>{mfgCode}</strong>
+                </span>
+              </div>
+              <p className="micro muted pdp-spec-desc-text">
+                Additional Description of Product: Approved defence concessional allocation model.
+              </p>
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <Link to={`/beneficiary/eligibility?productId=${p.id}`} className="btn" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', background: '#0b1f3a', color: '#fff', padding: '0.55rem' }}>
-                Check Entitlement
-              </Link>
-              <Link to={`/beneficiary/demands/new?productId=${p.id}`} className="btn" style={{ flex: 1, textAlign: 'center', fontSize: '0.85rem', background: '#d97706', color: '#fff', padding: '0.55rem' }}>
-                Generate Demand
-              </Link>
+
+            <div className="pdp-spec-form">
+              {/* Color Dropdown */}
+              <div>
+                <label className="form-label font-semibold pdp-form-label">
+                  Color <span className="pdp-req-star">*</span>
+                </label>
+                <select
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className={`select-input pdp-form-select ${checkoutErrors.color ? 'has-error' : ''}`}
+                >
+                  <option value="">-- Select Color --</option>
+                  {(p.colors || ['GRANITE GREY', 'METALLIC SIZZLING RED', 'PEARL METALLIC ARCTIC WHITE', 'PREMIUM SILVER', 'PRIME AUTUMN ORANGE']).map((cName) => (
+                    <option key={cName} value={cName}>
+                      {cName}
+                    </option>
+                  ))}
+                </select>
+                {checkoutErrors.color && (
+                  <span className="micro text-danger pdp-error-text">
+                    {checkoutErrors.color}
+                  </span>
+                )}
+              </div>
+
+              {/* Price Zone Dropdown + Count */}
+              <div>
+                <div className="between pdp-form-label">
+                  <label className="form-label font-semibold pdp-form-label-inline">
+                    Price Zone <span className="pdp-req-star">*</span>
+                  </label>
+                  <span className="badge pdp-count-badge">
+                    Count: 30
+                  </span>
+                </div>
+                <select
+                  value={selectedZone}
+                  onChange={(e) => setSelectedZone(e.target.value)}
+                  className={`select-input pdp-form-select ${checkoutErrors.zone ? 'has-error' : ''}`}
+                >
+                  <option value="">-- Select Price Zone --</option>
+                  {MOCK_PRICE_ZONES.map((z) => (
+                    <option key={z.id} value={z.name}>
+                      {z.name}
+                    </option>
+                  ))}
+                </select>
+                {checkoutErrors.zone && (
+                  <span className="micro text-danger pdp-error-text">
+                    {checkoutErrors.zone}
+                  </span>
+                )}
+              </div>
+
+              {/* Dealer Dropdown + View Dealer Button */}
+              <div>
+                <label className="form-label font-semibold pdp-form-label">
+                  Dealer <span className="pdp-req-star">*</span>
+                </label>
+                <div className="pdp-input-action-row">
+                  <select
+                    value={selectedDealer}
+                    onChange={(e) => setSelectedDealer(e.target.value)}
+                    className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.dealer ? 'has-error' : ''}`}
+                  >
+                    <option value="">-- Select Dealer --</option>
+                    {MOCK_DEALERS_LIST.map((d) => (
+                      <option key={d.id} value={d.name}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setDealerModalOpen(true)}
+                    className="btn-view-dealer"
+                  >
+                    View Dealer
+                  </button>
+                </div>
+                {checkoutErrors.dealer && (
+                  <span className="micro text-danger pdp-error-text">
+                    {checkoutErrors.dealer}
+                  </span>
+                )}
+              </div>
+
+              {/* Depot Dropdown */}
+              <div>
+                <label className="form-label font-semibold pdp-form-label">
+                  Depot <span className="pdp-req-star">*</span>
+                </label>
+                <select
+                  value={selectedDepot}
+                  onChange={(e) => setSelectedDepot(e.target.value)}
+                  className={`select-input pdp-form-select ${checkoutErrors.depot ? 'has-error' : ''}`}
+                >
+                  <option value="">-- Select depot --</option>
+                  {MOCK_DEPOTS_LIST.map((dep) => (
+                    <option key={dep.id} value={dep.name}>
+                      {dep.name}
+                    </option>
+                  ))}
+                </select>
+                {checkoutErrors.depot && (
+                  <span className="micro text-danger pdp-error-text">
+                    {checkoutErrors.depot}
+                  </span>
+                )}
+              </div>
+
+              {/* URC Dropdown + View URC Button */}
+              <div>
+                <label className="form-label font-semibold pdp-form-label">
+                  URC <span className="pdp-req-star">*</span>
+                </label>
+                <div className="pdp-input-action-row">
+                  <select
+                    value={selectedUrc}
+                    onChange={(e) => setSelectedUrc(e.target.value)}
+                    className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.urc ? 'has-error' : ''}`}
+                  >
+                    <option value="">-- Select URC --</option>
+                    {MOCK_URCS_LIST.map((u) => (
+                      <option key={u.id} value={u.name}>
+                        {u.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setUrcModalOpen(true)}
+                    className="btn-view-urc"
+                  >
+                    View URC
+                  </button>
+                </div>
+                {checkoutErrors.urc && (
+                  <span className="micro text-danger pdp-error-text">
+                    {checkoutErrors.urc}
+                  </span>
+                )}
+              </div>
+
+              {/* Concessional Price Display matching Fig. 6 */}
+              <div className="pdp-price-box">
+                <div className="pdp-price-range">
+                  ₹544,813 – ₹546,790
+                </div>
+                <div className="micro muted pdp-price-subtext">
+                  Excluding taxes and levies (calculated automatically during checkout based on zone).
+                </div>
+              </div>
+
+              {/* Official CHECKOUT CTA matching Fig. 6 */}
+              <button
+                type="button"
+                onClick={handleCheckoutClick}
+                disabled={checkingEligibility}
+                className="btn-checkout-cta"
+              >
+                {checkingEligibility ? 'VERIFYING ELIGIBILITY...' : 'CHECKOUT'}
+              </button>
+
+              <div className="pdp-footer-meta">
+                <span>Category: <strong>4 Wheelers</strong></span>
+                <span className="row align-center gap-1">
+                  <span>Share:</span>
+                  <button type="button" onClick={copy} className="btn-copy-link">
+                    {copied ? 'Link Copied' : 'Copy Link'}
+                  </button>
+                </span>
+              </div>
             </div>
           </div>
-          <div className="sub-row">
+
+          <div className="sub-row pdp-subrow-mt">
             {!appl && <Link to="/info/book-test-ride"><CalendarCheck size={16} aria-hidden /> Book a test ride</Link>}
             <button type="button" onClick={() => alert("OEM link: [Official Information To Be Provided]")}><ArrowRight size={16} aria-hidden /> View on OEM site</button>
             <button type="button" onClick={copy}>{copied ? <Check size={16} aria-hidden /> : <Share2 size={16} aria-hidden />} {copied ? "Link copied" : "Share"}</button>
@@ -209,9 +482,29 @@ export default function ProductDetails() {
               {highlights.slice(0, 6).map(([Ic, l, v]) => (<li key={l}><span><Ic size={18} aria-hidden /></span><div><small>{l}</small><strong>{v}</strong></div></li>))}
             </ul>
           )}
-          {/* {!appl && <Emi p={p} />} */}
         </section>
       </div>
+
+      {/* ---------- Modals ---------- */}
+      <DealerDetailsModal
+        isOpen={dealerModalOpen}
+        onClose={() => setDealerModalOpen(false)}
+        dealer={currentDealer}
+      />
+
+      <URCDetailsModal
+        isOpen={urcModalOpen}
+        onClose={() => setUrcModalOpen(false)}
+        urc={currentUrc}
+      />
+
+      <EligibilityModal
+        isOpen={eligibilityModalOpen}
+        onClose={() => setEligibilityModalOpen(false)}
+        onContinue={handleContinueToCheckout}
+        eligibilityResult={eligibilityResult}
+        product={p}
+      />
 
       {/* ---------- tabs ---------- */}
       <section className="pdp-tabs" aria-label="Product information">

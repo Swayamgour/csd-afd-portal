@@ -12,12 +12,14 @@ import {
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import SearchBox from "./SearchBox.jsx";
+import FontSizeResizer from "./common/FontSizeResizer.jsx";
 
 const nav = [
   ["/", "Home"],
   ["/products?cat=car", "Cars"],
   ["/products?cat=bike", "Bikes"],
   ["/products?cat=white-goods", "Appliances"],
+  ["/demands", "Demands"],
   ["/info/buying-process", "Buying Process"],
   ["/info/about", "About CSD"],
   ["/info/contact", "Contact"],
@@ -51,6 +53,7 @@ export default function Header() {
             free — never pay anyone for registration or supply order.
           </p>
           <div className="hdr-util-r">
+            <FontSizeResizer />
             <Link to="/info/help-desk">
               <Phone size={13} aria-hidden /> Help Desk
             </Link>

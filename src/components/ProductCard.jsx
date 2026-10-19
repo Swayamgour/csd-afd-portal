@@ -45,20 +45,20 @@ export default function ProductCard({ p, list }) {
         {!appl && (
           <p className="mini">
             {p.fuel?.length > 0 && <span><Fuel size={13} aria-hidden /> {p.fuel.join(" / ")}</span>}
-            {p.mileage && p.mileage !== "-" && <span><Gauge size={13} aria-hidden /> {p.mileage}</span>}
+            {/* {p.mileage && p.mileage !== "-" && <span><Gauge size={13} aria-hidden /> {p.mileage}</span>} */}
           </p>
         )}
-        <div className="card-foot">
+        {/* <div className="card-foot">
           <p className="price">
             <strong>{priceText(p)}</strong>
             {appl && p.mrp && <><s>{inr(p.mrp)}</s></>}
             {!appl && <small>Ex-showroom*</small>}
           </p>
+        </div> */}
           {/* <Stars v={p.rating} /> */}
-        </div>
         <div className="row">
           <Link className="btn out" to={`/products/${p.id}`}>View details</Link>
-          <button className="btn" onClick={() => addCart(p)} aria-label={`Add ${p.name} to cart`}><ShoppingCart size={16} aria-hidden /> Add</button>
+          {/* <button className="btn" onClick={() => addCart(p)} aria-label={`Add ${p.name} to cart`}><ShoppingCart size={16} aria-hidden /> Add</button> */}
         </div>
       </div>
     </article>

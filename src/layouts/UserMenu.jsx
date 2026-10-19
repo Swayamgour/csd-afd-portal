@@ -53,7 +53,7 @@ export default function UserMenu() {
     <div className="user-menu-wrapper" ref={menuRef}>
       <button
         type="button"
-        className="user-menu-trigger row align-center gap-1"
+        className="user-menu-trigger"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="true"

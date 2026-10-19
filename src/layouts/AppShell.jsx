@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import HeaderBar from './HeaderBar.jsx';
 import Breadcrumbs from './Breadcrumbs.jsx';
+import { LoadingState } from '../components/common/States.jsx';
 
 export function AppShell({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -30,7 +31,15 @@ export function AppShell({ children }) {
 
         {/* Content Viewport */}
         <main id="portal-main" className="app-content-body" tabIndex={-1}>
-          {children || <Outlet />}
+          <Suspense
+            fallback={
+              <div className="portal-content-loader-container">
+                <LoadingState text="Loading module..." />
+              </div>
+            }
+          >
+            {children || <Outlet />}
+          </Suspense>
         </main>
       </div>
     </div>

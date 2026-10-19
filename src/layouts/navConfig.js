@@ -62,7 +62,7 @@ export const ROLE_SIDEBAR_NAV = {
 
   [ROLES.DEPOT]: [
     { title: 'Depot Dashboard', to: '/depot/dashboard', icon: LayoutDashboard },
-    { title: 'Depot Demands', to: '/depot/demands', icon: FileText },
+    { title: 'Received Demands', to: '/depot/demands', icon: FileText },
     { title: 'Supply Orders', to: '/depot/orders', icon: Truck },
     { title: 'Allocated Products', to: '/depot/products', icon: Package },
     { title: 'Transactions', to: '/depot/transactions', icon: CreditCard },

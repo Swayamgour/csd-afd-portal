@@ -16,9 +16,9 @@ export default function RoleSwitcher() {
   };
 
   return (
-    <div className="role-switcher-container row align-center gap-1">
-      <UserCheck size={14} className="text-saffron" aria-hidden="true" />
-      <span className="small font-semibold hide-mobile" style={{ color: '#fff' }}>Role:</span>
+    <div className="role-switcher-container">
+      <UserCheck size={15} className="text-saffron flex-shrink-0" aria-hidden="true" />
+      <span className="small font-semibold role-switcher-label" style={{ color: '#fff' }}>Role:</span>
       <select
         value={role || ROLES.BENEFICIARY}
         onChange={handleRoleChange}
