@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ROLES, ROLE_HOMES } from '../permissions/roles.js';
+import { ROLES, ROLE_HOMES, getRoleNavigatePath } from '../permissions/roles.js';
 import { ROLE_PERMISSIONS } from '../permissions/permissions.js';
 import { getMockUserByRole, MOCK_USERS } from '../data/mock/users.mock.js';
 import { authService } from '../services/auth.service.js';
+import { getCookie, setCookie, deleteCookie } from '../utils/cookie.js';
 
 const AuthContext = createContext(null);
 
@@ -15,19 +16,61 @@ export const useAuth = () => {
 };
 
 export function AuthProvider({ children }) {
-  // Check stored credentials or initialize with null (guest) or default demo beneficiary
+  // Check stored real credentials or initialize with null (guest by default)
   const [user, setUser] = useState(() => {
     try {
+      const savedToken =
+        localStorage.getItem('csd_auth_token') ||
+        getCookie('csd_auth_token') ||
+        getCookie('accessToken');
+
+      // If token is missing or dummy demo token, clear and stay guest
+      if (!savedToken || savedToken === 'csd_demo_token_active' || savedToken.startsWith('csd_token_')) {
+        localStorage.removeItem('csd_auth_user');
+        localStorage.removeItem('csd_auth_token');
+        localStorage.removeItem('csd_auth_role');
+        return null;
+      }
+
       const saved = localStorage.getItem('csd_auth_user');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Purge mock demo users if previously cached in browser
+        if (parsed?.id?.startsWith('USR-') || parsed?.username === 'JC-765432X') {
+          localStorage.removeItem('csd_auth_user');
+          localStorage.removeItem('csd_auth_token');
+          localStorage.removeItem('csd_auth_role');
+          return null;
+        }
+        return parsed;
+      }
     } catch {
       // fallback
     }
-    // Default to Beneficiary for immediate portal readiness
-    return getMockUserByRole(ROLES.BENEFICIARY);
+    return null;
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('csd_auth_token') || 'csd_demo_token_active');
+  const [token, setToken] = useState(() => {
+    try {
+      const t =
+        localStorage.getItem('csd_auth_token') ||
+        getCookie('csd_auth_token') ||
+        getCookie('accessToken');
+      if (!t || t === 'csd_demo_token_active' || t.startsWith('csd_token_')) {
+        return null;
+      }
+      const saved = localStorage.getItem('csd_auth_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.id?.startsWith('USR-') || parsed?.username === 'JC-765432X') {
+          return null;
+        }
+      }
+      return t;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -35,6 +78,7 @@ export function AuthProvider({ children }) {
       try {
         localStorage.setItem('csd_auth_user', JSON.stringify(user));
         localStorage.setItem('csd_auth_role', user.role);
+        setCookie('csd_auth_role', user.role, 7);
       } catch (e) {
         console.error('Storage error', e);
       }
@@ -42,16 +86,44 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('csd_auth_user');
       localStorage.removeItem('csd_auth_role');
       localStorage.removeItem('csd_auth_token');
+      localStorage.removeItem('csd_refresh_token');
+      deleteCookie('csd_auth_user');
+      deleteCookie('csd_auth_role');
+      deleteCookie('csd_auth_token');
+      deleteCookie('accessToken');
+      deleteCookie('refreshToken');
     }
   }, [user]);
 
   const login = async (credentials) => {
     setLoading(true);
     try {
+      if (credentials?.directUser && credentials?.directToken) {
+        const u = credentials.directUser;
+        const t = credentials.directToken;
+        setUser(u);
+        setToken(t);
+        localStorage.setItem('csd_auth_token', t);
+        localStorage.setItem('csd_auth_user', JSON.stringify(u));
+        localStorage.setItem('csd_auth_role', u.role);
+        setCookie('csd_auth_token', t, 7);
+        setCookie('accessToken', t, 7);
+        if (credentials.refreshToken) {
+          setCookie('refreshToken', credentials.refreshToken, 30);
+        }
+        return u;
+      }
       const res = await authService.login(credentials);
       setUser(res.data.user);
       setToken(res.data.token);
       localStorage.setItem('csd_auth_token', res.data.token);
+      localStorage.setItem('csd_auth_user', JSON.stringify(res.data.user));
+      localStorage.setItem('csd_auth_role', res.data.user.role);
+      setCookie('csd_auth_token', res.data.token, 7);
+      setCookie('accessToken', res.data.token, 7);
+      if (res.data.refreshToken) {
+        setCookie('refreshToken', res.data.refreshToken, 30);
+      }
       return res.data.user;
     } finally {
       setLoading(false);
@@ -62,6 +134,11 @@ export function AuthProvider({ children }) {
     await authService.logout();
     setUser(null);
     setToken(null);
+    deleteCookie('csd_auth_token');
+    deleteCookie('accessToken');
+    deleteCookie('csd_refresh_token');
+    deleteCookie('refreshToken');
+    deleteCookie('csd_auth_role');
   };
 
   const switchRole = (newRole) => {
@@ -83,15 +160,17 @@ export function AuthProvider({ children }) {
     return allowed.includes(permission);
   };
 
-  const hasRole = (role) => {
+  const hasRole = (targetRole) => {
     if (!user) return false;
-    return user.role === role;
+    return String(user.role).toLowerCase() === String(targetRole).toLowerCase();
   };
+
+  const currentRole = user?.role ? String(user.role).toLowerCase() : null;
 
   const value = {
     user,
     token,
-    role: user?.role || null,
+    role: currentRole,
     isAuthenticated: !!user && !!token,
     loading,
     login,
@@ -100,8 +179,8 @@ export function AuthProvider({ children }) {
     updateProfile,
     hasPermission,
     hasRole,
-    homePath: user ? ROLE_HOMES[user.role] || '/beneficiary/dashboard' : '/login',
-    roleHome: user ? ROLE_HOMES[user.role] || '/beneficiary/dashboard' : '/login'
+    homePath: user ? getRoleNavigatePath(user.role) : '/login',
+    roleHome: user ? (currentRole === 'beneficiary' ? '/beneficiary/dashboard' : getRoleNavigatePath(user.role)) : '/login'
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

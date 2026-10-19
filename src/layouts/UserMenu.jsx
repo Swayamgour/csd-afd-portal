@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { ROLE_LABELS } from '../permissions/roles.js';
-import { User, LogOut, Shield, ChevronDown, Settings } from 'lucide-react';
+import { ROLE_LABELS, ROLE_HOMES } from '../permissions/roles.js';
+import { User, LogOut, Shield, ChevronDown, Settings, LayoutDashboard } from 'lucide-react';
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
@@ -77,12 +77,36 @@ export default function UserMenu() {
           <div className="user-dropdown-header mb-1 pb-1 border-bottom">
             <p className="small font-bold mb-0">{user?.name}</p>
             <p className="small muted mb-0">{user?.email || user?.serviceNumber}</p>
-            <span className="badge-pill badge-primary badge-sm mt-1 inline-block">
-              {ROLE_LABELS[role]}
-            </span>
+            <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
+              <span className="badge-pill badge-primary badge-sm">
+                {ROLE_LABELS[role] || role}
+              </span>
+              {role === 'beneficiary' && (
+                <span
+                  className="badge-pill badge-sm"
+                  style={{
+                    background: (user?.status === 'Active' || user?.adminApproval === 'APPROVED' || user?.verificationStatus === 'APPROVED' || user?.verificationStatus === 'VERIFIED') ? '#dcfce7' : '#fef3c7',
+                    color: (user?.status === 'Active' || user?.adminApproval === 'APPROVED' || user?.verificationStatus === 'APPROVED' || user?.verificationStatus === 'VERIFIED') ? '#166534' : '#92400e',
+                    fontWeight: 600
+                  }}
+                >
+                  {(user?.status === 'Active' || user?.adminApproval === 'APPROVED' || user?.verificationStatus === 'APPROVED' || user?.verificationStatus === 'VERIFIED') ? '✓ Approved' : '⏳ Approval Pending'}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="user-dropdown-links">
+            <Link
+              to={role === 'beneficiary' ? '/beneficiary/dashboard' : (ROLE_HOMES[role] || '/admin/dashboard')}
+              className="user-dropdown-item row align-center gap-1 small"
+              onClick={() => setOpen(false)}
+              role="menuitem"
+            >
+              <LayoutDashboard size={15} />
+              <span>{role === 'beneficiary' ? 'Beneficiary Dashboard' : 'Control Dashboard'}</span>
+            </Link>
+
             <Link
               to={getProfileLink()}
               className="user-dropdown-item row align-center gap-1 small"

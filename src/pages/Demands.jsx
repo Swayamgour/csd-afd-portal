@@ -19,19 +19,25 @@ import {
   RefreshCw,
   Plus
 } from 'lucide-react';
-import { demandService } from '../services/demand.service.js';
-import { useAuth } from '../context/AuthContext.jsx';
-import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal.jsx';
+import { useGetDemandsQuery, useCancelDemandMutation } from '../features/demand/demandApi.js';
 
 export default function Demands() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [demands, setDemands] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('date-desc');
   const [searchBy, setSearchBy] = useState('all');
+
+  const {
+    data: demandsData,
+    isLoading: loading,
+    refetch,
+  } = useGetDemandsQuery({ q: searchTerm || undefined });
+
+  const [cancelDemand] = useCancelDemandMutation();
+
+  const demands = demandsData?.items || [];
 
   // Modal state for "Upload Payment Details" (Fig. 21 & 22)
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -40,44 +46,25 @@ export default function Demands() {
   // Status explanation toggle
   const [showStatusLegend, setShowStatusLegend] = useState(true);
 
-  const fetchDemands = async () => {
-    setLoading(true);
-    try {
-      const data = await demandService.getDemands({
-        role: 'beneficiary',
-        userId: user?.id,
-        search: searchTerm
-      });
-      setDemands(data);
-    } catch (err) {
-      console.error('Error fetching demands:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDemands();
-  }, [searchTerm]);
-
   const handleOpenPaymentModal = (demand) => {
     setSelectedDemandForPayment(demand);
     setPaymentModalOpen(true);
   };
 
-  const handlePaymentSubmitSuccess = async (paymentData) => {
-    if (selectedDemandForPayment) {
-      await demandService.updateDemandPayment(selectedDemandForPayment.id, paymentData);
-      setPaymentModalOpen(false);
-      setSelectedDemandForPayment(null);
-      await fetchDemands();
-    }
+  const handlePaymentSubmitSuccess = async () => {
+    setPaymentModalOpen(false);
+    setSelectedDemandForPayment(null);
+    refetch();
   };
 
   const handleCancelDemand = async (demandId) => {
     if (window.confirm(`Are you sure you want to cancel demand ${demandId}?`)) {
-      await demandService.cancelDemand(demandId);
-      await fetchDemands();
+      try {
+        await cancelDemand({ id: demandId, reason: 'Cancelled by beneficiary' }).unwrap();
+        refetch();
+      } catch (err) {
+        alert(err?.data?.message || 'Failed to cancel demand');
+      }
     }
   };
 

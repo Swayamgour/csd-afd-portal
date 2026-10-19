@@ -22,13 +22,26 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { DocumentUpload } from '../components/common/DocumentUpload.jsx';
 import { DemandConfirmationModal } from '../components/modals/DemandConfirmationModal.jsx';
 import { OnlinePaymentModal } from '../components/modals/OnlinePaymentModal.jsx';
-import { demandService } from '../services/demand.service.js';
-import { INDIAN_STATES, PAY_LEVELS, MOCK_DEALERS_LIST, MOCK_URCS_LIST } from '../data/mock/locations.mock.js';
+import { useCreateDemandMutation } from '../features/demand/demandApi.js';
+import { useCreatePaymentMutation, useVerifyPaymentMutation } from '../features/payment/paymentApi.js';
+import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
+import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery } from '../features/org/orgApi.js';
+import { INDIAN_STATES, PAY_LEVELS } from '../data/mock/locations.mock.js';
 
 export default function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  const { data: profileData } = useGetMyProfileQuery();
+  const [createDemandMutation, { isLoading: isCreatingDemand }] = useCreateDemandMutation();
+  const [createPaymentMutation, { isLoading: isCreatingPayment }] = useCreatePaymentMutation();
+  const [verifyPaymentMutation, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
+  const [uploadFileMutation] = useUploadFileMutation();
+
+  const { data: depotsList = [] } = useGetDepotsQuery();
+  const { data: dealersList = [] } = useGetDealersQuery();
+  const { data: urcsList = [] } = useGetUrcsQuery();
 
   // Load product selection from location state or sessionStorage
   const [productData, setProductData] = useState(() => {
@@ -42,72 +55,78 @@ export default function Checkout() {
 
   // Default fallback if directly visited
   const fallbackProduct = {
-    productId: 'maruti-brezza',
-    productName: 'MARUTI VITARA BREZZA VXI 1.5L 5MT (BS-VI)',
-    sku: '64224-53',
+    productId: '64224',
+    productName: 'Maruti Suzuki Alto K10 VXi',
+    sku: '64224',
     manufacturerCode: '7116',
-    productImage: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80',
-    selectedColor: 'GRANITE GREY',
+    productImage: '/assets/maruti1.png',
+    selectedColor: 'Granite Grey',
     selectedZone: 'DELHI NCR (DELHI GREATER NOIDA FARIDABAD GURGAON)',
-    selectedDealer: 'AAA VEHICLEADES PVT. LTD. MUNDKA (PILLAR)',
-    selectedDepot: 'DELHI',
-    selectedUrc: '7 WING AF',
-    productPrice: 548917,
+    selectedDealer: 'AAA VEHICLEADES PVT. LTD. MUNDKA',
+    selectedDepot: 'DELHI CSD DEPOT',
+    selectedUrc: '7 WING AF CANTEEN',
+    productPrice: 398500,
     quantity: 1,
     taxClass: 'tax-class-8'
   };
 
   const product = productData || fallbackProduct;
 
-  // Beneficiary Pre-filled Details (Fig. 14 - Read Only)
+  const prof = profileData || {};
+  const userAccount = prof.userId || user || {};
+
+  // Beneficiary Pre-filled Details (From Real Database Profile)
   const beneficiary = {
     priceZone: product.selectedZone,
     depot: product.selectedDepot,
     urc: product.selectedUrc,
-    email: user?.email || 'rajesh.kumar@gov.in',
-    username: user?.username || 'JC-765432X',
-    name: user?.name || 'Subedar Major Rajesh Kumar',
-    groceryCardNumber: user?.groceryCardNumber || 'abcd123456789000000',
-    chipNumber: user?.chipNumber || '1111112222333444',
-    phone: user?.phone || '+91 98765 43210',
-    employmentStatus: user?.employmentStatus || 'Servicemen',
-    organization: user?.organization || 'Army',
-    dateOfBirth: user?.dateOfBirth || '27/11/1992',
-    dateOfEnrollment: user?.dateOfEnrollment || '23/11/2015',
-    dateOfRetirement: user?.dateOfRetirement || '25/11/2027',
-    entitlementCategory: user?.entitlementCategory || 'Officers (Pay Level 10-18)',
-    ppoNumber: user?.ppoNumber || 'PPO/DIS/ARM-88912',
-    panNumber: user?.panNumber || 'BLBPPT151N'
+    email: userAccount.email || 'beneficiary@gov.in',
+    username: prof.serviceNumber || userAccount.username || 'ARMY-SVC',
+    name: prof.name || userAccount.name || 'CSD Beneficiary',
+    groceryCardNumber: prof.cardId || 'CSD-CARD-DEF',
+    chipNumber: prof.chipNumber || '1111112222333444',
+    phone: userAccount.mobile || prof.mobile || '+91 98765 00000',
+    employmentStatus: prof.employmentStatus || 'SERVING',
+    organization: prof.organization || 'Indian Armed Forces',
+    dateOfBirth: prof.dob ? new Date(prof.dob).toLocaleDateString('en-IN') : '27/11/1992',
+    dateOfEnrollment: prof.dateOfEnrollment ? new Date(prof.dateOfEnrollment).toLocaleDateString('en-IN') : '23/11/2015',
+    dateOfRetirement: prof.dateOfRetirement ? new Date(prof.dateOfRetirement).toLocaleDateString('en-IN') : '25/11/2027',
+    entitlementCategory: prof.entitlement || 'AFD-I & AFD-II Standard',
+    ppoNumber: prof.ppo || 'N/A',
+    panNumber: prof.pan || 'NOTSET'
   };
 
-  // Financial Calculations (Fig. 12 & 15)
-  // Subtotal: ₹548,917 | Additional Cost (14%): ₹76,848 | Cess (17%): ₹93,316 | Incidental (0.5%): ₹2,745 | Net: ₹721,826
-  const subtotal = product.productPrice || 548917;
-  const additionalCost = Math.round(subtotal * 0.14);
-  const cess = Math.round(subtotal * 0.17);
-  const incidentalCharges = Math.round(subtotal * 0.005);
-  const netPrice = subtotal + additionalCost + cess + incidentalCharges; // 721,826
+  // Financial Calculations
+  const isCsdRateList = Boolean(product.basicPrice || product.priceToCustomer);
+  const subtotal = product.basicPrice || product.productPrice || 398500;
+  const discountVal = (product.csdDiscountAmount || 0) + (product.marketScheme || 0);
+  const csdBasic = product.csdBasicWithDiscount || (subtotal - discountVal);
+  const additionalCost = isCsdRateList ? (product.cgstAmount || 0) : Math.round(subtotal * 0.14);
+  const cess = isCsdRateList ? (product.sgstAmount || 0) : Math.round(subtotal * 0.17);
+  const incidentalCharges = isCsdRateList ? (product.csdProfitAmount || 0) : Math.round(subtotal * 0.005);
+  const tcsVal = product.tcsAmount || 0;
+  const netPrice = product.priceToCustomer || (csdBasic + additionalCost + cess + incidentalCharges + tcsVal);
 
-  // Form State: Yet to be filled section (Fig. 15)
-  const [prevPurchase, setPrevPurchase] = useState('No'); // Yes / No
+  // Form State: Yet to be filled section
+  const [prevPurchase, setPrevPurchase] = useState('No');
   const [prevPurchaseDate, setPrevPurchaseDate] = useState('');
-  const [payLevel, setPayLevel] = useState('3A');
-  const [addressLine, setAddressLine] = useState('');
-  const [townCity, setTownCity] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [billingState, setBillingState] = useState('Delhi');
+  const [payLevel, setPayLevel] = useState(prof.payLevel || '3A');
+  const [addressLine, setAddressLine] = useState(prof.address?.line1 || '');
+  const [townCity, setTownCity] = useState(prof.address?.city || '');
+  const [pincode, setPincode] = useState(prof.address?.pincode || '');
+  const [billingState, setBillingState] = useState(prof.address?.state || 'Delhi');
   const [country] = useState('India');
 
   // File Upload states
   const [canteenCardFile, setCanteenCardFile] = useState(null);
   const [panCopyFile, setPanCopyFile] = useState(null);
   const [availabilityCertFile, setAvailabilityCertFile] = useState(null);
-  const [dealerPriceInput, setDealerPriceInput] = useState(netPrice.toString()); // prefilled to match or editable
+  const [dealerPriceInput, setDealerPriceInput] = useState(netPrice.toString());
   const [ppoDocFile, setPpoDocFile] = useState(null);
   const [pensionSlipFile, setPensionSlipFile] = useState(null);
 
-  // Loan Section (Fig. 21)
-  const [hasLoan, setHasLoan] = useState('No'); // Yes / No
+  // Loan Section
+  const [hasLoan, setHasLoan] = useState('No');
   const [loanAmount, setLoanAmount] = useState('');
   const [loanSanctionFile, setLoanSanctionFile] = useState(null);
 
@@ -125,11 +144,15 @@ export default function Checkout() {
   const enteredDealerPrice = Number(dealerPriceInput) || 0;
   const isPriceMatched = enteredDealerPrice === netPrice;
 
-  // Matched dealer object for address display
-  const dealerInfo = MOCK_DEALERS_LIST.find((d) => d.name === product.selectedDealer) || {
-    name: 'AAA VEHICLEADES PVT. LTD. MUNDKA (PILLAR)',
+  // Matched dealer object for address display from live org API
+  const dealerInfo = dealersList.find((d) => d.name === product.selectedDealer || d._id === product.dealerId) || dealersList[0] || {
+    name: product.selectedDealer || 'AAA VEHICLEADES PVT. LTD. MUNDKA',
     address: 'DELHI ROHTAK ROAD NEAR HIRAN KUDNA MODE METRO PILLAR NO 616 DELHI 110041'
   };
+
+  const matchedDepot = depotsList.find((d) => d.name === product.selectedDepot || d._id === product.depotId) || depotsList[0];
+  const matchedDealer = dealersList.find((d) => d.name === product.selectedDealer || d._id === product.dealerId) || dealersList[0];
+  const matchedUrc = urcsList.find((u) => u.name === product.selectedUrc || u._id === product.urcId) || urcsList[0];
 
   const handleMatchPrice = () => {
     setDealerPriceInput(netPrice.toString());
@@ -210,48 +233,91 @@ export default function Checkout() {
   const finalizeDemandCreation = async (methodName, initialStatus, paymentDetails = null) => {
     setSubmitting(true);
     try {
+      let sanctionLetterUrl = '';
+      if (loanSanctionFile) {
+        try {
+          const fd = new FormData();
+          fd.append('files', loanSanctionFile);
+          const upRes = await uploadFileMutation(fd).unwrap();
+          const upItem = Array.isArray(upRes) ? upRes[0] : upRes?.data?.[0];
+          sanctionLetterUrl = upItem?.url || '';
+        } catch (e) {
+          console.error('Sanction letter upload failed:', e);
+        }
+      }
+
       const demandPayload = {
-        beneficiaryId: user?.id || 'USR-BEN-001',
-        beneficiaryName: beneficiary.name,
-        serviceNumber: beneficiary.username,
-        productId: product.productId,
-        productName: product.productName,
-        sku: product.sku,
-        color: product.selectedColor,
-        priceZone: product.selectedZone,
-        depot: product.selectedDepot,
-        urc: product.selectedUrc,
-        dealerName: dealerInfo.name,
-        dealerAddress: dealerInfo.address,
-        csdPrice: netPrice,
+        productId: product.productId || '64224',
+        quantity: 1,
+        depotId: matchedDepot?._id,
+        dealerId: matchedDealer?._id,
+        urcId: matchedUrc?._id,
+        selectedColor: product.selectedColor || 'Standard',
+        loan: {
+          isLoan: hasLoan === 'Yes',
+          loanAmount: hasLoan === 'Yes' ? Number(loanAmount) : 0,
+          bankName: hasLoan === 'Yes' ? loanBank : '',
+          sanctionLetterUrl,
+        },
+        remarks: remarks || 'AFD Demand generated via Online Portal',
+      };
+
+      const result = await createDemandMutation(demandPayload).unwrap();
+      const createdDemand = result?.data || result;
+
+      // Real payment creation and verification
+      if (methodName.includes('Online')) {
+        const payRes = await createPaymentMutation({
+          demandId: createdDemand._id,
+          amount: createdDemand.totalPrice || netPrice,
+          method: 'GATEWAY',
+          gateway: 'RAZORPAY',
+        }).unwrap();
+        const payData = payRes?.data || payRes;
+        await verifyPaymentMutation({
+          paymentId: payData._id,
+          demandId: createdDemand._id,
+          gatewayPaymentId: paymentDetails?.transactionId || 'pay_' + Date.now(),
+        }).unwrap();
+      } else {
+        const payRes = await createPaymentMutation({
+          demandId: createdDemand._id,
+          amount: createdDemand.totalPrice || netPrice,
+          method: 'DIRECT_TRANSFER',
+          utr: 'UTR' + Date.now(),
+          bankName: 'State Bank of India',
+        }).unwrap();
+        const payData = payRes?.data || payRes;
+        await verifyPaymentMutation({
+          paymentId: payData._id,
+          demandId: createdDemand._id,
+        }).unwrap();
+      }
+
+      setSubmitting(false);
+
+      const finalDemandData = {
+        ...createdDemand,
+        id: createdDemand.demandNo || createdDemand._id,
+        demandNo: createdDemand.demandNo || createdDemand._id?.slice(-8).toUpperCase(),
+        csdPrice: createdDemand.totalPrice || netPrice,
         subtotal,
         additionalCost,
         cess,
         incidentalCharges,
+        productName: product.productName,
+        dealerName: dealerInfo.name,
+        dealerAddress: dealerInfo.address,
         paymentMethod: methodName,
-        status: initialStatus, // 'On hold' (direct transfer) or 'Processing' (online)
-        paymentStatus: initialStatus === 'Processing' ? 'Verified' : 'Pending',
-        hasLoan: hasLoan === 'Yes',
-        loanAmount: hasLoan === 'Yes' ? Number(loanAmount) : 0,
-        registrationAddress: `${addressLine}, ${townCity}, ${billingState} - ${pincode}`,
-        payLevel,
-        documents: [
-          { name: canteenCardFile?.name || 'Canteen_Card.pdf', size: '1.2 MB', status: 'Uploaded' },
-          { name: panCopyFile?.name || 'PAN_Card_Copy.pdf', size: '750 KB', status: 'Uploaded' },
-          { name: availabilityCertFile?.name || 'Dealer_Availability_Cert.pdf', size: '1.4 MB', status: 'Uploaded' }
-        ],
-        remarks
+        status: 'PAID',
+        paymentStatus: 'Verified',
       };
 
-      const result = await demandService.createDemand(demandPayload);
-      setSubmitting(false);
-
-      // Save latest demand for success page
-      sessionStorage.setItem('csd_last_created_demand', JSON.stringify({ ...result, ...demandPayload }));
-      navigate('/checkout/success', { state: { demand: { ...result, ...demandPayload } } });
+      sessionStorage.setItem('csd_last_created_demand', JSON.stringify(finalDemandData));
+      navigate('/checkout/success', { state: { demand: finalDemandData } });
     } catch (err) {
       setSubmitting(false);
-      alert(err.message || 'Failed to submit demand.');
+      alert(err?.data?.message || err?.message || 'Failed to submit demand.');
     }
   };
 
@@ -924,25 +990,66 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Breakdown Table matching Fig. 12 */}
+              {/* Breakdown Table matching Fig. 12 & Official CSD Rate Sheet */}
               <table className="demand-summary-calc-table">
                 <tbody>
-                  <tr>
-                    <td>Subtotal</td>
-                    <td>₹ {subtotal.toLocaleString('en-IN')}</td>
-                  </tr>
-                  <tr>
-                    <td>Additional Cost (14%)</td>
-                    <td>₹ {additionalCost.toLocaleString('en-IN')}</td>
-                  </tr>
-                  <tr>
-                    <td>Cess (17%)</td>
-                    <td>₹ {cess.toLocaleString('en-IN')}</td>
-                  </tr>
-                  <tr>
-                    <td>Incidental Charges (0.5%)</td>
-                    <td>₹ {incidentalCharges.toLocaleString('en-IN')}</td>
-                  </tr>
+                  {isCsdRateList ? (
+                    <>
+                      <tr>
+                        <td>Basic Price (incl. Dealer Margin)</td>
+                        <td>₹ {subtotal.toLocaleString('en-IN')}</td>
+                      </tr>
+                      {discountVal > 0 && (
+                        <tr style={{ color: '#059669' }}>
+                          <td>CSD Discount & Market Scheme</td>
+                          <td>- ₹ {discountVal.toLocaleString('en-IN')}</td>
+                        </tr>
+                      )}
+                      <tr>
+                        <td>CSD Basic with Discount</td>
+                        <td style={{ fontWeight: 600 }}>₹ {csdBasic.toLocaleString('en-IN')}</td>
+                      </tr>
+                      <tr>
+                        <td>CGST Concession</td>
+                        <td>₹ {additionalCost.toLocaleString('en-IN')}</td>
+                      </tr>
+                      <tr>
+                        <td>SGST Concession</td>
+                        <td>₹ {cess.toLocaleString('en-IN')}</td>
+                      </tr>
+                      {incidentalCharges > 0 && (
+                        <tr>
+                          <td>CSD Profit @ 0.50%</td>
+                          <td>₹ {incidentalCharges.toLocaleString('en-IN')}</td>
+                        </tr>
+                      )}
+                      {tcsVal > 0 && (
+                        <tr>
+                          <td>TCS @ 1% (Above 10 Lacs)</td>
+                          <td>₹ {tcsVal.toLocaleString('en-IN')}</td>
+                        </tr>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <tr>
+                        <td>Subtotal</td>
+                        <td>₹ {subtotal.toLocaleString('en-IN')}</td>
+                      </tr>
+                      <tr>
+                        <td>Additional Cost (14%)</td>
+                        <td>₹ {additionalCost.toLocaleString('en-IN')}</td>
+                      </tr>
+                      <tr>
+                        <td>Cess (17%)</td>
+                        <td>₹ {cess.toLocaleString('en-IN')}</td>
+                      </tr>
+                      <tr>
+                        <td>Incidental Charges (0.5%)</td>
+                        <td>₹ {incidentalCharges.toLocaleString('en-IN')}</td>
+                      </tr>
+                    </>
+                  )}
                   <tr className="demand-summary-net-row">
                     <td>
                       <div>Net Price to be Paid</div>

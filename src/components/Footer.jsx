@@ -9,11 +9,14 @@ const L = ({ title, x }) => (
   </div>
 )
 export default function Footer() {
+
+  const data = new Date();
+
   return (
     <footer className="ftr">
       <div className="ftr-grid">
         <div className="ftr-about">
-          <img src='/assets/logo.png' width='300' style={{ borderRadius: '8px' }} />
+          <img src='https://afd.csdindia.gov.in/wp-content/uploads/media/2021/08/logo-1.png' width='150' style={{ borderRadius: '8px' }} />
 
           {/* <div className="brand light"><span className="brand-mark" aria-hidden>CSD</span><span className="brand-txt"><strong>AFD Online</strong><small>Canteen Stores Department</small></span></div> */}
           <p>Cars, bikes and home appliances for the Armed Forces family, at concessional prices.</p>
@@ -28,9 +31,9 @@ export default function Footer() {
 
       <div>
 
-        <p style={{ fontSize: '0.875rem' , textAlign: 'center' }}>Number of visitors: 1,234,567</p>
+        <p style={{ fontSize: '0.875rem', textAlign: 'center' }}>Number of visitors: 1,234,567</p>
       </div>
-      <p className="copy">Copyright © 2021 Canteen Stores Departments. All rights reserved. <Link to="/info/privacy">Privacy Policy</Link> | <Link to="/info/disclaimer">Disclaimer</Link>.</p>
+      <p className="copy">Copyright © {data.getFullYear()} Canteen Stores Departments. All rights reserved. <Link to="/info/privacy">Privacy Policy</Link> | <Link to="/info/disclaimer">Disclaimer</Link>.</p>
     </footer>
   )
 }

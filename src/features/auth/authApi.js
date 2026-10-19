@@ -26,12 +26,21 @@ export const authApi = api.injectEndpoints({
       }),
     }),
 
+    verifyCredentials: builder.mutation({
+      query: (body) => ({
+        url: '/auth/verify-credentials',
+        method: 'POST',
+        body,
+      }),
+    }),
+
     login: builder.mutation({
       query: (body) => ({
         url: '/auth/login',
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Auth', 'Beneficiary', 'Dashboard'],
     }),
 
     loginOtp: builder.mutation({
@@ -40,6 +49,7 @@ export const authApi = api.injectEndpoints({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Auth', 'Beneficiary', 'Dashboard'],
     }),
 
     getMe: builder.query({
@@ -47,13 +57,20 @@ export const authApi = api.injectEndpoints({
       providesTags: ['Auth'],
     }),
 
+    checkDuplicates: builder.mutation({
+      query: (body) => ({
+        url: '/auth/check-duplicates',
+        method: 'POST',
+        body,
+      }),
+    }),
+
     logout: builder.mutation({
       query: () => ({
         url: '/auth/logout',
         method: 'POST',
       }),
-
-      invalidatesTags: ['Auth'],
+      invalidatesTags: ['Auth', 'Beneficiary', 'Dashboard'],
     }),
   }),
 })
@@ -62,6 +79,8 @@ export const {
   useRegisterMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
+  useVerifyCredentialsMutation,
+  useCheckDuplicatesMutation,
   useLoginMutation,
   useLoginOtpMutation,
   useGetMeQuery,

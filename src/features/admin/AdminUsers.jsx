@@ -93,6 +93,27 @@ export const AdminUsers = () => {
     }
   };
 
+  const handleApproveBeneficiary = async (user) => {
+    try {
+      await userService.approveBeneficiaryUser(user.id, 'APPROVED', 'Approved by administrator');
+      showToast(`✓ Beneficiary "${user.name || user.username}" approved successfully. Demand generation is now enabled.`);
+      fetchUsers();
+    } catch (err) {
+      alert(err.message || 'Failed to approve beneficiary');
+    }
+  };
+
+  const handleRejectBeneficiary = async (user) => {
+    const reason = window.prompt('Please enter the reason for rejecting this beneficiary application:', 'Documentation incomplete or invalid canteen card') || 'Application rejected by administrator';
+    try {
+      await userService.approveBeneficiaryUser(user.id, 'REJECTED', reason);
+      showToast(`Beneficiary "${user.name || user.username}" status updated to REJECTED.`);
+      fetchUsers();
+    } catch (err) {
+      alert(err.message || 'Failed to reject beneficiary');
+    }
+  };
+
   // Filtering
   const filteredUsers = users.filter((u) => {
     const s = search.toLowerCase().trim();
@@ -119,7 +140,7 @@ export const AdminUsers = () => {
   // KPI calculations
   const totalCount = users.length;
   const activeCount = users.filter((u) => u.status === 'Active').length;
-  const pendingCount = users.filter((u) => u.status === 'Pending').length;
+  const pendingCount = users.filter((u) => u.status === 'Pending' || u.adminApproval === 'PENDING').length;
   const suspendedCount = users.filter((u) => u.status === 'Suspended' || u.status === 'Denied').length;
 
   const columns = [
@@ -193,25 +214,57 @@ export const AdminUsers = () => {
       }
     },
     {
-      header: 'Contact & Mobile',
-      accessor: 'mobile',
+      header: 'Contact & Verification',
+      accessor: 'email',
       render: (u) => (
         <div>
-          <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>{u.mobile || u.phone || 'N/A'}</div>
-          {u.mobileVerified ? (
-            <span className="micro" style={{ color: '#16a34a', fontWeight: 600 }}>
-              ✓ Verified
-            </span>
-          ) : (
-            <span className="micro muted">Unverified</span>
-          )}
+          <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>{u.email || 'N/A'}</div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{u.mobile || u.phone || 'No phone'}</div>
+          <div style={{ display: 'flex', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
+            {u.isEmailVerified ? (
+              <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', fontWeight: 600 }}>
+                ✓ Email Verified (OTP)
+              </span>
+            ) : (
+              <span className="badge" style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.7rem' }}>
+                Email Unverified
+              </span>
+            )}
+          </div>
         </div>
       )
     },
     {
-      header: 'Account Status',
+      header: 'Account & Approval',
       accessor: 'status',
-      render: (u) => <StatusBadge status={u.status} />
+      render: (u) => {
+        const isApproved = u.status === 'Active' || u.adminApproval === 'APPROVED' || u.verificationStatus === 'APPROVED' || u.verificationStatus === 'VERIFIED';
+        const isRejected = u.status === 'Rejected' || u.adminApproval === 'REJECTED' || u.verificationStatus === 'REJECTED';
+        const isPending = !isApproved && !isRejected;
+
+        return (
+          <div>
+            <StatusBadge status={u.status} />
+            {u.role === 'BENEFICIARY' && (
+              <div style={{ marginTop: '4px' }}>
+                <span
+                  className="badge"
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.02em',
+                    background: isApproved ? '#dcfce7' : isRejected ? '#fee2e2' : '#fef3c7',
+                    color: isApproved ? '#166534' : isRejected ? '#991b1b' : '#92400e',
+                    border: `1px solid ${isApproved ? '#bbf7d0' : isRejected ? '#fecaca' : '#fde68a'}`
+                  }}
+                >
+                  {isApproved ? 'APPROVED' : isRejected ? 'REJECTED' : 'PENDING'}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      }
     },
     {
       header: 'Audit & Edits',
@@ -227,7 +280,49 @@ export const AdminUsers = () => {
       header: 'Actions',
       accessor: 'actions',
       render: (u) => (
-        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* One-click Beneficiary Approval Buttons */}
+          {u.role === 'BENEFICIARY' && (u.status === 'Pending' || u.adminApproval === 'PENDING' || u.verificationStatus === 'PENDING') && (
+            <button
+              type="button"
+              className="btn sm"
+              style={{
+                background: '#16a34a',
+                color: '#fff',
+                fontSize: '0.75rem',
+                padding: '0.2rem 0.55rem',
+                borderRadius: '6px',
+                border: 'none',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+              title="Approve Beneficiary Registration & Unlock Demands"
+              onClick={() => handleApproveBeneficiary(u)}
+            >
+              Approve
+            </button>
+          )}
+
+          {u.role === 'BENEFICIARY' && (u.status === 'Pending' || u.adminApproval === 'PENDING' || u.verificationStatus === 'PENDING') && (
+            <button
+              type="button"
+              className="btn sm out"
+              style={{
+                borderColor: '#dc2626',
+                color: '#dc2626',
+                fontSize: '0.75rem',
+                padding: '0.2rem 0.55rem',
+                borderRadius: '6px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+              title="Reject Beneficiary Registration"
+              onClick={() => handleRejectBeneficiary(u)}
+            >
+              Reject
+            </button>
+          )}
+
           <button
             type="button"
             className="header-icon-btn circle"
@@ -394,6 +489,8 @@ export const AdminUsers = () => {
         isOpen={!!selectedUserForDetails}
         user={selectedUserForDetails}
         onClose={() => setSelectedUserForDetails(null)}
+        onApprove={(u) => handleApproveBeneficiary(u)}
+        onReject={(u) => setSelectedUserForStatus(u)}
         onEdit={(u) => setSelectedUserForEdit(u)}
         onChangeStatus={(u) => setSelectedUserForStatus(u)}
       />

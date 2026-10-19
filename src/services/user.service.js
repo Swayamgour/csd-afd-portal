@@ -1,69 +1,59 @@
 import { apiClient } from './apiClient.js';
-import { MOCK_USERS } from '../data/mock/users.mock.js';
 
-// Load from localStorage or mock users for full persistent state across reloads
+// Load from localStorage for full persistent state across reloads (ONLY REAL REGISTERED USERS)
 const STORAGE_KEY = 'csd_portal_users_registry_v2';
+
+// Filter helper to purge legacy mock users from storage
+export const isMockUser = (u) => {
+  if (!u) return true;
+  const id = String(u.id || u._id || '');
+  const username = String(u.username || '').toUpperCase();
+  return (
+    id.startsWith('USR-BEN-001') ||
+    id.startsWith('USR-CSD-') ||
+    id.startsWith('USR-DEP-') ||
+    id.startsWith('USR-URC-') ||
+    id.startsWith('USR-OEM-') ||
+    id.startsWith('USR-DLR-') ||
+    id.startsWith('USR-HD-') ||
+    id.startsWith('USR-ADM-') ||
+    username === 'JC-765432X' ||
+    username === 'CSD_HO_089' ||
+    username === 'DEPOT_MGR_DEL' ||
+    username === 'URC_OFF_CANTT' ||
+    username === 'OEM_TATA_AFD' ||
+    username === 'DLR_PRATHAM_DEL' ||
+    username === 'HD_AGENT_104' ||
+    username === 'HD_SUP_002' ||
+    username === 'SYS_ADMIN_CSD'
+  );
+};
 
 const initializeUsersStore = () => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        // Strip out any dummy mock users, keep ONLY real registered users
+        const realUsers = parsed.filter((u) => !isMockUser(u));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(realUsers));
+        return realUsers;
+      }
     }
   } catch (e) {
     console.warn('[userService] LocalStorage read failed:', e);
   }
 
-  // Augment initial mock users with WordPress migrated schema fields
-  return MOCK_USERS.map((u) => {
-    const parts = (u.name || '').split(' ');
-    const firstName = parts[0] || '';
-    const lastName = parts.slice(1).join(' ') || '';
-    return {
-      ...u,
-      username: u.username || `usr_${u.id.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
-      firstName,
-      lastName,
-      website: u.website || '',
-      mobile: u.phone || u.mobile || '+91 98765 00000',
-      passwordHash: u.passwordHash || '$2a$10$e8wVdI6y2mN4qKkK5bA1zO1sZ0xY9wVdI6y2mN4qKkK5bA1zO1sZ0',
-      otherRoles: u.otherRoles || [],
-      sendNotification: u.sendNotification !== undefined ? u.sendNotification : true,
-      createdByAdmin: u.createdByAdmin !== undefined ? u.createdByAdmin : true,
-      defaultPasswordChanged: u.defaultPasswordChanged !== undefined ? u.defaultPasswordChanged : true,
-      reasonOfDenial: u.reasonOfDenial || '',
-      status: u.status || 'Active',
-      statusChangeCount: u.statusChangeCount || 0,
-      userEditedCount: u.userEditedCount || 0,
-      lastDemand4Wheeler: u.eligibility?.lastFourWheelerPurchase || u.lastDemand4Wheeler || null,
-      lastDemand2Wheeler: u.lastDemand2Wheeler || null,
-      mobileVerified: u.mobileVerified !== undefined ? u.mobileVerified : true,
-      websiteRating: u.websiteRating || 5,
-      feedbackComment: u.feedbackComment || '',
-      createdBy: u.createdBy || 'System Administrator',
-      createdAt: u.createdAt || '2024-01-15T09:00:00.000Z',
-      updatedBy: u.updatedBy || 'System Administrator',
-      updatedAt: u.updatedAt || '2024-01-15T09:00:00.000Z',
-      lastLoginAt: u.lastLoginAt || new Date().toISOString(),
-      lastLoginIP: u.lastLoginIP || '10.24.8.102',
-      statusHistory: u.statusHistory || [
-        {
-          previousStatus: 'None',
-          newStatus: u.status || 'Active',
-          reason: 'Initial account provisioning in CSD AFD Master Directory',
-          changedBy: 'System Administrator',
-          changedAt: u.createdAt || '2024-01-15T09:00:00.000Z'
-        }
-      ]
-    };
-  });
+  // NO DUMMY DATA: Start completely clean with empty array
+  return [];
 };
 
 let usersStore = initializeUsersStore();
 
 const persistStore = () => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(usersStore));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(usersStore.filter((u) => !isMockUser(u))));
   } catch (e) {
     console.warn('[userService] LocalStorage save failed:', e);
   }
@@ -130,32 +120,125 @@ export const calculatePasswordScore = (password = '') => {
 
 export const userService = {
   /**
-   * Check if username already exists
+   * Comprehensive duplicate check across local storage and backend MongoDB
    */
-  async checkUsernameExists(username, excludeId = null) {
-    if (!username) return false;
-    const clean = username.trim().toLowerCase();
-    return usersStore.some(
-      (u) => u.username && u.username.toLowerCase() === clean && u.id !== excludeId
-    );
-  },
+  async checkDuplicates({ username, email, mobile, cardId, chipNumber, pan }) {
+    const conflicts = {};
 
-  /**
-   * Check if email already exists
-   */
-  async checkEmailExists(email, excludeId = null) {
-    if (!email) return false;
-    const clean = email.trim().toLowerCase();
-    return usersStore.some(
-      (u) => u.email && u.email.toLowerCase() === clean && u.id !== excludeId
-    );
+    // 1. Check local store
+    if (username) {
+      const uClean = username.trim().toLowerCase();
+      if (usersStore.some((u) => u.username && u.username.toLowerCase() === uClean)) {
+        conflicts.username = 'This username is already registered. Please choose another username.';
+      }
+    }
+    if (email) {
+      const eClean = email.trim().toLowerCase();
+      if (usersStore.some((u) => u.email && u.email.toLowerCase() === eClean)) {
+        conflicts.email = 'This email address is already registered. Please sign in or use another email.';
+      }
+    }
+    if (cardId) {
+      const cClean = cardId.trim().toUpperCase();
+      if (usersStore.some((u) => (u.cardId && u.cardId.toUpperCase() === cClean) || (u.serviceNumber && u.serviceNumber.toUpperCase() === cClean))) {
+        conflicts.cardId = 'This Grocery Card ID is already registered in the CSD AFD portal.';
+      }
+    }
+    if (pan) {
+      const pClean = pan.trim().toUpperCase();
+      if (usersStore.some((u) => u.pan && u.pan.toUpperCase() === pClean)) {
+        conflicts.pan = 'This PAN card number is already registered.';
+      }
+    }
+    if (mobile) {
+      const mClean = mobile.trim();
+      if (usersStore.some((u) => u.mobile && u.mobile === mClean)) {
+        conflicts.mobile = 'This mobile number is already registered.';
+      }
+    }
+
+    // 2. Check real backend API
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/check-duplicates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, mobile, cardId, chipNumber, pan })
+      });
+      if (res.ok) {
+        const body = await res.json();
+        const serverConflicts = body.data?.conflicts || {};
+        Object.assign(conflicts, serverConflicts);
+      }
+    } catch (e) {
+      // Backend offline, local check already performed
+    }
+
+    return {
+      available: Object.keys(conflicts).length === 0,
+      conflicts
+    };
   },
 
   /**
    * GET /api/users
    */
   async getUsers(filter = {}) {
-    let list = [...usersStore];
+    let list = [];
+
+    // 1. Fetch real users directly from backend MongoDB API
+    try {
+      const token = localStorage.getItem('csd_auth_token');
+      const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/users?limit=200`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (apiRes.ok) {
+        const json = await apiRes.json();
+        const serverUsers = json.data?.items || json.data || [];
+        if (Array.isArray(serverUsers)) {
+          const serverMapped = serverUsers.map((su) => {
+            const roleNorm = (su.role || 'beneficiary').toLowerCase();
+            const isApproved = su.verificationStatus === 'VERIFIED' || su.verificationStatus === 'APPROVED';
+            return {
+              id: String(su._id || su.id),
+              _id: String(su._id || su.id),
+              username: su.username || su.email,
+              name: su.name,
+              email: su.email,
+              mobile: su.mobile,
+              role: roleNorm,
+              status: su.status === 'ACTIVE' ? (isApproved ? 'Active' : (roleNorm === 'beneficiary' ? 'Pending' : 'Active')) : 'Suspended',
+              verificationStatus: su.verificationStatus || (roleNorm === 'beneficiary' ? 'PENDING' : 'VERIFIED'),
+              adminApproval: isApproved ? 'APPROVED' : (su.verificationStatus === 'REJECTED' ? 'REJECTED' : 'PENDING'),
+              cardId: su.cardId || su.beneficiary?.cardId || '',
+              chipNumber: su.chipNumber || su.beneficiary?.chipNumber || '',
+              employmentStatus: su.employmentStatus || su.beneficiary?.employmentStatus || '',
+              organization: su.organization || su.beneficiary?.organization || 'Army',
+              isEmailVerified: su.isEmailVerified !== undefined ? su.isEmailVerified : true,
+              createdAt: su.createdAt || new Date().toISOString(),
+            };
+          });
+
+          // Also include any real users registered locally in this browser that haven't synced yet
+          const realLocalUsers = usersStore.filter(
+            (lu) =>
+              !isMockUser(lu) &&
+              !serverMapped.some(
+                (su) =>
+                  (su.username && su.username.toLowerCase() === lu.username?.toLowerCase()) ||
+                  (su.email && su.email.toLowerCase() === lu.email?.toLowerCase())
+              )
+          );
+
+          list = [...serverMapped, ...realLocalUsers];
+        }
+      }
+    } catch (e) {
+      console.warn('[userService] Backend fetch failed (using local real users only):', e);
+      list = usersStore.filter((lu) => !isMockUser(lu));
+    }
 
     if (filter.role && filter.role !== 'All' && filter.role !== 'ALL') {
       list = list.filter(
@@ -181,8 +264,7 @@ export const userService = {
       );
     }
 
-    const res = await apiClient.get('/users', list);
-    return res.data;
+    return list;
   },
 
   /**
@@ -442,6 +524,205 @@ export const userService = {
       return res.data;
     }
     throw new Error('User not found');
+  },
+
+  /**
+   * Register a new beneficiary after successful EmailJS OTP verification.
+   * Creates a user in PENDING status with isEmailVerified: true.
+   */
+  registerBeneficiaryUser(data) {
+    const existingIndex = usersStore.findIndex(
+      (u) =>
+        (u.username && u.username.toLowerCase() === (data.username || '').toLowerCase()) ||
+        (u.email && u.email.toLowerCase() === (data.email || '').toLowerCase()) ||
+        (data.cardId && u.cardId === data.cardId)
+    );
+
+    const newId = `USR-BEN-${Date.now().toString().slice(-6)}`;
+    const now = new Date().toISOString();
+
+    const beneficiaryRecord = {
+      id: newId,
+      name: data.name,
+      username: (data.username || '').toLowerCase().trim(),
+      email: (data.email || '').toLowerCase().trim(),
+      mobile: data.mobile || '',
+      password: data.password || '',
+      passwordHash: data.password || '',
+      role: 'beneficiary',
+      status: 'Pending', // PENDING ADMIN APPROVAL
+      verificationStatus: 'PENDING',
+      adminApproval: 'PENDING',
+      isEmailVerified: true,
+      emailVerified: true,
+      mobileVerified: !!data.mobile,
+      cardId: data.cardId,
+      chipNumber: data.chipNumber,
+      employmentStatus: data.employmentStatus,
+      organization: data.organization,
+      service: data.organization || 'Army',
+      rank: data.entitlement?.includes('Officer') ? 'Major' : 'Subedar',
+      serviceNumber: data.cardId || data.username,
+      depot: 'Delhi Regional CSD Depot',
+      urc: 'Delhi Cantt Central URC',
+      dob: data.dob,
+      dateOfEnrollment: data.dateOfEnrollment,
+      dateOfRetirement: data.dateOfRetirement,
+      entitlement: data.entitlement,
+      payLevel: data.payLevel,
+      pan: data.pan,
+      ppo: data.ppo || '',
+      category: data.category || 'OTHER',
+      createdAt: now,
+      updatedAt: now,
+      eligibility: {
+        fourWheelerEligible: false,
+        fourWheelerCap: 0,
+        twoWheelerEligible: false,
+        whiteGoodsEligible: false,
+        reason: 'Pending administrative approval'
+      },
+      statusHistory: [
+        {
+          previousStatus: 'None',
+          newStatus: 'Pending',
+          reason: 'Beneficiary registration with EmailJS email verification completed',
+          changedBy: 'System / EmailJS Verification',
+          changedAt: now
+        }
+      ]
+    };
+
+    if (existingIndex !== -1) {
+      usersStore[existingIndex] = { ...usersStore[existingIndex], ...beneficiaryRecord };
+    } else {
+      usersStore = [beneficiaryRecord, ...usersStore];
+    }
+
+    persistStore();
+    return beneficiaryRecord;
+  },
+
+  /**
+   * Admin Approval / Rejection for Beneficiaries
+   * Updates status to Active / Denied and verificationStatus to VERIFIED / REJECTED
+   */
+  async approveBeneficiaryUser(id, decision = 'APPROVED', remarks = 'Profile and entitlement verified by administrator') {
+    const isApproved = decision === 'APPROVED' || decision === 'VERIFIED';
+    const nextStatus = isApproved ? 'Active' : 'Denied';
+    const nextVerificationStatus = isApproved ? 'VERIFIED' : 'REJECTED';
+    const now = new Date().toISOString();
+
+    // 1. Trigger real backend API
+    let backendResult = null;
+    try {
+      const token = localStorage.getItem('csd_auth_token');
+      // If it looks like a Mongo ID (24 hex characters), call backend endpoints
+      const isMongoId = /^[0-9a-fA-F]{24}$/.test(id);
+      const endpoint = isApproved ? `/users/${id}/approve` : `/users/${id}/reject`;
+      
+      const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}${endpoint}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ remarks })
+      });
+      if (apiRes.ok) {
+        backendResult = await apiRes.json();
+      } else {
+        // Also try beneficiary verify route
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/beneficiaries/${id}/verify`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ status: isApproved ? 'APPROVED' : 'REJECTED', remarks })
+        });
+      }
+    } catch (apiErr) {
+      console.warn('Backend API approval notice (using local sync):', apiErr);
+    }
+
+    // 2. Synchronize local users store
+    let idx = usersStore.findIndex((u) => u.id === id || u._id === id);
+    if (idx === -1 && backendResult?.data?.user) {
+      const bu = backendResult.data.user;
+      idx = usersStore.findIndex((u) => (u.username && u.username === bu.username) || (u.email && u.email === bu.email));
+    }
+
+    let updated;
+    if (idx !== -1) {
+      const current = usersStore[idx];
+      updated = {
+        ...current,
+        status: nextStatus,
+        verificationStatus: nextVerificationStatus,
+        adminApproval: isApproved ? 'APPROVED' : 'REJECTED',
+        approvedAt: isApproved ? now : null,
+        approvedBy: 'Admin Officer K. S. Pillai',
+        remarks: remarks || (isApproved ? 'Approved by Admin' : 'Rejected by Admin'),
+        eligibility: isApproved ? {
+          fourWheelerEligible: true,
+          fourWheelerCap: (current.payLevel && current.payLevel.includes('Level 1')) || (current.entitlement && current.entitlement.includes('Officer')) ? 2000000 : 1000000,
+          twoWheelerEligible: true,
+          whiteGoodsEligible: true,
+          reason: 'Authorized Entitled Quota Active'
+        } : {
+          fourWheelerEligible: false,
+          fourWheelerCap: 0,
+          reason: remarks || 'Rejected by Admin'
+        },
+        statusHistory: [
+          {
+            previousStatus: current.status,
+            newStatus: nextStatus,
+            reason: remarks || (isApproved ? 'Approved by Admin' : 'Rejected by Admin'),
+            changedBy: 'Admin Officer K. S. Pillai',
+            changedAt: now
+          },
+          ...(current.statusHistory || [])
+        ],
+        updatedAt: now
+      };
+      usersStore[idx] = updated;
+    } else {
+      updated = {
+        id,
+        _id: id,
+        status: nextStatus,
+        verificationStatus: nextVerificationStatus,
+        adminApproval: isApproved ? 'APPROVED' : 'REJECTED',
+        approvedAt: isApproved ? now : null,
+        approvedBy: 'Admin Officer K. S. Pillai',
+        remarks: remarks || (isApproved ? 'Approved by Admin' : 'Rejected by Admin'),
+        updatedAt: now
+      };
+      usersStore = [updated, ...usersStore];
+    }
+    persistStore();
+
+    // Also update current active session if the approved user is the currently logged in beneficiary
+    try {
+      const activeUserRaw = localStorage.getItem('csd_auth_user');
+      if (activeUserRaw) {
+        const activeUser = JSON.parse(activeUserRaw);
+        if (
+          activeUser.id === id ||
+          activeUser._id === id ||
+          (updated.username && activeUser.username === updated.username) ||
+          (updated.email && activeUser.email === updated.email)
+        ) {
+          localStorage.setItem('csd_auth_user', JSON.stringify({ ...activeUser, ...updated }));
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    return backendResult?.data?.user || updated;
   },
 
   /**

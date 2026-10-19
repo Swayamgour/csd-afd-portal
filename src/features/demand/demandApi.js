@@ -1,0 +1,101 @@
+import { api } from '../../redux/api';
+
+export const demandApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    checkDemandEligibility: builder.mutation({
+      query: (body) => ({
+        url: '/demands/check-eligibility',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response) => response?.data || response,
+    }),
+
+    createDemand: builder.mutation({
+      query: (body) => ({
+        url: '/demands',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Demand', 'Dashboard', 'Product', 'Order'],
+    }),
+
+    getDemands: builder.query({
+      query: (params = {}) => ({
+        url: '/demands',
+        params,
+      }),
+      transformResponse: (response) => {
+        const items = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.data?.items)
+          ? response.data.items
+          : Array.isArray(response)
+          ? response
+          : [];
+        const meta = response?.meta || {};
+        return { items, meta };
+      },
+      providesTags: (result) =>
+        result?.items && Array.isArray(result.items)
+          ? [
+              ...result.items.map(({ _id, id }) => ({ type: 'Demand', id: _id || id })),
+              { type: 'Demand', id: 'LIST' },
+              'Demand',
+            ]
+          : [{ type: 'Demand', id: 'LIST' }, 'Demand'],
+    }),
+
+    getDemandById: builder.query({
+      query: (id) => `/demands/${id}`,
+      transformResponse: (response) => response?.data || response,
+      providesTags: (_result, _error, id) => [{ type: 'Demand', id }, 'Demand'],
+    }),
+
+    cancelDemand: builder.mutation({
+      query: ({ id, reason = 'Cancelled by beneficiary' }) => ({
+        url: `/demands/${id}/cancel`,
+        method: 'PATCH',
+        body: { reason },
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Demand', 'Dashboard', 'Order'],
+    }),
+
+    getOrders: builder.query({
+      query: (params = {}) => ({
+        url: '/orders',
+        params,
+      }),
+      transformResponse: (response) => {
+        const items = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.data?.items)
+          ? response.data.items
+          : Array.isArray(response)
+          ? response
+          : [];
+        const meta = response?.meta || {};
+        return { items, meta };
+      },
+      providesTags: ['Order'],
+    }),
+
+    getOrderById: builder.query({
+      query: (id) => `/orders/${id}`,
+      transformResponse: (response) => response?.data || response,
+      providesTags: (_result, _error, id) => [{ type: 'Order', id }, 'Order'],
+    }),
+  }),
+});
+
+export const {
+  useCheckDemandEligibilityMutation,
+  useCreateDemandMutation,
+  useGetDemandsQuery,
+  useGetDemandByIdQuery,
+  useCancelDemandMutation,
+  useGetOrdersQuery,
+  useGetOrderByIdQuery,
+} = demandApi;

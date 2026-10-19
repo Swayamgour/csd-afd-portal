@@ -6,12 +6,13 @@ import SearchBox from "../components/SearchBox.jsx";
 import Catalog from "../components/Catalog.jsx";
 import { products } from "../data/products.js";
 import { onImgError } from "../data/utils.js";
+import { useGetBannersQuery } from "../features/admin/adminApi.js";
 
 const img = (id) => products.find((p) => p.id === id);
 const cats = [
-  ["Automobiles", "Cars", "/products?cat=car", "car", "c5",'/assets/maruti1.png' , Car, products.filter((p) => p.category === "car").length],
-  ["Automobiles", "Bikes", "/products?cat=bike", "bike", "b4",'/assets/bullet1.png' , Bike, products.filter((p) => p.category === "bike").length],
-  ["Home & Living", "Appliances", "/products?cat=white-goods", "app", "w6",'/assets/white_goods1.png' , Refrigerator, products.filter((p) => p.category === "white-goods").length],
+  ["Automobiles", "Cars", "/products?cat=car", "car", "c5", '/assets/maruti1.png', Car, products.filter((p) => p.category === "car").length],
+  ["Automobiles", "Bikes", "/products?cat=bike", "bike", "b4", '/assets/bullet1.png', Bike, products.filter((p) => p.category === "bike").length],
+  ["Home & Living", "Appliances", "/products?cat=white-goods", "app", "w6", '/assets/white_goods1.png', Refrigerator, products.filter((p) => p.category === "white-goods").length],
 ];
 const perks = [
   [BadgePercent, "Concessional prices", "Special CSD rates for the Armed Forces family"],
@@ -30,21 +31,52 @@ const notices = [
   { to: "/info/contact", icon: ShieldAlert, tag: "Advisory", alert: true, title: "Be vigilant: services on this portal are free", text: "If anyone asks for money for registration or supply order release, report it immediately." },
 ];
 
+const DEFAULT_HERO_BANNERS = [
+  { imageUrl: "/assets/home_page.png", name: "CSD AFD Slide 1" },
+  { imageUrl: "/assets/home_page.png", name: "CSD AFD Slide 2" },
+  { imageUrl: "/assets/home_page.png", name: "CSD AFD Slide 3" },
+];
+
 export const Shop = ({ to = "/products", children = "Shop now" }) => (
   <Link to={to} className="shop">{children}<span><ArrowUpRight size={18} aria-hidden /></span></Link>
 );
 
 export default function Home() {
   const [cat, setCat] = useState("car");
+  const { data: dynamicHeroBanners } = useGetBannersQuery({ position: 'home_hero' });
+  const heroBanners = (dynamicHeroBanners && dynamicHeroBanners.length > 0)
+    ? dynamicHeroBanners
+    : DEFAULT_HERO_BANNERS;
+
   return (
     <div className="home">
 
       <section className="hero" aria-labelledby="h1">
         {/* Background Image Slider */}
         <div className="hero-slider">
-          <img src="/assets/home_page.png" alt="" />
-          <img src="/assets/home_page.png" alt="" />
-          <img src="/assets/home_page.png" alt="" />
+          {heroBanners.map((slide, idx) => {
+            const isSingle = heroBanners.length === 1;
+            const duration = Math.max(heroBanners.length * 5, 10);
+            const delay = idx * 5;
+            return (
+              <img
+                key={slide._id || slide.id || idx}
+                src={slide.imageUrl}
+                alt={slide.name || `Hero Banner ${idx + 1}`}
+                style={
+                  isSingle
+                    ? { opacity: 1, animation: 'none' }
+                    : {
+                        animationDuration: `${duration}s`,
+                        animationDelay: `${delay}s`,
+                      }
+                }
+                onError={(e) => {
+                  e.currentTarget.src = "/assets/home_page.png";
+                }}
+              />
+            );
+          })}
         </div>
 
         {/* Dark overlay */}
@@ -77,7 +109,7 @@ export default function Home() {
           <div className="sec-h"><h2 id="cats">Shop by category</h2></div>
 
           <ul className="grid3 cats">
-            {cats.map(([s, t, to, k, im , img], i) => (
+            {cats.map(([s, t, to, k, im, img], i) => (
               <li key={t} className={i === 2 ? "wide2" : ""}>
                 <Link className={`cat ${k}`} to={to}>
                   <small>{s}</small>

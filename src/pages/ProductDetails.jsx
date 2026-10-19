@@ -8,14 +8,14 @@ import {
 import { Stars } from "../components/ProductCard.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import { Loader, EmptyState, ErrorState } from "../components/States.jsx";
-import { fetchProduct, fetchProducts } from "../data/api.js";
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { COLOR_HEX } from "../data/art.js";
 import { FEATURES, STEPS } from "../data/details.js";
 import { CAT_LABEL, CAT_PLURAL, inr, priceText, priceFrom, rupees, onImgError } from "../data/utils.js";
-import { MOCK_PRICE_ZONES, MOCK_DEPOTS_LIST, MOCK_URCS_LIST, MOCK_DEALERS_LIST } from "../data/mock/locations.mock.js";
-import { eligibilityService } from "../services/eligibility.service.js";
+import { MOCK_PRICE_ZONES } from "../data/mock/locations.mock.js";
+import { useGetProductByIdQuery, useGetProductsQuery, useCheckProductEligibilityMutation } from "../features/catalog/productApi.js";
+import { useGetDealersQuery, useGetDepotsQuery, useGetUrcsQuery } from "../features/org/orgApi.js";
 import { DealerDetailsModal } from "../components/modals/DealerDetailsModal.jsx";
 import { URCDetailsModal } from "../components/modals/URCDetailsModal.jsx";
 import { EligibilityModal } from "../components/modals/EligibilityModal.jsx";
@@ -79,11 +79,82 @@ export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addCart, toggleCmp, toggleWish, cmp, wish } = useStore();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
-  const [p, setP] = useState(undefined);
-  const [err, setErr] = useState(false);
-  const [all, setAll] = useState([]);
+  const isPendingApproval = isAuthenticated && user?.role === 'BENEFICIARY' && (
+    user.status === 'Pending' ||
+    user.status === 'PENDING' ||
+    user.verificationStatus === 'PENDING' ||
+    user.adminApproval === 'PENDING'
+  );
+
+  const {
+    data: rawProduct,
+    isLoading: loadingProduct,
+    isError: err,
+    refetch: load,
+  } = useGetProductByIdQuery(id);
+
+  const { data: allProductsData } = useGetProductsQuery({ limit: 20 });
+  const all = allProductsData?.items || [];
+
+  const { data: dealersList = [] } = useGetDealersQuery();
+  const { data: depotsList = [] } = useGetDepotsQuery();
+  const { data: urcsList = [] } = useGetUrcsQuery();
+
+  const [checkEligibilityMutation, { isLoading: checkingEligibility }] =
+    useCheckProductEligibilityMutation();
+
+  const p = useMemo(() => {
+    if (!rawProduct) return null;
+    const prod = rawProduct.data || rawProduct;
+    const catCode = prod.categoryId?.code?.toLowerCase() || (prod.afdType === 'AFD_II' ? 'white-goods' : 'car');
+    const colorsList = prod.attributes?.colors
+      ? prod.attributes.colors.split(',').map((c) => c.trim())
+      : prod.colors || ['Solid White', 'Silky Silver', 'Granite Grey'];
+
+    return {
+      ...prod,
+      id: prod._id || prod.id,
+      category: catCode.includes('bike') ? 'bike' : catCode.includes('white') ? 'white-goods' : 'car',
+      brand: prod.brandId?.name || prod.brand || 'Authorized OEM',
+      price: prod.priceToCustomer || prod.price || 500000,
+      lo: prod.priceToCustomer || prod.price || 500000,
+      hi: prod.mrp || (prod.price ? prod.price * 1.15 : 600000),
+      mrp: prod.mrp || (prod.price ? Math.round(prod.price * 1.15) : 600000),
+      indexNo: prod.indexNo || prod.sku || 'N/A',
+      basicPrice: prod.basicPrice,
+      csdDiscountPercent: prod.csdDiscountPercent || 0,
+      csdDiscountAmount: prod.csdDiscountAmount || 0,
+      marketScheme: prod.marketScheme || 0,
+      csdBasicWithDiscount: prod.csdBasicWithDiscount,
+      cgstAmount: prod.cgstAmount || 0,
+      sgstAmount: prod.sgstAmount || 0,
+      csdInvoiceAmount: prod.csdInvoiceAmount,
+      csdProfitAmount: prod.csdProfitAmount || 0,
+      csdFinalPriceWithConcession: prod.csdFinalPriceWithConcession,
+      tcsAmount: prod.tcsAmount || 0,
+      priceToCustomer: prod.priceToCustomer || prod.price || 500000,
+      dealerRefName: prod.dealerRefName || 'SUPREME MOBILES PVT. LTD.- HISAR',
+      priceListRef: prod.priceListRef || "CSD PRICE LIST= OCTOBER'26 (w.e.f- 03.10.2026)",
+      image: prod.images?.[0] || prod.image || '/assets/maruti1.png',
+      images: prod.images?.length ? prod.images : ['/assets/maruti1.png'],
+      colors: colorsList,
+      engine: prod.engineCapacity ? `${prod.engineCapacity} cc` : (prod.attributes?.engine || prod.engine || '1197 cc'),
+      fuel: prod.fuelType ? [prod.fuelType] : (prod.attributes?.fuel ? [prod.attributes.fuel] : prod.fuel || ['Petrol']),
+      trans: prod.attributes?.transmission || prod.trans || 'Manual',
+      power: prod.attributes?.power || prod.power || '88.5 bhp',
+      mileage: prod.attributes?.mileage || prod.mileage || '22.3 km/l',
+      boot: prod.attributes?.boot || prod.boot || '268 L',
+      airbags: prod.attributes?.airbags || prod.airbags || '2 Airbags',
+      type: prod.variant || prod.attributes?.type || prod.type || 'Hatchback',
+      brakes: prod.attributes?.brakes || prod.brakes || 'Disc / Drum',
+      rating: 4.5,
+      reviews: 124,
+      sku: prod.indexNo || prod.sku || '64224',
+    };
+  }, [rawProduct]);
+
   const [color, setColor] = useState("");
   const [fuel, setFuel] = useState("");
   const [drive, setDrive] = useState("");
@@ -92,11 +163,11 @@ export default function ProductDetails() {
   const [zoom, setZoom] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // CSD AFD Selection states (Fig. 6)
+  // CSD AFD Selection states
   const [selectedZone, setSelectedZone] = useState('DELHI NCR (DELHI GREATER NOIDA FARIDABAD GURGAON)');
-  const [selectedDealer, setSelectedDealer] = useState('AAA VEHICLEADES PVT. LTD. MUNDKA (PILLAR)');
-  const [selectedDepot, setSelectedDepot] = useState('DELHI');
-  const [selectedUrc, setSelectedUrc] = useState('7 WING AF');
+  const [selectedDealer, setSelectedDealer] = useState('');
+  const [selectedDepot, setSelectedDepot] = useState('');
+  const [selectedUrc, setSelectedUrc] = useState('');
 
   // Modals state
   const [dealerModalOpen, setDealerModalOpen] = useState(false);
@@ -104,34 +175,63 @@ export default function ProductDetails() {
   const [eligibilityModalOpen, setEligibilityModalOpen] = useState(false);
   const [eligibilityResult, setEligibilityResult] = useState(null);
   const [checkoutErrors, setCheckoutErrors] = useState({});
-  const [checkingEligibility, setCheckingEligibility] = useState(false);
+
+  useEffect(() => {
+    if (p) {
+      setColor(p.colors?.[0] || 'Standard');
+      setFuel(p.fuel?.[0] || 'Petrol');
+      setDrive(p.trans ? p.trans.split(' / ')[0] : 'Manual');
+      document.title = `${p.name} - CSD AFD Online Portal`;
+    }
+  }, [p]);
+
+  useEffect(() => {
+    if (dealersList.length && !selectedDealer) setSelectedDealer(dealersList[0].name);
+  }, [dealersList, selectedDealer]);
+
+  useEffect(() => {
+    if (depotsList.length && !selectedDepot) setSelectedDepot(depotsList[0].name);
+  }, [depotsList, selectedDepot]);
+
+  useEffect(() => {
+    if (urcsList.length && !selectedUrc) setSelectedUrc(urcsList[0].name);
+  }, [urcsList, selectedUrc]);
 
   const imgs = useGallery(p);
 
-  const load = () => {
-    setErr(false); setP(undefined);
-    fetchProduct(id).then((x) => {
-      setP(x); setMain(0); setTab("overview");
-      setColor(x?.colors?.[0] || ""); setFuel(x?.fuel?.[0] || ""); setDrive(x?.trans ? x.trans.split(" / ")[0] : "");
-    }).catch(() => setErr(true));
-  };
-  useEffect(load, [id]);
-  useEffect(() => { fetchProducts().then(setAll).catch(() => { }); }, []);
-  useEffect(() => { if (p) document.title = `${p.name} - CSD AFD Online Portal`; }, [p]);
-
-  const similar = useMemo(() => p ? all.filter((x) => x.id !== p.id && x.category === p.category)
-    .sort((a, b) => (b.brand === p.brand) - (a.brand === p.brand) || (b.type === p.type) - (a.type === p.type) || Math.abs(rupees(a) - rupees(p)) - Math.abs(rupees(b) - rupees(p))).slice(0, 4) : [], [all, p]);
+  const similar = useMemo(
+    () =>
+      p && all.length
+        ? all
+            .filter((x) => (x._id || x.id) !== p.id)
+            .slice(0, 4)
+        : [],
+    [all, p]
+  );
 
   const currentDealer = useMemo(() => {
-    return MOCK_DEALERS_LIST.find((d) => d.name === selectedDealer) || MOCK_DEALERS_LIST[0];
-  }, [selectedDealer]);
+    return (
+      dealersList.find((d) => d.name === selectedDealer) ||
+      dealersList[0] || {
+        name: selectedDealer || 'Authorized Dealer',
+        address: 'Delhi Cantt, New Delhi',
+        phone: '+91 11 2345 6789',
+      }
+    );
+  }, [selectedDealer, dealersList]);
 
   const currentUrc = useMemo(() => {
-    return MOCK_URCS_LIST.find((u) => u.name === selectedUrc) || MOCK_URCS_LIST[0];
-  }, [selectedUrc]);
+    return (
+      urcsList.find((u) => u.name === selectedUrc) ||
+      urcsList[0] || {
+        name: selectedUrc || 'Delhi Cantt URC',
+        location: 'Delhi',
+      }
+    );
+  }, [selectedUrc, urcsList]);
 
   if (err) return <ErrorState onRetry={load} />;
-  if (p === undefined) return <Loader />;
+  if (loadingProduct) return <Loader />;
   if (!p) return <EmptyState title="Product not found" text="This product is not available." action={<Link className="btn" to="/products">Browse products</Link>} />;
 
   const skuNumber = p?.sku || '64224';
@@ -156,16 +256,24 @@ export default function ProductDetails() {
       ? [["General", [["Brand", p.brand], ["Type", p.type], ["Fuel type", val(p.fuel)], ["Colours", val(p.colors)]]],
       ["Engine & performance", [["Engine", p.engine], ["Max power", p.power], ["Mileage", p.mileage]]],
       ["Chassis", [["Brakes (front / rear)", p.brakes]]]]
-      : [["General", [["Brand", p.brand], ["Type", p.type]]], ["Pricing", [["Offer price", inr(p.lo)], ["MRP", p.mrp ? inr(p.mrp) : null], ["You save", p.mrp ? `${inr(p.mrp - p.lo)} (${p.discount}%)` : null]]]];
+      : [["General", [["Brand", p.brand], ["Type", p.type]]], ["Pricing", [["Offer price", inr(p.lo)], ["MRP", p.mrp ? inr(p.mrp) : null], ["You save", p.mrp ? `${inr(p.mrp - p.lo)}` : null]]]];
 
-  const about = car || bike
-    ? `${p.name} is a ${p.type.toLowerCase()} from ${p.brand}${p.engine && p.engine !== "-" ? `, powered by a ${p.engine} engine` : ""}${p.mileage && p.mileage !== "-" ? ` with a claimed mileage of ${p.mileage}` : ""}. It is available on the CSD AFD portal from ${priceFrom(p)} (ex-showroom, subject to supply order terms).`
-    : `${p.name} is a ${p.type.toLowerCase()} from ${p.brand}, available on the CSD AFD portal at ${inr(p.lo)}${p.mrp ? ` — ${p.discount}% below the MRP of ${inr(p.mrp)}` : ""}.`;
+  const about = `${p.name} from ${p.brand}. Available on the CSD AFD portal at concessional price ₹ ${(p.price || 0).toLocaleString('en-IN')} (ex-showroom, subject to supply order terms).`;
 
   const tabs = [["overview", "Overview"], ["specs", "Specifications"], ["features", "Features"], ["buy", "How to buy"]];
   const copy = () => { navigator.clipboard?.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 1800); };
 
   const handleCheckoutClick = async () => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=${encodeURIComponent(`/products/${id}`)}&reason=auth-required`);
+      return;
+    }
+
+    if (isPendingApproval) {
+      alert("Your account is pending admin approval. You can view products, but demand generation will be available after your account is approved by the administrator.");
+      return;
+    }
+
     const errs = {};
     if (!color) errs.color = 'Please select Color';
     if (!selectedZone) errs.zone = 'Please select Price Zone';
@@ -179,33 +287,32 @@ export default function ProductDetails() {
     }
     setCheckoutErrors({});
 
-    setCheckingEligibility(true);
-    const res = await eligibilityService.validateEligibility(
-      user || {
-        username: 'JC-765432X',
-        name: 'Subedar Major Rajesh Kumar',
-        dateOfEnrollment: '2015-11-23',
-        payLevel: 'Level 8 (Pay Band 2)',
-        entitlementCategory: 'JCO (Pay level 7-9)'
-      },
-      p,
-      {
-        price: p.lo || 548917,
-        zone: selectedZone,
-        dealer: selectedDealer,
-        depot: selectedDepot,
-        urc: selectedUrc
-      }
-    );
-    setEligibilityResult(res);
-    setCheckingEligibility(false);
-    setEligibilityModalOpen(true);
+    try {
+      const res = await checkEligibilityMutation({
+        productId: p._id || p.id,
+        quantity: 1,
+      }).unwrap();
+
+      setEligibilityResult(res);
+      setEligibilityModalOpen(true);
+    } catch (apiErr) {
+      setEligibilityResult({
+        eligible: false,
+        reason: apiErr?.data?.message || 'Eligibility check failed on server. Please ensure your beneficiary profile is verified.',
+      });
+      setEligibilityModalOpen(true);
+    }
   };
 
   const handleContinueToCheckout = () => {
     setEligibilityModalOpen(false);
+
+    const chosenDealer = dealersList.find((d) => d.name === selectedDealer) || dealersList[0];
+    const chosenDepot = depotsList.find((d) => d.name === selectedDepot) || depotsList[0];
+    const chosenUrc = urcsList.find((u) => u.name === selectedUrc) || urcsList[0];
+
     const checkoutData = {
-      productId: p.id,
+      productId: p._id || p.id,
       productName: p.name,
       sku: skuNumber,
       manufacturerCode: mfgCode,
@@ -217,7 +324,11 @@ export default function ProductDetails() {
       selectedDealer,
       selectedDepot,
       selectedUrc,
-      productPrice: rupees(p) || p.lo || 548917,
+      dealerId: chosenDealer?._id,
+      depotId: chosenDepot?._id,
+      urcId: chosenUrc?._id,
+      productPrice: p.price || 0,
+      taxPercent: p.taxPercent || 14,
       quantity: 1,
       taxClass: MOCK_PRICE_ZONES.find((z) => z.name === selectedZone)?.taxClass || 'tax-class-8'
     };
@@ -361,9 +472,9 @@ export default function ProductDetails() {
                     className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.dealer ? 'has-error' : ''}`}
                   >
                     <option value="">-- Select Dealer --</option>
-                    {MOCK_DEALERS_LIST.map((d) => (
-                      <option key={d.id} value={d.name}>
-                        {d.name}
+                    {dealersList.map((d) => (
+                      <option key={d._id || d.id || d.code} value={d.name}>
+                        {d.name} ({d.city || ''})
                       </option>
                     ))}
                   </select>
@@ -393,8 +504,8 @@ export default function ProductDetails() {
                   className={`select-input pdp-form-select ${checkoutErrors.depot ? 'has-error' : ''}`}
                 >
                   <option value="">-- Select depot --</option>
-                  {MOCK_DEPOTS_LIST.map((dep) => (
-                    <option key={dep.id} value={dep.name}>
+                  {depotsList.map((dep) => (
+                    <option key={dep._id || dep.id || dep.code} value={dep.name}>
                       {dep.name}
                     </option>
                   ))}
@@ -418,8 +529,8 @@ export default function ProductDetails() {
                     className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.urc ? 'has-error' : ''}`}
                   >
                     <option value="">-- Select URC --</option>
-                    {MOCK_URCS_LIST.map((u) => (
-                      <option key={u.id} value={u.name}>
+                    {urcsList.map((u) => (
+                      <option key={u._id || u.id || u.code} value={u.name}>
                         {u.name}
                       </option>
                     ))}
@@ -439,24 +550,152 @@ export default function ProductDetails() {
                 )}
               </div>
 
-              {/* Concessional Price Display matching Fig. 6 */}
-              <div className="pdp-price-box">
-                <div className="pdp-price-range">
-                  ₹544,813 – ₹546,790
+              {/* Concessional Price Display matching Official CSD Price List */}
+              <div className="pdp-price-box" style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+                <div className="between align-center mb-1">
+                  <span className="small font-bold" style={{ color: '#0f172a' }}>Price to Customer (Net CSD Payable):</span>
+                  <div className="h3 font-bold text-brand" style={{ margin: 0 }}>
+                    ₹ {(p.priceToCustomer || p.price || 0).toLocaleString('en-IN')}
+                  </div>
                 </div>
-                <div className="micro muted pdp-price-subtext">
-                  Excluding taxes and levies (calculated automatically during checkout based on zone).
-                </div>
+
+                {p.basicPrice ? (
+                  <div className="csd-official-rate-sheet mt-2" style={{ fontSize: '0.82rem', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '0.75rem' }}>
+                    <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '0.4rem', marginBottom: '0.4rem', fontWeight: 600, color: '#1e3a8a' }}>
+                      📋 Official CSD Rate Breakdown (INDEX NO: {p.indexNo})
+                    </div>
+                    <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                      <span className="muted">Basic Price (incl. Dealer Margin):</span>
+                      <span>₹ {Number(p.basicPrice).toLocaleString('en-IN')}</span>
+                    </div>
+                    {(p.csdDiscountAmount > 0 || p.marketScheme > 0) && (
+                      <div className="between py-1 text-green" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                        <span>CSD Discount & Schemes:</span>
+                        <span>- ₹ {(Number(p.csdDiscountAmount) + Number(p.marketScheme || 0)).toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
+                    <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                      <span className="muted">CSD Basic with Discount:</span>
+                      <span className="font-semibold">₹ {Number(p.csdBasicWithDiscount || p.basicPrice).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                      <span className="muted">GST (SGST + CGST with Concession):</span>
+                      <span>+ ₹ {(Number(p.sgstAmount || 0) + Number(p.cgstAmount || 0)).toLocaleString('en-IN')}</span>
+                    </div>
+                    {p.csdProfitAmount > 0 && (
+                      <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                        <span className="muted">CSD Profit Margin (0.50%):</span>
+                        <span>+ ₹ {Number(p.csdProfitAmount).toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
+                    {p.tcsAmount > 0 && (
+                      <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                        <span className="muted">TCS @ 1% (Above 10 Lacs):</span>
+                        <span>+ ₹ {Number(p.tcsAmount).toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
+                    <div className="micro muted mt-1 pt-1" style={{ fontStyle: 'italic', color: '#64748b' }}>
+                      Ref Dealer: {p.dealerRefName} | Rate List: {p.priceListRef}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="micro muted pdp-price-subtext">
+                    Concessional CSD ex-showroom price (Taxes and regional levies calculated automatically during checkout).
+                  </div>
+                )}
               </div>
+
+              {/* Login Required Notice */}
+              {!isAuthenticated && (
+                <div style={{
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '8px',
+                  padding: '0.85rem 1rem',
+                  marginBottom: '1rem',
+                  fontSize: '0.85rem',
+                  lineHeight: 1.45,
+                  color: '#1e40af',
+                  textAlign: 'left'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Lock size={16} style={{ color: '#2563eb', flexShrink: 0 }} />
+                      <span><strong>Login Required:</strong> Please log in to unlock checkout and generate demand.</span>
+                    </div>
+                    <Link
+                      to={`/login?redirect=${encodeURIComponent(`/products/${id}`)}`}
+                      style={{
+                        background: '#1e3a8a',
+                        color: '#ffffff',
+                        padding: '0.35rem 0.85rem',
+                        borderRadius: '6px',
+                        fontWeight: 600,
+                        fontSize: '0.8rem',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem'
+                      }}
+                    >
+                      Login Now <ArrowRight size={13} />
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* Pending Approval Notice */}
+              {isAuthenticated && isPendingApproval && (
+                <div style={{
+                  background: '#fffbeb',
+                  border: '1px solid #fde68a',
+                  borderRadius: '8px',
+                  padding: '0.85rem 1rem',
+                  marginBottom: '1rem',
+                  fontSize: '0.85rem',
+                  lineHeight: 1.45,
+                  color: '#78350f',
+                  textAlign: 'left'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem', color: '#92400e', fontWeight: 600 }}>
+                    <AlertCircle size={16} /> Account Pending Admin Approval
+                  </div>
+                  Your account is pending admin approval. You can view products, but demand generation will be available after your account is approved by the administrator.
+                </div>
+              )}
 
               {/* Official CHECKOUT CTA matching Fig. 6 */}
               <button
                 type="button"
                 onClick={handleCheckoutClick}
-                disabled={checkingEligibility}
+                disabled={!isAuthenticated || checkingEligibility || isPendingApproval}
                 className="btn-checkout-cta"
+                style={
+                  !isAuthenticated
+                    ? { opacity: 0.65, cursor: 'not-allowed', background: '#94a3b8' }
+                    : isPendingApproval
+                      ? { opacity: 0.65, cursor: 'not-allowed', background: '#94a3b8' }
+                      : undefined
+                }
+                title={
+                  !isAuthenticated
+                    ? 'Please login to proceed with checkout'
+                    : isPendingApproval
+                      ? 'Your account is pending admin approval. Demand generation will be available after your account is approved by the administrator.'
+                      : undefined
+                }
               >
-                {checkingEligibility ? 'VERIFYING ELIGIBILITY...' : 'CHECKOUT'}
+                {!isAuthenticated ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                    <Lock size={16} /> LOGIN TO CHECKOUT
+                  </span>
+                ) : isPendingApproval ? (
+                  'DEMAND GENERATION DISABLED (APPROVAL PENDING)'
+                ) : checkingEligibility ? (
+                  'VERIFYING ELIGIBILITY...'
+                ) : (
+                  'CHECKOUT'
+                )}
               </button>
 
               <div className="pdp-footer-meta">
@@ -564,7 +803,22 @@ export default function ProductDetails() {
 
       <div className="mbar">
         <div><small>{appl ? "Price" : "Starting at"}</small><strong>{priceFrom(p)}</strong></div>
-        <button className="btn" onClick={() => addCart(p)}><ShoppingCart size={16} aria-hidden /> Add to cart</button>
+        <button
+          className="btn"
+          onClick={() => {
+            if (!isAuthenticated) {
+              navigate(`/login?redirect=${encodeURIComponent(`/products/${id}`)}&reason=auth-required`);
+            } else {
+              addCart(p);
+            }
+          }}
+          disabled={!isAuthenticated}
+          style={!isAuthenticated ? { opacity: 0.65, cursor: 'not-allowed', background: '#94a3b8' } : undefined}
+          title={!isAuthenticated ? 'Please log in to proceed' : undefined}
+        >
+          {!isAuthenticated ? <Lock size={16} aria-hidden /> : <ShoppingCart size={16} aria-hidden />}
+          {!isAuthenticated ? 'Login to checkout' : 'Add to cart'}
+        </button>
       </div>
     </div>
   );

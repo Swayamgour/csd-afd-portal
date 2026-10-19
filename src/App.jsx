@@ -147,6 +147,7 @@ const AdminNotifications = lazyImport(() => import('./features/admin/AdminNotifi
 const AdminReports = lazyImport(() => import('./features/admin/AdminReports.jsx'), 'AdminReports');
 const AdminSecurity = lazyImport(() => import('./features/admin/AdminSecurity.jsx'), 'AdminSecurity');
 const AdminProfile = lazyImport(() => import('./features/admin/AdminProfile.jsx'), 'AdminProfile');
+const AdminBanners = lazyImport(() => import('./features/admin/AdminBanners.jsx'), 'default');
 
 export default function App() {
   const { pathname } = useLocation();
@@ -298,6 +299,7 @@ export default function App() {
           <Route path="/admin/reports" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminReports /></RoleRoute>} />
           <Route path="/admin/security" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminSecurity /></RoleRoute>} />
           <Route path="/admin/profile" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminProfile /></RoleRoute>} />
+          <Route path="/admin/banners" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminBanners /></RoleRoute>} />
 
         </Route>
 

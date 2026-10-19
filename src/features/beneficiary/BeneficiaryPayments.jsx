@@ -1,45 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { CreditCard, ShieldCheck, Download, ExternalLink, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { CreditCard, ShieldCheck, Download, ExternalLink, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import Modal from '../../components/common/Modal.jsx';
-import { paymentService } from '../../services/payment.service.js';
-import { demandService } from '../../services/demand.service.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useGetPaymentsQuery, useCreatePaymentMutation, useVerifyPaymentMutation } from '../payment/paymentApi.js';
+import { useGetDemandsQuery } from '../demand/demandApi.js';
+import { getErrorMessage } from '../../utils/apiError.js';
 
 export default function BeneficiaryPayments() {
   const { user } = useAuth();
-  const [payments, setPayments] = useState([]);
-  const [pendingDemands, setPendingDemands] = useState([]);
-  const [loading, setLoading] = useState(true);
+
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [selectedDemand, setSelectedDemand] = useState(null);
   const [paymentMode, setPaymentMode] = useState('sbi_epay');
   const [processing, setProcessing] = useState(false);
-  const [toast, setToast] = useState('');
+  const [toast, setToast] = useState({ type: '', message: '' });
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [pList, dList] = await Promise.all([
-        paymentService.getPayments(),
-        demandService.getDemands({ role: 'beneficiary', userId: user?.id })
-      ]);
-      setPayments(pList);
-      setPendingDemands(dList.filter((d) => d.paymentStatus === 'Pending'));
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  const {
+    data: paymentsData,
+    isLoading: loadingPayments,
+    refetch: refetchPayments,
+  } = useGetPaymentsQuery();
+
+  const {
+    data: demandsData,
+    isLoading: loadingDemands,
+    refetch: refetchDemands,
+  } = useGetDemandsQuery();
+
+  const [createPayment] = useCreatePaymentMutation();
+  const [verifyPayment] = useVerifyPaymentMutation();
+
+  const payments = paymentsData?.items || [];
+  const allDemands = demandsData?.items || [];
+  const pendingDemands = allDemands.filter(
+    (d) => d.status === 'CREATED' || d.status === 'PAYMENT_PENDING'
+  );
+
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => setToast({ type: '', message: '' }), 4000);
   };
-
-  useEffect(() => {
-    loadData();
-  }, [user]);
 
   const initiatePayment = (dem) => {
     setSelectedDemand(dem);
@@ -47,23 +52,35 @@ export default function BeneficiaryPayments() {
   };
 
   const handleCompletePayment = async () => {
+    if (!selectedDemand) return;
     setProcessing(true);
     try {
-      await paymentService.recordPayment({
-        demandId: selectedDemand.id,
-        beneficiaryName: user?.name,
-        amount: selectedDemand.csdPrice,
-        mode: paymentMode === 'sbi_epay' ? 'SBI Cyber Treasury (e-Pay)' : 'Bharatkosh Gateway',
-        transactionRef: `SBIEP-${Date.now().toString().slice(-8)}`,
+      const amount = selectedDemand.totalPrice || selectedDemand.netPayable || 10000;
+      const method = paymentMode === 'sbi_epay' ? 'DIRECT_TRANSFER' : 'GATEWAY';
+
+      const payRes = await createPayment({
+        demandId: selectedDemand._id,
+        amount,
+        method,
+        gateway: method === 'GATEWAY' ? 'BHARATKOSH' : undefined,
+        utr: method === 'DIRECT_TRANSFER' ? `SBI-EPAY-${Date.now().toString().slice(-8)}` : undefined,
         bankName: 'State Bank of India',
-        status: 'Verified'
-      });
-      await demandService.updateDemandStatus(selectedDemand.id, 'Payment_Completed', 'Payment realized via SBI Gateway');
+      }).unwrap();
+
+      const payDoc = payRes?.data || payRes;
+
+      await verifyPayment({
+        paymentId: payDoc._id,
+        demandId: selectedDemand._id,
+        gatewayPaymentId: `TXN-${Date.now()}`,
+      }).unwrap();
+
       setPayModalOpen(false);
-      setToast('Payment completed successfully. Treasury challan generated.');
-      loadData();
+      showToast('success', 'Treasury payment verified successfully. Demand updated to PAID.');
+      refetchPayments();
+      refetchDemands();
     } catch (err) {
-      alert(err.message);
+      showToast('error', getErrorMessage(err, 'Failed to complete payment.'));
     } finally {
       setProcessing(false);
     }
@@ -72,50 +89,86 @@ export default function BeneficiaryPayments() {
   const columns = [
     {
       header: 'Receipt ID',
-      accessor: 'id',
-      render: (row) => <span className="font-semibold text-brand">{row.id}</span>
+      accessor: '_id',
+      render: (row) => (
+        <span className="font-semibold text-brand font-mono">
+          {row._id?.slice(-8).toUpperCase() || 'RCP-ONLINE'}
+        </span>
+      ),
     },
-    { header: 'Demand ID', accessor: 'demandId' },
+    {
+      header: 'Demand Ref',
+      accessor: 'demandId',
+      render: (row) => (
+        <span className="font-mono text-slate-700">
+          {row.demandId?.demandNo || row.demandId || 'Direct Demand'}
+        </span>
+      ),
+    },
     {
       header: 'Amount Paid',
       accessor: 'amount',
-      render: (row) => <span className="font-bold">₹ {row.amount?.toLocaleString('en-IN')}</span>
+      render: (row) => <span className="font-bold">₹ {(row.amount || 0).toLocaleString('en-IN')}</span>,
     },
-    { header: 'Payment Channel', accessor: 'mode' },
-    { header: 'Bank Ref / Challan', accessor: 'transactionRef', render: (row) => <span className="font-mono small">{row.transactionRef}</span> },
-    { header: 'Transaction Date', accessor: 'date' },
     {
-      header: 'Treasury Status',
+      header: 'Channel / Method',
+      accessor: 'method',
+      render: (row) => (
+        <span className="capitalize">{row.method?.replace(/_/g, ' ') || 'Treasury e-Pay'}</span>
+      ),
+    },
+    {
+      header: 'UTR / Ref No',
+      accessor: 'utr',
+      render: (row) => <span className="font-mono small">{row.utr || row.gatewayPaymentId || 'N/A'}</span>,
+    },
+    {
+      header: 'Date',
+      accessor: 'createdAt',
+      render: (row) => new Date(row.createdAt).toLocaleDateString('en-IN'),
+    },
+    {
+      header: 'Status',
       accessor: 'status',
-      render: (row) => <StatusBadge status={row.status} />
+      render: (row) => <StatusBadge status={row.status} />,
     },
     {
       header: 'Receipt',
-      accessor: 'id',
+      accessor: '_id',
       render: (row) => (
         <button
           type="button"
           className="btn sm out"
-          onClick={() => alert(`Downloading Certified Treasury Receipt for ${row.id}`)}
+          onClick={() => alert(`Certified Treasury Receipt: RCP-${row._id?.slice(-8).toUpperCase()}`)}
         >
           <Download size={13} />
           <span>Receipt</span>
         </button>
-      )
-    }
+      ),
+    },
   ];
+
+  const loading = loadingPayments || loadingDemands;
 
   return (
     <div className="beneficiary-payments-page">
       <PageHeader
         title="AFD Payments & Treasury Challans"
         subtitle="Make payments through SBI Cyber Treasury or Bharatkosh and download certified fee receipts."
+        actions={
+          <Button variant="outline" size="sm" onClick={() => { refetchPayments(); refetchDemands(); }}>
+            <RefreshCw size={14} /> Refresh
+          </Button>
+        }
       />
 
-      {toast && (
-        <div className="alert-banner success mb-2 small" role="alert">
-          <CheckCircle2 size={16} />
-          <span>{toast}</span>
+      {toast.message && (
+        <div
+          className={`alert-banner ${toast.type === 'error' ? 'error bg-red-50 text-red-800' : 'success'} mb-2 small`}
+          role="alert"
+        >
+          {toast.type === 'error' ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
+          <span>{toast.message}</span>
         </div>
       )}
 
@@ -123,22 +176,24 @@ export default function BeneficiaryPayments() {
       {pendingDemands.length > 0 && (
         <Card
           title="Sanctioned Demands Awaiting Payment"
-          subtitle="Depot Sanction has been granted. Please initiate payment to trigger Supply Order release."
+          subtitle="Depot sanction granted. Please initiate payment to trigger Supply Order release."
           className="mb-3 border-2 border-saffron bg-saffron-soft"
         >
           {pendingDemands.map((dem) => (
-            <div key={dem.id} className="panel p-3 between align-center flex-wrap gap-2 mb-2 bg-white">
+            <div key={dem._id || dem.id} className="panel p-3 between align-center flex-wrap gap-2 mb-2 bg-white">
               <div>
-                <span className="small text-brand font-bold block">{dem.id}</span>
-                <h4 className="h4 mb-0">{dem.productName}</h4>
-                <p className="small muted mb-0">Sanctioned Depot: <b>{dem.depot}</b></p>
+                <span className="small text-brand font-bold block">{dem.demandNo || dem._id}</span>
+                <h4 className="h4 mb-0">{dem.productId?.name || dem.productName || 'AFD Item'}</h4>
+                <p className="small muted mb-0">
+                  Sanctioned Depot: <b>{dem.depotId?.name || 'Regional Depot'}</b>
+                </p>
               </div>
 
               <div className="row align-center gap-2">
                 <div className="text-right">
                   <span className="small muted block">Sanction Amount</span>
                   <span className="h3 font-bold text-ink block">
-                    ₹ {dem.csdPrice?.toLocaleString('en-IN')}
+                    ₹ {(dem.totalPrice || dem.netPayable || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
                 <Button
@@ -170,7 +225,7 @@ export default function BeneficiaryPayments() {
         isOpen={payModalOpen}
         onClose={() => setPayModalOpen(false)}
         title="CSD AFD Secure Payment Gateway"
-        subtitle={`Sanctioned Demand: ${selectedDemand?.id} · ${selectedDemand?.productName}`}
+        subtitle={`Sanctioned Demand: ${selectedDemand?.demandNo || selectedDemand?._id} · ${selectedDemand?.productId?.name || selectedDemand?.productName || 'AFD Item'}`}
         maxWidth="520px"
         footer={
           <div className="modal-footer-btns">
@@ -178,7 +233,7 @@ export default function BeneficiaryPayments() {
               Cancel
             </Button>
             <Button variant="primary" loading={processing} onClick={handleCompletePayment}>
-              Authorize & Pay ₹ {selectedDemand?.csdPrice?.toLocaleString('en-IN')}
+              Authorize & Pay ₹ {(selectedDemand?.totalPrice || selectedDemand?.netPayable || 0).toLocaleString('en-IN')}
             </Button>
           </div>
         }
@@ -187,7 +242,7 @@ export default function BeneficiaryPayments() {
           <div className="panel p-3 bg-bg mb-3 text-center">
             <span className="small muted block">Total Sanctioned CSD Price</span>
             <p className="h2 text-brand font-bold my-1">
-              ₹ {selectedDemand?.csdPrice?.toLocaleString('en-IN')}
+              ₹ {(selectedDemand?.totalPrice || selectedDemand?.netPayable || 0).toLocaleString('en-IN')}
             </p>
             <span className="small text-green font-semibold">● Zero Gateway Surcharge for Defence Personnel</span>
           </div>
@@ -200,7 +255,7 @@ export default function BeneficiaryPayments() {
               onClick={() => setPaymentMode('sbi_epay')}
             >
               <span className="font-semibold small block">SBI Cyber Treasury (e-Pay)</span>
-              <span className="micro muted">Net Banking / Cards / Branch Challan</span>
+              <span className="micro muted">Net Banking / Direct Transfer</span>
             </button>
 
             <button
@@ -209,7 +264,7 @@ export default function BeneficiaryPayments() {
               onClick={() => setPaymentMode('bharatkosh')}
             >
               <span className="font-semibold small block">Bharatkosh Portal</span>
-              <span className="micro muted">Non-Tax Receipt Portal (Govt. of India)</span>
+              <span className="micro muted">Govt. Non-Tax Receipt Portal</span>
             </button>
           </div>
 

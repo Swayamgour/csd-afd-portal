@@ -20,7 +20,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
-export function UserDetailsModal({ isOpen, onClose, user, onEdit, onChangeStatus }) {
+export function UserDetailsModal({ isOpen, onClose, user, onEdit, onChangeStatus, onApprove, onReject }) {
   const [activeTab, setActiveTab] = useState('profile');
 
   if (!user) return null;
@@ -36,41 +36,75 @@ export function UserDetailsModal({ isOpen, onClose, user, onEdit, onChangeStatus
     { id: 'audit', label: 'Audit Trail', icon: Clock }
   ];
 
+  const isPending =
+    user.status === 'Pending' ||
+    user.verificationStatus === 'PENDING' ||
+    user.adminApproval === 'PENDING';
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={`User File: ${user.name || user.username}`}
-      subtitle={`System ID: ${user.id} · Primary Role: ${primaryRoleLabel}`}
+      subtitle={`System ID: ${user.id || user._id} · Primary Role: ${primaryRoleLabel}`}
       maxWidth="820px"
       footer={
-        <div className="between" style={{ width: '100%' }}>
+        <div className="between" style={{ width: '100%', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div className="row align-center gap-1">
             <span className="small muted">Account Status:</span>
             <StatusBadge status={user.status} />
           </div>
-          <div className="row align-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              icon={History}
-              onClick={() => {
-                onClose();
-                onChangeStatus(user);
-              }}
-            >
-              Change Status
-            </Button>
-            <Button
-              size="sm"
-              icon={FileText}
-              onClick={() => {
-                onClose();
-                onEdit(user);
-              }}
-            >
-              Edit Profile
-            </Button>
+          <div className="row align-center gap-1 flex-wrap">
+            {onApprove && isPending && (
+              <Button
+                size="sm"
+                style={{ background: '#16a34a', color: '#fff', border: 'none', fontWeight: 600 }}
+                onClick={() => {
+                  onClose();
+                  onApprove(user);
+                }}
+              >
+                ✓ Approve User
+              </Button>
+            )}
+            {onReject && isPending && (
+              <Button
+                variant="outline"
+                size="sm"
+                style={{ color: '#dc2626', borderColor: '#fca5a5', fontWeight: 600 }}
+                onClick={() => {
+                  onClose();
+                  onReject(user);
+                }}
+              >
+                Reject
+              </Button>
+            )}
+            {onChangeStatus && (
+              <Button
+                variant="outline"
+                size="sm"
+                icon={History}
+                onClick={() => {
+                  onClose();
+                  onChangeStatus(user);
+                }}
+              >
+                Change Status
+              </Button>
+            )}
+            {onEdit && (
+              <Button
+                size="sm"
+                icon={FileText}
+                onClick={() => {
+                  onClose();
+                  onEdit(user);
+                }}
+              >
+                Edit Profile
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={onClose}>
               Close
             </Button>

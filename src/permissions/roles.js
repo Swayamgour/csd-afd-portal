@@ -126,3 +126,76 @@ export const ROLE_HOMES = {
   customer: '/products',
   subscriber: '/beneficiary/dashboard'
 };
+
+/**
+ * Determines post-login redirect path based on user role.
+ * - BENEFICIARY / Customer -> Home page ('/')
+ * - ADMIN / Administrator -> Admin Dashboard ('/admin/dashboard')
+ * - Departmental officials -> Respective control dashboards
+ */
+export function getRoleNavigatePath(role) {
+  if (!role) return '/';
+  const r = String(role).toLowerCase().trim();
+
+  // 1. Beneficiary / Consumer -> Home page ('/')
+  if (r === 'beneficiary' || r === 'customer' || r === 'subscriber') {
+    return '/';
+  }
+
+  // 2. Administrator -> Admin Dashboard ('/admin/dashboard')
+  if (r === 'admin' || r === 'administrator') {
+    return '/admin/dashboard';
+  }
+
+  // 3. CSD Official / Head Office -> CSD Dashboard
+  if (
+    r === 'csd' ||
+    r === 'csdho' ||
+    r === 'csddirectorate' ||
+    r === 'csdheadquarters' ||
+    r === 'operations' ||
+    r === 'sub-directorate'
+  ) {
+    return '/csd/dashboard';
+  }
+
+  // 4. Depot Official -> Depot Dashboard
+  if (r === 'depot' || r === 'depot-nodal') {
+    return '/depot/dashboard';
+  }
+
+  // 5. URC User -> URC Dashboard
+  if (r === 'urc' || r === 'urc-nodal') {
+    return '/urc/dashboard';
+  }
+
+  // 6. OEM Partner -> OEM Dashboard
+  if (r === 'oem') {
+    return '/oem/dashboard';
+  }
+
+  // 7. Dealer Partner -> Dealer Dashboard
+  if (r === 'dealer') {
+    return '/dealer/dashboard';
+  }
+
+  // 8. Helpdesk -> Helpdesk Dashboard
+  if (
+    r === 'helpdesk' ||
+    r === 'help_desk' ||
+    r === 'helpdesk_agent' ||
+    r === 'helpdesk_supervisor'
+  ) {
+    return '/helpdesk/dashboard';
+  }
+
+  // 9. Finance / Reports
+  if (r === 'afdfinanceuser' || r === 'payer') {
+    return '/csd/payments';
+  }
+  if (r === 'laos_reports' || r === 'audit' || r === 'state') {
+    return '/csd/reports';
+  }
+
+  return ROLE_HOMES[r] || '/';
+}

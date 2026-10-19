@@ -2,19 +2,28 @@ import { createSlice } from '@reduxjs/toolkit'
 
 const getStoredUser = () => {
   try {
-    const user = localStorage.getItem('csd_auth_user')
-    return user ? JSON.parse(user) : null
+    const token = localStorage.getItem('csd_auth_token')
+    if (!token || token === 'csd_demo_token_active') return null
+    const userStr = localStorage.getItem('csd_auth_user')
+    if (!userStr) return null
+    const user = JSON.parse(userStr)
+    if (user?.id === 'USR-BEN-001' || user?.username === 'JC-765432X') return null
+    return user
   } catch {
     return null
   }
 }
 
+const getStoredToken = () => {
+  const token = localStorage.getItem('csd_auth_token')
+  if (!token || token === 'csd_demo_token_active' || !getStoredUser()) return null
+  return token
+}
+
 const initialState = {
   user: getStoredUser(),
-  token: localStorage.getItem('csd_auth_token'),
-  isAuthenticated:
-    !!localStorage.getItem('csd_auth_token') &&
-    !!getStoredUser(),
+  token: getStoredToken(),
+  isAuthenticated: !!getStoredUser() && !!getStoredToken(),
   loading: false,
 }
 

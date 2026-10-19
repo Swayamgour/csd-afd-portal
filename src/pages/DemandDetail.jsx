@@ -20,47 +20,29 @@ import {
   ChevronRight,
   ExternalLink
 } from 'lucide-react';
-import { demandService } from '../services/demand.service.js';
+import { useGetDemandByIdQuery } from '../features/demand/demandApi.js';
 import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal.jsx';
 
 export default function DemandDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [demand, setDemand] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {
+    data: demandData,
+    isLoading: loading,
+    isError,
+    error,
+    refetch: fetchDemand,
+  } = useGetDemandByIdQuery(id);
+
+  const demand = demandData?.data || demandData;
 
   // Payment upload modal
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
-  const fetchDemand = async () => {
-    setLoading(true);
-    try {
-      const data = await demandService.getDemandById(id);
-      if (data) {
-        setDemand(data);
-      } else {
-        setError('Demand not found');
-      }
-    } catch (err) {
-      setError('Unable to load demand details.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  const handlePaymentSubmitSuccess = async () => {
+    setPaymentModalOpen(false);
     fetchDemand();
-  }, [id]);
-
-  const handlePaymentSubmitSuccess = async (paymentData) => {
-    if (demand) {
-      await demandService.updateDemandPayment(demand.id, paymentData);
-      setPaymentModalOpen(false);
-      await fetchDemand();
-    }
   };
 
   if (loading) {
@@ -206,7 +188,7 @@ export default function DemandDetail() {
 
       {/* Grid of Sections (Section 17 Requirements) */}
       <div className="checkout-form-row-2">
-        
+
         {/* 1. Product Information */}
         <div className="demand-detail-section">
           <h3 className="demand-detail-section-title">
@@ -321,30 +303,71 @@ export default function DemandDetail() {
             <CreditCard size={17} color="#1e4fd8" />
             <span>6. Payment Information</span>
           </h3>
-          <table className="demand-summary-calc-table">
-            <tbody>
-              <tr>
-                <td>Subtotal</td>
-                <td>₹ {subtotal.toLocaleString('en-IN')}</td>
-              </tr>
-              <tr>
-                <td>Additional Cost (14%)</td>
-                <td>₹ {additionalCost.toLocaleString('en-IN')}</td>
-              </tr>
-              <tr>
-                <td>Cess (17%)</td>
-                <td>₹ {cess.toLocaleString('en-IN')}</td>
-              </tr>
-              <tr>
-                <td>Incidental Charges (0.5%)</td>
-                <td>₹ {incidental.toLocaleString('en-IN')}</td>
-              </tr>
-              <tr className="demand-summary-net-row">
-                <td>Net Price Paid</td>
-                <td className="demand-summary-net-price">₹ {netAmount.toLocaleString('en-IN')}</td>
-              </tr>
-            </tbody>
-          </table>
+          {demand.productSnapshot?.basicPrice ? (
+            <table className="demand-summary-calc-table">
+              <tbody>
+                <tr>
+                  <td>Basic Price (incl. Dealer Margin)</td>
+                  <td>₹ {Number(demand.productSnapshot.basicPrice).toLocaleString('en-IN')}</td>
+                </tr>
+                {(demand.productSnapshot.csdDiscountAmount > 0 || demand.productSnapshot.marketScheme > 0) && (
+                  <tr style={{ color: '#059669' }}>
+                    <td>CSD Discount & Market Scheme</td>
+                    <td>- ₹ {(Number(demand.productSnapshot.csdDiscountAmount || 0) + Number(demand.productSnapshot.marketScheme || 0)).toLocaleString('en-IN')}</td>
+                  </tr>
+                )}
+                <tr>
+                  <td>CSD Basic with Discount</td>
+                  <td style={{ fontWeight: 600 }}>₹ {Number(demand.productSnapshot.csdBasicWithDiscount || demand.productSnapshot.basicPrice).toLocaleString('en-IN')}</td>
+                </tr>
+                <tr>
+                  <td>GST (SGST + CGST with Concession)</td>
+                  <td>₹ {(Number(demand.productSnapshot.sgstAmount || 0) + Number(demand.productSnapshot.cgstAmount || 0)).toLocaleString('en-IN')}</td>
+                </tr>
+                {demand.productSnapshot.csdProfitAmount > 0 && (
+                  <tr>
+                    <td>CSD Profit Margin (0.50%)</td>
+                    <td>₹ {Number(demand.productSnapshot.csdProfitAmount).toLocaleString('en-IN')}</td>
+                  </tr>
+                )}
+                {demand.productSnapshot.tcsAmount > 0 && (
+                  <tr>
+                    <td>TCS @ 1% (Above 10 Lacs)</td>
+                    <td>₹ {Number(demand.productSnapshot.tcsAmount).toLocaleString('en-IN')}</td>
+                  </tr>
+                )}
+                <tr className="demand-summary-net-row">
+                  <td>Net Price Paid (Price to Customer)</td>
+                  <td className="demand-summary-net-price">₹ {netAmount.toLocaleString('en-IN')}</td>
+                </tr>
+              </tbody>
+            </table>
+          ) : (
+            <table className="demand-summary-calc-table">
+              <tbody>
+                <tr>
+                  <td>Subtotal</td>
+                  <td>₹ {subtotal.toLocaleString('en-IN')}</td>
+                </tr>
+                <tr>
+                  <td>Additional Cost (14%)</td>
+                  <td>₹ {additionalCost.toLocaleString('en-IN')}</td>
+                </tr>
+                <tr>
+                  <td>Cess (17%)</td>
+                  <td>₹ {cess.toLocaleString('en-IN')}</td>
+                </tr>
+                <tr>
+                  <td>Incidental Charges (0.5%)</td>
+                  <td>₹ {incidental.toLocaleString('en-IN')}</td>
+                </tr>
+                <tr className="demand-summary-net-row">
+                  <td>Net Price Paid</td>
+                  <td className="demand-summary-net-price">₹ {netAmount.toLocaleString('en-IN')}</td>
+                </tr>
+              </tbody>
+            </table>
+          )}
 
           <div className="beneficiary-field-box" style={{ marginTop: '10px' }}>
             <div>Method: <strong>{demand.paymentMethod || 'Direct bank transfer'}</strong></div>

@@ -58,6 +58,29 @@ export const demandService = {
   },
 
   async createDemand(demandData) {
+    // Strict client & mock store verification mirroring backend authorization
+    const authUser = (() => {
+      try {
+        return JSON.parse(localStorage.getItem('csd_auth_user') || 'null');
+      } catch {
+        return null;
+      }
+    })();
+
+    if (authUser && authUser.role === 'BENEFICIARY') {
+      if (!authUser.isEmailVerified) {
+        const err = new Error('Email verification required');
+        err.status = 403;
+        throw err;
+      }
+      const isApproved = authUser.status === 'Active' || authUser.adminApproval === 'APPROVED' || authUser.verificationStatus === 'APPROVED' || authUser.verificationStatus === 'VERIFIED';
+      if (!isApproved) {
+        const err = new Error('Beneficiary approval is pending');
+        err.status = 403;
+        throw err;
+      }
+    }
+
     demandsStore = getStoredDemands();
     // Generate CSD manual style demand number e.g. #30-76510
     const prefix = Math.floor(10 + Math.random() * 90);

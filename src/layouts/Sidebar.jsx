@@ -66,7 +66,7 @@ export default function Sidebar({
         )}
 
         {/* Navigation List */}
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav no-scrollbar">
           <ul className="sidebar-nav-list">
             {navItems.map((item) => {
               const Icon = item.icon;

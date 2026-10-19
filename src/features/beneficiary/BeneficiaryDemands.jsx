@@ -1,83 +1,90 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { PlusCircle, Search, Eye, Filter } from 'lucide-react';
+import { PlusCircle, Search, Eye, Filter, RefreshCw, AlertCircle, Clock } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import FilterBar from '../../components/common/FilterBar.jsx';
-import Select from '../../components/common/Select.jsx';
-import SearchInput from '../../components/common/SearchInput.jsx';
-import { demandService } from '../../services/demand.service.js';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useGetDemandsQuery } from '../demand/demandApi.js';
+import { getErrorMessage } from '../../utils/apiError.js';
 
 export function BeneficiaryDemands() {
-  const { user } = useAuth();
   const navigate = useNavigate();
-
-  const [demands, setDemands] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadDemands = async () => {
-    setLoading(true);
-    try {
-      const data = await demandService.getDemands({
-        role: 'beneficiary',
-        userId: user?.id,
-        status: statusFilter,
-        search: searchTerm
-      });
-      setDemands(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: demandsData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetDemandsQuery({
+    status: statusFilter !== 'All' ? statusFilter : undefined,
+    q: searchTerm || undefined,
+  });
 
-  useEffect(() => {
-    loadDemands();
-  }, [statusFilter, searchTerm]);
+  const demands = demandsData?.items || [];
 
   const columns = [
     {
-      header: 'Demand ID',
-      accessor: 'id',
-      render: (row) => <span className="font-semibold text-brand">{row.id}</span>
+      header: 'Demand No',
+      accessor: 'demandNo',
+      render: (row) => (
+        <span className="font-semibold text-brand font-mono">
+          {row.demandNo || row._id?.slice(-8).toUpperCase() || 'DEM-PENDING'}
+        </span>
+      ),
     },
-    { header: 'Vehicle / Item', accessor: 'productName' },
-    { header: 'Variant', accessor: 'variant', render: (row) => <span className="small muted">{row.variant}</span> },
     {
-      header: 'CSD Price',
-      accessor: 'csdPrice',
+      header: 'Vehicle / Item',
+      accessor: 'productId',
       render: (row) => (
         <div>
-          <span className="font-bold">₹ {row.csdPrice?.toLocaleString('en-IN')}</span>
-          {row.savings && (
-            <span className="micro text-green block">Saved ₹ {row.savings?.toLocaleString('en-IN')}</span>
+          <span className="font-medium text-slate-900 block">
+            {row.productId?.name || row.productName || 'AFD Item'}
+          </span>
+          {row.selectedColor && (
+            <span className="text-xs text-slate-500">Color: {row.selectedColor}</span>
           )}
         </div>
-      )
+      ),
     },
-    { header: 'Regional Depot', accessor: 'depot' },
+    {
+      header: 'Total Price',
+      accessor: 'totalPrice',
+      render: (row) => (
+        <span className="font-bold text-slate-900">
+          ₹ {(row.totalPrice || row.netPayable || 0).toLocaleString('en-IN')}
+        </span>
+      ),
+    },
+    {
+      header: 'Depot / Dealer',
+      accessor: 'depotId',
+      render: (row) => (
+        <span className="text-xs text-slate-600 block">
+          {row.depotId?.name || 'Assigned Depot'}
+        </span>
+      ),
+    },
     {
       header: 'Status',
       accessor: 'status',
-      render: (row) => <StatusBadge status={row.status} />
+      render: (row) => <StatusBadge status={row.status} />,
     },
     {
       header: 'Actions',
-      accessor: 'id',
+      accessor: '_id',
       render: (row) => (
-        <Link to={`/beneficiary/demands/${row.id}`} className="btn sm out">
+        <Link to={`/beneficiary/demands/${row._id || row.id}`} className="btn sm out">
           <Eye size={14} />
           <span>Details</span>
         </Link>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -86,10 +93,15 @@ export function BeneficiaryDemands() {
         title="My AFD Demands"
         subtitle="Track submitted vehicle demands, depot sanctions, treasury payments, and supply order releases."
         actions={
-          <Link to="/products" className="btn btn-primary font-bold">
-            <PlusCircle size={16} />
-            <span>New Demand</span>
-          </Link>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh list">
+              <RefreshCw size={14} />
+            </Button>
+            <Link to="/products" className="btn btn-primary font-bold">
+              <PlusCircle size={16} />
+              <span>New Demand</span>
+            </Link>
+          </div>
         }
       />
 
@@ -100,44 +112,58 @@ export function BeneficiaryDemands() {
           setSearchTerm('');
         }}
       >
-        <div className="flex-1 min-w-xs">
-          <label className="form-label small font-semibold">Search Demands</label>
-          <SearchInput
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Search by ID or product..."
-            size="sm"
-          />
-        </div>
-
-        <div className="w-48">
-          <Select
-            label="Filter Status"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            options={[
-              { value: 'All', label: 'All Statuses' },
-              { value: 'Submitted', label: 'Submitted' },
-              { value: 'URC_Verified', label: 'URC Verified' },
-              { value: 'Depot_Approved', label: 'Depot Approved' },
-              { value: 'Payment_Pending', label: 'Payment Pending' },
-              { value: 'Supply_Order_Issued', label: 'Supply Order Issued' },
-              { value: 'Delivered', label: 'Delivered' }
-            ]}
-          />
+        <div className="row gap-2 flex-wrap flex-1">
+          <div className="flex-1 min-w-[220px]">
+            <input
+              type="text"
+              placeholder="Search by demand no or vehicle name..."
+              className="fld fld-sm w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div style={{ width: '180px' }}>
+            <select
+              className="fld fld-sm w-full"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All">All Statuses</option>
+              <option value="CREATED">Created</option>
+              <option value="PAYMENT_PENDING">Payment Pending</option>
+              <option value="PAID">Paid / Processing</option>
+              <option value="SUPPLY_ORDER_ISSUED">Supply Order Issued</option>
+              <option value="DELIVERED">Delivered</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </div>
         </div>
       </FilterBar>
 
-      <Card>
+      {isError && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={18} className="text-red-600" />
+            <span>{getErrorMessage(error, 'Failed to fetch demands list.')}</span>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
+      )}
+
+      <Card title="Demands Register" subtitle="Real-time status tracking against Depot database">
         <DataTable
           columns={columns}
           data={demands}
-          loading={loading}
-          emptyTitle="No demands matching filter"
-          emptyText="Try adjusting your status filter or keyword search."
+          loading={isLoading}
+          emptyTitle="No demands created yet"
+          emptyText="Browse our catalogue to select a vehicle or appliance and initiate your demand."
         />
       </Card>
     </div>
   );
 }
+
 export default BeneficiaryDemands;

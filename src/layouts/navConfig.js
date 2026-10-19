@@ -21,7 +21,8 @@ import {
   PhoneCall,
   MessageSquare,
   BookOpen,
-  KeyRound
+  KeyRound,
+  Image
 } from 'lucide-react';
 import { ROLES } from '../permissions/roles.js';
 
@@ -137,6 +138,7 @@ export const ROLE_SIDEBAR_NAV = {
   [ROLES.ADMIN]: [
     { title: 'Admin Dashboard', to: '/admin/dashboard', icon: LayoutDashboard },
     { title: 'User Management', to: '/admin/users', icon: Users },
+    { title: 'Banner Management', to: '/admin/banners', icon: Image },
     { title: 'Roles Management', to: '/admin/roles', icon: ShieldCheck },
     { title: 'Permissions Matrix', to: '/admin/permissions', icon: KeyRound },
     { title: 'System Settings', to: '/admin/system-settings', icon: Settings },

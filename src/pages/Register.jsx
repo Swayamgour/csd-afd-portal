@@ -13,6 +13,10 @@ import {
   KeyRound,
   IdCard,
   Calendar,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+  AlertCircle
 } from "lucide-react";
 import AuthArt from "./AuthArt";
 
@@ -20,6 +24,9 @@ import {
   useRegisterMutation,
   useSendOtpMutation,
 } from "../features/auth/authApi";
+import { sendOtpEmail, generateOtp } from "../services/emailJs.service.js";
+import EmailOtpModal from "../components/modals/EmailOtpModal.jsx";
+import { userService } from "../services/user.service.js";
 
 // MOCK flow. Wire OTP, validation and CAPTCHA to a real server-side API before production.
 
@@ -60,8 +67,6 @@ const INIT = {
   pwC: "",
   mobile: "",
   agree: false,
-  emailOtp: "",
-  mobileOtp: "",
 };
 
 function getPasswordStrength(pw) {
@@ -110,10 +115,7 @@ function Section({ n, title, children }) {
   );
 }
 
-
 // Register
-
-
 export default function Register() {
   const [f, setF] = useState(INIT),
     [errs, setErrs] = useState({}),
@@ -121,89 +123,63 @@ export default function Register() {
     [showPwC, setShowPwC] = useState(false),
     [cap, setCap] = useState(makeCaptcha),
     [capIn, setCapIn] = useState(""),
-    [otpSent, setOtpSent] = useState({ email: false, mobile: false }),
-    [otpMsg, setOtpMsg] = useState({}),
+    [isOtpModalOpen, setIsOtpModalOpen] = useState(false),
+    [generatedOtp, setGeneratedOtp] = useState(""),
+    [isDispatchingOtp, setIsDispatchingOtp] = useState(false),
+    [registrationSuccess, setRegistrationSuccess] = useState(false),
+    [registeredUser, setRegisteredUser] = useState(null),
     go = useNavigate();
 
   const pwStrength = getPasswordStrength(f.pw);
 
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
+  const [sendOtpApi] = useSendOtpMutation();
 
-  const [sendOtpApi, { isLoading: isSendingOtp }] = useSendOtpMutation();
-
-  const set = (k) => (e) =>
+  const set = (k) => (e) => {
     setF({
       ...f,
       [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
     });
-  const upper = (k) => (e) => setF({ ...f, [k]: e.target.value.toUpperCase() });
+    if (errs[k] || errs.submit) {
+      setErrs((prev) => {
+        const next = { ...prev };
+        delete next[k];
+        delete next.submit;
+        return next;
+      });
+    }
+  };
+
+  const upper = (k) => (e) => {
+    setF({ ...f, [k]: e.target.value.toUpperCase() });
+    if (errs[k] || errs.submit) {
+      setErrs((prev) => {
+        const next = { ...prev };
+        delete next[k];
+        delete next.submit;
+        return next;
+      });
+    }
+  };
+
+  const checkSingleDuplicate = async (field, val) => {
+    const value = (val || "").trim();
+    if (!value || value.length < 3) return;
+    try {
+      const res = await userService.checkDuplicates({ [field]: value });
+      if (res.conflicts && res.conflicts[field]) {
+        setErrs((prev) => ({
+          ...prev,
+          [field]: res.conflicts[field],
+        }));
+      }
+    } catch (e) {}
+  };
+
   const refreshCaptcha = () => {
     setCap(makeCaptcha());
     setCapIn("");
   };
-  const noPaste = (e) => e.preventDefault();
-
-  const sendOtp = async (type) => {
-    const value = type === "email" ? f.email.trim() : f.mobile.trim();
-
-    const isValid =
-      type === "email"
-        ? /^\S+@\S+\.\S+$/.test(value)
-        : /^[6-9]\d{9}$/.test(value);
-
-    if (!isValid) {
-      setErrs((prev) => ({
-        ...prev,
-        [type]:
-          type === "email"
-            ? "Enter a valid email address."
-            : "Enter a valid 10 digit mobile number.",
-      }));
-
-      return;
-    }
-
-    try {
-      setErrs((prev) => ({
-        ...prev,
-        [type]: undefined,
-      }));
-
-      const response = await sendOtpApi({
-        [type]: value,
-        purpose:
-          type === "email"
-            ? "REGISTER_EMAIL"
-            : "REGISTER_MOBILE",
-      }).unwrap();
-
-      setOtpSent((prev) => ({
-        ...prev,
-        [type]: true,
-      }));
-
-      setOtpMsg((prev) => ({
-        ...prev,
-        [type]:
-          response?.message ||
-          `OTP sent successfully to your ${type}.`,
-      }));
-    } catch (error) {
-      setErrs((prev) => ({
-        ...prev,
-        [type]:
-          error?.data?.message ||
-          error?.data?.error ||
-          `Failed to send ${type} OTP.`,
-      }));
-
-      setOtpSent((prev) => ({
-        ...prev,
-        [type]: false,
-      }));
-    }
-  };
-
   const submit = async (e) => {
     e.preventDefault();
 
@@ -271,12 +247,6 @@ export default function Register() {
       x.email = "Enter a valid email address.";
     }
 
-    if (!otpSent.email) {
-      x.emailOtp = "Please send and verify your email OTP.";
-    } else if (!f.emailOtp?.trim()) {
-      x.emailOtp = "Enter the OTP sent to your email.";
-    }
-
     if (f.pw.length < 8) {
       x.pw = "Password must be at least 8 characters.";
     }
@@ -291,13 +261,6 @@ export default function Register() {
 
     if (!f.mobile) {
       x.mobile = "Mobile number is required.";
-    }
-
-    if (!otpSent.mobile) {
-      x.mobileOtp = "Please send and verify your mobile OTP.";
-    } else if (!f.mobileOtp?.trim()) {
-      x.mobileOtp =
-        "Enter the OTP sent to your mobile.";
     }
 
     if (!f.agree) {
@@ -318,76 +281,252 @@ export default function Register() {
       return;
     }
 
+    // Step 1: Pre-check duplicate fields (username, email, cardId, etc.) BEFORE sending OTP
+    setIsDispatchingOtp(true);
     try {
-      const payload = {
+      const dupCheck = await userService.checkDuplicates({
+        username: f.username,
+        email: f.email,
+        mobile: f.mobile,
+        cardId: f.cardId,
+        chipNumber: f.chip,
+        pan: f.pan,
+      });
+
+      if (!dupCheck.available) {
+        setErrs((prev) => ({
+          ...prev,
+          ...dupCheck.conflicts,
+          submit:
+            "Some details (such as username, email or Card ID) are already registered in the CSD AFD Portal. Please correct the highlighted fields.",
+        }));
+        setIsDispatchingOtp(false);
+        return;
+      }
+    } catch (e) {
+      // Continue if duplicate check service fails
+    }
+
+    // Step 2: Form is validated & unique -> Generate OTP and send via EmailJS
+    try {
+      const code = generateOtp();
+      setGeneratedOtp(code);
+
+      // Transmit OTP using EmailJS
+      await sendOtpEmail({
+        email: f.email.trim(),
         name: f.name.trim(),
+        otp: code,
+        expiryMinutes: 5,
+      });
 
-        cardId: f.cardId.trim().toUpperCase(),
+      // Synchronize OTP with backend so MongoDB has it
+      try {
+        await sendOtpApi({
+          target: f.email.trim(),
+          purpose: "REGISTER_EMAIL",
+          otp: code,
+        }).unwrap();
+      } catch (apiErr) {
+        // Backend offline or mock fallback
+      }
 
-        chipNumber: f.chip.trim(),
-
-        employmentStatus:
-          f.employment === "Serving"
-            ? "SERVING"
-            : f.employment === "Retired"
-              ? "RETIRED"
-              : "DEFENCE_CIVILIAN",
-
-        organization: f.org,
-
-        dob: f.dob,
-
-        dateOfEnrollment: f.doe,
-
-        dateOfRetirement: f.dor,
-
-        entitlement: f.entitlement,
-
-        payLevel: f.payLevel,
-
-        ppo: f.ppo.trim() || undefined,
-
-        pan: f.pan.trim().toUpperCase(),
-
-        username: f.username.trim().toLowerCase(),
-
-        email: f.email.trim().toLowerCase(),
-
-        mobile: f.mobile.trim(),
-
-        password: f.pw,
-
-        mobileOtp: f.mobileOtp.trim(),
-
-        emailOtp: f.emailOtp.trim(),
-
-        category: "OTHER",
-      };
-
-      const response = await register(payload).unwrap();
-
-      console.log("Registration successful:", response);
-
-      alert(
-        response?.message ||
-        "Registration successful. Your account is pending admin approval."
-      );
-
-      go("/login");
-    } catch (error) {
-      console.error("Registration error:", error);
-
-      const message =
-        error?.data?.message ||
-        error?.data?.error ||
-        "Registration failed. Please try again.";
-
+      setIsOtpModalOpen(true);
+    } catch (err) {
+      console.error("EmailJS dispatch error:", err);
       setErrs((prev) => ({
         ...prev,
-        submit: message,
+        submit: err.message || "Failed to dispatch verification email via EmailJS.",
       }));
+    } finally {
+      setIsDispatchingOtp(false);
     }
   };
+
+  const noPaste = (e) => {
+    e.preventDefault();
+  };
+
+  const handleOtpVerified = async (verifiedOtp) => {
+    const payload = {
+      name: f.name.trim(),
+      cardId: f.cardId.trim().toUpperCase(),
+      chipNumber: f.chip.trim(),
+      employmentStatus:
+        f.employment === "Serving"
+          ? "SERVING"
+          : f.employment === "Retired"
+            ? "RETIRED"
+            : "DEFENCE_CIVILIAN",
+      organization: f.org,
+      dob: f.dob,
+      dateOfEnrollment: f.doe,
+      dateOfRetirement: f.dor,
+      entitlement: f.entitlement,
+      payLevel: f.payLevel,
+      ppo: f.ppo.trim() || undefined,
+      pan: f.pan.trim().toUpperCase(),
+      username: f.username.trim().toLowerCase(),
+      email: f.email.trim().toLowerCase(),
+      mobile: f.mobile.trim(),
+      password: f.pw,
+      emailOtp: verifiedOtp,
+      isEmailVerified: true,
+      category: "OTHER",
+    };
+
+    // 1. Persist to backend MongoDB
+    try {
+      await register(payload).unwrap();
+    } catch (apiError) {
+      console.error("Backend register error:", apiError);
+      const apiMsg =
+        apiError?.data?.message ||
+        apiError?.error ||
+        "Registration could not be completed. Please check your details.";
+      const errCode = apiError?.data?.code;
+      const fieldErrors = {};
+
+      if (errCode === "USERNAME_EXISTS") {
+        fieldErrors.username = "Username is already registered. Please choose another username.";
+      } else if (errCode === "EMAIL_EXISTS") {
+        fieldErrors.email = "Email is already registered. Please sign in or use another email.";
+      } else if (errCode === "CARD_ID_EXISTS") {
+        fieldErrors.cardId = "Card ID is already registered in the portal.";
+      } else if (errCode === "PAN_EXISTS") {
+        fieldErrors.pan = "PAN number is already registered.";
+      } else if (errCode === "MOBILE_EXISTS") {
+        fieldErrors.mobile = "Mobile number is already registered.";
+      } else if (errCode === "CHIP_NUMBER_EXISTS") {
+        fieldErrors.chip = "Chip number is already registered.";
+      }
+
+      setIsOtpModalOpen(false);
+      setErrs((prev) => ({
+        ...prev,
+        ...fieldErrors,
+        submit: apiMsg,
+      }));
+      return;
+    }
+
+    // 2. Persist to local users registry with PENDING admin approval status
+    const localRecord = userService.registerBeneficiaryUser(payload);
+    setRegisteredUser(localRecord);
+
+    // 3. Mark registration completed & transition to approval pending state
+    setIsOtpModalOpen(false);
+    setRegistrationSuccess(true);
+  };
+
+  if (registrationSuccess) {
+    return (
+      <div className="wrap auth reg">
+        <AuthArt
+          title="Registration Completed!"
+          text="Your email address has been verified. Your account is currently pending administrator verification."
+        />
+
+        <div className="panel logincard authcard" style={{ maxWidth: 560, margin: "2rem auto", textAlign: "center", padding: "2.5rem 2rem" }}>
+          <div style={{
+            width: 72,
+            height: 72,
+            borderRadius: "50%",
+            background: "rgba(22, 163, 74, 0.12)",
+            color: "#16a34a",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 1.25rem auto",
+            border: "2px solid rgba(22, 163, 74, 0.3)"
+          }}>
+            <CheckCircle2 size={40} />
+          </div>
+
+          <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "#0f172a", marginBottom: "0.5rem" }}>
+            Registration Successful!
+          </h1>
+
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.35rem 0.85rem",
+            borderRadius: "9999px",
+            background: "#eff6ff",
+            color: "#1d4ed8",
+            fontSize: "0.82rem",
+            fontWeight: 600,
+            marginBottom: "1.5rem"
+          }}>
+            <ShieldCheck size={16} /> Email Verified via EmailJS OTP
+          </div>
+
+          {/* Pending Status Alert Banner */}
+          <div style={{
+            background: "#fffbeb",
+            border: "1px solid #fde68a",
+            borderRadius: "12px",
+            padding: "1.25rem",
+            textAlign: "left",
+            marginBottom: "1.75rem"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+              <Clock size={20} color="#d97706" />
+              <strong style={{ color: "#92400e", fontSize: "0.95rem" }}>
+                Account Status: PENDING ADMIN APPROVAL
+              </strong>
+            </div>
+            <p style={{ margin: 0, color: "#78350f", fontSize: "0.88rem", lineHeight: 1.5 }}>
+              Your account has been registered and your email has been verified. You can log in to view products and search the catalog. However, <strong>Demand Generation</strong> will be available after your account is approved by the administrator.
+            </p>
+          </div>
+
+          {/* Beneficiary Details Summary Card */}
+          <div style={{
+            background: "#f8fafc",
+            borderRadius: "10px",
+            padding: "1rem 1.25rem",
+            marginBottom: "1.75rem",
+            textAlign: "left",
+            fontSize: "0.88rem",
+            border: "1px solid #e2e8f0"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid #f1f5f9" }}>
+              <span style={{ color: "#64748b" }}>Beneficiary Name:</span>
+              <strong style={{ color: "#1e293b" }}>{registeredUser?.name || f.name}</strong>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid #f1f5f9" }}>
+              <span style={{ color: "#64748b" }}>Username:</span>
+              <strong style={{ color: "#1e293b" }}>{registeredUser?.username || f.username}</strong>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid #f1f5f9" }}>
+              <span style={{ color: "#64748b" }}>Verified Email:</span>
+              <span style={{ color: "#16a34a", fontWeight: 600 }}>{f.email} ✓</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0" }}>
+              <span style={{ color: "#64748b" }}>Grocery Card ID:</span>
+              <strong style={{ color: "#1e293b" }}>{f.cardId}</strong>
+            </div>
+          </div>
+
+          <Link
+            to="/login"
+            className="btn big wide"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textDecoration: "none",
+              fontWeight: 600
+            }}
+          >
+            Proceed to Beneficiary Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="wrap auth reg">
@@ -458,6 +597,7 @@ export default function Register() {
                   maxLength={19}
                   value={f.cardId}
                   onChange={upper("cardId")}
+                  onBlur={() => checkSingleDuplicate("cardId", f.cardId)}
                   aria-invalid={!!errs.cardId}
                 />
               </div>
@@ -478,6 +618,7 @@ export default function Register() {
                   maxLength={16}
                   value={f.chip}
                   onChange={set("chip")}
+                  onBlur={() => checkSingleDuplicate("chipNumber", f.chip)}
                   aria-invalid={!!errs.chip}
                 />
               </div>
@@ -595,6 +736,7 @@ export default function Register() {
                   maxLength={10}
                   value={f.pan}
                   onChange={upper("pan")}
+                  onBlur={() => checkSingleDuplicate("pan", f.pan)}
                   aria-invalid={!!errs.pan}
                 />
               </div>
@@ -637,69 +779,45 @@ export default function Register() {
                 autoComplete="username"
                 value={f.username}
                 onChange={set("username")}
+                onBlur={() => checkSingleDuplicate("username", f.username)}
                 aria-invalid={!!errs.username}
               />
             </div>
           </Field>
 
           <div className="reg-grid">
-            <Field id="email" label="Email" req err={errs.email}>
-              <div className="fld has-btn">
+            <Field id="email" label="Email" req err={errs.email} hint="A 6-digit OTP will be sent to this email via EmailJS upon submission.">
+              <div className="fld">
                 <Mail size={18} aria-hidden />
                 <input
                   id="email"
                   type="email"
                   autoComplete="email"
+                  placeholder="name@example.com"
                   value={f.email}
                   onChange={set("email")}
+                  onBlur={() => checkSingleDuplicate("email", f.email)}
                   aria-invalid={!!errs.email}
-                  style={otpSent.email ? { borderColor: "#16a34a" } : undefined}
                 />
-                <button
-                  type="button"
-                  className="otp-btn"
-                  // onClick={() =>
-                  //   sendOtp(
-                  //     "email",
-                  //     /^\S+@\S+\.\S+$/.test(f.email),
-                  //     "Enter a valid email address.",
-                  //   )
-                  // }
-
-                  onClick={() => sendOtp("email")}
-                >
-                  {otpSent.email ? "Resend OTP" : "Send OTP"}
-                </button>
               </div>
-              {otpMsg.email && (
-                <p
-                  style={{
-                    color: "#0b8457",
-                    fontSize: "0.88rem",
-                    fontWeight: 600,
-                    margin: "0.35rem 0 0",
-                  }}
-                >
-                  {otpMsg.email}
-                </p>
-              )}
             </Field>
 
-            {otpSent.email ? (
-              <Field id="emailOtp" label="Enter OTP" req err={errs.emailOtp}>
+            <Field id="mobile" label="Mobile number" req err={errs.mobile}>
+              <div className="fld">
+                <Phone size={18} aria-hidden />
                 <input
-                  id="emailOtp"
+                  id="mobile"
+                  type="tel"
                   inputMode="numeric"
-                  maxLength={6}
-                  placeholder="Enter OTP"
-                  value={f.emailOtp}
-                  onChange={set("emailOtp")}
-                  aria-invalid={!!errs.emailOtp}
+                  maxLength={10}
+                  placeholder="10-digit mobile number"
+                  value={f.mobile}
+                  onChange={set("mobile")}
+                  onBlur={() => checkSingleDuplicate("mobile", f.mobile)}
+                  aria-invalid={!!errs.mobile}
                 />
-              </Field>
-            ) : (
-              <div />
-            )}
+              </div>
+            </Field>
           </div>
 
           <div className="reg-grid">
@@ -772,68 +890,6 @@ export default function Register() {
               </div>
             </Field>
           </div>
-
-          <div className="reg-grid">
-            <Field id="mobile" label="Mobile number" err={errs.mobile}>
-              <div className="fld has-btn">
-                <Phone size={18} aria-hidden />
-                <input
-                  id="mobile"
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={10}
-                  value={f.mobile}
-                  onChange={set("mobile")}
-                  aria-invalid={!!errs.mobile}
-                  style={
-                    otpSent.mobile ? { borderColor: "#16a34a" } : undefined
-                  }
-                />
-                <button
-                  type="button"
-                  className="otp-btn"
-                  // onClick={() =>
-                  //   sendOtp(
-                  //     "mobile",
-                  //     /^[6-9]\d{9}$/.test(f.mobile),
-                  //     "Enter a valid 10 digit mobile number.",
-                  //   )
-                  // }
-                  onClick={() => sendOtp("mobile")}
-                >
-                  {otpSent.mobile ? "Resend OTP" : "Send OTP"}
-                </button>
-              </div>
-              {otpMsg.mobile && (
-                <p
-                  style={{
-                    color: "#0b8457",
-                    fontSize: "0.88rem",
-                    fontWeight: 600,
-                    margin: "0.35rem 0 0",
-                  }}
-                >
-                  {otpMsg.mobile}
-                </p>
-              )}
-            </Field>
-
-            {otpSent.mobile ? (
-              <Field id="mobileOtp" label="Enter OTP" err={errs.mobileOtp}>
-                <input
-                  id="mobileOtp"
-                  inputMode="numeric"
-                  maxLength={6}
-                  placeholder="Enter OTP"
-                  value={f.mobileOtp}
-                  onChange={set("mobileOtp")}
-                  aria-invalid={!!errs.mobileOtp}
-                />
-              </Field>
-            ) : (
-              <div />
-            )}
-          </div>
         </Section>
 
         <label className="inline agree">
@@ -879,18 +935,63 @@ export default function Register() {
           {errs.cap && `⚠ ${errs.cap}`}
         </p>
 
-        {/* <button className="btn big wide" type="submit">
-          Submit
-        </button> */}
+        {errs.submit && (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            color: "#991b1b",
+            padding: "0.75rem 1rem",
+            borderRadius: "8px",
+            margin: "1rem 0",
+            fontSize: "0.9rem"
+          }}>
+            <AlertCircle size={18} />
+            <span>{errs.submit}</span>
+          </div>
+        )}
 
         <button
           className="btn big wide"
           type="submit"
-          disabled={isRegistering}
+          disabled={isRegistering || isDispatchingOtp}
+          style={{ position: "relative" }}
         >
-          {isRegistering ? "Creating Account..." : "Submit"}
+          {isDispatchingOtp
+            ? "Sending Email OTP via EmailJS..."
+            : isRegistering
+              ? "Finalizing Registration..."
+              : "Register & Verify Email via OTP"}
         </button>
       </form>
+
+      {/* Dedicated EmailJS OTP Verification Modal */}
+      <EmailOtpModal
+        isOpen={isOtpModalOpen}
+        onClose={() => setIsOtpModalOpen(false)}
+        email={f.email}
+        expectedOtp={generatedOtp}
+        onVerified={handleOtpVerified}
+        onResendOtp={async () => {
+          const newCode = generateOtp();
+          setGeneratedOtp(newCode);
+          await sendOtpEmail({
+            email: f.email.trim(),
+            name: f.name.trim(),
+            otp: newCode,
+            expiryMinutes: 5,
+          });
+          try {
+            await sendOtpApi({
+              target: f.email.trim(),
+              purpose: "REGISTER_EMAIL",
+              otp: newCode,
+            }).unwrap();
+          } catch (e) { }
+        }}
+      />
     </div>
   );
 }

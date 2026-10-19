@@ -8,7 +8,9 @@ import {
   X,
   ShieldCheck,
   Phone,
+  Bell,
 } from "lucide-react";
+import { useGetNotificationsQuery } from "../features/notifications/notificationApi.js";
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import SearchBox from "./SearchBox.jsx";
@@ -24,17 +26,26 @@ const nav = [
   ["/info/about", "About CSD"],
   ["/info/contact", "Contact"],
 ];
-const forces = [
-  "https://afd.csdindia.gov.in/wp-content/themes/csdafdonline/assets/images/homepage/pics/08/Army.png",
-  "https://afd.csdindia.gov.in/wp-content/themes/csdafdonline/assets/images/homepage/pics/2023/Indian-navy.png",
-  "https://afd.csdindia.gov.in/wp-content/themes/csdafdonline/assets/images/homepage/pics/2023/Air-force.png",
+import { useGetBannersQuery } from "../features/admin/adminApi.js";
+
+const DEFAULT_FORCES = [
+  { name: "Indian Army", imageUrl: "https://afd.csdindia.gov.in/wp-content/themes/csdafdonline/assets/images/homepage/pics/08/Army.png" },
+  { name: "Indian Navy", imageUrl: "https://afd.csdindia.gov.in/wp-content/themes/csdafdonline/assets/images/homepage/pics/2023/Indian-navy.png" },
+  { name: "Indian Air Force", imageUrl: "https://afd.csdindia.gov.in/wp-content/themes/csdafdonline/assets/images/homepage/pics/2023/Air-force.png" },
 ];
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const loc = useLocation(),
     { cart, wish } = useStore();
-  const { isAuthenticated, user, roleHome } = useAuth();
+  const { isAuthenticated, user, roleHome, role } = useAuth();
+  const { data: dynamicBanners } = useGetBannersQuery({ position: 'forces_header' });
+
+  const { data: notificationsResp } = useGetNotificationsQuery(undefined, { skip: !isAuthenticated });
+  const unreadCount = notificationsResp?.unreadCount ?? (Array.isArray(notificationsResp?.data) ? notificationsResp.data.filter(n => !n.read && !n.isRead).length : 0);
+
+  const forcesList = (dynamicBanners && dynamicBanners.length > 0) ? dynamicBanners : DEFAULT_FORCES;
+
   const cur = loc.pathname + loc.search;
   const isActive = (to) =>
     to === "/"
@@ -58,14 +69,19 @@ export default function Header() {
               <Phone size={13} aria-hidden /> Help Desk
             </Link>
             <span className="forces" aria-hidden>
-              {forces.map((s) => (
-                <img
-                  key={s}
-                  src={s}
-                  alt=""
-                  onError={(e) => (e.currentTarget.style.display = "none")}
-                />
-              ))}
+              {forcesList.map((item, idx) => {
+                const src = item.imageUrl || item;
+                const title = item.name || "Armed Forces";
+                return (
+                  <img
+                    key={item._id || item.id || src || idx}
+                    src={src}
+                    alt={title}
+                    title={title}
+                    onError={(e) => (e.currentTarget.style.display = "none")}
+                  />
+                );
+              })}
             </span>
           </div>
         </div>
@@ -114,13 +130,32 @@ export default function Header() {
             {cart.length > 0 && <b>{cart.length}</b>}
             <span>Cart</span>
           </Link>
-          {isAuthenticated ? (
-            <Link to={roleHome || "/beneficiary/dashboard"} className="act" aria-label="Portal Dashboard">
+          {isAuthenticated && (
+            <Link
+              to="/beneficiary/notifications"
+              className="act"
+              aria-label={`Notifications, ${unreadCount} unread`}
+              title="Notifications"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && <b>{unreadCount}</b>}
+              <span>Alerts</span>
+            </Link>
+          )}
+          {isAuthenticated && user ? (
+            <Link
+              to={String(role || user.role).toLowerCase() === 'beneficiary' ? '/beneficiary/profile' : (roleHome || '/beneficiary/profile')}
+              className="act"
+              aria-label="Beneficiary Profile"
+              title="View Beneficiary Profile"
+            >
               <User size={20} color="var(--brand)" />
-              <span style={{ fontWeight: 600, color: "var(--brand)" }}>{user?.name ? user.name.split(" ")[0] : "Portal"}</span>
+              <span style={{ fontWeight: 600, color: "var(--brand)" }}>
+                {user?.name ? user.name.split(" ")[0] : (user?.username || "Profile")}
+              </span>
             </Link>
           ) : (
-            <Link to="/login" className="act" aria-label="Login">
+            <Link to="/login" className="act" aria-label="Login" title="Login to CSD AFD Portal">
               <User size={20} />
               <span>Login</span>
             </Link>

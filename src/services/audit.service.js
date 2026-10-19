@@ -1,40 +1,68 @@
 import { apiClient } from './apiClient.js';
-import { MOCK_AUDIT_LOGS, MOCK_AUTH_LOGS } from '../data/mock/auditLogs.mock.js';
 
 export const auditService = {
   async getAuditLogs(filter = {}) {
-    let list = [...MOCK_AUDIT_LOGS];
-    if (filter.module && filter.module !== 'All') {
-      list = list.filter((a) => a.module.toLowerCase().includes(filter.module.toLowerCase()));
+    try {
+      const token = localStorage.getItem('csd_auth_token');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/audit?limit=${filter.limit || 10}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.data?.items || json.data || [];
+        if (Array.isArray(items)) {
+          return {
+            data: items.map((l) => ({
+              id: l._id || l.id,
+              action: l.action || 'MUTATION',
+              user: l.userName || l.user || 'Administrator',
+              module: l.module || l.entityType || 'SYSTEM',
+              ip: l.ip || '127.0.0.1',
+              status: l.status || 'SUCCESS',
+              timestamp: l.timestamp ? new Date(l.timestamp).toLocaleString() : new Date().toLocaleString()
+            }))
+          };
+        }
+      }
+    } catch (e) {
+      // Backend offline or error
     }
-    if (filter.status && filter.status !== 'All') {
-      list = list.filter((a) => a.status.toLowerCase() === filter.status.toLowerCase());
-    }
-    if (filter.search) {
-      const q = filter.search.toLowerCase();
-      list = list.filter(
-        (a) =>
-          a.user.toLowerCase().includes(q) ||
-          a.action.toLowerCase().includes(q) ||
-          a.entity.toLowerCase().includes(q)
-      );
-    }
-    const res = await apiClient.get('/audit/logs', list);
-    return res.data;
+    return { data: [] }; // No dummy mock logs
   },
 
   async getAuthLogs(filter = {}) {
-    let list = [...MOCK_AUTH_LOGS];
-    if (filter.search) {
-      const q = filter.search.toLowerCase();
-      list = list.filter(
-        (a) =>
-          a.username.toLowerCase().includes(q) ||
-          a.name.toLowerCase().includes(q) ||
-          a.ip.toLowerCase().includes(q)
-      );
+    try {
+      const token = localStorage.getItem('csd_auth_token');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/audit/auth-logs?limit=${filter.limit || 10}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.data?.items || json.data || [];
+        if (Array.isArray(items)) {
+          return {
+            data: items.map((l) => ({
+              id: l._id || l.id,
+              username: l.identifier || l.username || 'User',
+              name: l.userId?.name || l.name || l.identifier || 'User',
+              ip: l.ip || '127.0.0.1',
+              event: l.event || (l.success ? 'LOGIN_SUCCESS' : 'LOGIN_FAILED'),
+              timestamp: l.at ? new Date(l.at).toLocaleString() : new Date().toLocaleString()
+            }))
+          };
+        }
+      }
+    } catch (e) {
+      // Backend offline or error
     }
-    const res = await apiClient.get('/audit/auth-logs', list);
-    return res.data;
+    return { data: [] }; // No dummy mock logs
   }
 };
+
+export default auditService;

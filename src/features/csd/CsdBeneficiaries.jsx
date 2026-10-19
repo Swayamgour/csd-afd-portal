@@ -33,37 +33,115 @@ export default function CsdBeneficiaries() {
     load();
   }, [searchTerm]);
 
+  const handleApprove = async (row) => {
+    try {
+      await userService.approveBeneficiaryUser(row.id, 'APPROVED', 'Approved by CSD Nodal Officer');
+      const list = await userService.getUsers({ role: ROLES.BENEFICIARY, search: searchTerm });
+      setBeneficiaries(list);
+    } catch (err) {
+      alert(err.message || 'Failed to approve');
+    }
+  };
+
+  const handleReject = async (row) => {
+    const reason = window.prompt('Reason for rejection:', 'Canteen grocery card details unverified') || 'Rejected by CSD officer';
+    try {
+      await userService.approveBeneficiaryUser(row.id, 'REJECTED', reason);
+      const list = await userService.getUsers({ role: ROLES.BENEFICIARY, search: searchTerm });
+      setBeneficiaries(list);
+    } catch (err) {
+      alert(err.message || 'Failed to reject');
+    }
+  };
+
   const columns = [
     {
-      header: 'Service No.',
+      header: 'Service / Card No.',
       accessor: 'serviceNumber',
-      render: (row) => <span className="font-mono font-semibold text-brand">{row.serviceNumber}</span>
+      render: (row) => (
+        <div>
+          <span className="font-mono font-semibold text-brand">{row.serviceNumber || row.cardId || row.username}</span>
+          {row.cardId && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Card: {row.cardId}</div>}
+        </div>
+      )
     },
     { header: 'Beneficiary Name', accessor: 'name', render: (row) => <span className="font-semibold">{row.name}</span> },
-    { header: 'Rank & Arm', accessor: 'rank', render: (row) => <span className="small">{row.rank} ({row.service})</span> },
-    { header: 'Pay Level', accessor: 'payLevel', render: (row) => <span className="small font-medium text-brand">{row.payLevel}</span> },
-    { header: 'Depot Jurisdiction', accessor: 'depot' },
     {
-      header: 'Entitlement Quota',
-      accessor: 'eligibility',
+      header: 'Email & Verification',
+      accessor: 'email',
       render: (row) => (
-        <span className="badge-pill badge-success badge-sm">
-          Car Cap: ₹ {(row.eligibility?.fourWheelerCap / 100000).toFixed(1)}L
-        </span>
+        <div>
+          <div style={{ fontSize: '0.82rem' }}>{row.email || 'N/A'}</div>
+          {row.isEmailVerified ? (
+            <span className="badge-pill badge-success badge-sm" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem' }}>
+              ✓ Email Verified (OTP)
+            </span>
+          ) : (
+            <span className="badge-pill badge-sm" style={{ background: '#fee2e2', color: '#991b1b', fontSize: '0.7rem' }}>
+              Unverified
+            </span>
+          )}
+        </div>
       )
     },
+    { header: 'Rank & Arm', accessor: 'rank', render: (row) => <span className="small">{row.rank || 'Armed Forces Member'} ({row.service || row.organization || 'Defence'})</span> },
+    { header: 'Pay Level', accessor: 'payLevel', render: (row) => <span className="small font-medium text-brand">{row.payLevel || 'Level 1'}</span> },
     {
-      header: 'Action',
+      header: 'Approval Status',
+      accessor: 'adminApproval',
+      render: (row) => {
+        const isApproved = row.status === 'Active' || row.adminApproval === 'APPROVED' || row.verificationStatus === 'APPROVED' || row.verificationStatus === 'VERIFIED';
+        const isRejected = row.status === 'Rejected' || row.adminApproval === 'REJECTED' || row.verificationStatus === 'REJECTED';
+        return (
+          <span
+            className={`badge-pill ${isApproved ? 'badge-success' : isRejected ? 'badge-danger' : 'badge-warning'} badge-sm`}
+            style={{ fontWeight: 600, fontSize: '0.75rem' }}
+          >
+            {isApproved ? 'APPROVED' : isRejected ? 'REJECTED' : 'PENDING'}
+          </span>
+        );
+      }
+    },
+    {
+      header: 'Actions',
       accessor: 'id',
-      render: (row) => (
-        <button
-          type="button"
-          className="btn sm out"
-          onClick={() => setSelectedBeneficiary(row)}
-        >
-          View Entitlement
-        </button>
-      )
+      render: (row) => {
+        const isPending = row.status === 'Pending' || row.adminApproval === 'PENDING' || row.verificationStatus === 'PENDING';
+        return (
+          <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+            {isPending && (
+              <>
+                <button
+                  type="button"
+                  className="btn sm"
+                  style={{ background: '#16a34a', color: '#fff', fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: '4px', border: 'none' }}
+                  onClick={() => handleApprove(row)}
+                  title="Approve Beneficiary Registration"
+                >
+                  Approve
+                </button>
+                <button
+                  type="button"
+                  className="btn sm out"
+                  style={{ borderColor: '#dc2626', color: '#dc2626', fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: '4px' }}
+                  onClick={() => handleReject(row)}
+                  title="Reject Beneficiary Registration"
+                >
+                  Reject
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              className="btn sm out"
+              style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
+              onClick={() => setSelectedBeneficiary(row)}
+            >
+              Details
+            </button>
+          </div>
+        );
+      }
     }
   ];
 

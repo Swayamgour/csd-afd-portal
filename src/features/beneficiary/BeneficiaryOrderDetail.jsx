@@ -1,49 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Download, Truck, Store, Calendar, ShieldCheck, MapPin } from 'lucide-react';
+import { ArrowLeft, Download, Truck, Store, Calendar, ShieldCheck, MapPin, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Timeline from '../../components/common/Timeline.jsx';
 import { LoadingState, EmptyState } from '../../components/common/States.jsx';
-import { orderService } from '../../services/order.service.js';
+import { useGetOrderByIdQuery } from '../demand/demandApi.js';
+import { getErrorMessage } from '../../utils/apiError.js';
 
 export default function BeneficiaryOrderDetail() {
   const { id } = useParams();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const decodedId = decodeURIComponent(id);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const decodedId = decodeURIComponent(id);
-        const data = await orderService.getOrderById(decodedId);
-        setOrder(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [id]);
+  const { data: orderData, isLoading: loading, isError, error, refetch } = useGetOrderByIdQuery(decodedId);
 
-  if (loading) return <LoadingState message="Retrieving supply order..." />;
-  if (!order) {
+  const order = orderData?.data || orderData;
+
+  if (loading) return <LoadingState message="Retrieving supply order from CSD logs..." />;
+
+  if (isError || !order) {
     return (
       <EmptyState
         title="Order Not Found"
-        message="The supply order could not be located in depot logs."
+        message={getErrorMessage(error, 'The supply order could not be located in depot logs.')}
         action={
-          <Link to="/beneficiary/orders" className="btn">
+          <Link to="/beneficiary/orders" className="btn btn-primary">
             Back to Orders
           </Link>
         }
       />
     );
   }
+
+  const timelineItems = [
+    {
+      step: 'Supply Order Issued',
+      date: new Date(order.createdAt).toLocaleDateString('en-IN'),
+      status: 'completed',
+      note: `Certified Supply Order No: ${order.orderNo || order._id}`,
+    },
+    {
+      step: 'OEM Factory Allocation',
+      date: order.chassisNumber ? 'Allocated' : 'In Allocation',
+      status: order.chassisNumber ? 'completed' : 'current',
+      note: order.chassisNumber ? `Chassis: ${order.chassisNumber}` : 'Factory allocation in progress',
+    },
+    {
+      step: 'Dealership Dispatch & Inspection',
+      date: order.status === 'DELIVERED' ? 'Delivered' : 'In Transit',
+      status: order.status === 'DELIVERED' ? 'completed' : order.chassisNumber ? 'current' : 'pending',
+      note: 'Pre-delivery inspection & PDI handover',
+    },
+  ];
 
   return (
     <div className="order-detail-page">
@@ -55,17 +65,22 @@ export default function BeneficiaryOrderDetail() {
       </div>
 
       <PageHeader
-        title={`Supply Order · ${order.id}`}
-        subtitle={`Issued on ${order.orderDate} for ${order.beneficiaryName}`}
+        title={`Supply Order · ${order.orderNo || order._id?.slice(-8).toUpperCase()}`}
+        subtitle={`Issued on ${new Date(order.createdAt).toLocaleDateString('en-IN')}`}
         badge={<StatusBadge status={order.status} />}
         actions={
-          <Button
-            variant="outline"
-            icon={Download}
-            onClick={() => alert(`Downloading Certified Supply Order PDF: ${order.id}`)}
-          >
-            Download Certified Order Copy
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh">
+              <RefreshCw size={14} />
+            </Button>
+            <Button
+              variant="outline"
+              icon={Download}
+              onClick={() => alert(`Downloading Certified Supply Order PDF: ${order.orderNo || order._id}`)}
+            >
+              Download Certified Copy
+            </Button>
+          </div>
         }
       />
 
@@ -75,12 +90,10 @@ export default function BeneficiaryOrderDetail() {
           <Card title="Vehicle Allocation Specification">
             <div className="info-kv-list">
               <div className="kv-row between small py-1 border-bottom">
-                <span className="muted">Item Name:</span>
-                <span className="font-semibold">{order.productName}</span>
-              </div>
-              <div className="kv-row between small py-1 border-bottom">
-                <span className="muted">OEM Manufacturer:</span>
-                <span className="font-medium">{order.oem}</span>
+                <span className="muted">Demand Reference:</span>
+                <span className="font-semibold text-brand">
+                  {order.demandId?.demandNo || order.demandId || 'Direct'}
+                </span>
               </div>
               <div className="kv-row between small py-1 border-bottom">
                 <span className="muted">Allocated Chassis / VIN:</span>
@@ -91,49 +104,23 @@ export default function BeneficiaryOrderDetail() {
                 <span className="font-mono">{order.engineNumber || 'In Allocation'}</span>
               </div>
               <div className="kv-row between small py-1 border-bottom">
-                <span className="muted">OEM Invoice Ref:</span>
-                <span className="font-mono">{order.invoiceNumber || 'Pending Invoice'}</span>
+                <span className="muted">Total Order Amount:</span>
+                <span className="font-bold text-green">₹ {(order.amount || 0).toLocaleString('en-IN')}</span>
               </div>
               <div className="kv-row between small py-1">
-                <span className="muted">Sanction Amount Realized:</span>
-                <span className="font-bold text-green">₹ {order.amount?.toLocaleString('en-IN')}</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card title="Dealership Showroom Details">
-            <div className="info-kv-list">
-              <div className="kv-row between small py-1 border-bottom">
-                <span className="muted row align-center gap-1">
-                  <Store size={14} /> Dealership Name:
-                </span>
-                <span className="font-semibold">{order.dealer}</span>
-              </div>
-              <div className="kv-row between small py-1 border-bottom">
-                <span className="muted">Dealer Point of Contact:</span>
-                <span className="font-medium">{order.dealerContact}</span>
-              </div>
-              <div className="kv-row between small py-1">
-                <span className="muted row align-center gap-1">
-                  <Calendar size={14} /> Expected Delivery Date:
-                </span>
-                <span className="font-bold text-brand">{order.expectedDeliveryDate || 'Within 10 days'}</span>
+                <span className="muted">Order Status:</span>
+                <StatusBadge status={order.status} />
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Right Column: Dispatch Timeline */}
-        <Card title="Factory Dispatch & Handover Milestones">
-          <Timeline
-            items={[
-              { step: 'Supply Order Generated by Depot', date: order.orderDate, status: 'completed', note: 'Digitally signed and transmitted to OEM Desk' },
-              { step: 'Chassis VIN Allocated by OEM', date: order.allocatedDate || 'Completed', status: 'completed', note: `VIN: ${order.chassisNumber}` },
-              { step: 'Vehicle in Factory Transit', date: 'In Transit', status: order.status === 'In_Transit' ? 'current' : 'completed', note: 'Carrier vehicle en route to local dealer stockyard' },
-              { step: 'Showroom Delivery & Key Handover', date: order.deliveredDate || `Target: ${order.expectedDeliveryDate}`, status: order.status === 'Delivered' ? 'completed' : 'pending', note: 'Customer physical inspection and gatepass signoff' }
-            ]}
-          />
-        </Card>
+        {/* Right Column: Timeline */}
+        <div className="flex-col gap-2">
+          <Card title="Milestone Fulfillment Tracker" subtitle="Live tracking across Depot & Dealer">
+            <Timeline items={timelineItems} />
+          </Card>
+        </div>
       </div>
     </div>
   );
