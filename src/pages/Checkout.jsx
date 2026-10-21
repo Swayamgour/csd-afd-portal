@@ -16,7 +16,8 @@ import {
   Lock,
   ArrowRight,
   ArrowLeft,
-  Copy
+  Copy,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { DocumentUpload } from '../components/common/DocumentUpload.jsx';
@@ -233,30 +234,77 @@ export default function Checkout() {
   const finalizeDemandCreation = async (methodName, initialStatus, paymentDetails = null) => {
     setSubmitting(true);
     try {
-      let sanctionLetterUrl = '';
-      if (loanSanctionFile) {
+      const uploadSingleFile = async (fileObj, docType) => {
+        if (!fileObj) return null;
         try {
           const fd = new FormData();
-          fd.append('files', loanSanctionFile);
+          fd.append('files', fileObj);
           const upRes = await uploadFileMutation(fd).unwrap();
           const upItem = Array.isArray(upRes) ? upRes[0] : upRes?.data?.[0];
-          sanctionLetterUrl = upItem?.url || '';
+          if (upItem?.url) {
+            return {
+              type: docType,
+              name: fileObj.name || docType,
+              url: upItem.url,
+            };
+          }
         } catch (e) {
-          console.error('Sanction letter upload failed:', e);
+          console.warn(`Upload failed for ${docType}:`, e);
+        }
+        return null;
+      };
+
+      const uploadedDocs = [];
+      const canteenDoc = await uploadSingleFile(canteenCardFile, 'CANTEEN_CARD');
+      if (canteenDoc) uploadedDocs.push(canteenDoc);
+
+      const availDoc = await uploadSingleFile(availabilityCertFile, 'AVAILABILITY_CERTIFICATE');
+      if (availDoc) uploadedDocs.push(availDoc);
+
+      const panDoc = await uploadSingleFile(panCopyFile, 'PAN_CARD');
+      if (panDoc) uploadedDocs.push(panDoc);
+
+      const ppoDoc = await uploadSingleFile(ppoDocFile, 'PPO_DISCHARGE_BOOK');
+      if (ppoDoc) uploadedDocs.push(ppoDoc);
+
+      const pensionDoc = await uploadSingleFile(pensionSlipFile, 'PENSION_SLIP');
+      if (pensionDoc) uploadedDocs.push(pensionDoc);
+
+      let sanctionLetterUrl = '';
+      if (loanSanctionFile) {
+        const loanDoc = await uploadSingleFile(loanSanctionFile, 'LOAN_SANCTION_LETTER');
+        if (loanDoc) {
+          uploadedDocs.push(loanDoc);
+          sanctionLetterUrl = loanDoc.url;
         }
       }
 
       const demandPayload = {
-        productId: product.productId || '64224',
+        productId: product.productId || product._id || product.id,
         quantity: 1,
-        depotId: matchedDepot?._id,
-        dealerId: matchedDealer?._id,
-        urcId: matchedUrc?._id,
+        depotId: product.depotId || matchedDepot?._id,
+        dealerId: product.dealerId || matchedDealer?._id,
+        urcId: product.urcId || matchedUrc?._id,
         selectedColor: product.selectedColor || 'Standard',
+        dealerPrice: Number(dealerPriceInput) || Number(product.priceToCustomer) || Number(product.productPrice) || 0,
+        priceZone: product.selectedZone || product.priceZone || 'DELHI NCR',
+        previousPurchase: {
+          hasPurchased: prevPurchase === 'Yes',
+          purchaseDate: prevPurchase === 'Yes' && prevPurchaseDate ? prevPurchaseDate : null,
+          registrationNo: '',
+        },
+        deliveryAddress: {
+          address: `${addressLine}${townCity ? ', ' + townCity : ''}`,
+          state: billingState || 'Delhi',
+          pinCode: pincode || '110010',
+          mobile: userAccount.mobile || user?.mobile || '',
+        },
+        paymentMethod: methodName || paymentMode || 'Direct Bank Transfer',
+        documents: uploadedDocs,
         loan: {
           isLoan: hasLoan === 'Yes',
           loanAmount: hasLoan === 'Yes' ? Number(loanAmount) : 0,
-          bankName: hasLoan === 'Yes' ? loanBank : '',
+          bankName: hasLoan === 'Yes' ? 'Nationalized / Armed Forces Bank' : '',
           sanctionLetterUrl,
         },
         remarks: remarks || 'AFD Demand generated via Online Portal',
@@ -758,26 +806,37 @@ export default function Checkout() {
                   {/* Dealer Price Mentioned in Availability Certificate (Fig. 15 & 16) */}
                   <div className="dealer-price-validation-box">
                     <div className="dealer-price-header-row">
-                      <label className="csd-form-label">
+                      <label className="csd-form-label" style={{ margin: 0, fontWeight: 700 }}>
                         Dealer Price mentioned in Availability certificate <span className="doc-upload-required-star">*</span>
                       </label>
                       <button
                         type="button"
                         onClick={handleMatchPrice}
                         className="btn-autofill-price"
+                        title="Auto-fill exact Net Price"
                       >
-                        Auto-fill Net Price (₹ {netPrice.toLocaleString('en-IN')})
+                        <Sparkles size={13} aria-hidden />
+                        <span>Auto-fill Net Price (₹ {netPrice.toLocaleString('en-IN')})</span>
                       </button>
                     </div>
 
-                    <input
-                      type="number"
-                      className={`dealer-price-input ${isPriceMatched ? 'matched' : 'mismatched'}`}
-                      value={dealerPriceInput}
-                      onChange={(e) => setDealerPriceInput(e.target.value)}
-                      placeholder="Enter exact price quoted in availability certificate"
-                      required
-                    />
+                    <div className={`dealer-price-input-wrapper ${isPriceMatched ? 'is-matched' : 'is-mismatched'}`}>
+                      <span className="dealer-price-currency-tag">₹</span>
+                      <input
+                        type="number"
+                        className="dealer-price-field"
+                        value={dealerPriceInput}
+                        onChange={(e) => setDealerPriceInput(e.target.value)}
+                        placeholder="Enter exact price quoted in availability certificate"
+                        required
+                      />
+                      {isPriceMatched && (
+                        <span className="dealer-price-matched-indicator">
+                          <CheckCircle2 size={16} />
+                          <span>Matched with Net Price</span>
+                        </span>
+                      )}
+                    </div>
 
                     {/* Fig. 16, 17, 18 Alert */}
                     {!isPriceMatched && (

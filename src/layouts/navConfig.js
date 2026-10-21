@@ -97,8 +97,8 @@ export const ROLE_SIDEBAR_NAV = {
   ],
 
   [ROLES.DEALER]: [
-    { title: 'Dealer Dashboard', to: '/dealer/dashboard', icon: LayoutDashboard },
-    { title: 'Supply Orders', to: '/dealer/orders', icon: Truck },
+    { title: 'Verification Desk', to: '/dealer/dashboard', icon: FileCheck },
+    { title: 'Vehicle Handover', to: '/dealer/orders', icon: Truck },
     { title: 'Allotted Inventory', to: '/dealer/products', icon: Package },
     { title: 'Customer Deliveries', to: '/dealer/customers', icon: Users },
     { title: 'Delivery Proofs', to: '/dealer/documents', icon: FileCheck },

@@ -1,27 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, ArrowRight, Headset, Info, ShieldAlert, BadgePercent, BadgeCheck, Truck, Wallet, Car, Bike, Refrigerator, BookOpen, FileCheck2, CircleCheck, Phone } from "lucide-react";
 import ProductCard from "../components/ProductCard.jsx";
 import SearchBox from "../components/SearchBox.jsx";
 import Catalog from "../components/Catalog.jsx";
 import { products } from "../data/products.js";
+import { fetchProducts } from "../data/api.js";
 import { onImgError } from "../data/utils.js";
 import { useGetBannersQuery } from "../features/admin/adminApi.js";
 
-const img = (id) => products.find((p) => p.id === id);
-const cats = [
-  ["Automobiles", "Cars", "/products?cat=car", "car", "c5", '/assets/maruti1.png', Car, products.filter((p) => p.category === "car").length],
-  ["Automobiles", "Bikes", "/products?cat=bike", "bike", "b4", '/assets/bullet1.png', Bike, products.filter((p) => p.category === "bike").length],
-  ["Home & Living", "Appliances", "/products?cat=white-goods", "app", "w6", '/assets/white_goods1.png', Refrigerator, products.filter((p) => p.category === "white-goods").length],
-];
 const perks = [
   [BadgePercent, "Concessional prices", "Special CSD rates for the Armed Forces family"],
   [BadgeCheck, "100% free service", "No agent or registration fee, ever"],
   [Wallet, "Easy online payment", "Pay securely against your supply order"],
   [Truck, "Supply order delivery", "Track and verify your order online"],
 ];
-const topBrands = Object.entries(products.reduce((m, p) => ((m[p.brand] = (m[p.brand] || 0) + 1), m), {})).sort((a, b) => b[1] - a[1]).slice(0, 12);
-const deals = products.filter((p) => p.discount > 0).sort((a, b) => b.discount - a.discount).slice(0, 5);
 
 const featured = { to: "/products", tag: "Latest", title: "Browse the full range of cars, bikes and home appliances", text: "Compare models side by side and check price and availability before you order." };
 const notices = [
@@ -43,6 +36,27 @@ export const Shop = ({ to = "/products", children = "Shop now" }) => (
 
 export default function Home() {
   const [cat, setCat] = useState("car");
+  const [allProducts, setAllProducts] = useState(products);
+
+  useEffect(() => {
+    fetchProducts().then((res) => {
+      if (Array.isArray(res) && res.length) setAllProducts(res);
+    }).catch(() => {});
+  }, []);
+
+  const cats = useMemo(() => [
+    ["Automobiles", "Cars", "/products?cat=car", "car", "c5", '/assets/maruti1.png', Car, allProducts.filter((p) => p.category === "car").length],
+    ["Automobiles", "Bikes", "/products?cat=bike", "bike", "b4", '/assets/bullet1.png', Bike, allProducts.filter((p) => p.category === "bike").length],
+    ["Home & Living", "Appliances", "/products?cat=white-goods", "app", "w6", '/assets/white_goods1.png', Refrigerator, allProducts.filter((p) => p.category === "white-goods").length],
+  ], [allProducts]);
+
+  const topBrands = useMemo(() => {
+    return Object.entries(allProducts.reduce((m, p) => {
+      if (p.brand) m[p.brand] = (m[p.brand] || 0) + 1;
+      return m;
+    }, {})).sort((a, b) => b[1] - a[1]).slice(0, 12);
+  }, [allProducts]);
+
   const { data: dynamicHeroBanners } = useGetBannersQuery({ position: 'home_hero' });
   const heroBanners = (dynamicHeroBanners && dynamicHeroBanners.length > 0)
     ? dynamicHeroBanners

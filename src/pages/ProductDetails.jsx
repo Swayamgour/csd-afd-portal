@@ -13,9 +13,8 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { COLOR_HEX } from "../data/art.js";
 import { FEATURES, STEPS } from "../data/details.js";
 import { CAT_LABEL, CAT_PLURAL, inr, priceText, priceFrom, rupees, onImgError } from "../data/utils.js";
-import { MOCK_PRICE_ZONES } from "../data/mock/locations.mock.js";
 import { useGetProductByIdQuery, useGetProductsQuery, useCheckProductEligibilityMutation } from "../features/catalog/productApi.js";
-import { useGetDealersQuery, useGetDepotsQuery, useGetUrcsQuery } from "../features/org/orgApi.js";
+import { useGetDealersQuery, useGetDepotsQuery, useGetUrcsQuery, useGetPriceZonesQuery } from "../features/org/orgApi.js";
 import { DealerDetailsModal } from "../components/modals/DealerDetailsModal.jsx";
 import { URCDetailsModal } from "../components/modals/URCDetailsModal.jsx";
 import { EligibilityModal } from "../components/modals/EligibilityModal.jsx";
@@ -98,6 +97,7 @@ export default function ProductDetails() {
   const { data: allProductsData } = useGetProductsQuery({ limit: 20 });
   const all = allProductsData?.items || [];
 
+  const { data: priceZonesList = [] } = useGetPriceZonesQuery();
   const { data: dealersList = [] } = useGetDealersQuery();
   const { data: depotsList = [] } = useGetDepotsQuery();
   const { data: urcsList = [] } = useGetUrcsQuery();
@@ -163,11 +163,11 @@ export default function ProductDetails() {
   const [zoom, setZoom] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // CSD AFD Selection states
-  const [selectedZone, setSelectedZone] = useState('DELHI NCR (DELHI GREATER NOIDA FARIDABAD GURGAON)');
-  const [selectedDealer, setSelectedDealer] = useState('');
-  const [selectedDepot, setSelectedDepot] = useState('');
-  const [selectedUrc, setSelectedUrc] = useState('');
+  // CSD AFD Selection states - Clean MongoDB ObjectIds
+  const [selectedZoneId, setSelectedZoneId] = useState('');
+  const [selectedDealerId, setSelectedDealerId] = useState('');
+  const [selectedDepotId, setSelectedDepotId] = useState('');
+  const [selectedUrcId, setSelectedUrcId] = useState('');
 
   // Modals state
   const [dealerModalOpen, setDealerModalOpen] = useState(false);
@@ -185,17 +185,98 @@ export default function ProductDetails() {
     }
   }, [p]);
 
+  // Dynamic Cascading Computations
+  const currentZone = useMemo(() => {
+    return priceZonesList.find((z) => String(z._id) === String(selectedZoneId) || z.name === selectedZoneId) || priceZonesList[0];
+  }, [priceZonesList, selectedZoneId]);
+
+  const availableDepots = useMemo(() => {
+    if (!currentZone) return depotsList;
+    if (currentZone.depotIds?.length) {
+      const ids = currentZone.depotIds.map((d) => String(d._id || d));
+      const filtered = depotsList.filter((dep) => ids.includes(String(dep._id)));
+      if (filtered.length) return filtered;
+    }
+    if (currentZone.state) {
+      const byState = depotsList.filter((dep) => dep.state?.toUpperCase() === currentZone.state?.toUpperCase());
+      if (byState.length) return byState;
+    }
+    return depotsList;
+  }, [currentZone, depotsList]);
+
+  const currentDepot = useMemo(() => {
+    return availableDepots.find((d) => String(d._id) === String(selectedDepotId)) || availableDepots[0];
+  }, [availableDepots, selectedDepotId]);
+
+  const availableDealers = useMemo(() => {
+    if (!dealersList.length) return [];
+    const prodOemId = p?.oemId?._id || p?.oemId || p?.brandId?.oemId;
+    let list = dealersList;
+    if (prodOemId) {
+      const oemMatched = list.filter((d) => {
+        const dOem = d.oemId?._id || d.oemId;
+        return String(dOem) === String(prodOemId);
+      });
+      if (oemMatched.length) list = oemMatched;
+    }
+    if (currentZone?.state) {
+      const stateMatched = list.filter((d) => d.state?.toUpperCase() === currentZone.state?.toUpperCase());
+      if (stateMatched.length) return stateMatched;
+    }
+    return list;
+  }, [dealersList, p, currentZone]);
+
+  const currentDealer = useMemo(() => {
+    return availableDealers.find((d) => String(d._id) === String(selectedDealerId)) || availableDealers[0] || {
+      name: 'Authorized Dealer',
+      address: 'Delhi Cantt, New Delhi',
+      phone: '+91 11 2345 6789',
+    };
+  }, [availableDealers, selectedDealerId]);
+
+  const availableUrcs = useMemo(() => {
+    if (!currentDepot) return urcsList;
+    const filtered = urcsList.filter((u) => {
+      const depId = u.depotId?._id || u.depotId;
+      return String(depId) === String(currentDepot._id);
+    });
+    return filtered.length ? filtered : urcsList;
+  }, [currentDepot, urcsList]);
+
+  const currentUrc = useMemo(() => {
+    return availableUrcs.find((u) => String(u._id) === String(selectedUrcId)) || availableUrcs[0] || {
+      name: 'Delhi Cantt URC',
+      location: 'Delhi',
+    };
+  }, [availableUrcs, selectedUrcId]);
+
+  // Synchronize selection state cascades
   useEffect(() => {
-    if (dealersList.length && !selectedDealer) setSelectedDealer(dealersList[0].name);
-  }, [dealersList, selectedDealer]);
+    if (priceZonesList.length && !selectedZoneId) {
+      setSelectedZoneId(priceZonesList[0]._id);
+    }
+  }, [priceZonesList, selectedZoneId]);
 
   useEffect(() => {
-    if (depotsList.length && !selectedDepot) setSelectedDepot(depotsList[0].name);
-  }, [depotsList, selectedDepot]);
+    if (availableDepots.length) {
+      const exists = availableDepots.some((d) => String(d._id) === String(selectedDepotId));
+      if (!exists) setSelectedDepotId(availableDepots[0]._id);
+    }
+  }, [availableDepots, selectedDepotId]);
 
   useEffect(() => {
-    if (urcsList.length && !selectedUrc) setSelectedUrc(urcsList[0].name);
-  }, [urcsList, selectedUrc]);
+    if (availableDealers.length) {
+      const exists = availableDealers.some((d) => String(d._id) === String(selectedDealerId));
+      if (!exists) setSelectedDealerId(availableDealers[0]._id);
+    }
+  }, [availableDealers, selectedDealerId]);
+
+  useEffect(() => {
+    if (availableUrcs.length) {
+      const exists = availableUrcs.some((u) => String(u._id) === String(selectedUrcId));
+      if (!exists) setSelectedUrcId(availableUrcs[0]._id);
+    }
+  }, [availableUrcs, selectedUrcId]);
 
   const imgs = useGallery(p);
 
@@ -208,27 +289,6 @@ export default function ProductDetails() {
         : [],
     [all, p]
   );
-
-  const currentDealer = useMemo(() => {
-    return (
-      dealersList.find((d) => d.name === selectedDealer) ||
-      dealersList[0] || {
-        name: selectedDealer || 'Authorized Dealer',
-        address: 'Delhi Cantt, New Delhi',
-        phone: '+91 11 2345 6789',
-      }
-    );
-  }, [selectedDealer, dealersList]);
-
-  const currentUrc = useMemo(() => {
-    return (
-      urcsList.find((u) => u.name === selectedUrc) ||
-      urcsList[0] || {
-        name: selectedUrc || 'Delhi Cantt URC',
-        location: 'Delhi',
-      }
-    );
-  }, [selectedUrc, urcsList]);
 
   if (err) return <ErrorState onRetry={load} />;
   if (loadingProduct) return <Loader />;
@@ -276,10 +336,10 @@ export default function ProductDetails() {
 
     const errs = {};
     if (!color) errs.color = 'Please select Color';
-    if (!selectedZone) errs.zone = 'Please select Price Zone';
-    if (!selectedDealer) errs.dealer = 'Please select Dealer';
-    if (!selectedDepot) errs.depot = 'Please select Depot';
-    if (!selectedUrc) errs.urc = 'Please select URC';
+    if (!selectedZoneId && !currentZone) errs.zone = 'Please select Price Zone';
+    if (!selectedDealerId && !currentDealer) errs.dealer = 'Please select Dealer';
+    if (!selectedDepotId && !currentDepot) errs.depot = 'Please select Depot';
+    if (!selectedUrcId && !currentUrc) errs.urc = 'Please select URC';
 
     if (Object.keys(errs).length > 0) {
       setCheckoutErrors(errs);
@@ -307,10 +367,6 @@ export default function ProductDetails() {
   const handleContinueToCheckout = () => {
     setEligibilityModalOpen(false);
 
-    const chosenDealer = dealersList.find((d) => d.name === selectedDealer) || dealersList[0];
-    const chosenDepot = depotsList.find((d) => d.name === selectedDepot) || depotsList[0];
-    const chosenUrc = urcsList.find((u) => u.name === selectedUrc) || urcsList[0];
-
     const checkoutData = {
       productId: p._id || p.id,
       productName: p.name,
@@ -319,18 +375,33 @@ export default function ProductDetails() {
       productImage: gallery[0] || p.image,
       category: p.category,
       brand: p.brand,
+      oemId: p.oemId?._id || p.oemId || p.brandId?.oemId,
       selectedColor: color || (p.colors?.[0] || 'Standard'),
-      selectedZone,
-      selectedDealer,
-      selectedDepot,
-      selectedUrc,
-      dealerId: chosenDealer?._id,
-      depotId: chosenDepot?._id,
-      urcId: chosenUrc?._id,
-      productPrice: p.price || 0,
+      priceZoneId: currentZone?._id,
+      selectedZone: currentZone?.name || 'DELHI NCR',
+      priceZone: currentZone?.name || 'DELHI NCR',
+      dealerId: currentDealer?._id,
+      selectedDealer: currentDealer?.name,
+      depotId: currentDepot?._id,
+      selectedDepot: currentDepot?.name,
+      urcId: currentUrc?._id,
+      selectedUrc: currentUrc?.name,
+      productPrice: p.priceToCustomer || p.price || 0,
+      basicPrice: p.basicPrice,
+      csdDiscountPercent: p.csdDiscountPercent,
+      csdDiscountAmount: p.csdDiscountAmount,
+      marketScheme: p.marketScheme,
+      csdBasicWithDiscount: p.csdBasicWithDiscount,
+      cgstAmount: p.cgstAmount,
+      sgstAmount: p.sgstAmount,
+      csdInvoiceAmount: p.csdInvoiceAmount,
+      csdProfitAmount: p.csdProfitAmount,
+      csdFinalPriceWithConcession: p.csdFinalPriceWithConcession,
+      tcsAmount: p.tcsAmount,
+      priceToCustomer: p.priceToCustomer,
       taxPercent: p.taxPercent || 14,
       quantity: 1,
-      taxClass: MOCK_PRICE_ZONES.find((z) => z.name === selectedZone)?.taxClass || 'tax-class-8'
+      taxClass: currentZone?.taxClass || 'tax-class-8'
     };
 
     sessionStorage.setItem('csd_checkout_product', JSON.stringify(checkoutData));
@@ -431,24 +502,24 @@ export default function ProductDetails() {
                 )}
               </div>
 
-              {/* Price Zone Dropdown + Count */}
+              {/* Price Zone Dropdown + Dynamic Count */}
               <div>
                 <div className="between pdp-form-label">
                   <label className="form-label font-semibold pdp-form-label-inline">
                     Price Zone <span className="pdp-req-star">*</span>
                   </label>
                   <span className="badge pdp-count-badge">
-                    Count: 30
+                    Count: {priceZonesList.length}
                   </span>
                 </div>
                 <select
-                  value={selectedZone}
-                  onChange={(e) => setSelectedZone(e.target.value)}
+                  value={selectedZoneId || currentZone?._id || ''}
+                  onChange={(e) => setSelectedZoneId(e.target.value)}
                   className={`select-input pdp-form-select ${checkoutErrors.zone ? 'has-error' : ''}`}
                 >
                   <option value="">-- Select Price Zone --</option>
-                  {MOCK_PRICE_ZONES.map((z) => (
-                    <option key={z.id} value={z.name}>
+                  {priceZonesList.map((z) => (
+                    <option key={z._id} value={z._id}>
                       {z.name}
                     </option>
                   ))}
@@ -467,14 +538,14 @@ export default function ProductDetails() {
                 </label>
                 <div className="pdp-input-action-row">
                   <select
-                    value={selectedDealer}
-                    onChange={(e) => setSelectedDealer(e.target.value)}
+                    value={selectedDealerId || currentDealer?._id || ''}
+                    onChange={(e) => setSelectedDealerId(e.target.value)}
                     className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.dealer ? 'has-error' : ''}`}
                   >
                     <option value="">-- Select Dealer --</option>
-                    {dealersList.map((d) => (
-                      <option key={d._id || d.id || d.code} value={d.name}>
-                        {d.name} ({d.city || ''})
+                    {availableDealers.map((d) => (
+                      <option key={d._id} value={d._id}>
+                        {d.name} ({d.city || d.state || ''})
                       </option>
                     ))}
                   </select>
@@ -499,14 +570,14 @@ export default function ProductDetails() {
                   Depot <span className="pdp-req-star">*</span>
                 </label>
                 <select
-                  value={selectedDepot}
-                  onChange={(e) => setSelectedDepot(e.target.value)}
+                  value={selectedDepotId || currentDepot?._id || ''}
+                  onChange={(e) => setSelectedDepotId(e.target.value)}
                   className={`select-input pdp-form-select ${checkoutErrors.depot ? 'has-error' : ''}`}
                 >
-                  <option value="">-- Select depot --</option>
-                  {depotsList.map((dep) => (
-                    <option key={dep._id || dep.id || dep.code} value={dep.name}>
-                      {dep.name}
+                  <option value="">-- Select Depot --</option>
+                  {availableDepots.map((dep) => (
+                    <option key={dep._id} value={dep._id}>
+                      {dep.name} ({dep.city || dep.state || ''})
                     </option>
                   ))}
                 </select>
@@ -524,13 +595,13 @@ export default function ProductDetails() {
                 </label>
                 <div className="pdp-input-action-row">
                   <select
-                    value={selectedUrc}
-                    onChange={(e) => setSelectedUrc(e.target.value)}
+                    value={selectedUrcId || currentUrc?._id || ''}
+                    onChange={(e) => setSelectedUrcId(e.target.value)}
                     className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.urc ? 'has-error' : ''}`}
                   >
                     <option value="">-- Select URC --</option>
-                    {urcsList.map((u) => (
-                      <option key={u._id || u.id || u.code} value={u.name}>
+                    {availableUrcs.map((u) => (
+                      <option key={u._id} value={u._id}>
                         {u.name}
                       </option>
                     ))}

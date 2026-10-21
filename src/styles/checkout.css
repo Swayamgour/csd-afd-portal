@@ -88,25 +88,25 @@
 }
 
 .doc-upload-dropzone {
-  border: 2px dashed var(--color-slate-300);
+  border: 1.5px dashed var(--color-slate-300);
   background: var(--color-slate-50);
   border-radius: 8px;
-  padding: 1rem 1.25rem;
-  text-align: center;
+  padding: 0.75rem 1rem;
+  text-align: left;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   width: 100%;
   box-sizing: border-box;
   min-width: 0;
 }
 
 .doc-upload-dropzone:hover {
-  border-color: var(--color-slate-400);
-  background: var(--color-slate-100);
+  border-color: #3b82f6;
+  background: #eff6ff;
 }
 
 .doc-upload-dropzone.dragging {
@@ -131,12 +131,11 @@
   text-align: left;
   min-width: 0;
   flex: 1;
-  overflow: hidden;
 }
 
 .doc-upload-icon-wrapper {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   background: var(--color-slate-200);
   display: flex;
@@ -155,29 +154,25 @@
 .doc-upload-text-content {
   min-width: 0;
   flex: 1;
-  overflow: hidden;
 }
 
 .doc-upload-primary-text {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-weight: 600;
-  color: var(--color-slate-700);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--color-slate-800);
+  line-height: 1.35;
 }
 
 .doc-upload-highlight {
   color: var(--color-primary);
   text-decoration: underline;
+  cursor: pointer;
 }
 
 .doc-upload-helper-text {
   font-size: 0.74rem;
   color: var(--color-slate-500);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.35;
   margin-top: 2px;
 }
 
@@ -191,6 +186,7 @@
   color: var(--color-slate-700);
   pointer-events: none;
   flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 /* File Loaded / Preview Card */
@@ -601,36 +597,134 @@
 
 /* Dealer Price Validation Box */
 .dealer-price-validation-box {
-  background: var(--color-slate-50);
-  padding: 1rem 1.15rem;
-  border-radius: 8px;
-  border: 1.5px solid var(--color-slate-300);
-  margin-bottom: 1rem;
+  background: var(--color-white);
+  padding: 1.15rem 1.25rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-slate-200);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1.25rem;
+  transition: all 0.2s ease;
 }
 
-.dealer-price-input {
-  width: 100%;
-  padding: 0.65rem 0.85rem;
+.dealer-price-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.btn-autofill-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 0.35rem 0.75rem;
   border-radius: 6px;
-  font-size: 1.05rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-autofill-price:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+  box-shadow: 0 1px 2px rgba(29, 78, 216, 0.1);
+  transform: translateY(-1px);
+}
+
+.dealer-price-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid var(--color-slate-300);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.dealer-price-input-wrapper:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.dealer-price-input-wrapper.is-matched {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.dealer-price-input-wrapper.is-matched:focus-within {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.dealer-price-input-wrapper.is-mismatched {
+  border-color: #ef4444;
+  background: #ffffff;
+}
+
+.dealer-price-input-wrapper.is-mismatched:focus-within {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.dealer-price-currency-tag {
+  padding: 0 0.85rem;
+  font-size: 1.1rem;
   font-weight: 700;
+  color: var(--color-slate-500);
+  background: var(--color-slate-50);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--color-slate-200);
+}
+
+.dealer-price-input-wrapper.is-matched .dealer-price-currency-tag {
+  background: #dcfce7;
+  color: #15803d;
+  border-right-color: #86efac;
+}
+
+.dealer-price-field {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.7rem 0.85rem;
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  outline: none;
+  width: 100%;
   box-sizing: border-box;
 }
 
-.dealer-price-input.matched {
-  border: 1.5px solid var(--color-success);
-  color: var(--color-success-dark);
-  background: var(--color-white);
+.dealer-price-input-wrapper.is-matched .dealer-price-field {
+  color: #15803d;
 }
 
-.dealer-price-input.mismatched {
-  border: 2px solid var(--color-danger);
-  color: var(--color-danger-dark);
-  background: var(--color-white);
+.dealer-price-matched-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #15803d;
+  white-space: nowrap;
 }
 
 .price-mismatch-alert-banner {
-  margin-top: 0.65rem;
+  margin-top: 0.75rem;
   padding: 0.65rem 0.85rem;
   background: var(--color-danger-soft);
   border: 1px solid var(--color-danger-border);

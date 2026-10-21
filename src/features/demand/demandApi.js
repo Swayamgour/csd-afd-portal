@@ -87,6 +87,26 @@ export const demandApi = api.injectEndpoints({
       transformResponse: (response) => response?.data || response,
       providesTags: (_result, _error, id) => [{ type: 'Order', id }, 'Order'],
     }),
+
+    dealerVerifyDemand: builder.mutation({
+      query: ({ id, status, remarks, chassisNo, engineNo, estimatedDeliveryDays }) => ({
+        url: `/demands/${id}/dealer-verify`,
+        method: 'PATCH',
+        body: { status, remarks, chassisNo, engineNo, estimatedDeliveryDays },
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Demand', 'Dashboard', 'Order'],
+    }),
+
+    updateOrderStatus: builder.mutation({
+      query: ({ id, status, note, delivery }) => ({
+        url: `/orders/${id}/status`,
+        method: 'PATCH',
+        body: { status, note, ...delivery },
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Order', 'Dashboard', 'Demand'],
+    }),
   }),
 });
 
@@ -98,4 +118,6 @@ export const {
   useCancelDemandMutation,
   useGetOrdersQuery,
   useGetOrderByIdQuery,
+  useDealerVerifyDemandMutation,
+  useUpdateOrderStatusMutation,
 } = demandApi;

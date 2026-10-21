@@ -20,6 +20,7 @@ import {
   Plus
 } from 'lucide-react';
 import { useGetDemandsQuery, useCancelDemandMutation } from '../features/demand/demandApi.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Demands() {
   const { user } = useAuth();
@@ -131,7 +132,7 @@ export default function Demands() {
           if you are not able to find dealer/depot/URC in the dropdown or price is not showing correctly on the portal.
         </span>
         <button
-          onClick={fetchDemands}
+          onClick={() => refetch()}
           className="btn-action-notes"
           style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', color: '#fff' }}
           title="Refresh list"

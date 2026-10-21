@@ -1,29 +1,69 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import { userService } from '../../services/user.service.js';
-import { ROLES } from '../../permissions/roles.js';
+import { useGetDemandsQuery } from '../demand/demandApi.js';
+import { Users } from 'lucide-react';
 
 export default function DealerCustomers() {
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: demandsData, isLoading } = useGetDemandsQuery();
+  const demands = demandsData?.items || [];
 
-  useEffect(() => {
-    async function load() {
-      const data = await userService.getUsers({ role: ROLES.BENEFICIARY });
-      setCustomers(data);
-      setLoading(false);
+  // Deduplicate customers across demands
+  const customers = useMemo(() => {
+    const map = new Map();
+    for (const d of demands) {
+      const b = d.beneficiaryId || {};
+      const u = d.userId || {};
+      const id = b._id || u._id || d.demandNo;
+      if (!map.has(id)) {
+        map.set(id, {
+          id,
+          serviceNumber: b.serviceNumber || 'Defence Staff',
+          name: b.fullName || u.name || 'Beneficiary',
+          rank: b.rank || 'Armed Forces',
+          category: b.category || 'DEFENCE',
+          phone: b.mobile || u.mobile || '—',
+          email: u.email || '—',
+          latestDemand: d.demandNo,
+          productName: d.productSnapshot?.name || 'Allotted Item',
+        });
+      }
     }
-    load();
-  }, []);
+    return Array.from(map.values());
+  }, [demands]);
 
   const columns = [
-    { header: 'Service No.', accessor: 'serviceNumber', render: (r) => <span className="font-mono font-semibold text-brand">{r.serviceNumber}</span> },
-    { header: 'Beneficiary Name', accessor: 'name', render: (r) => <span className="font-semibold">{r.name}</span> },
-    { header: 'Rank / Service', accessor: 'rank', render: (r) => `${r.rank} (${r.service})` },
-    { header: 'Contact Mobile', accessor: 'phone' },
-    { header: 'Official Email', accessor: 'email', render: (r) => <span className="small">{r.email}</span> }
+    {
+      header: 'Service No.',
+      accessor: 'serviceNumber',
+      render: (r) => <span className="font-mono font-semibold text-brand">{r.serviceNumber}</span>
+    },
+    {
+      header: 'Beneficiary Name',
+      accessor: 'name',
+      render: (r) => <span className="font-semibold text-navy">{r.name}</span>
+    },
+    {
+      header: 'Rank / Cadre',
+      accessor: 'rank',
+      render: (r) => <span>{r.rank}</span>
+    },
+    {
+      header: 'Contact Mobile',
+      accessor: 'phone',
+      render: (r) => <span className="font-mono">{r.phone}</span>
+    },
+    {
+      header: 'Official Email',
+      accessor: 'email',
+      render: (r) => <span className="small muted">{r.email}</span>
+    },
+    {
+      header: 'Selected Vehicle',
+      accessor: 'productName',
+      render: (r) => <span className="badge micro info">{r.productName}</span>
+    }
   ];
 
   return (
@@ -33,7 +73,20 @@ export default function DealerCustomers() {
         subtitle="Defence personnel who have selected this dealership for vehicle delivery"
       />
       <Card>
-        <DataTable columns={columns} data={customers} loading={loading} />
+        <DataTable
+          columns={columns}
+          data={customers}
+          loading={isLoading}
+          emptyMessage={
+            <div className="p-4 text-center">
+              <Users size={36} className="text-muted mb-1" style={{ margin: '0 auto' }} />
+              <h3 className="h4 font-bold">No Customers Assigned Yet</h3>
+              <p className="text-muted small">
+                Customers who choose your dealership at checkout will automatically appear in this roster.
+              </p>
+            </div>
+          }
+        />
       </Card>
     </div>
   );

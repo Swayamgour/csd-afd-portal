@@ -1,13 +1,27 @@
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { X, ArrowLeft, ShoppingCart } from 'lucide-react'
-import { products } from '../data/products.js'
+import { products as fallbackProducts } from '../data/products.js'
+import { fetchProducts } from '../data/api.js'
 import { useStore } from '../context/Store.jsx'
 import { EmptyState } from '../components/States.jsx'
 import { priceText } from '../data/utils.js'
 import { Stars, Img } from '../components/ProductCard.jsx'
+
 const rows = [['Transmission', 'trans'], ['Engine', 'engine'], ['Fuel Type', 'fuel'], ['Power', 'power'], ['Mileage', 'mileage'], ['Boot Space', 'boot'], ['Airbags', 'airbags']]
+
 export default function Compare() {
-  const { cmp, toggleCmp, addCart } = useStore(), back = useNavigate(), items = cmp.map(id => products.find(p => p.id === id)).filter(Boolean)
+  const { cmp, toggleCmp, addCart } = useStore()
+  const back = useNavigate()
+  const [allProducts, setAllProducts] = useState(fallbackProducts)
+
+  useEffect(() => {
+    fetchProducts().then((res) => {
+      if (Array.isArray(res) && res.length) setAllProducts(res)
+    }).catch(() => {})
+  }, [])
+
+  const items = cmp.map(id => allProducts.find(p => p.id === id)).filter(Boolean)
   if (!items.length) return <div className="wrap"><EmptyState title="Nothing to compare yet" text="Select Compare on up to 4 products." action={<Link className="btn" to="/products">Browse products</Link>} /></div>
   const v = (p, k) => (Array.isArray(p[k]) ? p[k].join(' / ') : p[k] || '-')
   return (

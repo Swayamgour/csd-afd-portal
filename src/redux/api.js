@@ -68,6 +68,7 @@ export const api = createApi({
     "Dealer",
     "Depot",
     "Urc",
+    "PriceZone",
     "Eligibility",
   ],
 

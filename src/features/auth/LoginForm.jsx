@@ -291,6 +291,46 @@ export default function LoginForm({ onNeedOtp }) {
         {loading && <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />}
         <span>{loading ? 'Verifying Credentials...' : 'Sign In with OTP Verification'}</span>
       </button>
+
+      {/* Quick Role Fill for Development & Testing */}
+      <div style={{ marginTop: '1.25rem', paddingTop: '0.85rem', borderTop: '1px solid #e2e8f0', fontSize: '0.8rem', color: '#64748b' }}>
+        <span style={{ fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>Quick Fill Test Accounts:</span>
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn xs out"
+            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            onClick={() => {
+              setUsername('dealer_hisar');
+              setPassword('Dealer@123456');
+            }}
+          >
+            🏢 Dealer (Supreme Mobiles)
+          </button>
+          <button
+            type="button"
+            className="btn xs out"
+            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            onClick={() => {
+              setUsername('systemadmin');
+              setPassword('Admin@123456');
+            }}
+          >
+            ⚙️ System Admin
+          </button>
+          <button
+            type="button"
+            className="btn xs out"
+            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            onClick={() => {
+              setUsername('goura6392@gmail.com');
+              setPassword('Admin@123456');
+            }}
+          >
+            🎖️ Beneficiary (Rajesh Kumar)
+          </button>
+        </div>
+      </div>
     </form>
   );
 }

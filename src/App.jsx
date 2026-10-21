@@ -262,6 +262,7 @@ export default function App() {
 
           {/* 6. DEALER PORTAL */}
           <Route path="/dealer/dashboard" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerDashboard /></RoleRoute>} />
+          <Route path="/dealer/demands" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerDashboard /></RoleRoute>} />
           <Route path="/dealer/products" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerProducts /></RoleRoute>} />
           <Route path="/dealer/orders" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerOrders /></RoleRoute>} />
           <Route path="/dealer/customers" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerCustomers /></RoleRoute>} />

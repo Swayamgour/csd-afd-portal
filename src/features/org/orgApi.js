@@ -61,6 +61,21 @@ export const orgApi = api.injectEndpoints({
       }),
       transformResponse: extractArray,
     }),
+
+    getPriceZones: builder.query({
+      query: (params = {}) => ({
+        url: '/price-zones',
+        params,
+      }),
+      transformResponse: extractArray,
+      providesTags: ['PriceZone'],
+    }),
+
+    getPriceZoneById: builder.query({
+      query: (id) => `/price-zones/${id}`,
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['PriceZone'],
+    }),
   }),
 });
 
@@ -72,4 +87,7 @@ export const {
   useGetUrcsQuery,
   useGetUrcByIdQuery,
   useGetOemsQuery,
+  useGetPriceZonesQuery,
+  useGetPriceZoneByIdQuery,
 } = orgApi;
+
