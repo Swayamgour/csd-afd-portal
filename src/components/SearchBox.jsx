@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Search, X, ArrowUpRight, Tag, Layers, TrendingUp } from 'lucide-react'
-import { products } from '../data/products.js'
+import { products as fallbackProducts } from '../data/products.js'
+import { fetchProducts } from '../data/api.js'
 import { CAT_LABEL, matches, priceFrom, onImgError } from '../data/utils.js'
 
 const MIN = 3
-const POPULAR = ['Nexon', 'Swift', 'Royal Enfield', 'Refrigerator', 'Mahindra', 'Washing Machine']
+const POPULAR = ['Nexon', 'Swift', 'Royal Enfield', 'Refrigerator', 'Mahindra', 'Washing Machine', 'Scorpio', 'Thar', 'Curvv', 'Brezza']
 
 const Mark = ({ text, q }) => {
   const words = q.split(/\s+/).filter(Boolean).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
@@ -14,18 +15,18 @@ const Mark = ({ text, q }) => {
   return text.split(re).map((part, i) => (i % 2 ? <mark key={i}>{part}</mark> : part))
 }
 
-export function buildSuggestions(q) {
+export function buildSuggestions(q, productList = fallbackProducts) {
   const s = q.trim().toLowerCase()
   if (s.length < MIN) return []
   const score = p => {
-    const n = p.name.toLowerCase()
+    const n = (p.name || '').toLowerCase()
     return n.startsWith(s) ? 0 : n.split(' ').some(w => w.startsWith(s)) ? 1 : n.includes(s) ? 2 : 3
   }
-  const prods = products.filter(p => matches(p, s)).sort((a, b) => score(a) - score(b)).slice(0, 6)
-  const out = prods.map(p => ({ kind: 'product', key: p.id, label: p.name, p }))
-  const brands = [...new Set(products.filter(p => p.brand.toLowerCase().includes(s)).map(p => p.brand))].slice(0, 2)
-  brands.forEach(b => out.push({ kind: 'brand', key: 'b-' + b, label: b, sub: `${products.filter(p => p.brand === b).length} products` }))
-  const types = [...new Set(products.filter(p => p.type.toLowerCase().includes(s)).map(p => p.type))].slice(0, 2)
+  const prods = (productList || []).filter(p => matches(p, s)).sort((a, b) => score(a) - score(b)).slice(0, 6)
+  const out = prods.map(p => ({ kind: 'product', key: p.id || p._id, label: p.name, p }))
+  const brands = [...new Set((productList || []).filter(p => (p.brand || '').toLowerCase().includes(s)).map(p => p.brand))].slice(0, 2)
+  brands.forEach(b => out.push({ kind: 'brand', key: 'b-' + b, label: b, sub: `${(productList || []).filter(p => p.brand === b).length} products` }))
+  const types = [...new Set((productList || []).filter(p => (p.type || '').toLowerCase().includes(s)).map(p => p.type))].slice(0, 2)
   types.forEach(t => out.push({ kind: 'type', key: 't-' + t, label: t, sub: 'Category' }))
   return out
 }
@@ -34,7 +35,17 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
   const loc = useLocation(), go = useNavigate()
   const fromUrl = loc.pathname === '/search' ? new URLSearchParams(loc.search).get('q') || '' : ''
   const [q, setQ] = useState(fromUrl), [open, setOpen] = useState(false), [active, setActive] = useState(-1)
+  const [liveProducts, setLiveProducts] = useState(fallbackProducts)
   const box = useRef(null), input = useRef(null)
+
+  useEffect(() => {
+    fetchProducts()
+      .then(prods => {
+        if (Array.isArray(prods) && prods.length > 0) setLiveProducts(prods)
+      })
+      .catch(() => {})
+  }, [])
+
   useEffect(() => { setQ(fromUrl) }, [fromUrl])
   useEffect(() => {
     const away = e => { if (box.current && !box.current.contains(e.target)) setOpen(false) }
@@ -42,7 +53,7 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
     return () => document.removeEventListener('mousedown', away)
   }, [])
 
-  const items = useMemo(() => buildSuggestions(q), [q])
+  const items = useMemo(() => buildSuggestions(q, liveProducts), [q, liveProducts])
   const ready = q.trim().length >= MIN
   const total = items.length + (ready ? 1 : 0)
 

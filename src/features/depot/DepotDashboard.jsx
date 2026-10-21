@@ -1,165 +1,320 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Warehouse, FileText, Truck, CreditCard, CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
+import {
+  FileText,
+  Truck,
+  CreditCard,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  FileCheck,
+  Package,
+  History,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { demandService } from '../../services/demand.service.js';
-import { orderService } from '../../services/order.service.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useGetDemandsQuery, useGetOrdersQuery } from '../demand/demandApi.js';
 
 export default function DepotDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [demands, setDemands] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [dList, oList] = await Promise.all([
-          demandService.getDemands(),
-          orderService.getOrders()
-        ]);
-        setDemands(dList);
-        setOrders(oList);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  // RTK Query: Scoped server data with cache tags
+  const {
+    data: demandsData,
+    isLoading: loadingDemands,
+    isFetching: fetchingDemands,
+    refetch: refetchDemands,
+  } = useGetDemandsQuery();
+
+  const {
+    data: ordersData,
+    isLoading: loadingOrders,
+    refetch: refetchOrders,
+  } = useGetOrdersQuery();
+
+  const demands = Array.isArray(demandsData?.items)
+    ? demandsData.items
+    : Array.isArray(demandsData)
+    ? demandsData
+    : [];
+
+  const orders = Array.isArray(ordersData?.items)
+    ? ordersData.items
+    : Array.isArray(ordersData)
+    ? ordersData
+    : [];
+
+  const loading = loadingDemands || loadingOrders;
+
+  // 10 Section 16 Scoped Metrics
+  const newDemandsCount = demands.filter((d) => d.status === 'CREATED').length;
+  const processingCount = demands.filter((d) => d.status === 'PROCESSING').length;
+  const paymentPendingCount = demands.filter((d) => d.status === 'PAYMENT_PENDING' || d.paymentStatus === 'UNPAID').length;
+  const paymentVerificationCount = demands.filter((d) => d.status === 'PAID' || d.paymentStatus === 'PAID').length;
+  const purchaseHistoryCount = demands.filter((d) => d.previousPurchase?.hasPurchased).length;
+  const documentsPendingCount = demands.filter((d) => !d.documents || d.documents.length === 0).length;
+  const approvalPendingCount = demands.filter((d) => ['PROCESSING', 'PAID'].includes(d.status)).length;
+  const approvedCount = demands.filter((d) => ['APPROVED', 'SUPPLY_ORDER_ISSUED'].includes(d.status)).length;
+  const rejectedCount = demands.filter((d) => ['REJECTED', 'CANCELLED'].includes(d.status)).length;
+  const completedCount = orders.filter((o) => o.status === 'DELIVERED').length;
+
+  const totalDemandsCount = demands.length;
+  const totalValueNum = demands.reduce(
+    (acc, d) => acc + Number(d.totalAmount || d.unitPrice || 0),
+    0
+  );
+
+  const totalValueFormatted =
+    totalValueNum >= 10000000
+      ? `₹ ${(totalValueNum / 10000000).toFixed(2)} Cr`
+      : totalValueNum >= 100000
+      ? `₹ ${(totalValueNum / 100000).toFixed(2)} L`
+      : `₹ ${totalValueNum.toLocaleString('en-IN')}`;
+
+  const depotTitle =
+    user?.depot ||
+    user?.depotName ||
+    demands[0]?.depotId?.name ||
+    'Delhi Regional Depot';
 
   const demandColumns = [
     {
-      header: 'Demand ID',
-      accessor: 'id',
-      render: (row) => <span className="font-semibold text-brand">{row.id}</span>
+      header: 'Demand No',
+      accessor: 'demandNo',
+      render: (row) => (
+        <span style={{ fontWeight: 700, color: '#1e40af' }}>
+          {row.demandNo || row._id?.slice(-8).toUpperCase()}
+        </span>
+      ),
     },
-    { header: 'Applicant', accessor: 'beneficiaryName', render: (row) => <div><span className="font-semibold block">{row.beneficiaryName}</span><span className="micro muted">{row.serviceNumber}</span></div> },
-    { header: 'Product Item', accessor: 'productName' },
-    { header: 'Sanction Price', accessor: 'csdPrice', render: (row) => `₹ ${Number(row.totalAmount || row.csdPrice || 0).toLocaleString('en-IN')}` },
     {
-      header: 'Status',
+      header: 'Beneficiary',
+      accessor: 'beneficiary',
+      render: (row) => (
+        <div>
+          <span style={{ fontWeight: 600, display: 'block', color: '#0f172a' }}>
+            {row.beneficiaryId?.name || row.productSnapshot?.dealerRefName || 'Beneficiary'}
+          </span>
+          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+            {row.beneficiaryId?.serviceNumber || row.beneficiaryId?.rank || ''}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: 'Product',
+      accessor: 'product',
+      render: (row) => (
+        <div style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {row.productSnapshot?.name || row.productId?.name || 'AFD Vehicle/Item'}
+        </div>
+      ),
+    },
+    {
+      header: 'Dealer',
+      accessor: 'dealer',
+      render: (row) => row.dealerId?.name || row.productSnapshot?.dealerRefName || 'Authorized Dealership',
+    },
+    {
+      header: 'Amount',
+      accessor: 'totalAmount',
+      render: (row) => `₹ ${Number(row.totalAmount || 0).toLocaleString('en-IN')}`,
+    },
+    {
+      header: 'Payment Status',
+      accessor: 'paymentStatus',
+      render: (row) => (
+        <span
+          style={{
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            padding: '0.15rem 0.45rem',
+            borderRadius: '4px',
+            background: row.paymentStatus === 'PAID' ? '#dcfce7' : '#fef3c7',
+            color: row.paymentStatus === 'PAID' ? '#15803d' : '#b45309',
+          }}
+        >
+          {row.paymentStatus || 'UNPAID'}
+        </span>
+      ),
+    },
+    {
+      header: 'Demand Status',
       accessor: 'status',
-      render: (row) => <StatusBadge status={row.status} />
+      render: (row) => <StatusBadge status={row.status} />,
+    },
+    {
+      header: 'Date',
+      accessor: 'createdAt',
+      render: (row) => (row.createdAt ? new Date(row.createdAt).toLocaleDateString('en-IN') : 'Today'),
     },
     {
       header: 'Action',
-      accessor: 'id',
+      accessor: '_id',
       render: (row) => (
-        <Link to="/depot/demands" className="btn sm out">
-          Sanction Queue
+        <Link to="/depot/demands" style={{ textDecoration: 'none' }}>
+          <Button variant="outline" size="sm">
+            Process
+          </Button>
         </Link>
-      )
-    }
+      ),
+    },
   ];
 
-  const totalDemandsCount = demands.length;
-  const supplyOrdersCount = demands.filter(d => ['APPROVED', 'SUPPLY_ORDER_ISSUED', 'Supply Order Issued.'].includes(d.status)).length + orders.length;
-  const pendingQueueCount = demands.filter(d => ['CREATED', 'PROCESSING', 'Processing'].includes(d.status)).length;
-  const totalValueNum = demands.reduce((acc, d) => acc + (Number(d.totalAmount || d.csdPrice || 0)), 0);
-  const totalValueFormatted = totalValueNum >= 10000000 
-    ? `₹ ${(totalValueNum / 10000000).toFixed(2)} Cr` 
-    : (totalValueNum >= 100000 ? `₹ ${(totalValueNum / 100000).toFixed(2)} L` : `₹ ${totalValueNum.toLocaleString('en-IN')}`);
-
-  const depotTitle = user?.depot || user?.depotName || (demands[0]?.depotId?.name) || (demands[0]?.depot) || 'Delhi Regional Depot';
-
   return (
-    <div className="depot-dashboard-page">
+    <div className="depot-dashboard-page" style={{ paddingBottom: '3rem' }}>
       <PageHeader
         title={`Regional Depot Directorate · ${depotTitle}`}
-        subtitle={`Commanding Officer: ${user?.name || 'Depot Manager'} · Area Jurisdictional Operations & Demand Sanction Desk`}
+        subtitle={`Commanding Officer: ${user?.name || 'Depot Official'} · Area Jurisdictional Operations & Demand Processing Desk`}
         actions={
-          <div className="row gap-1">
-            <Link to="/depot/demands" className="btn btn-primary">
-              Open Received Demands ({totalDemandsCount})
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                refetchDemands();
+                refetchOrders();
+              }}
+              disabled={fetchingDemands}
+            >
+              <RefreshCw
+                size={14}
+                style={{
+                  marginRight: '0.35rem',
+                  animation: fetchingDemands ? 'spin 1s linear infinite' : 'none',
+                }}
+              />
+              {fetchingDemands ? 'Syncing...' : 'Sync Demands'}
+            </Button>
+            <Link to="/depot/demands">
+              <Button variant="primary" size="sm">
+                Open Demand Queue ({totalDemandsCount})
+              </Button>
             </Link>
           </div>
         }
       />
 
-      <div className="kpi-grid mb-3">
-        <StatCard
-          title="Regional AFD Demands"
-          value={String(totalDemandsCount)}
-          subtext="Under Local Scrutiny"
-          icon={FileText}
-          variant="primary"
-          onClick={() => navigate('/depot/demands')}
-        />
-        <StatCard
-          title="Supply Orders Issued"
-          value={String(supplyOrdersCount)}
-          subtext="Dispatched to Dealers"
-          icon={Truck}
-          variant="success"
-          onClick={() => navigate('/depot/orders')}
-        />
-        <StatCard
-          title="Pending Sanction Queue"
-          value={`${pendingQueueCount} Demands`}
-          subtext="Awaiting Action / Sign-off"
-          icon={ShieldCheck}
-          variant="warning"
-          onClick={() => navigate('/depot/demands')}
-        />
-        <StatCard
-          title="Total Sanction Realization"
-          value={totalValueFormatted}
-          subtext="Matched Portal Treasury"
-          icon={CreditCard}
-          variant="default"
-          onClick={() => navigate('/depot/transactions')}
-        />
-      </div>
-
-      <div className="grid-2-col gap-2 mb-3">
-        <Card
-          title="Urgent Sanction Queue"
-          subtitle="Demands verified by URCs awaiting Depot Sanction Certificate"
-          actions={
-            <Link to="/depot/demands" className="link small font-semibold">
-              View All Demands
-            </Link>
-          }
+      {/* 10 SCOPED DEPOT SUMMARY CARDS */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#334155', marginBottom: '0.75rem' }}>
+          Depot Demand Sanction & Verification Stages
+        </h3>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '0.75rem',
+          }}
         >
-          <DataTable
-            columns={demandColumns}
-            data={demands.slice(0, 4)}
-            loading={loading}
+          <StatCard
+            title="New Demands"
+            value={String(newDemandsCount)}
+            subtext="Freshly raised"
+            icon={FileText}
+            variant="default"
+            onClick={() => navigate('/depot/demands')}
           />
-        </Card>
-
-        <Card
-          title="Supply Orders Dispatched to Local Showrooms"
-          subtitle="Recent allocations forwarded to authorized dealerships"
-          actions={
-            <Link to="/depot/orders" className="link small font-semibold">
-              All Depot Orders
-            </Link>
-          }
-        >
-          <div className="depot-orders-summary flex-col gap-2">
-            {orders.slice(0, 3).map((o) => (
-              <div key={o.id} className="panel p-2 between align-center">
-                <div>
-                  <span className="font-semibold text-brand small block">{o.id}</span>
-                  <p className="small mb-0 font-medium">{o.productName}</p>
-                  <span className="micro muted">Dealer: {o.dealer}</span>
-                </div>
-                <StatusBadge status={o.status} />
-              </div>
-            ))}
-          </div>
-        </Card>
+          <StatCard
+            title="Processing"
+            value={String(processingCount)}
+            subtext="Under Depot Review"
+            icon={Clock}
+            variant="primary"
+            onClick={() => navigate('/depot/demands')}
+          />
+          <StatCard
+            title="Payment Pending"
+            value={String(paymentPendingCount)}
+            subtext="Awaiting UTR / Online Pay"
+            icon={CreditCard}
+            variant="warning"
+            onClick={() => navigate('/depot/demands')}
+          />
+          <StatCard
+            title="Payment Verification"
+            value={String(paymentVerificationCount)}
+            subtext="Treasury reconciliation"
+            icon={FileCheck}
+            variant="primary"
+            onClick={() => navigate('/depot/demands')}
+          />
+          <StatCard
+            title="History Verification"
+            value={String(purchaseHistoryCount)}
+            subtext="Prior purchase scrutiny"
+            icon={History}
+            variant="default"
+            onClick={() => navigate('/depot/demands')}
+          />
+          <StatCard
+            title="Documents Pending"
+            value={String(documentsPendingCount)}
+            subtext="Awaiting attachments"
+            icon={AlertCircle}
+            variant="warning"
+            onClick={() => navigate('/depot/demands')}
+          />
+          <StatCard
+            title="Approval Pending"
+            value={String(approvalPendingCount)}
+            subtext="Ready for sign-off"
+            icon={CheckCircle2}
+            variant="warning"
+            onClick={() => navigate('/depot/demands')}
+          />
+          <StatCard
+            title="Approved Demands"
+            value={String(approvedCount)}
+            subtext="Sanctioned orders"
+            icon={CheckCircle2}
+            variant="success"
+            onClick={() => navigate('/depot/demands')}
+          />
+          <StatCard
+            title="Rejected Demands"
+            value={String(rejectedCount)}
+            subtext="Non-compliant requests"
+            icon={XCircle}
+            variant="danger"
+            onClick={() => navigate('/depot/demands')}
+          />
+          <StatCard
+            title="Completed Orders"
+            value={String(completedCount)}
+            subtext="Vehicle handed over"
+            icon={Package}
+            variant="success"
+            onClick={() => navigate('/depot/orders')}
+          />
+        </div>
       </div>
+
+      {/* REAL-TIME SCOPED DEMAND TABLE */}
+      <Card
+        title="Active Depot Processing Queue"
+        subtitle="Jurisdictional demand records assigned to your depot station"
+        actions={
+          <Link to="/depot/demands" style={{ fontSize: '0.82rem', color: '#1e40af', fontWeight: 600 }}>
+            Open Complete Queue →
+          </Link>
+        }
+      >
+        <DataTable
+          columns={demandColumns}
+          data={demands.slice(0, 8)}
+          loading={loading}
+          emptyText="No demands pending at your depot station."
+        />
+      </Card>
     </div>
   );
 }

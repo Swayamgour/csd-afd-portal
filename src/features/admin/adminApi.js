@@ -134,6 +134,113 @@ export const adminApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Banner'],
     }),
+
+    // Admin / CSD-HO Enterprise Dashboard
+    getAdminSummary: builder.query({
+      query: () => '/admin/dashboard/summary',
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Dashboard'],
+    }),
+
+    getAdminAnalytics: builder.query({
+      query: (params) => ({
+        url: '/admin/dashboard/analytics',
+        params,
+      }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Dashboard'],
+    }),
+
+    getAdminRecentDemands: builder.query({
+      query: () => '/admin/dashboard/recent-demands',
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Demand', 'Dashboard'],
+    }),
+
+    getAdminRecentUsers: builder.query({
+      query: () => '/admin/dashboard/recent-users',
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['User', 'Dashboard'],
+    }),
+
+    getAdminActivity: builder.query({
+      query: () => '/admin/dashboard/activity',
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Audit', 'Dashboard'],
+    }),
+
+    // Dynamic Section 22 Reports
+    getDemandsReport: builder.query({
+      query: (params) => ({ url: '/reports/demands-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getBeneficiariesReport: builder.query({
+      query: (params) => ({ url: '/reports/beneficiaries-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getPaymentsReport: builder.query({
+      query: (params) => ({ url: '/reports/payments-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getOrdersReport: builder.query({
+      query: (params) => ({ url: '/reports/orders-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getOemsReport: builder.query({
+      query: (params) => ({ url: '/reports/oems-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getDealersReport: builder.query({
+      query: (params) => ({ url: '/reports/dealers-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getDepotsReport: builder.query({
+      query: (params) => ({ url: '/reports/depots-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getUrcsReport: builder.query({
+      query: (params) => ({ url: '/reports/urcs-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getProductsReport: builder.query({
+      query: (params) => ({ url: '/reports/products-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getRefundsReport: builder.query({
+      query: (params) => ({ url: '/reports/refunds-report', params }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Report'],
+    }),
+
+    getAuditReport: builder.query({
+      query: (params) => ({ url: '/audit', params }),
+      transformResponse: (response) => response?.data?.items || response?.data || response,
+      providesTags: ['Audit', 'Report'],
+    }),
+
+    getAuthReport: builder.query({
+      query: (params) => ({ url: '/audit/auth-logs', params }),
+      transformResponse: (response) => response?.data?.items || response?.data || response,
+      providesTags: ['Audit', 'Report'],
+    }),
   }),
 });
 
@@ -151,4 +258,22 @@ export const {
   useUpdateBannerMutation,
   useToggleBannerStatusMutation,
   useDeleteBannerMutation,
+  useGetAdminSummaryQuery,
+  useGetAdminAnalyticsQuery,
+  useGetAdminRecentDemandsQuery,
+  useGetAdminRecentUsersQuery,
+  useGetAdminActivityQuery,
+  useGetDemandsReportQuery,
+  useGetBeneficiariesReportQuery,
+  useGetPaymentsReportQuery,
+  useGetOrdersReportQuery,
+  useGetOemsReportQuery,
+  useGetDealersReportQuery,
+  useGetDepotsReportQuery,
+  useGetUrcsReportQuery,
+  useGetProductsReportQuery,
+  useGetRefundsReportQuery,
+  useGetAuditReportQuery,
+  useGetAuthReportQuery,
 } = adminApi;
+

@@ -61,45 +61,86 @@ export function BeneficiaryDashboard() {
 
   const demandColumns = [
     {
-      header: 'Demand No',
+      header: 'Demand Number',
       accessor: 'demandNo',
       render: (row) => (
-        <span className="font-semibold text-brand">
+        <span style={{ fontWeight: 700, color: '#1e40af' }}>
           {row.demandNo || row._id?.slice(-8).toUpperCase() || 'DEM-PENDING'}
         </span>
       ),
     },
     {
-      header: 'Item / Vehicle',
-      accessor: 'productId',
+      header: 'Product',
+      accessor: 'product',
       render: (row) => (
-        <span className="font-medium text-slate-800">
-          {row.productId?.name || row.productName || 'AFD Item'}
+        <div style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, color: '#0f172a' }}>
+          {row.productSnapshot?.name || row.productId?.name || row.productName || 'AFD Item'}
+        </div>
+      ),
+    },
+    {
+      header: 'Dealer',
+      accessor: 'dealer',
+      render: (row) => (
+        <span style={{ fontSize: '0.78rem', color: '#475569' }}>
+          {row.dealerId?.name || row.dealer || 'Authorized Dealer'}
         </span>
       ),
     },
     {
-      header: 'Depot / Dealer',
-      accessor: 'depotId',
+      header: 'Depot',
+      accessor: 'depot',
       render: (row) => (
-        <span className="text-xs text-slate-600">
-          {row.depotId?.name || 'Assigned Depot'}
+        <span style={{ fontSize: '0.78rem', color: '#475569' }}>
+          {row.depotId?.name || row.depot || 'Regional Depot'}
         </span>
       ),
     },
     {
-      header: 'Total Price',
-      accessor: 'totalPrice',
+      header: 'URC',
+      accessor: 'urc',
       render: (row) => (
-        <span className="font-bold text-slate-900">
-          ₹ {(row.totalPrice || row.netPayable || 0).toLocaleString('en-IN')}
+        <span style={{ fontSize: '0.78rem', color: '#475569' }}>
+          {row.urcId?.name || row.urc || 'Station Canteen'}
         </span>
       ),
     },
     {
-      header: 'Status',
+      header: 'Amount',
+      accessor: 'totalAmount',
+      render: (row) => (
+        <span style={{ fontWeight: 700, color: '#0f172a' }}>
+          ₹ {Number(row.totalAmount || row.totalPrice || row.netPayable || 0).toLocaleString('en-IN')}
+        </span>
+      ),
+    },
+    {
+      header: 'Payment Status',
+      accessor: 'paymentStatus',
+      render: (row) => (
+        <span
+          style={{
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            padding: '0.15rem 0.45rem',
+            borderRadius: '4px',
+            background: row.paymentStatus === 'PAID' ? '#dcfce7' : '#fef3c7',
+            color: row.paymentStatus === 'PAID' ? '#15803d' : '#b45309',
+          }}
+        >
+          {row.paymentStatus || 'UNPAID'}
+        </span>
+      ),
+    },
+    {
+      header: 'Demand Status',
       accessor: 'status',
       render: (row) => <StatusBadge status={row.status} />,
+    },
+    {
+      header: 'Date',
+      accessor: 'createdAt',
+      render: (row) => (row.createdAt ? new Date(row.createdAt).toLocaleDateString('en-IN') : 'Recent'),
     },
     {
       header: 'Actions',
@@ -109,7 +150,7 @@ export function BeneficiaryDashboard() {
           to={`/beneficiary/demands/${row._id || row.id}`}
           className="btn sm out"
         >
-          View Detail
+          Detail
         </Link>
       ),
     },
@@ -325,39 +366,62 @@ export function BeneficiaryDashboard() {
         </div>
       </div>
 
-      {/* Dynamic KPI Stat Cards */}
-      <div className="kpi-grid mb-3">
+      {/* Dynamic 6-Card Section 21 KPI Stat Grid */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '0.85rem',
+          marginBottom: '1.5rem',
+        }}
+      >
         <StatCard
-          title="Total AFD Demands"
-          value={dashboardData?.totalDemands ?? 0}
-          subtext={`${dashboardData?.approvedDemands ?? 0} Approved / Paid`}
+          title="My Demands"
+          value={dashboardData?.totalDemands ?? recentDemands.length}
+          subtext="Total raised demands"
           icon={FileText}
           variant="primary"
           onClick={() => navigate('/beneficiary/demands')}
         />
         <StatCard
-          title="Pending Demands"
-          value={dashboardData?.pendingDemands ?? 0}
-          subtext="Under Verification"
+          title="Processing"
+          value={recentDemands.filter((d) => d.status === 'PROCESSING').length}
+          subtext="Depot scrutinizing"
           icon={Clock}
           variant="warning"
           onClick={() => navigate('/beneficiary/demands')}
         />
         <StatCard
-          title="Active Supply Orders"
-          value={dashboardData?.activeOrders ?? 0}
-          subtext="Allocated to Dealership"
+          title="Payment Pending"
+          value={recentDemands.filter((d) => d.status === 'PAYMENT_PENDING' || d.paymentStatus === 'UNPAID').length}
+          subtext="Awaiting payment"
+          icon={CreditCard}
+          variant="warning"
+          onClick={() => navigate('/beneficiary/demands')}
+        />
+        <StatCard
+          title="Approved"
+          value={recentDemands.filter((d) => ['APPROVED', 'SUPPLY_ORDER_ISSUED'].includes(d.status)).length}
+          subtext="Sanction issued"
+          icon={CheckCircle}
+          variant="success"
+          onClick={() => navigate('/beneficiary/demands')}
+        />
+        <StatCard
+          title="Rejected"
+          value={recentDemands.filter((d) => ['REJECTED', 'CANCELLED'].includes(d.status)).length}
+          subtext="Declined or refund"
+          icon={AlertCircle}
+          variant="danger"
+          onClick={() => navigate('/beneficiary/demands')}
+        />
+        <StatCard
+          title="Completed"
+          value={activeOrders.filter((o) => o.status === 'DELIVERED').length}
+          subtext="Delivered / Handed over"
           icon={Truck}
           variant="success"
           onClick={() => navigate('/beneficiary/orders')}
-        />
-        <StatCard
-          title="Eligible Products"
-          value={dashboardData?.eligibleProductsCount ?? 0}
-          subtext="Concessional Rate"
-          icon={CreditCard}
-          variant="default"
-          onClick={() => navigate('/products')}
         />
       </div>
 

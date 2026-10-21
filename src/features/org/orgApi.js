@@ -60,6 +60,85 @@ export const orgApi = api.injectEndpoints({
         params,
       }),
       transformResponse: extractArray,
+      providesTags: ['Oem'],
+    }),
+
+    getOemById: builder.query({
+      query: (id) => `/oems/${id}`,
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Oem'],
+    }),
+
+    createOem: builder.mutation({
+      query: (body) => ({
+        url: '/oems',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Oem', 'Dashboard'],
+    }),
+
+    updateOem: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/oems/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Oem', 'Dashboard'],
+    }),
+
+    createDealer: builder.mutation({
+      query: (body) => ({
+        url: '/dealers',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Dealer', 'Dashboard'],
+    }),
+
+    updateDealer: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/dealers/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Dealer', 'Dashboard'],
+    }),
+
+    createDepot: builder.mutation({
+      query: (body) => ({
+        url: '/depots',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Depot', 'Dashboard'],
+    }),
+
+    updateDepot: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/depots/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Depot', 'Dashboard'],
+    }),
+
+    createUrc: builder.mutation({
+      query: (body) => ({
+        url: '/urcs',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Urc', 'Dashboard'],
+    }),
+
+    updateUrc: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/urcs/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Urc', 'Dashboard'],
     }),
 
     getPriceZones: builder.query({
@@ -82,11 +161,20 @@ export const orgApi = api.injectEndpoints({
 export const {
   useGetDealersQuery,
   useGetDealerByIdQuery,
+  useCreateDealerMutation,
+  useUpdateDealerMutation,
   useGetDepotsQuery,
   useGetDepotByIdQuery,
+  useCreateDepotMutation,
+  useUpdateDepotMutation,
   useGetUrcsQuery,
   useGetUrcByIdQuery,
+  useCreateUrcMutation,
+  useUpdateUrcMutation,
   useGetOemsQuery,
+  useGetOemByIdQuery,
+  useCreateOemMutation,
+  useUpdateOemMutation,
   useGetPriceZonesQuery,
   useGetPriceZoneByIdQuery,
 } = orgApi;

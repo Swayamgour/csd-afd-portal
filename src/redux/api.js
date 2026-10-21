@@ -70,6 +70,10 @@ export const api = createApi({
     "Urc",
     "PriceZone",
     "Eligibility",
+    "Oem",
+    "Audit",
+    "Report",
+    "Ticket",
   ],
 
   endpoints: () => ({}),

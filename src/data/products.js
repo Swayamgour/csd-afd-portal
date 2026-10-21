@@ -9,7 +9,11 @@ const car = (id, name, brand, type, lo, hi, rating, trans, engine, fuel, power, 
     `/img/${id}/left.jpg`,
     `/img/${id}/right.jpg`,
     `/img/${id}/side.jpg`,
-  ], category: 'car', name, brand, type, lo, hi, price: `₹${fm(lo)} - ${fm(hi)} Lakh`, rating, reviews: 984, trans, engine, fuel, power, mileage, boot, airbags, colors
+  ], category: 'car', name, brand, type, lo, hi,
+  priceToCustomer: lo < 1000 ? Math.round(lo * 100000) : lo,
+  price: lo < 1000 ? Math.round(lo * 100000) : lo,
+  mrp: hi < 1000 ? Math.round(hi * 100000) : hi,
+  priceRange: `₹${fm(lo)} - ${fm(hi)} Lakh`, rating, reviews: 984, trans, engine, fuel, power, mileage, boot, airbags, colors
 })
 const bike = (
   id,
@@ -45,7 +49,10 @@ const bike = (
   type,
   lo,
   hi,
-  price: `₹${fm(lo)} - ${fm(hi)}`,
+  priceToCustomer: lo < 1000 ? Math.round(lo * 100000) : lo,
+  price: lo < 1000 ? Math.round(lo * 100000) : lo,
+  mrp: hi < 1000 ? Math.round(hi * 100000) : hi,
+  priceRange: `₹${fm(lo)} - ${fm(hi)} Lakh`,
   rating,
   reviews: 984,
   engine,

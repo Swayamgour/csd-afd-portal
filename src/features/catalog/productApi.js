@@ -84,6 +84,51 @@ export const productApi = api.injectEndpoints({
       },
       providesTags: ['Eligibility'],
     }),
+
+    getProductOptions: builder.query({
+      query: (id) => `/products/${id}/options`,
+      transformResponse: (response) => response?.data || response,
+      providesTags: (_result, _error, id) => [
+        { type: 'Product', id },
+        'Product',
+        'Dealer',
+        'Depot',
+        'Urc',
+        'PriceZone',
+        'Oem',
+      ],
+    }),
+
+    createProduct: builder.mutation({
+      query: (body) => ({
+        url: '/products',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Product', id: 'LIST' }, 'Product', 'Dashboard'],
+    }),
+
+    updateProduct: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/products/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Product', id },
+        { type: 'Product', id: 'LIST' },
+        'Product',
+        'Dashboard',
+      ],
+    }),
+
+    deleteProduct: builder.mutation({
+      query: (id) => ({
+        url: `/products/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Product', id: 'LIST' }, 'Product', 'Dashboard'],
+    }),
   }),
 });
 
@@ -94,4 +139,8 @@ export const {
   useGetBrandsQuery,
   useCheckProductEligibilityMutation,
   useGetEligibilityRulesQuery,
+  useGetProductOptionsQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
 } = productApi;

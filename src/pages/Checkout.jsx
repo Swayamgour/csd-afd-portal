@@ -153,7 +153,10 @@ export default function Checkout() {
 
   const matchedDepot = depotsList.find((d) => d.name === product.selectedDepot || d._id === product.depotId) || depotsList[0];
   const matchedDealer = dealersList.find((d) => d.name === product.selectedDealer || d._id === product.dealerId) || dealersList[0];
-  const matchedUrc = urcsList.find((u) => u.name === product.selectedUrc || u._id === product.urcId) || urcsList[0];
+  const matchedUrc =
+    urcsList.find((u) => (u.name === product.selectedUrc || u._id === product.urcId) && (!matchedDepot || !u.depotId || String(u.depotId?._id || u.depotId) === String(matchedDepot?._id))) ||
+    urcsList.find((u) => matchedDepot && String(u.depotId?._id || u.depotId) === String(matchedDepot?._id)) ||
+    urcsList[0];
 
   const handleMatchPrice = () => {
     setDealerPriceInput(netPrice.toString());

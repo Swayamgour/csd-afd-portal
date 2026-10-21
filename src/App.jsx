@@ -68,6 +68,7 @@ const CsdCategories = lazyImport(() => import('./features/csd/CsdCategories.jsx'
 const CsdOems = lazyImport(() => import('./features/csd/CsdOems.jsx'), 'CsdOems');
 const CsdDealers = lazyImport(() => import('./features/csd/CsdDealers.jsx'), 'CsdDealers');
 const CsdDepots = lazyImport(() => import('./features/csd/CsdDepots.jsx'), 'CsdDepots');
+const CsdUrcs = lazyImport(() => import('./features/csd/CsdUrcs.jsx'), 'default');
 const CsdDemands = lazyImport(() => import('./features/csd/CsdDemands.jsx'), 'CsdDemands');
 const CsdOrders = lazyImport(() => import('./features/csd/CsdOrders.jsx'), 'CsdOrders');
 const CsdPayments = lazyImport(() => import('./features/csd/CsdPayments.jsx'), 'CsdPayments');
@@ -211,25 +212,27 @@ export default function App() {
           <Route path="/beneficiary/tickets" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiaryTickets /></RoleRoute>} />
           <Route path="/beneficiary/settings" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiarySettings /></RoleRoute>} />
 
-          {/* 2. CSD-HO OFFICIAL PORTAL */}
-          <Route path="/csd/dashboard" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdDashboard /></RoleRoute>} />
-          <Route path="/csd/users" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdUsers /></RoleRoute>} />
-          <Route path="/csd/beneficiaries" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdBeneficiaries /></RoleRoute>} />
-          <Route path="/csd/products" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdProducts /></RoleRoute>} />
-          <Route path="/csd/categories" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdCategories /></RoleRoute>} />
-          <Route path="/csd/oems" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdOems /></RoleRoute>} />
-          <Route path="/csd/dealers" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdDealers /></RoleRoute>} />
-          <Route path="/csd/depots" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdDepots /></RoleRoute>} />
-          <Route path="/csd/demands" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdDemands /></RoleRoute>} />
-          <Route path="/csd/orders" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdOrders /></RoleRoute>} />
-          <Route path="/csd/payments" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdPayments /></RoleRoute>} />
-          <Route path="/csd/reports" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdReports /></RoleRoute>} />
-          <Route path="/csd/audit-logs" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdAuditLogs /></RoleRoute>} />
-          <Route path="/csd/login-history" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdLoginHistory /></RoleRoute>} />
-          <Route path="/csd/notifications" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdNotifications /></RoleRoute>} />
-          <Route path="/csd/content" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdContent /></RoleRoute>} />
-          <Route path="/csd/support" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdSupport /></RoleRoute>} />
-          <Route path="/csd/settings" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL]}><CsdSettings /></RoleRoute>} />
+          {/* 2. CSD-HO OFFICIAL & SYSTEM ADMIN MONITORING PORTAL */}
+          <Route path="/csd/dashboard" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDashboard /></RoleRoute>} />
+          <Route path="/csd/users" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdUsers /></RoleRoute>} />
+          <Route path="/csd/beneficiaries" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdBeneficiaries /></RoleRoute>} />
+          <Route path="/csd/products" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdProducts /></RoleRoute>} />
+          <Route path="/csd/categories" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdCategories /></RoleRoute>} />
+          <Route path="/csd/oems" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdOems /></RoleRoute>} />
+          <Route path="/csd/dealers" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDealers /></RoleRoute>} />
+          <Route path="/csd/depots" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDepots /></RoleRoute>} />
+          <Route path="/csd/urcs" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdUrcs /></RoleRoute>} />
+          <Route path="/csd/demands" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDemands /></RoleRoute>} />
+          <Route path="/csd/orders" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdOrders /></RoleRoute>} />
+          <Route path="/csd/payments" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdPayments /></RoleRoute>} />
+          <Route path="/csd/reports" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdReports /></RoleRoute>} />
+          <Route path="/csd/audit-logs" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdAuditLogs /></RoleRoute>} />
+          <Route path="/csd/login-history" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdLoginHistory /></RoleRoute>} />
+          <Route path="/csd/notifications" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdNotifications /></RoleRoute>} />
+          <Route path="/csd/content" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdContent /></RoleRoute>} />
+          <Route path="/csd/support" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdSupport /></RoleRoute>} />
+          <Route path="/csd/settings" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdSettings /></RoleRoute>} />
+          <Route path="/admin/demands" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><CsdDemands /></RoleRoute>} />
 
           {/* 3. DEPOT OFFICIAL PORTAL */}
           <Route path="/depot/dashboard" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotDashboard /></RoleRoute>} />

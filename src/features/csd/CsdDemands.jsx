@@ -1,209 +1,353 @@
-import React, { useState, useEffect } from 'react';
-import { Search, CheckCircle2, XCircle, FileText, Download } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  Search,
+  CheckCircle2,
+  XCircle,
+  FileText,
+  Download,
+  Eye,
+  RefreshCw,
+  Building2,
+  Store,
+  Warehouse,
+  Package,
+  CreditCard,
+  ExternalLink
+} from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
+import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import StatusBadge from '../../components/common/StatusBadge.jsx';
-import FilterBar from '../../components/common/FilterBar.jsx';
-import Select from '../../components/common/Select.jsx';
-import SearchInput from '../../components/common/SearchInput.jsx';
-import Button from '../../components/common/Button.jsx';
+import Badge from '../../components/common/Badge.jsx';
 import Modal from '../../components/common/Modal.jsx';
-import { demandService } from '../../services/demand.service.js';
+import Button from '../../components/common/Button.jsx';
+import { formatCurrency, formatDate } from '../../utils/formatters.js';
+import { useGetDemandsQuery } from '../demand/demandApi.js';
 
 export default function CsdDemands() {
-  const [demands, setDemands] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDemand, setSelectedDemand] = useState(null);
-  const [toast, setToast] = useState('');
 
-  const loadDemands = async () => {
-    setLoading(true);
-    try {
-      const data = await demandService.getDemands({
-        status: statusFilter,
-        search: searchTerm
-      });
-      setDemands(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadDemands();
+  const queryParams = useMemo(() => {
+    const p = {};
+    if (statusFilter) p.status = statusFilter;
+    if (searchTerm) p.q = searchTerm;
+    return p;
   }, [statusFilter, searchTerm]);
 
-  const handleApprove = async (id) => {
-    try {
-      await demandService.updateDemandStatus(id, 'Depot_Approved', 'Approved by Joint Director (CSD-HO)');
-      setToast(`Demand ${id} successfully approved & sanctioned.`);
-      if (selectedDemand) setSelectedDemand(null);
-      loadDemands();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
+  const { data: demandsData, isLoading, isFetching, refetch } = useGetDemandsQuery(queryParams);
+
+  const demands = useMemo(() => {
+    return demandsData?.items || (Array.isArray(demandsData) ? demandsData : []);
+  }, [demandsData]);
+
+  const kpiStats = useMemo(() => {
+    const total = demands.length;
+    const processing = demands.filter((d) => ['PROCESSING', 'PAYMENT_VERIFIED', 'PURCHASE_HISTORY_CHECK'].includes(d.status)).length;
+    const approved = demands.filter((d) => ['APPROVED', 'SUPPLY_ORDER_ISSUED', 'COMPLETED'].includes(d.status)).length;
+    const pendingPayment = demands.filter((d) => d.paymentStatus === 'UNPAID' || d.status === 'PAYMENT_PENDING').length;
+
+    return [
+      { title: 'Total AFD Demands', value: total, subtitle: 'National Indent Volume' },
+      { title: 'Depot Processing', value: processing, subtitle: 'Verification Queue' },
+      { title: 'Approved & Supply Issued', value: approved, subtitle: `${total > 0 ? Math.round((approved / total) * 100) : 0}% Sanctioned` },
+      { title: 'Pending Payment / Unpaid', value: pendingPayment, subtitle: 'Awaiting Settlement' },
+    ];
+  }, [demands]);
 
   const columns = [
     {
-      header: 'Demand ID',
-      accessor: 'id',
-      render: (row) => <span className="font-semibold text-brand">{row.id}</span>
+      header: 'Demand No',
+      accessor: 'demandNo',
+      render: (d) => <span className="font-mono font-bold text-brand">{d.demandNo}</span>,
     },
     {
-      header: 'Applicant',
-      accessor: 'beneficiaryName',
-      render: (row) => (
+      header: 'Beneficiary',
+      accessor: 'beneficiaryId',
+      render: (d) => (
         <div>
-          <span className="font-semibold block">{row.beneficiaryName}</span>
-          <span className="micro muted">{row.serviceNumber}</span>
+          <div className="font-semibold text-xs text-ink">{d.beneficiaryId?.fullName || d.userId?.name || 'Applicant'}</div>
+          <div className="text-[10px] text-muted font-mono">{d.beneficiaryId?.serviceNumber} {d.beneficiaryId?.rank ? `(${d.beneficiaryId.rank})` : ''}</div>
         </div>
-      )
+      ),
     },
-    { header: 'Vehicle / Product', accessor: 'productName' },
-    { header: 'Depot Allocation', accessor: 'depot' },
     {
-      header: 'Sanction Price',
-      accessor: 'csdPrice',
-      render: (row) => <span className="font-bold">₹ {row.csdPrice?.toLocaleString('en-IN')}</span>
+      header: 'Product Indented',
+      accessor: 'productSnapshot',
+      render: (d) => (
+        <div>
+          <div className="font-medium text-xs text-ink">{d.productSnapshot?.name || 'AFD Item'}</div>
+          <div className="text-[10px] text-muted font-mono">SKU: {d.productSnapshot?.sku || d.productSnapshot?.indexNo || 'N/A'}</div>
+        </div>
+      ),
+    },
+    {
+      header: 'Commercial (OEM & Dealer)',
+      accessor: 'dealerId',
+      render: (d) => (
+        <div className="text-xs">
+          <div className="font-semibold text-slate-800">{d.dealerId?.name || 'Authorized Dealership'}</div>
+          <div className="text-[10px] text-muted">{d.dealerId?.city ? `${d.dealerId.city}` : ''}</div>
+        </div>
+      ),
+    },
+    {
+      header: 'Depot & URC Node',
+      accessor: 'depotId',
+      render: (d) => (
+        <div className="text-xs">
+          <div><strong className="text-slate-600">Depot:</strong> {d.depotId?.name || 'Base Depot'}</div>
+          <div className="text-muted"><strong className="text-slate-600">URC:</strong> {d.urcId?.name || 'Assigned URC'}</div>
+        </div>
+      ),
+    },
+    {
+      header: 'Sanction Amount',
+      accessor: 'totalAmount',
+      render: (d) => <span className="font-bold font-mono text-ink text-xs">{formatCurrency(d.totalAmount)}</span>,
+    },
+    {
+      header: 'Payment',
+      accessor: 'paymentStatus',
+      render: (d) => (
+        <Badge variant={d.paymentStatus === 'PAID' ? 'success' : d.paymentStatus === 'UNPAID' ? 'warning' : 'neutral'}>
+          {d.paymentStatus}
+        </Badge>
+      ),
     },
     {
       header: 'Status',
       accessor: 'status',
-      render: (row) => <StatusBadge status={row.status} />
+      render: (d) => (
+        <Badge
+          variant={
+            d.status === 'COMPLETED'
+              ? 'success'
+              : d.status === 'APPROVED' || d.status === 'SUPPLY_ORDER_ISSUED'
+              ? 'brand'
+              : d.status === 'REJECTED'
+              ? 'danger'
+              : 'warning'
+          }
+        >
+          {d.status}
+        </Badge>
+      ),
     },
     {
-      header: 'Scrutiny Actions',
-      accessor: 'id',
-      render: (row) => (
-        <div className="row gap-1">
-          <button
-            type="button"
-            className="btn sm out"
-            onClick={() => setSelectedDemand(row)}
-          >
-            Inspect
-          </button>
-          {row.status !== 'Depot_Approved' && row.status !== 'Supply_Order_Issued' && row.status !== 'Delivered' && (
-            <button
-              type="button"
-              className="btn sm"
-              onClick={() => handleApprove(row.id)}
-            >
-              Sanction
-            </button>
-          )}
-        </div>
-      )
-    }
+      header: 'Action',
+      accessor: '_id',
+      render: (d) => (
+        <button
+          onClick={() => setSelectedDemand(d)}
+          className="px-2.5 py-1 text-xs font-semibold bg-brand/10 text-brand rounded hover:bg-brand/20 transition flex items-center gap-1"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>Inspect</span>
+        </button>
+      ),
+    },
   ];
 
   return (
-    <div className="csd-demands-page">
+    <div className="csd-demands-page space-y-6">
       <PageHeader
-        title="National AFD Demand Sanction Directorate"
-        subtitle="Review and grant departmental sanction on vehicle procurement demands submitted across all 34 depots."
+        title="National AFD Demand Monitoring Directorate"
+        subtitle="Oversight of defense indents across all regional Depots, URC canteens, and OEM dealership networks."
+        breadcrumbs={[
+          { label: 'Portal Administration', href: '/admin/dashboard' },
+          { label: 'Demand Monitoring' },
+        ]}
+        actions={
+          <button
+            onClick={() => refetch()}
+            className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition"
+            title="Refresh Demands"
+          >
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-brand' : ''}`} />
+          </button>
+        }
       />
 
-      {toast && (
-        <div className="alert-banner success mb-2 small" role="alert">
-          <CheckCircle2 size={16} />
-          <span>{toast}</span>
-        </div>
-      )}
-
-      <FilterBar
-        hasActiveFilters={statusFilter !== 'All' || !!searchTerm}
-        onReset={() => {
-          setStatusFilter('All');
-          setSearchTerm('');
-        }}
-      >
-        <div className="flex-1 min-w-xs">
-          <label className="form-label small font-semibold">Search Demands</label>
-          <SearchInput
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Search by Demand ID, Service No, or Model..."
-            size="sm"
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpiStats.map((kpi, idx) => (
+          <StatCard
+            key={idx}
+            title={kpi.title}
+            value={kpi.value}
+            subtitle={kpi.subtitle}
           />
-        </div>
+        ))}
+      </div>
 
-        <div className="w-48">
-          <Select
-            label="Filter Status"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            options={[
-              { value: 'All', label: 'All Statuses' },
-              { value: 'Submitted', label: 'Submitted' },
-              { value: 'URC_Verified', label: 'URC Verified' },
-              { value: 'Depot_Approved', label: 'Depot Approved' },
-              { value: 'Payment_Completed', label: 'Payment Completed' },
-              { value: 'Supply_Order_Issued', label: 'Supply Order Issued' }
-            ]}
-          />
-        </div>
-      </FilterBar>
-
+      {/* Search and Filters */}
       <Card>
-        <DataTable
-          columns={columns}
-          data={demands}
-          loading={loading}
-          emptyTitle="No demands matching filter"
-          emptyText="Try adjusting your status or search keywords."
-        />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by Demand No, Service No, or Model..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand focus:outline-none"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+            >
+              <option value="">All Demand Statuses</option>
+              <option value="CREATED">Created</option>
+              <option value="PAYMENT_PENDING">Payment Pending</option>
+              <option value="PROCESSING">Processing</option>
+              <option value="PAYMENT_VERIFIED">Payment Verified</option>
+              <option value="APPROVED">Approved</option>
+              <option value="SUPPLY_ORDER_ISSUED">Supply Order Issued</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+
+            {(statusFilter || searchTerm) && (
+              <button
+                onClick={() => {
+                  setStatusFilter('');
+                  setSearchTerm('');
+                }}
+                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded"
+              >
+                Reset Filters
+              </button>
+            )}
+          </div>
+        </div>
       </Card>
 
-      {/* Inspect Modal */}
+      {/* Demand Table */}
+      <Card title="AFD Demand Indents" subtitle={`Displaying ${demands.length} registered demands`}>
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-500">
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand mb-3" />
+            <p className="font-semibold text-sm">Retrieving demands from server...</p>
+          </div>
+        ) : demands.length === 0 ? (
+          <div className="p-12 text-center text-slate-400">
+            <FileText className="w-12 h-12 mx-auto mb-2 text-slate-300" />
+            <p className="font-semibold text-sm text-slate-600">No demands match filter</p>
+            <p className="text-xs text-slate-400 mt-1">Try adjusting your filters</p>
+          </div>
+        ) : (
+          <DataTable columns={columns} data={demands} />
+        )}
+      </Card>
+
+      {/* Scrutiny & Dossier Modal */}
       {selectedDemand && (
         <Modal
           isOpen={!!selectedDemand}
           onClose={() => setSelectedDemand(null)}
-          title={`Scrutiny Dossier · ${selectedDemand.id}`}
-          subtitle={`Applicant: ${selectedDemand.beneficiaryName} (${selectedDemand.serviceNumber})`}
-          maxWidth="560px"
-          footer={
-            <div className="modal-footer-btns">
-              <Button variant="outline" onClick={() => setSelectedDemand(null)}>
-                Close
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => handleApprove(selectedDemand.id)}
-              >
-                Grant Departmental Sanction
-              </Button>
-            </div>
-          }
+          title={`Scrutiny Dossier · Indent ${selectedDemand.demandNo}`}
+          size="lg"
         >
-          <div className="info-kv-list">
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Product & Variant:</span>
-              <span className="font-semibold">{selectedDemand.productName} ({selectedDemand.variant})</span>
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+              <div>
+                <span className="text-slate-500 block">Applicant:</span>
+                <span className="font-semibold text-ink">{selectedDemand.beneficiaryId?.fullName || selectedDemand.userId?.name || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Service Number:</span>
+                <span className="font-mono font-bold">{selectedDemand.beneficiaryId?.serviceNumber || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Rank / Level:</span>
+                <span>{selectedDemand.beneficiaryId?.rank || 'Armed Forces'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Current Status:</span>
+                <Badge variant={selectedDemand.status === 'APPROVED' ? 'brand' : selectedDemand.status === 'COMPLETED' ? 'success' : 'warning'}>
+                  {selectedDemand.status}
+                </Badge>
+              </div>
             </div>
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Regional Depot:</span>
-              <span>{selectedDemand.depot}</span>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-2">
+                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <Package className="w-3.5 h-3.5 text-brand" /> Product & Pricing Structure
+                </h5>
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Product:</span>
+                    <span className="font-medium text-ink">{selectedDemand.productSnapshot?.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Selected Color:</span>
+                    <span>{selectedDemand.selectedColor || 'Standard'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Price Zone:</span>
+                    <span className="font-medium">{selectedDemand.priceZone || 'DELHI NCR'}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
+                    <span>Final Payable:</span>
+                    <span className="text-brand font-mono text-sm">{formatCurrency(selectedDemand.totalAmount)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-2">
+                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <Warehouse className="w-3.5 h-3.5 text-brand" /> Operational & Commercial Allocation
+                </h5>
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Commercial Dealer:</span>
+                    <span className="font-medium text-ink">{selectedDemand.dealerId?.name || 'Authorized Showroom'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Regional Depot:</span>
+                    <span className="font-medium">{selectedDemand.depotId?.name || 'Base Depot'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Station URC:</span>
+                    <span className="font-medium">{selectedDemand.urcId?.name || 'Base Canteen'}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-100 pt-1">
+                    <span className="text-slate-500">Payment Status:</span>
+                    <Badge variant={selectedDemand.paymentStatus === 'PAID' ? 'success' : 'warning'}>
+                      {selectedDemand.paymentStatus}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Sanction Amount:</span>
-              <span className="font-bold text-brand">₹ {selectedDemand.csdPrice?.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Beneficiary Savings:</span>
-              <span className="font-bold text-green">₹ {selectedDemand.savings?.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="kv-row between small py-1">
-              <span className="muted">Current Lifecycle Status:</span>
-              <StatusBadge status={selectedDemand.status} />
-            </div>
+
+            {/* Document Attachments */}
+            {selectedDemand.documents?.length > 0 && (
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                <h5 className="font-bold text-slate-800">Uploaded Verification Documents</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {selectedDemand.documents.map((doc, i) => (
+                    <a
+                      key={i}
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 transition text-brand font-medium"
+                    >
+                      <span className="truncate">{doc.name || doc.type}</span>
+                      <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Modal>
       )}

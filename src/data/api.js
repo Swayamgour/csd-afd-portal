@@ -118,6 +118,8 @@ export function mapBackendProduct(p) {
     lo: lo || (normCat === 'white-goods' ? 20000 : 5.0),
     hi: hi || (normCat === 'white-goods' ? 25000 : 6.5),
     price: rawPrice,
+    priceToCustomer: rawPrice,
+    concessionalPrice: rawPrice,
     mrp: rawMrp,
     discount: p.csdDiscountPercent || (rawMrp > rawPrice ? Math.round(((rawMrp - rawPrice) / rawMrp) * 100) : 0),
     image: imgList[0],

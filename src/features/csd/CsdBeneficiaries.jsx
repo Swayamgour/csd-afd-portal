@@ -1,58 +1,67 @@
-import React, { useState, useEffect } from 'react';
-import { Search, ShieldCheck, Eye, Download } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  Search,
+  ShieldCheck,
+  Eye,
+  Download,
+  Users,
+  RefreshCw,
+  UserCheck,
+  CheckCircle2,
+  XCircle,
+  Clock
+} from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
+import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import SearchInput from '../../components/common/SearchInput.jsx';
-import FilterBar from '../../components/common/FilterBar.jsx';
-import Select from '../../components/common/Select.jsx';
-import StatusBadge from '../../components/common/StatusBadge.jsx';
+import Badge from '../../components/common/Badge.jsx';
 import Modal from '../../components/common/Modal.jsx';
 import Button from '../../components/common/Button.jsx';
-import { userService } from '../../services/user.service.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { ROLES } from '../../permissions/roles.js';
+import { useGetBeneficiariesQuery } from '../admin/adminApi.js';
+import { formatDate } from '../../utils/formatters.js';
 
 export default function CsdBeneficiaries() {
-  const [beneficiaries, setBeneficiaries] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const isDirector = user?.role === ROLES.CS_DIRECTOR;
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [selectedBeneficiary, setSelectedBeneficiary] = useState(null);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const list = await userService.getUsers({ role: ROLES.BENEFICIARY, search: searchTerm });
-        setBeneficiaries(list);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [searchTerm]);
+  const queryParams = useMemo(() => {
+    const p = {};
+    if (statusFilter) p.verificationStatus = statusFilter;
+    if (searchTerm) p.search = searchTerm;
+    return p;
+  }, [statusFilter, searchTerm]);
 
-  const handleApprove = async (row) => {
-    try {
-      await userService.approveBeneficiaryUser(row.id, 'APPROVED', 'Approved by CSD Nodal Officer');
-      const list = await userService.getUsers({ role: ROLES.BENEFICIARY, search: searchTerm });
-      setBeneficiaries(list);
-    } catch (err) {
-      alert(err.message || 'Failed to approve');
-    }
-  };
+  const { data: beneficiariesData, isLoading, isFetching, refetch } = useGetBeneficiariesQuery(queryParams);
 
-  const handleReject = async (row) => {
-    const reason = window.prompt('Reason for rejection:', 'Canteen grocery card details unverified') || 'Rejected by CSD officer';
-    try {
-      await userService.approveBeneficiaryUser(row.id, 'REJECTED', reason);
-      const list = await userService.getUsers({ role: ROLES.BENEFICIARY, search: searchTerm });
-      setBeneficiaries(list);
-    } catch (err) {
-      alert(err.message || 'Failed to reject');
-    }
-  };
+  const beneficiaries = useMemo(() => {
+    if (Array.isArray(beneficiariesData)) return beneficiariesData;
+    if (Array.isArray(beneficiariesData?.data)) return beneficiariesData.data;
+    if (Array.isArray(beneficiariesData?.items)) return beneficiariesData.items;
+    return [];
+  }, [beneficiariesData]);
+
+  const kpiStats = useMemo(() => {
+    const total = beneficiaries.length;
+    const approved = beneficiaries.filter(
+      (b) => b.verificationStatus === 'APPROVED' || b.verificationStatus === 'VERIFIED'
+    ).length;
+    const pending = beneficiaries.filter(
+      (b) => b.verificationStatus === 'PENDING' || !b.verificationStatus
+    ).length;
+
+    return [
+      { title: 'Total Beneficiaries', value: total, subtitle: 'National Defense Registry' },
+      { title: 'Verified Profiles', value: approved, subtitle: 'Authorized for Procurement' },
+      { title: 'Pending Approval', value: pending, subtitle: 'Awaiting CS Director Verification' },
+      { title: 'Authority Mode', value: isDirector ? 'Approval Authority' : 'View-Only Directorate', subtitle: isDirector ? 'CS Director Executive' : 'Strict View Only' },
+    ];
+  }, [beneficiaries, isDirector]);
 
   const columns = [
     {
@@ -60,165 +69,212 @@ export default function CsdBeneficiaries() {
       accessor: 'serviceNumber',
       render: (row) => (
         <div>
-          <span className="font-mono font-semibold text-brand">{row.serviceNumber || row.cardId || row.username}</span>
-          {row.cardId && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Card: {row.cardId}</div>}
+          <span className="font-mono font-bold text-brand">{row.serviceNumber || row.cardId || 'DEF-SVC'}</span>
+          {row.cardId && <div className="text-[10px] text-muted font-mono">Card: {row.cardId}</div>}
         </div>
-      )
+      ),
     },
-    { header: 'Beneficiary Name', accessor: 'name', render: (row) => <span className="font-semibold">{row.name}</span> },
     {
-      header: 'Email & Verification',
-      accessor: 'email',
+      header: 'Beneficiary Name & Rank',
+      accessor: 'name',
       render: (row) => (
         <div>
-          <div style={{ fontSize: '0.82rem' }}>{row.email || 'N/A'}</div>
-          {row.isEmailVerified ? (
-            <span className="badge-pill badge-success badge-sm" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem' }}>
-              ✓ Email Verified (OTP)
-            </span>
-          ) : (
-            <span className="badge-pill badge-sm" style={{ background: '#fee2e2', color: '#991b1b', fontSize: '0.7rem' }}>
-              Unverified
-            </span>
-          )}
+          <span className="font-semibold text-xs block text-ink">{row.name}</span>
+          <span className="text-[10px] text-muted">{row.rank || 'Armed Forces Member'} ({row.category || 'DEFENCE'})</span>
         </div>
-      )
+      ),
     },
-    { header: 'Rank & Arm', accessor: 'rank', render: (row) => <span className="small">{row.rank || 'Armed Forces Member'} ({row.service || row.organization || 'Defence'})</span> },
-    { header: 'Pay Level', accessor: 'payLevel', render: (row) => <span className="small font-medium text-brand">{row.payLevel || 'Level 1'}</span> },
     {
-      header: 'Approval Status',
-      accessor: 'adminApproval',
+      header: 'Pay Level',
+      accessor: 'payLevel',
+      render: (row) => <span className="font-mono font-semibold text-xs">Level {row.payLevel || '1'}</span>,
+    },
+    {
+      header: 'Verification Status',
+      accessor: 'verificationStatus',
       render: (row) => {
-        const isApproved = row.status === 'Active' || row.adminApproval === 'APPROVED' || row.verificationStatus === 'APPROVED' || row.verificationStatus === 'VERIFIED';
-        const isRejected = row.status === 'Rejected' || row.adminApproval === 'REJECTED' || row.verificationStatus === 'REJECTED';
+        const isApproved = row.verificationStatus === 'APPROVED' || row.verificationStatus === 'VERIFIED';
+        const isRejected = row.verificationStatus === 'REJECTED';
         return (
-          <span
-            className={`badge-pill ${isApproved ? 'badge-success' : isRejected ? 'badge-danger' : 'badge-warning'} badge-sm`}
-            style={{ fontWeight: 600, fontSize: '0.75rem' }}
-          >
-            {isApproved ? 'APPROVED' : isRejected ? 'REJECTED' : 'PENDING'}
-          </span>
+          <Badge variant={isApproved ? 'success' : isRejected ? 'danger' : 'warning'}>
+            {isApproved ? 'VERIFIED' : isRejected ? 'REJECTED' : 'PENDING'}
+          </Badge>
         );
-      }
+      },
+    },
+    {
+      header: 'Registered Date',
+      accessor: 'createdAt',
+      render: (row) => <span className="text-xs text-muted font-mono">{formatDate(row.createdAt)}</span>,
     },
     {
       header: 'Actions',
-      accessor: 'id',
-      render: (row) => {
-        const isPending = row.status === 'Pending' || row.adminApproval === 'PENDING' || row.verificationStatus === 'PENDING';
-        return (
-          <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-            {isPending && (
-              <>
-                <button
-                  type="button"
-                  className="btn sm"
-                  style={{ background: '#16a34a', color: '#fff', fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: '4px', border: 'none' }}
-                  onClick={() => handleApprove(row)}
-                  title="Approve Beneficiary Registration"
-                >
-                  Approve
-                </button>
-                <button
-                  type="button"
-                  className="btn sm out"
-                  style={{ borderColor: '#dc2626', color: '#dc2626', fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: '4px' }}
-                  onClick={() => handleReject(row)}
-                  title="Reject Beneficiary Registration"
-                >
-                  Reject
-                </button>
-              </>
-            )}
-            <button
-              type="button"
-              className="btn sm out"
-              style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}
-              onClick={() => setSelectedBeneficiary(row)}
-            >
-              Details
-            </button>
-          </div>
-        );
-      }
-    }
+      accessor: '_id',
+      render: (row) => (
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            className="px-2.5 py-1 text-xs font-semibold bg-brand/10 text-brand rounded hover:bg-brand/20 transition flex items-center gap-1"
+            onClick={() => setSelectedBeneficiary(row)}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Details</span>
+          </button>
+          {!isDirector && (row.verificationStatus === 'PENDING' || !row.verificationStatus) && (
+            <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+              Pending CS Director Approval
+            </span>
+          )}
+        </div>
+      ),
+    },
   ];
 
   return (
-    <div className="csd-beneficiaries-page">
+    <div className="csd-beneficiaries-page space-y-6">
       <PageHeader
         title="Armed Forces Beneficiary Registry"
-        subtitle="National database of service personnel, pensioners, and entitled dependents with SPARSH / e-PPO synchronization."
+        subtitle="National database of active service personnel, defense pensioners, and authorized family members."
+        breadcrumbs={[
+          { label: 'Portal Administration', href: '/admin/dashboard' },
+          { label: 'Beneficiary Registry' },
+        ]}
+        actions={
+          <button
+            onClick={() => refetch()}
+            className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition"
+            title="Refresh Beneficiaries"
+          >
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-brand' : ''}`} />
+          </button>
+        }
       />
 
-      <FilterBar
-        hasActiveFilters={!!searchTerm}
-        onReset={() => setSearchTerm('')}
-      >
-        <div className="flex-1 min-w-xs">
-          <label className="form-label small font-semibold">Search Beneficiaries</label>
-          <SearchInput
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Search by Service Number, PAN, or Name..."
-            size="sm"
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpiStats.map((kpi, idx) => (
+          <StatCard
+            key={idx}
+            title={kpi.title}
+            value={kpi.value}
+            subtitle={kpi.subtitle}
           />
-        </div>
-      </FilterBar>
+        ))}
+      </div>
 
+      {/* Filter and Search Bar */}
       <Card>
-        <DataTable
-          columns={columns}
-          data={beneficiaries}
-          loading={loading}
-          emptyTitle="No beneficiaries located"
-          emptyText="Try searching by full Service Number (e.g. JC-765432X)."
-        />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by Service No, PAN, or Name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand focus:outline-none"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+            >
+              <option value="">All Verification Statuses</option>
+              <option value="APPROVED">Verified / Approved</option>
+              <option value="PENDING">Pending CS Director Verification</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+
+            {(statusFilter || searchTerm) && (
+              <button
+                onClick={() => {
+                  setStatusFilter('');
+                  setSearchTerm('');
+                }}
+                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded"
+              >
+                Reset Filters
+              </button>
+            )}
+          </div>
+        </div>
       </Card>
 
+      {/* Main Table */}
+      <Card title="Entitled Beneficiaries" subtitle={`Showing ${beneficiaries.length} records retrieved from server`}>
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-500">
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand mb-3" />
+            <p className="font-semibold text-sm">Loading beneficiaries from registry...</p>
+          </div>
+        ) : beneficiaries.length === 0 ? (
+          <div className="p-12 text-center text-slate-400">
+            <Users className="w-12 h-12 mx-auto mb-2 text-slate-300" />
+            <p className="font-semibold text-sm text-slate-600">No beneficiaries located</p>
+            <p className="text-xs text-slate-400 mt-1">Try searching by service number</p>
+          </div>
+        ) : (
+          <DataTable columns={columns} data={beneficiaries} />
+        )}
+      </Card>
+
+      {/* Dossier Modal */}
       {selectedBeneficiary && (
         <Modal
           isOpen={!!selectedBeneficiary}
           onClose={() => setSelectedBeneficiary(null)}
-          title={`Beneficiary Entitlement Record · ${selectedBeneficiary.name}`}
-          subtitle={`Service No: ${selectedBeneficiary.serviceNumber} · ${selectedBeneficiary.rank}`}
-          maxWidth="560px"
-          footer={
-            <Button variant="outline" onClick={() => setSelectedBeneficiary(null)}>
-              Close
-            </Button>
-          }
+          title={`Beneficiary Dossier · ${selectedBeneficiary.name}`}
+          size="md"
         >
-          <div className="info-kv-list">
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Permanent Account Number (PAN):</span>
-              <span className="font-mono font-semibold">{selectedBeneficiary.panNumber}</span>
+          <div className="space-y-4 text-xs">
+            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 grid grid-cols-2 gap-2">
+              <div>
+                <span className="text-slate-500 block">Service Number:</span>
+                <span className="font-mono font-bold text-ink">{selectedBeneficiary.serviceNumber || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Rank / Cadre:</span>
+                <span className="font-semibold">{selectedBeneficiary.rank || 'Armed Forces'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Pay Level:</span>
+                <span className="font-mono font-semibold">Level {selectedBeneficiary.payLevel || '1'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Verification Status:</span>
+                <Badge variant={selectedBeneficiary.verificationStatus === 'APPROVED' ? 'success' : 'warning'}>
+                  {selectedBeneficiary.verificationStatus || 'PENDING'}
+                </Badge>
+              </div>
             </div>
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Entitlement Category:</span>
-              <span className="font-bold text-brand">{selectedBeneficiary.eligibility?.category}</span>
+
+            <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Permanent Account Number (PAN):</span>
+                <span className="font-mono font-semibold">{selectedBeneficiary.pan || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Canteen Grocery Card:</span>
+                <span className="font-mono">{selectedBeneficiary.cardId || 'CSD-CARD'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Entitlement Category:</span>
+                <span className="font-semibold text-brand">{selectedBeneficiary.category || 'DEFENCE'}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-100 pt-1">
+                <span className="text-slate-500">Registration Date:</span>
+                <span className="font-mono">{formatDate(selectedBeneficiary.createdAt)}</span>
+              </div>
             </div>
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Four-Wheeler Financial Ceiling:</span>
-              <span className="font-bold text-ink">₹ {selectedBeneficiary.eligibility?.fourWheelerCap?.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Purchase Periodicity:</span>
-              <span>Once every {selectedBeneficiary.eligibility?.fourWheelerIntervalYears} years</span>
-            </div>
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Next Car Booking Window:</span>
-              <span className="font-semibold text-green">{selectedBeneficiary.eligibility?.nextFourWheelerEligibleDate}</span>
-            </div>
-            <div className="kv-row between small py-1 border-bottom">
-              <span className="muted">Two-Wheeler Quota:</span>
-              <span className="text-green font-semibold">● Eligible (Every 3 years)</span>
-            </div>
-            <div className="kv-row between small py-1">
-              <span className="muted">Statutory Entitlement Note:</span>
-              <span className="small muted">{selectedBeneficiary.eligibility?.reason}</span>
-            </div>
+
+            {!isDirector && (
+              <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-[11px]">
+                <strong>Governance Rule:</strong> Admin & CSD-HO have strictly View-Only access to the Beneficiary Registry. Registration approvals and profile modifications are exclusively exercised by the <strong>CS Director</strong>.
+              </div>
+            )}
           </div>
         </Modal>
       )}
