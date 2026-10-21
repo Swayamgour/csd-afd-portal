@@ -37,6 +37,24 @@ export const adminApi = api.injectEndpoints({
       providesTags: ['User'],
     }),
 
+    createUser: builder.mutation({
+      query: (body) => ({
+        url: '/users',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['User'],
+    }),
+
+    updateUser: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/users/${id}`,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['User', 'Beneficiary'],
+    }),
+
     approveUser: builder.mutation({
       query: ({ id, remarks }) => ({
         url: `/users/${id}/approve`,
@@ -169,6 +187,37 @@ export const adminApi = api.injectEndpoints({
       providesTags: ['Audit', 'Dashboard'],
     }),
 
+    // Role-Specific Dashboards (Section 11)
+    getOemSummary: builder.query({
+      query: () => '/dashboards/oem-summary',
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Dashboard', 'Order', 'Product'],
+    }),
+
+    getDealerSummary: builder.query({
+      query: () => '/dashboards/dealer-summary',
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Dashboard', 'Demand', 'Order'],
+    }),
+
+    getDepotSummary: builder.query({
+      query: () => '/dashboards/depot-summary',
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Dashboard', 'Demand', 'Order'],
+    }),
+
+    getUrcSummary: builder.query({
+      query: () => '/dashboards/urc-summary',
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Dashboard', 'Order'],
+    }),
+
+    getCsDirectorSummary: builder.query({
+      query: () => '/dashboards/cs-director-summary',
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Dashboard', 'Beneficiary', 'Demand', 'Ticket'],
+    }),
+
     // Dynamic Section 22 Reports
     getDemandsReport: builder.query({
       query: (params) => ({ url: '/reports/demands-report', params }),
@@ -241,12 +290,29 @@ export const adminApi = api.injectEndpoints({
       transformResponse: (response) => response?.data?.items || response?.data || response,
       providesTags: ['Audit', 'Report'],
     }),
+
+    getContent: builder.query({
+      query: (params) => ({ url: '/content', params }),
+      transformResponse: (response) => response?.data?.items || response?.data || response || [],
+      providesTags: ['Content'],
+    }),
+
+    createContent: builder.mutation({
+      query: (body) => ({
+        url: '/content',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Content'],
+    }),
   }),
 });
 
 export const {
   useGetUsersQuery,
   useGetUserByIdQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
   useApproveUserMutation,
   useRejectUserMutation,
   useUpdateUserStatusMutation,
@@ -263,6 +329,11 @@ export const {
   useGetAdminRecentDemandsQuery,
   useGetAdminRecentUsersQuery,
   useGetAdminActivityQuery,
+  useGetOemSummaryQuery,
+  useGetDealerSummaryQuery,
+  useGetDepotSummaryQuery,
+  useGetUrcSummaryQuery,
+  useGetCsDirectorSummaryQuery,
   useGetDemandsReportQuery,
   useGetBeneficiariesReportQuery,
   useGetPaymentsReportQuery,
@@ -275,5 +346,7 @@ export const {
   useGetRefundsReportQuery,
   useGetAuditReportQuery,
   useGetAuthReportQuery,
+  useGetContentQuery,
+  useCreateContentMutation,
 } = adminApi;
 

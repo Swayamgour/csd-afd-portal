@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ArrowLeft, Mail, CheckCircle2, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { ROLE_HOMES, getRoleNavigatePath } from '../../permissions/roles.js';
+import { ROLE_HOMES, getRoleNavigatePath, isPathAllowedForRole } from '../../permissions/roles.js';
 import { generateOtp, sendOtpEmail, verifyOtpCode } from '../../services/emailJs.service.js';
 import { useLoginMutation } from './authApi.js';
 import { useDispatch } from 'react-redux';
@@ -129,8 +129,11 @@ export default function OTPVerification({ sessionData, onBack }) {
 
       const params = new URLSearchParams(window.location.search);
       const redirectUrl = params.get('redirect');
-      const defaultDest = getRoleNavigatePath(loggedInUser?.role || sessionData?.role || 'beneficiary');
-      const dest = redirectUrl && !redirectUrl.startsWith('//') ? redirectUrl : defaultDest;
+      const userRole = loggedInUser?.role || sessionData?.role || 'beneficiary';
+      const defaultDest = getRoleNavigatePath(userRole);
+      const dest = redirectUrl && !redirectUrl.startsWith('//') && isPathAllowedForRole(userRole, redirectUrl)
+        ? redirectUrl
+        : defaultDest;
       navigate(dest, { replace: true });
     } catch (err) {
       setError(err.message || 'OTP Verification failed.');
@@ -199,6 +202,49 @@ export default function OTPVerification({ sessionData, onBack }) {
           </b>
         </p>
       </div>
+
+      {expectedOtp && (
+        <div
+          className="alert-banner info small"
+          style={{
+            marginBottom: '1rem',
+            background: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            color: '#166534',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0.65rem 0.9rem',
+            borderRadius: '6px',
+            fontSize: '0.85rem'
+          }}
+        >
+          <span>
+            🔑 <strong>Verification OTP:</strong>{' '}
+            <code style={{ fontWeight: 700, fontSize: '0.95rem', letterSpacing: '1px', background: '#dcfce7', padding: '2px 6px', borderRadius: '4px' }}>
+              {expectedOtp}
+            </code>
+          </span>
+          <button
+            type="button"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#15803d',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              fontSize: '0.82rem',
+              fontWeight: 600
+            }}
+            onClick={() => {
+              setOtp(String(expectedOtp).split(''));
+              inputRefs.current[5]?.focus();
+            }}
+          >
+            Auto-fill
+          </button>
+        </div>
+      )}
 
       {successMsg && (
         <div className="alert-banner success small" role="status" style={{ marginBottom: '1rem' }}>

@@ -1,9 +1,8 @@
 import React from 'react';
-import { Menu, HelpCircle, Search, ShieldCheck } from 'lucide-react';
+import { Menu, HelpCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import NotificationCenter from './NotificationCenter.jsx';
 import UserMenu from './UserMenu.jsx';
-import RoleSwitcher from './RoleSwitcher.jsx';
 import FontSizeResizer from '../components/common/FontSizeResizer.jsx';
 
 export default function HeaderBar({ onToggleSidebar }) {
@@ -30,9 +29,6 @@ export default function HeaderBar({ onToggleSidebar }) {
       <div className="header-right">
         {/* Font size accessibility controller | A- A A+ | */}
         <FontSizeResizer />
-
-        {/* Role Persona Switcher for pair-testing and demonstration */}
-        <RoleSwitcher />
 
         {/* Helpdesk shortcut */}
         <Link

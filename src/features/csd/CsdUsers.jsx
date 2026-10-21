@@ -10,18 +10,26 @@ import Select from '../../components/common/Select.jsx';
 import SearchInput from '../../components/common/SearchInput.jsx';
 import Modal from '../../components/common/Modal.jsx';
 import Input from '../../components/common/Input.jsx';
-import { userService } from '../../services/user.service.js';
+import { useGetUsersQuery, useCreateUserMutation, useUpdateUserStatusMutation } from '../admin/adminApi.js';
 import { ROLE_LABELS, ROLES } from '../../permissions/roles.js';
 
 export default function CsdUsers() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [toast, setToast] = useState('');
+
+  const queryParams = {
+    ...(roleFilter !== 'All' ? { role: roleFilter } : {}),
+    ...(statusFilter !== 'All' ? { status: statusFilter } : {}),
+    ...(searchTerm ? { q: searchTerm } : {}),
+  };
+
+  const { data: rawUsers = [], isLoading: loading, refetch: refetchUsers } = useGetUsersQuery(queryParams);
+  const [createUser] = useCreateUserMutation();
+  const [updateUserStatus] = useUpdateUserStatusMutation();
 
   const [newUserData, setNewUserData] = useState({
     name: '',
@@ -33,43 +41,46 @@ export default function CsdUsers() {
     department: ''
   });
 
-  const loadUsers = async () => {
-    setLoading(true);
-    try {
-      const data = await userService.getUsers({
-        role: roleFilter,
-        status: statusFilter,
-        search: searchTerm
-      });
-      setUsers(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadUsers();
-  }, [roleFilter, statusFilter, searchTerm]);
+  const rawList = Array.isArray(rawUsers) ? rawUsers : (Array.isArray(rawUsers?.items) ? rawUsers.items : []);
+  const users = rawList.map((u, idx) => ({
+    id: u._id || u.id || `usr-${idx}`,
+    name: u.name || 'Official User',
+    username: u.username || u.email || 'N/A',
+    email: u.email || 'N/A',
+    phone: u.mobile || u.phone || 'N/A',
+    role: u.role || ROLES.DEPOT,
+    depot: u.depotId?.name || (typeof u.depotId === 'string' ? u.depotId : 'National Depot HQ'),
+    status: u.status === 'ACTIVE' || u.status === 'Active' ? 'Active' : 'Inactive',
+    createdAt: u.createdAt ? new Date(u.createdAt).toISOString().split('T')[0] : '2024-01-01',
+  }));
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-      await userService.createUser(newUserData);
+      await createUser({
+        name: newUserData.name,
+        email: newUserData.email,
+        mobile: newUserData.phone.replace(/[^0-9]/g, '').slice(-10),
+        role: newUserData.role,
+      }).unwrap();
       setCreateModalOpen(false);
       setToast('New portal user created and credentials dispatched.');
-      loadUsers();
+      setNewUserData({ name: '', username: '', email: '', phone: '', role: ROLES.DEPOT, designation: '', department: '' });
+      refetchUsers();
     } catch (err) {
-      alert(err.message);
+      alert(err?.data?.message || err.message || 'Failed to create user');
     }
   };
 
   const toggleUserStatus = async (user) => {
-    const nextStatus = user.status === 'Active' ? 'Deactivated' : 'Active';
-    await userService.updateUserStatus(user.id, nextStatus);
-    setToast(`User ${user.name} status updated to ${nextStatus}.`);
-    loadUsers();
+    try {
+      const nextStatus = user.status === 'Active' ? 'INACTIVE' : 'ACTIVE';
+      await updateUserStatus({ id: user.id, status: nextStatus }).unwrap();
+      setToast(`User ${user.name} status updated.`);
+      refetchUsers();
+    } catch (err) {
+      alert(err?.data?.message || err.message || 'Failed to update user status');
+    }
   };
 
   const columns = [

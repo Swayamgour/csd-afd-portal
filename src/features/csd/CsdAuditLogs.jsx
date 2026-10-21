@@ -7,34 +7,34 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import FilterBar from '../../components/common/FilterBar.jsx';
 import SearchInput from '../../components/common/SearchInput.jsx';
 import Select from '../../components/common/Select.jsx';
-import { auditService } from '../../services/audit.service.js';
+import { useGetAuditReportQuery } from '../admin/adminApi.js';
 
 export default function CsdAuditLogs() {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [moduleFilter, setModuleFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadLogs = async () => {
-    setLoading(true);
-    try {
-      const data = await auditService.getAuditLogs({
-        module: moduleFilter,
-        status: statusFilter,
-        search: searchTerm
-      });
-      setLogs(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  const queryParams = {
+    limit: 50,
+    ...(moduleFilter !== 'All' ? { module: moduleFilter } : {}),
+    ...(statusFilter !== 'All' ? { status: statusFilter } : {}),
+    ...(searchTerm ? { q: searchTerm } : {}),
   };
 
-  useEffect(() => {
-    loadLogs();
-  }, [moduleFilter, statusFilter, searchTerm]);
+  const { data: rawLogs = [], isLoading: loading } = useGetAuditReportQuery(queryParams);
+
+  const rawList = Array.isArray(rawLogs) ? rawLogs : (Array.isArray(rawLogs?.items) ? rawLogs.items : []);
+  const logs = rawList.map((l, idx) => ({
+    id: l._id || l.id || `aud-${idx}`,
+    action: l.action || 'MUTATION',
+    user: l.userName || l.user || (typeof l.userId === 'object' ? l.userId?.name : 'Administrator'),
+    role: l.role || (typeof l.userId === 'object' ? l.userId?.role : 'ADMIN'),
+    module: l.entityType || l.module || 'SYSTEM',
+    entity: l.entityId ? `${l.entityType || 'Entity'} #${String(l.entityId).slice(-6)}` : 'N/A',
+    ip: l.ip || '127.0.0.1',
+    status: l.status || 'Success',
+    timestamp: l.timestamp || l.createdAt ? new Date(l.timestamp || l.createdAt).toLocaleString() : new Date().toLocaleString()
+  }));
 
   const columns = [
     {

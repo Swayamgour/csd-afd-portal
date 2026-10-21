@@ -39,11 +39,7 @@ function getStoredDemands() {
 }
 
 function saveStoredDemands(list) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  } catch (e) {
-    // ignore
-  }
+  // LocalStorage storage removed per architecture requirements
 }
 
 let demandsStore = getStoredDemands();

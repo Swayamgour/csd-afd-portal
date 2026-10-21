@@ -1,34 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import ExportButton from '../../components/common/ExportButton.jsx';
-import { reportService } from '../../services/report.service.js';
+import Button from '../../components/common/Button.jsx';
+import StatusBadge from '../../components/common/StatusBadge.jsx';
+import { useGetDemandsReportQuery } from '../admin/adminApi.js';
 
 export default function DepotReports() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: demandsData, isLoading: loading, isFetching, refetch } = useGetDemandsReportQuery();
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await reportService.getReportData('demands');
-        setData(res.rows || []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const demands = Array.isArray(demandsData)
+    ? demandsData
+    : Array.isArray(demandsData?.items)
+    ? demandsData.items
+    : [];
 
   const columns = [
-    { header: 'Quarter Period', accessor: 'period' },
-    { header: 'Depot Sub-Sector', accessor: 'region' },
-    { header: 'Demand Count', accessor: 'demands', render: (r) => <span className="font-bold">{r.demands}</span> },
-    { header: 'Sanctioned Orders', accessor: 'approved', render: (r) => <span className="text-green font-semibold">{r.approved}</span> },
-    { header: 'Turnover Value', accessor: 'value', render: (r) => <span className="font-bold text-brand">{r.value}</span> }
+    {
+      header: 'Demand No.',
+      accessor: 'demandNo',
+      render: (r) => <span className="font-semibold text-brand">{r.demandNo || r._id}</span>,
+    },
+    {
+      header: 'Beneficiary',
+      accessor: 'beneficiaryId',
+      render: (r) => r.beneficiaryId?.fullName || r.beneficiaryId?.name || 'Applicant',
+    },
+    {
+      header: 'Product Model',
+      accessor: 'productSnapshot',
+      render: (r) => r.productSnapshot?.name || 'AFD Product',
+    },
+    {
+      header: 'Assigned Dealer',
+      accessor: 'dealerId',
+      render: (r) => r.dealerId?.name || 'Dealer',
+    },
+    {
+      header: 'Sanction Value',
+      accessor: 'totalAmount',
+      render: (r) => `₹ ${(r.totalAmount || 0).toLocaleString('en-IN')}`,
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (r) => <StatusBadge status={r.status} />,
+    },
   ];
 
   return (
@@ -37,20 +55,20 @@ export default function DepotReports() {
         title="Regional Depot Performance & Sanction Reports"
         subtitle="Zonal procurement throughput and dealer dispatch metrics"
         actions={
-          <ExportButton
-            filename="DEPOT_REGIONAL_REPORT"
-            headers={columns.map((c) => c.header)}
-            rows={data}
-          />
+          <Button
+            variant="outline"
+            size="sm"
+            icon={RefreshCw}
+            loading={isFetching}
+            onClick={() => refetch()}
+          >
+            Refresh
+          </Button>
         }
       />
 
       <Card>
-        <DataTable
-          columns={columns}
-          data={data}
-          loading={loading}
-        />
+        <DataTable columns={columns} data={demands} loading={loading} />
       </Card>
     </div>
   );

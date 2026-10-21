@@ -251,3 +251,55 @@ export function getRoleNavigatePath(role) {
 
   return ROLE_HOMES[norm] || ROLE_HOMES[r] || '/';
 }
+
+/**
+ * Checks whether a target path is allowed for a given role.
+ * Prevents unauthorized redirection loops (e.g., non-admin bounced to /admin).
+ */
+export function isPathAllowedForRole(role, path) {
+  if (!path || typeof path !== 'string') return false;
+  const norm = normalizeRole(role);
+  const cleanPath = path.split('?')[0].split('#')[0].toLowerCase();
+
+  // Root and public store routes are accessible to all authenticated users
+  if (cleanPath === '/' || cleanPath.startsWith('/products') || cleanPath.startsWith('/item/')) {
+    return true;
+  }
+
+  // System Administrator has supervisor access
+  if (norm === 'admin') {
+    return true;
+  }
+
+  // Role prefix checks
+  if (cleanPath.startsWith('/admin')) {
+    return norm === 'admin';
+  }
+  if (cleanPath.startsWith('/director')) {
+    return norm === 'cs_director' || norm === 'admin';
+  }
+  if (cleanPath.startsWith('/dealer')) {
+    return norm === 'dealer' || norm === 'admin';
+  }
+  if (cleanPath.startsWith('/oem')) {
+    return norm === 'oem' || norm === 'admin';
+  }
+  if (cleanPath.startsWith('/depot')) {
+    return norm === 'depot' || norm === 'admin';
+  }
+  if (cleanPath.startsWith('/urc')) {
+    return norm === 'urc' || norm === 'admin';
+  }
+  if (cleanPath.startsWith('/csd')) {
+    return norm === 'csd' || norm === 'admin';
+  }
+  if (cleanPath.startsWith('/helpdesk')) {
+    return norm === 'helpdesk_agent' || norm === 'helpdesk_supervisor' || norm === 'admin';
+  }
+  if (cleanPath.startsWith('/beneficiary') || cleanPath.startsWith('/checkout') || cleanPath.startsWith('/cart')) {
+    return norm === 'beneficiary' || norm === 'customer' || norm === 'subscriber' || norm === 'admin';
+  }
+
+  return true;
+}
+

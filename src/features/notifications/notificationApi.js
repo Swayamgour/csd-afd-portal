@@ -39,6 +39,15 @@ export const notificationApi = api.injectEndpoints({
       transformResponse: (response) => response?.data || response,
       invalidatesTags: ['Notification', 'Dashboard'],
     }),
+
+    broadcastNotification: builder.mutation({
+      query: (body) => ({
+        url: '/notifications/broadcast',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Notification', 'Dashboard'],
+    }),
   }),
 });
 
@@ -46,4 +55,5 @@ export const {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
   useMarkAllNotificationsReadMutation,
+  useBroadcastNotificationMutation,
 } = notificationApi;

@@ -1,34 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Bell, CheckCheck, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Drawer from '../components/common/Drawer.jsx';
 import Button from '../components/common/Button.jsx';
-import { notificationService } from '../services/notification.service.js';
-import { useAuth } from '../context/AuthContext.jsx';
+import {
+  useGetNotificationsQuery,
+  useMarkAllNotificationsReadMutation,
+  useMarkNotificationReadMutation,
+} from '../features/notifications/notificationApi.js';
 
 export default function NotificationCenter() {
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const { role } = useAuth();
+  const { data: notifData } = useGetNotificationsQuery();
+  const [markAllAsRead] = useMarkAllNotificationsReadMutation();
+  const [markNotificationRead] = useMarkNotificationReadMutation();
 
-  const loadNotifications = async () => {
+  const notifications = Array.isArray(notifData?.items)
+    ? notifData.items
+    : Array.isArray(notifData)
+    ? notifData
+    : [];
+
+  const unreadCount = notifications.filter((n) => !n.readAt && n.status !== 'READ').length;
+
+  const markAllRead = async () => {
     try {
-      const data = await notificationService.getNotifications(role);
-      setNotifications(data);
+      await markAllAsRead().unwrap();
     } catch (e) {
       console.error(e);
     }
   };
 
-  useEffect(() => {
-    loadNotifications();
-  }, [role]);
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const markAllRead = async () => {
-    await notificationService.markAllAsRead();
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const handleItemClick = async (item) => {
+    if (!item.readAt) {
+      try {
+        await markNotificationRead(item._id || item.id).unwrap();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setOpen(false);
   };
 
   return (
@@ -67,30 +78,26 @@ export default function NotificationCenter() {
           {notifications.length === 0 ? (
             <div className="p-3 text-center muted small">No notifications right now.</div>
           ) : (
-            notifications.map((item) => (
-              <div
-                key={item.id}
-                className={`notif-card panel mb-1 ${item.read ? 'notif-read' : 'notif-unread'}`}
-              >
-                <div className="between mb-1">
-                  <span className={`notif-type-tag notif-type-${item.type.toLowerCase()}`}>
-                    {item.type}
-                  </span>
-                  <span className="notif-time muted small">{item.timestamp}</span>
+            notifications.map((item) => {
+              const isRead = Boolean(item.readAt || item.status === 'READ');
+              return (
+                <div
+                  key={item._id || item.id}
+                  className={`notif-card panel mb-1 ${isRead ? 'notif-read' : 'notif-unread'}`}
+                  onClick={() => handleItemClick(item)}
+                >
+                  <div className="between mb-1">
+                    <span className="notif-type-tag notif-type-info">
+                      {item.event || 'NOTIFICATION'}
+                    </span>
+                    <span className="notif-time muted small">
+                      {item.createdAt ? new Date(item.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
+                    </span>
+                  </div>
+                  <p className="notif-desc small mb-1">{item.body || item.message}</p>
                 </div>
-                <h4 className="notif-title small font-semibold mb-1">{item.title}</h4>
-                <p className="notif-desc small muted mb-1">{item.message}</p>
-                {item.link && (
-                  <Link
-                    to={item.link}
-                    onClick={() => setOpen(false)}
-                    className="notif-link small link row align-center gap-1"
-                  >
-                    View Details <ExternalLink size={12} />
-                  </Link>
-                )}
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </Drawer>

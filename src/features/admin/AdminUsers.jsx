@@ -11,7 +11,7 @@ import { StatCard } from '../../components/common/StatCard.jsx';
 import { UserDetailsModal } from './UserDetailsModal.jsx';
 import { UserEditModal } from './UserEditModal.jsx';
 import { UserStatusModal } from './UserStatusModal.jsx';
-import { userService } from '../../services/user.service.js';
+import { useGetUsersQuery, useUpdateUserStatusMutation } from './adminApi.js';
 import { MASTER_ROLES, ROLE_LABELS } from '../../permissions/roles.js';
 import {
   Users,
@@ -30,11 +30,25 @@ import {
 
 export const AdminUsers = () => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+
+  const { data: rawUsers = [], isLoading: loading, refetch: fetchUsers } = useGetUsersQuery({});
+  const [updateUserStatus] = useUpdateUserStatusMutation();
+
+  const rawList = Array.isArray(rawUsers) ? rawUsers : (Array.isArray(rawUsers?.items) ? rawUsers.items : []);
+  const users = rawList.map((u, idx) => ({
+    ...u,
+    id: String(u._id || u.id || `usr-${idx}`),
+    name: u.name || 'User Account',
+    username: u.username || u.email || 'N/A',
+    role: (u.role || 'beneficiary').toLowerCase(),
+    status: u.status === 'ACTIVE' || u.status === 'Active' ? 'Active' : (u.status === 'LOCKED' ? 'Suspended' : (u.status || 'Active')),
+    verificationStatus: u.verificationStatus || (u.role === 'BENEFICIARY' ? 'PENDING' : 'VERIFIED'),
+    adminApproval: u.verificationStatus === 'APPROVED' || u.verificationStatus === 'VERIFIED' ? 'APPROVED' : (u.verificationStatus === 'REJECTED' ? 'REJECTED' : 'PENDING'),
+    isEmailVerified: u.isEmailVerified !== undefined ? u.isEmailVerified : true,
+  }));
 
   // Modals
   const [selectedUserForDetails, setSelectedUserForDetails] = useState(null);
@@ -43,22 +57,6 @@ export const AdminUsers = () => {
 
   // Success Feedback Toast
   const [toastMessage, setToastMessage] = useState('');
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const data = await userService.getUsers();
-      setUsers(data || []);
-    } catch (e) {
-      console.error('[AdminUsers] fetchUsers error:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -83,13 +81,12 @@ export const AdminUsers = () => {
 
   const handleQuickToggleLock = async (user) => {
     const nextStatus = user.status === 'Suspended' || user.status === 'Denied' ? 'Active' : 'Suspended';
-    const reason = nextStatus === 'Active' ? 'Account unlocked by administrator' : 'Emergency temporary security lockout';
     try {
-      await userService.updateUserStatus(user.id, nextStatus, reason, 'Admin Officer K. S. Pillai');
+      await updateUserStatus({ id: user.id, status: nextStatus === 'Active' ? 'ACTIVE' : 'LOCKED' }).unwrap();
       showToast(`✓ Account ${user.username} is now ${nextStatus}.`);
       fetchUsers();
     } catch (err) {
-      alert(err.message || 'Failed to toggle account lock state');
+      alert(err?.data?.message || err.message || 'Failed to toggle account lock state');
     }
   };
 

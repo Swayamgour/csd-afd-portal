@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
@@ -11,15 +11,29 @@ import { Timeline } from '../../components/common/Timeline';
 import { LoadingState } from '../../components/common/States';
 import { Can } from '../../permissions/Can';
 import { useAuth } from '../../context/AuthContext';
-import { ticketService } from '../../services/ticket.service';
-import { kbService } from '../../services/kb.service';
+import {
+  useGetTicketByIdQuery,
+  useAddTicketMessageMutation,
+  useAssignTicketMutation,
+  useUpdateTicketStatusMutation,
+  useGetKbArticlesQuery,
+} from './ticketApi';
 
 export const HelpdeskTicketDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
-  const [ticket, setTicket] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [suggestedKb, setSuggestedKb] = useState([]);
+
+  const { data: ticket, isLoading: loading, refetch } = useGetTicketByIdQuery(id);
+  const [addTicketMessage, { isLoading: isSendingReply }] = useAddTicketMessageMutation();
+  const [assignTicket, { isLoading: isAssigning }] = useAssignTicketMutation();
+  const [updateTicketStatus, { isLoading: isUpdatingStatus }] = useUpdateTicketStatusMutation();
+
+  const { data: kbArticles } = useGetKbArticlesQuery(
+    ticket?.category ? { category: ticket.category } : undefined,
+    { skip: !ticket?.category }
+  );
+
+  const suggestedKb = Array.isArray(kbArticles) ? kbArticles.slice(0, 3) : [];
 
   // Modals & Action States
   const [replyText, setReplyText] = useState('');
@@ -34,115 +48,115 @@ export const HelpdeskTicketDetail = () => {
   const [resolutionSummary, setResolutionSummary] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
 
-  useEffect(() => {
-    fetchTicket();
-  }, [id]);
-
-  const fetchTicket = async () => {
-    setLoading(true);
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !ticket) return;
     try {
-      const res = await ticketService.getTicketById(id || 'HD-2024-8801');
-      const data = res.data || res;
-      setTicket(data);
-      if (data?.category) {
-        const kbRes = await kbService.searchArticles(data.category);
-        setSuggestedKb((kbRes.data || []).slice(0, 3));
-      }
+      await addTicketMessage({
+        id: ticket._id || ticket.id,
+        body: replyText,
+        isInternal: false,
+      }).unwrap();
+      setReplyText('');
+      setActionSuccess('Reply dispatched to citizen email and notification tray.');
+      setTimeout(() => setActionSuccess(''), 4000);
     } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
+      alert(e?.data?.message || e.message || 'Error sending reply');
     }
   };
 
-  const handleSendReply = async () => {
-    if (!replyText.trim()) return;
-    await ticketService.addTimelineEvent(ticket.id, {
-      title: 'Agent Response Sent',
-      desc: replyText,
-      by: user?.name || 'Helpdesk Agent',
-      type: 'reply'
-    });
-    setReplyText('');
-    setActionSuccess('Reply dispatched to citizen email and notification tray.');
-    fetchTicket();
-    setTimeout(() => setActionSuccess(''), 4000);
-  };
-
   const handleAddInternalNote = async () => {
-    if (!internalNote.trim()) return;
-    await ticketService.addTimelineEvent(ticket.id, {
-      title: 'Internal Confidential Note Added',
-      desc: internalNote,
-      by: user?.name || 'Helpdesk Agent',
-      type: 'internal_note'
-    });
-    setInternalNote('');
-    setActionSuccess('Confidential note pinned to audit history.');
-    fetchTicket();
-    setTimeout(() => setActionSuccess(''), 4000);
+    if (!internalNote.trim() || !ticket) return;
+    try {
+      await addTicketMessage({
+        id: ticket._id || ticket.id,
+        body: internalNote,
+        isInternal: true,
+      }).unwrap();
+      setInternalNote('');
+      setActionSuccess('Confidential note pinned to audit history.');
+      setTimeout(() => setActionSuccess(''), 4000);
+    } catch (e) {
+      alert(e?.data?.message || e.message || 'Error adding note');
+    }
   };
 
   const handleAssign = async () => {
-    if (!assignAgent) return;
-    await ticketService.assignTicket(ticket.id, assignAgent);
-    setShowAssignModal(false);
-    setActionSuccess(`Ticket successfully assigned to ${assignAgent}.`);
-    fetchTicket();
-    setTimeout(() => setActionSuccess(''), 4000);
+    if (!assignAgent || !ticket) return;
+    try {
+      await assignTicket({
+        id: ticket._id || ticket.id,
+        assignedTo: assignAgent,
+      }).unwrap();
+      setShowAssignModal(false);
+      setActionSuccess(`Ticket successfully assigned to ${assignAgent}.`);
+      setTimeout(() => setActionSuccess(''), 4000);
+    } catch (e) {
+      alert(e?.data?.message || e.message || 'Error assigning ticket');
+    }
   };
 
   const handleEscalate = async () => {
-    if (!escalateReason) return;
-    await ticketService.escalateTicket(ticket.id, escalateLevel, escalateReason);
-    setShowEscalateModal(false);
-    setActionSuccess(`Ticket escalated to ${escalateLevel}. SLA alert triggered.`);
-    fetchTicket();
-    setTimeout(() => setActionSuccess(''), 4000);
+    if (!escalateReason || !ticket) return;
+    try {
+      await updateTicketStatus({
+        id: ticket._id || ticket.id,
+        status: 'ESCALATED',
+        note: `Escalated to ${escalateLevel}: ${escalateReason}`,
+      }).unwrap();
+      setShowEscalateModal(false);
+      setActionSuccess(`Ticket escalated to ${escalateLevel}. SLA alert triggered.`);
+      setTimeout(() => setActionSuccess(''), 4000);
+    } catch (e) {
+      alert(e?.data?.message || e.message || 'Error escalating ticket');
+    }
   };
 
   const handleResolve = async () => {
-    if (!resolutionSummary) return;
-    await ticketService.resolveTicket(ticket.id, resolutionSummary);
-    setShowResolveModal(false);
-    setActionSuccess('Ticket marked RESOLVED. Closing confirmation sent to citizen.');
-    fetchTicket();
-    setTimeout(() => setActionSuccess(''), 4000);
+    if (!resolutionSummary || !ticket) return;
+    try {
+      await updateTicketStatus({
+        id: ticket._id || ticket.id,
+        status: 'RESOLVED',
+        note: resolutionSummary,
+      }).unwrap();
+      setShowResolveModal(false);
+      setActionSuccess('Ticket marked RESOLVED. Closing confirmation sent to citizen.');
+      setTimeout(() => setActionSuccess(''), 4000);
+    } catch (e) {
+      alert(e?.data?.message || e.message || 'Error resolving ticket');
+    }
   };
 
   if (loading) return <LoadingState text="Loading ticket dossier, audit timeline, and escalation matrix..." />;
   if (!ticket) return <div className="alert alert-danger">Ticket reference not found.</div>;
 
-  // Escalation Matrix Levels
-  const escalationLevels = [
-    { level: 1, title: 'Level 1: Helpdesk Agent', desc: 'Frontline citizen triage, entitlement checks, initial response.' },
-    { level: 2, title: 'Level 2: Technical Team', desc: 'Gateway timeouts, challan reconciliation, portal sync errors.' },
-    { level: 3, title: 'Level 3: Specialist / Dev', desc: 'Core ledger correction, database locks, OEM API failures.' },
-    { level: 4, title: 'Level 4: CSD HQ Escalation', desc: 'Departmental review, Quartermaster sanction override.' }
-  ];
+  const ticketId = ticket.ticketNo || ticket._id || ticket.id;
+  const complainantName = ticket.requester?.name || ticket.userName || 'Beneficiary';
 
-  const currentLevelNum = ticket.escalationLevel?.includes('Level 4')
-    ? 4
-    : ticket.escalationLevel?.includes('Level 3')
-    ? 3
-    : ticket.escalationLevel?.includes('Level 2')
-    ? 2
-    : 1;
+  // Format messages as timeline
+  const timelineItems = Array.isArray(ticket.messages)
+    ? ticket.messages.map((m) => ({
+        title: m.isInternal ? 'Internal Staff Note' : 'Response Message',
+        desc: m.body,
+        by: m.author?.name || 'Staff Officer',
+        time: m.createdAt ? new Date(m.createdAt).toLocaleString('en-IN') : '',
+        type: m.isInternal ? 'internal_note' : 'reply',
+      }))
+    : [];
 
   return (
     <div className="helpdesk-ticket-detail-view">
       <PageHeader
-        title={`Incident Ticket: ${ticket.id}`}
-        subtitle={`Reported by ${ticket.citizenName} • Service No: ${ticket.serviceNo || 'N/A'}`}
+        title={`Incident Ticket: ${ticketId}`}
+        subtitle={`Reported by ${complainantName}`}
         breadcrumbs={[
           { label: 'Helpdesk', href: '/helpdesk/dashboard' },
           { label: 'Tickets', href: '/helpdesk/tickets' },
-          { label: ticket.id }
+          { label: ticketId },
         ]}
         actions={
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <StatusBadge status={ticket.status} />
-            <StatusBadge status={ticket.priority} />
             <Link to="/helpdesk/tickets">
               <Button variant="outline" size="sm">Back to Queue</Button>
             </Link>
@@ -166,35 +180,29 @@ export const HelpdeskTicketDetail = () => {
             <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div>
                 <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>TICKET ID</span>
-                <strong>{ticket.id}</strong>
+                <strong>{ticketId}</strong>
               </div>
               <div>
                 <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>CATEGORY</span>
-                <span className="badge" style={{ background: '#f1f5f9', color: '#1e293b' }}>{ticket.category}</span>
+                <span className="badge" style={{ background: '#f1f5f9', color: '#1e293b' }}>{ticket.category || 'General'}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>SUB-CATEGORY</span>
-                <span>{ticket.subCategory || 'General Inconvenience'}</span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>SEVERITY / PRIORITY</span>
-                <StatusBadge status={ticket.priority} />
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>SEVERITY</span>
+                <span className="badge" style={{ background: '#fee2e2', color: '#b91c1c' }}>{ticket.severity || 'NORMAL'}</span>
               </div>
               <div>
                 <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>INTAKE SOURCE</span>
-                <span>{ticket.source || 'Beneficiary Web Portal'}</span>
+                <span>{ticket.source || 'PORTAL'}</span>
               </div>
               <div>
                 <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>CREATED DATE & TIME</span>
-                <span>{ticket.createdAt}</span>
+                <span>{ticket.createdAt ? new Date(ticket.createdAt).toLocaleString('en-IN') : '-'}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>SLA DEADLINE</span>
-                <strong style={{ color: '#b91c1c' }}>{ticket.slaDeadline || '24 Hours (Active)'}</strong>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>ASSIGNED OFFICER</span>
-                <span>{ticket.assignedTo || 'Unassigned'}</span>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>SLA RESOLUTION DUE</span>
+                <strong style={{ color: '#b91c1c' }}>
+                  {ticket.sla?.resolutionDue ? new Date(ticket.sla.resolutionDue).toLocaleString('en-IN') : 'Standard SLA Active'}
+                </strong>
               </div>
             </div>
           </Card>
@@ -203,27 +211,15 @@ export const HelpdeskTicketDetail = () => {
             <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div>
                 <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>CITIZEN / VETERAN</span>
-                <strong>{ticket.citizenName}</strong>
+                <strong>{complainantName}</strong>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>SERVICE IDENTIFIER</span>
-                <span>{ticket.serviceNo || 'ARMY-1994827-X'}</span>
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>MOBILE NUMBER</span>
+                <span>{ticket.requester?.mobile || '+91 Verified Mobile'}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>ATTACHED DEPOT</span>
-                <span>{ticket.depot || 'Delhi Cantt Base Depot'}</span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>PHONE / MOBILE</span>
-                <span>+91 98765 43210 (Verified)</span>
-              </div>
-              <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>LINKED DEMAND</span>
-                {ticket.demandId ? (
-                  <Link to={`/csd/demands`} style={{ color: 'var(--brand)', textDecoration: 'underline' }}>
-                    {ticket.demandId}
-                  </Link>
-                ) : 'None Linked'}
+                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>EMAIL</span>
+                <span>{ticket.requester?.email || 'N/A'}</span>
               </div>
             </div>
           </Card>
@@ -240,7 +236,11 @@ export const HelpdeskTicketDetail = () => {
 
           {/* Conversation / Audit Timeline */}
           <Card title="Activity & Communication Timeline">
-            <Timeline items={ticket.timeline || []} />
+            {timelineItems.length === 0 ? (
+              <p className="muted small">No replies or notes logged yet.</p>
+            ) : (
+              <Timeline items={timelineItems} />
+            )}
           </Card>
 
           {/* Citizen Reply Box */}
@@ -258,7 +258,7 @@ export const HelpdeskTicketDetail = () => {
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   This message will be dispatched via SMS & Email notification to beneficiary.
                 </span>
-                <Button size="sm" onClick={handleSendReply} disabled={!replyText.trim()}>
+                <Button size="sm" onClick={handleSendReply} loading={isSendingReply} disabled={!replyText.trim()}>
                   Send Citizen Response
                 </Button>
               </div>
@@ -291,144 +291,107 @@ export const HelpdeskTicketDetail = () => {
           {/* Action Hub */}
           <Card title="Ticket Governance Actions">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              <Can permission="tickets.assign">
-                <Button variant="outline" size="sm" fullWidth onClick={() => setShowAssignModal(true)}>
-                  Assign / Reassign Officer
-                </Button>
-              </Can>
-              <Can permission="tickets.escalate">
-                <Button variant="secondary" size="sm" fullWidth onClick={() => setShowEscalateModal(true)}>
-                  Escalate Incident (L1 → L4)
-                </Button>
-              </Can>
-              <Can permission="tickets.resolve">
-                <Button variant="primary" size="sm" fullWidth onClick={() => setShowResolveModal(true)}>
-                  Mark as Resolved
-                </Button>
-              </Can>
+              <Button variant="outline" size="sm" fullWidth onClick={() => setShowAssignModal(true)}>
+                Assign / Reassign Officer
+              </Button>
+              <Button variant="secondary" size="sm" fullWidth onClick={() => setShowEscalateModal(true)}>
+                Escalate Incident Tier
+              </Button>
+              <Button variant="primary" size="sm" fullWidth onClick={() => setShowResolveModal(true)}>
+                Resolve & Close Ticket
+              </Button>
             </div>
           </Card>
 
-          {/* 4-LEVEL ESCALATION VISUALIZATION */}
-          <Card title="4-Level Escalation Matrix">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {escalationLevels.map((lvl) => {
-                const isActive = currentLevelNum === lvl.level;
-                const isPassed = currentLevelNum > lvl.level;
-                return (
-                  <div
-                    key={lvl.level}
-                    style={{
-                      padding: '0.65rem 0.75rem',
-                      borderRadius: '6px',
-                      border: isActive ? '2px solid #b91c1c' : '1px solid #e2e8f0',
-                      background: isActive ? '#fef2f2' : isPassed ? '#f8fafc' : '#ffffff',
-                      position: 'relative'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                      <strong style={{ fontSize: '0.85rem', color: isActive ? '#991b1b' : '#1e293b' }}>
-                        {lvl.title}
-                      </strong>
-                      {isActive && <span className="badge" style={{ background: '#b91c1c', color: '#fff', fontSize: '0.65rem' }}>ACTIVE</span>}
-                      {isPassed && <span style={{ color: '#16a34a', fontSize: '0.75rem' }}>✓ Passed</span>}
-                    </div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>{lvl.desc}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-
-          {/* SUGGESTED KNOWLEDGE BASE ARTICLES */}
-          <Card title="Suggested Knowledge Articles">
+          {/* Suggested Knowledge Base SOPs */}
+          <Card title="Suggested Knowledge Base SOPs">
             {suggestedKb.length === 0 ? (
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>No automated KB matches for this category.</p>
+              <p className="muted small">No articles tagged for this category.</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {suggestedKb.map((art) => (
-                  <div key={art.id} style={{ padding: '0.5rem', background: '#f8fafc', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
-                    <Link to={`/helpdesk/knowledge-base/${art.id}`} style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--brand)' }}>
+                  <div key={art._id || art.id} style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
+                    <Link to={`/helpdesk/knowledge-base/${art._id || art.id}`} style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--navy)' }}>
                       {art.title}
                     </Link>
-                    <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.2rem' }}>
-                      Category: {art.category} • {art.helpfulCount || 18} helpful votes
-                    </div>
+                    <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: '#64748b' }}>
+                      {art.content ? art.content.slice(0, 80) + '...' : ''}
+                    </p>
                   </div>
                 ))}
               </div>
             )}
           </Card>
-
         </div>
       </div>
 
-      {/* ASSIGN MODAL */}
-      <Modal isOpen={showAssignModal} onClose={() => setShowAssignModal(false)} title="Assign Incident Ticket">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <Select
-            label="Select Certified Support Officer"
+      {/* MODALS */}
+      {showAssignModal && (
+        <Modal isOpen={showAssignModal} onClose={() => setShowAssignModal(false)} title="Assign Ticket to Officer">
+          <Input
+            label="Officer Username or Name"
+            placeholder="e.g. nodal_delhi"
             value={assignAgent}
             onChange={(e) => setAssignAgent(e.target.value)}
-            options={[
-              { value: '', label: '-- Select Officer --' },
-              { value: 'Officer Vikram Singh (L1 Delhi Cantt)', label: 'Officer Vikram Singh (L1 Delhi Cantt)' },
-              { value: 'Officer Priya Sharma (L2 Payments)', label: 'Officer Priya Sharma (L2 Payments)' },
-              { value: 'Tech Team (Gateway & SBI ePay)', label: 'Tech Team (Gateway & SBI ePay)' },
-              { value: 'CSD HQ Directorate Desk', label: 'CSD HQ Directorate Desk' }
-            ]}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
             <Button variant="outline" onClick={() => setShowAssignModal(false)}>Cancel</Button>
-            <Button onClick={handleAssign} disabled={!assignAgent}>Confirm Assignment</Button>
+            <Button loading={isAssigning} onClick={handleAssign}>Assign</Button>
           </div>
-        </div>
-      </Modal>
+        </Modal>
+      )}
 
-      {/* ESCALATE MODAL */}
-      <Modal isOpen={showEscalateModal} onClose={() => setShowEscalateModal(false)} title="Formal Escalation of Incident">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {showEscalateModal && (
+        <Modal isOpen={showEscalateModal} onClose={() => setShowEscalateModal(false)} title="Escalate Incident Tier">
           <Select
-            label="Target Escalation Tier"
+            label="Escalate Target Level"
             value={escalateLevel}
             onChange={(e) => setEscalateLevel(e.target.value)}
             options={[
-              { value: 'Level 2 - Technical Team', label: 'Level 2 - Technical Team (ePay/Server/DB Sync)' },
-              { value: 'Level 3 - Specialist / Development', label: 'Level 3 - Specialist / Core AFD Ledger' },
-              { value: 'Level 4 - CSD Escalation', label: 'Level 4 - CSD HQ Executive Escalation' }
+              { value: 'Level 2 - Technical Team', label: 'Level 2: Technical Gateway Team' },
+              { value: 'Level 3 - Specialist Officer', label: 'Level 3: Quartermaster Specialist' },
+              { value: 'Level 4 - CSD HQ Escalation', label: 'Level 4: CSD Head Office Directorate' },
             ]}
           />
-          <Input
-            label="Mandatory Escalation Justification"
-            placeholder="Reason for breach / technical inability to resolve at current tier"
-            value={escalateReason}
-            onChange={(e) => setEscalateReason(e.target.value)}
-            required
-          />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+          <div style={{ marginTop: '0.75rem' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Reason for Escalation</label>
+            <textarea
+              rows={3}
+              className="form-control"
+              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+              placeholder="Explain why this requires senior intervention..."
+              value={escalateReason}
+              onChange={(e) => setEscalateReason(e.target.value)}
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
             <Button variant="outline" onClick={() => setShowEscalateModal(false)}>Cancel</Button>
-            <Button variant="secondary" onClick={handleEscalate} disabled={!escalateReason}>Authorize Escalation</Button>
+            <Button loading={isUpdatingStatus} onClick={handleEscalate}>Confirm Escalation</Button>
           </div>
-        </div>
-      </Modal>
+        </Modal>
+      )}
 
-      {/* RESOLVE MODAL */}
-      <Modal isOpen={showResolveModal} onClose={() => setShowResolveModal(false)} title="Complete & Resolve Ticket">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <Input
-            label="Resolution Summary"
-            placeholder="Detail steps taken, refund UTR, or demand clearance advice"
-            value={resolutionSummary}
-            onChange={(e) => setResolutionSummary(e.target.value)}
-            required
-          />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-            <Button variant="outline" onClick={() => setShowResolveModal(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleResolve} disabled={!resolutionSummary}>Mark Resolved</Button>
+      {showResolveModal && (
+        <Modal isOpen={showResolveModal} onClose={() => setShowResolveModal(false)} title="Mark Incident as Resolved">
+          <div>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Resolution Summary to Citizen</label>
+            <textarea
+              rows={4}
+              className="form-control"
+              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+              placeholder="State the resolution steps taken and advice to beneficiary..."
+              value={resolutionSummary}
+              onChange={(e) => setResolutionSummary(e.target.value)}
+            />
           </div>
-        </div>
-      </Modal>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+            <Button variant="outline" onClick={() => setShowResolveModal(false)}>Cancel</Button>
+            <Button loading={isUpdatingStatus} onClick={handleResolve}>Submit Resolution</Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
+
 export default HelpdeskTicketDetail;

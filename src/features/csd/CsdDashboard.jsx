@@ -1,17 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Users,
   FileText,
-  Truck,
   CreditCard,
-  Building2,
-  Store,
-  Warehouse,
   ShieldAlert,
-  ArrowRight,
-  CheckCircle2,
-  AlertCircle
+  RefreshCw,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
@@ -20,53 +14,92 @@ import ChartCard from '../../components/common/ChartCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { demandService } from '../../services/demand.service.js';
-import { ticketService } from '../../services/ticket.service.js';
+import { useGetAdminSummaryQuery } from '../admin/adminApi.js';
+import { useGetDemandsQuery } from '../demand/demandApi.js';
+import { useGetTicketsQuery } from '../helpdesk/ticketApi.js';
 
 export default function CsdDashboard() {
   const navigate = useNavigate();
-  const [demands, setDemands] = useState([]);
-  const [escalatedTickets, setEscalatedTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [dList, tList] = await Promise.all([
-          demandService.getDemands(),
-          ticketService.getTickets({ escalated: true })
-        ]);
-        setDemands(dList);
-        setEscalatedTickets(tList);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const {
+    data: summaryData,
+    isLoading: loadingSummary,
+    isFetching: fetchingSummary,
+    refetch: refetchSummary,
+  } = useGetAdminSummaryQuery();
+
+  const {
+    data: demandsData,
+    isLoading: loadingDemands,
+    refetch: refetchDemands,
+  } = useGetDemandsQuery();
+
+  const {
+    data: ticketsData,
+    isLoading: loadingTickets,
+    refetch: refetchTickets,
+  } = useGetTicketsQuery({ status: 'ESCALATED' });
+
+  const summary = summaryData || {};
+  const demands = Array.isArray(demandsData?.items)
+    ? demandsData.items
+    : Array.isArray(demandsData)
+    ? demandsData
+    : [];
+
+  const escalatedTickets = Array.isArray(ticketsData)
+    ? ticketsData
+    : Array.isArray(ticketsData?.items)
+    ? ticketsData.items
+    : [];
+
+  const loading = loadingSummary || loadingDemands || loadingTickets;
+
+  const handleRefresh = async () => {
+    await Promise.all([refetchSummary(), refetchDemands(), refetchTickets()]);
+  };
 
   const demandColumns = [
     {
       header: 'Demand ID',
-      accessor: 'id',
-      render: (row) => <span className="font-semibold text-brand">{row.id}</span>
+      accessor: 'demandNo',
+      render: (row) => <span className="font-semibold text-brand">{row.demandNo || row._id}</span>,
     },
-    { header: 'Applicant', accessor: 'beneficiaryName', render: (row) => <div><span className="font-semibold block">{row.beneficiaryName}</span><span className="micro muted">{row.serviceNumber}</span></div> },
-    { header: 'Item / Vehicle', accessor: 'productName' },
-    { header: 'Regional Depot', accessor: 'depot' },
-    { header: 'Sanction Value', accessor: 'csdPrice', render: (row) => `₹ ${row.csdPrice?.toLocaleString('en-IN')}` },
+    {
+      header: 'Applicant',
+      accessor: 'beneficiaryId',
+      render: (row) => (
+        <div>
+          <span className="font-semibold block">{row.beneficiaryId?.fullName || 'Applicant'}</span>
+          <span className="micro muted">{row.beneficiaryId?.serviceNumber || ''}</span>
+        </div>
+      ),
+    },
+    {
+      header: 'Item / Vehicle',
+      accessor: 'productSnapshot',
+      render: (row) => row.productSnapshot?.name || row.productId?.name || 'AFD Product',
+    },
+    {
+      header: 'Regional Depot',
+      accessor: 'depotId',
+      render: (row) => row.depotId?.name || 'Regional Depot',
+    },
+    {
+      header: 'Sanction Value',
+      accessor: 'totalAmount',
+      render: (row) => `₹ ${(row.totalAmount || 0).toLocaleString('en-IN')}`,
+    },
     { header: 'Status', accessor: 'status', render: (row) => <StatusBadge status={row.status} /> },
     {
       header: 'Review',
-      accessor: 'id',
+      accessor: '_id',
       render: (row) => (
         <Link to={`/csd/demands`} className="btn sm out">
           Scrutiny
         </Link>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -76,6 +109,15 @@ export default function CsdDashboard() {
         subtitle="National procurement oversight, policy enforcement, depot sanctions, and institutional dealer governance."
         actions={
           <div className="row gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              icon={RefreshCw}
+              loading={fetchingSummary}
+              onClick={handleRefresh}
+            >
+              Sync Real-Time
+            </Button>
             <Link to="/csd/reports" className="btn btn-primary">
               Generate National MIS Report
             </Link>
@@ -87,25 +129,25 @@ export default function CsdDashboard() {
       <div className="kpi-grid mb-3">
         <StatCard
           title="Total Registered Beneficiaries"
-          value="4,21,800"
+          value={(summary.totalBeneficiaries ?? 0).toLocaleString('en-IN')}
           subtext="Armed Forces & Veterans"
           icon={Users}
-          trend={{ value: '+4.2% MoM', isUp: true }}
+          trend={{ value: `${summary.pendingBeneficiaryVerification ?? 0} Pending Approval`, isUp: true }}
           variant="primary"
           onClick={() => navigate('/csd/beneficiaries')}
         />
         <StatCard
           title="AFD Demands In Pipeline"
-          value={demands.length}
-          subtext="Across 34 Regional Depots"
+          value={summary.totalDemands ?? demands.length}
+          subtext={`Active Depots: ${summary.activeDepots ?? 0}`}
           icon={FileText}
           variant="default"
           onClick={() => navigate('/csd/demands')}
         />
         <StatCard
-          title="Treasury Collections (Q3)"
-          value="₹ 162.80 Cr"
-          subtext="SBI Cyber Treasury Reconciled"
+          title="Treasury Collections"
+          value={`₹ ${((summary.totalRevenue || 0) / 10000000).toFixed(2)} Cr`}
+          subtext="Reconciled Collections"
           icon={CreditCard}
           trend={{ value: '100% matched', isUp: true }}
           variant="success"
@@ -130,17 +172,17 @@ export default function CsdDashboard() {
           <ChartCard
             title=""
             data={[
-              { label: 'Delhi Regional CSD Depot (DOD)', value: 680, displayValue: '680 Demands (₹ 72.4 Cr)', color: 'var(--brand)' },
-              { label: 'Pune Regional CSD Depot (POD)', value: 490, displayValue: '490 Demands (₹ 51.2 Cr)', color: '#3b82f6' },
-              { label: 'Lucknow Central CSD Depot (LOD)', value: 360, displayValue: '360 Demands (₹ 36.8 Cr)', color: 'var(--green)' },
-              { label: 'Bengaluru Regional CSD Depot (BOD)', value: 312, displayValue: '312 Demands (₹ 23.8 Cr)', color: 'var(--saffron)' }
+              { label: 'Processing Demands', value: summary.processingDemands || 1, displayValue: `${summary.processingDemands || 0} Demands`, color: 'var(--brand)' },
+              { label: 'Pending Payment', value: summary.pendingPaymentDemands || 1, displayValue: `${summary.pendingPaymentDemands || 0} Demands`, color: '#3b82f6' },
+              { label: 'Approved & Supply Order Issued', value: summary.approvedDemands || 1, displayValue: `${summary.approvedDemands || 0} Sanctions`, color: 'var(--green)' },
+              { label: 'Rejected / Cancelled', value: summary.rejectedDemands || 1, displayValue: `${summary.rejectedDemands || 0} Demands`, color: 'var(--saffron)' }
             ]}
           />
         </Card>
 
         {/* Escalated Helpdesk Cases */}
         <Card
-          title="HQ Escalation Oversight (Level 4 Cases)"
+          title="HQ Escalation Oversight Cases"
           subtitle="Grievances escalated directly to Joint Director / CSD Head Office"
           actions={
             <Link to="/csd/support" className="link small font-semibold">
@@ -149,22 +191,28 @@ export default function CsdDashboard() {
           }
         >
           <div className="escalated-tickets-list flex-col gap-2">
-            {escalatedTickets.map((t) => (
-              <div key={t.id} className="panel p-3 border-left-danger bg-red-soft">
-                <div className="between align-start mb-1">
-                  <span className="font-semibold text-danger small block">{t.id} · {t.category}</span>
-                  <span className="badge-pill badge-danger badge-sm">Level {t.escalationLevel} HQ</span>
+            {escalatedTickets.length === 0 ? (
+              <p className="muted small p-3">No unresolved high-priority escalations pending.</p>
+            ) : (
+              escalatedTickets.slice(0, 4).map((t) => (
+                <div key={t._id || t.id} className="panel p-3 border-left-danger bg-red-soft">
+                  <div className="between align-start mb-1">
+                    <span className="font-semibold text-danger small block">
+                      {t.ticketNo || t.id} · {t.category}
+                    </span>
+                    <span className="badge-pill badge-danger badge-sm">Level {t.escalationLevel || 1} HQ</span>
+                  </div>
+                  <h4 className="font-semibold small mb-1">{t.subject}</h4>
+                  <p className="small muted mb-2">Complainant: <b>{t.userName || 'Beneficiary'}</b></p>
+                  <div className="between align-center">
+                    <span className="micro text-danger font-semibold">Status: {t.status}</span>
+                    <Link to={`/helpdesk/tickets`} className="btn sm out">
+                      Investigate Case
+                    </Link>
+                  </div>
                 </div>
-                <h4 className="font-semibold small mb-1">{t.subject}</h4>
-                <p className="small muted mb-2">Complainant: <b>{t.userName}</b> ({t.userRole})</p>
-                <div className="between align-center">
-                  <span className="micro text-danger font-semibold">SLA Status: {t.slaStatus}</span>
-                  <Link to={`/helpdesk/tickets/${t.id}`} className="btn sm out">
-                    Investigate Case
-                  </Link>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </Card>
       </div>

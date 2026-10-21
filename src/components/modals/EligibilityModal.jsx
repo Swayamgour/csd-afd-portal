@@ -70,15 +70,24 @@ export function EligibilityModal({
               <div className="eligibility-icon-circle-ineligible">
                 <AlertCircle size={32} />
               </div>
-              <p className="eligibility-reason-ineligible">
-                {reason}
-              </p>
-              <p className="eligibility-text-sub">
-                {type === 'SERVICE_PERIOD'
-                  ? 'Defence Ministry rules require minimum 5 years of completed service for four-wheeler concession.'
-                  : type === 'PRICE_CEILING'
-                  ? 'The price of the selected product is beyond the sanctioned financial cap for your current rank/pay level.'
-                  : 'Please check your registration details or contact the CSD Helpdesk for entitlement clarification.'}
+              <h4 style={{ color: '#be123c', fontWeight: 700, margin: '0.5rem 0' }}>
+                Entitlement Requirement Not Met
+              </h4>
+              {Array.isArray(eligibilityResult?.reasons) && eligibilityResult.reasons.length > 0 ? (
+                <div style={{ marginTop: '0.75rem', textAlign: 'left', background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: '8px', padding: '0.75rem' }}>
+                  {eligibilityResult.reasons.map((r, idx) => (
+                    <div key={idx} style={{ fontSize: '0.85rem', color: '#9f1239', marginBottom: '0.35rem', fontWeight: 500 }}>
+                      • {r.message || r.code}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="eligibility-reason-ineligible">
+                  {reason}
+                </p>
+              )}
+              <p className="eligibility-text-sub" style={{ marginTop: '0.75rem' }}>
+                Defence Ministry policy regulates vehicle entitlement according to pay level, minimum service years, and quota frequency.
               </p>
             </div>
           )}

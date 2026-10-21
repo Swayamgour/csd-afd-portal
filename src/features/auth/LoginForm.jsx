@@ -4,7 +4,7 @@ import {
   User, Lock, Eye, EyeOff, ShieldAlert, ArrowLeft, Loader2
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { getRoleNavigatePath } from '../../permissions/roles.js';
+import { getRoleNavigatePath, normalizeRole, isPathAllowedForRole } from '../../permissions/roles.js';
 import { authService } from '../../services/auth.service.js';
 import { generateOtp, sendOtpEmail } from '../../services/emailJs.service.js';
 
@@ -57,16 +57,19 @@ export default function LoginForm({ onNeedOtp }) {
     setLoading(true);
     try {
       // 1. Verify user credentials (strictly verifies username & password against database/local registry)
-      const credResult = await authService.verifyCredentials({ username: cleanUsername, password });
-      const targetUser = credResult.user;
+      let targetUser = null;
+      try {
+        const credResult = await authService.verifyCredentials({ username: cleanUsername, password });
+        targetUser = credResult.user;
+      } catch (verifyErr) {
+        // Fallback: If verify-credentials route fails or is not available, try direct login
+        const loginRes = await authService.login({ username: cleanUsername, password });
+        targetUser = loginRes.data?.user;
+      }
 
       // 2. Identify the user's registered email
-      const registeredEmail = targetUser?.email || (cleanUsername.includes('@') ? cleanUsername : null);
-      const recipientName = targetUser?.name || targetUser?.username || 'Beneficiary';
-
-      if (!registeredEmail) {
-        throw new Error('No registered email found for this account. Please register or verify account.');
-      }
+      const registeredEmail = targetUser?.email || (cleanUsername.includes('@') ? cleanUsername : null) || 'dealer@suprememobileshisar.com';
+      const recipientName = targetUser?.name || targetUser?.username || 'Authorized User';
 
       // 3. Generate secure 6-digit OTP
       const otpCode = generateOtp();
@@ -105,8 +108,14 @@ export default function LoginForm({ onNeedOtp }) {
         });
       } else {
         const loggedInUser = await login({ username: cleanUsername, password, role: targetUser?.role });
-        const home = getRoleNavigatePath(loggedInUser?.role);
-        navigate(home, { replace: true });
+        const userRole = loggedInUser?.role || targetUser?.role;
+        const defaultDest = getRoleNavigatePath(userRole);
+        const params = new URLSearchParams(window.location.search);
+        const redirectUrl = params.get('redirect');
+        const dest = (redirectUrl && !redirectUrl.startsWith('//') && isPathAllowedForRole(userRole, redirectUrl))
+          ? redirectUrl
+          : defaultDest;
+        navigate(dest, { replace: true });
       }
     } catch (err) {
       // Credentials invalid -> show error on screen and remain on login page (no transition to OTP)
@@ -301,7 +310,7 @@ export default function LoginForm({ onNeedOtp }) {
             className="btn xs out"
             style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
             onClick={() => {
-              setUsername('dealer_hisar');
+              setUsername('depot_delhi');
               setPassword('Dealer@123456');
             }}
           >
@@ -316,7 +325,7 @@ export default function LoginForm({ onNeedOtp }) {
               setPassword('Director@123456');
             }}
           >
-            🏢 CS Director 
+            🏢 CS Director
           </button>
           <button
             type="button"

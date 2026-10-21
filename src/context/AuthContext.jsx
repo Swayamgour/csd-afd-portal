@@ -1,8 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { ROLES, ROLE_HOMES, getRoleNavigatePath, normalizeRole } from '../permissions/roles.js';
 import { ROLE_PERMISSIONS } from '../permissions/permissions.js';
-import { getMockUserByRole, MOCK_USERS } from '../data/mock/users.mock.js';
-import { authService } from '../services/auth.service.js';
 import { getCookie, setCookie, deleteCookie } from '../utils/cookie.js';
 
 const AuthContext = createContext(null);
@@ -15,41 +13,9 @@ export const useAuth = () => {
   return ctx;
 };
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+
 export function AuthProvider({ children }) {
-  // Check stored real credentials or initialize with null (guest by default)
-  const [user, setUser] = useState(() => {
-    try {
-      const savedToken =
-        localStorage.getItem('csd_auth_token') ||
-        getCookie('csd_auth_token') ||
-        getCookie('accessToken');
-
-      // If token is missing or dummy demo token, clear and stay guest
-      if (!savedToken || savedToken === 'csd_demo_token_active' || savedToken.startsWith('csd_token_')) {
-        localStorage.removeItem('csd_auth_user');
-        localStorage.removeItem('csd_auth_token');
-        localStorage.removeItem('csd_auth_role');
-        return null;
-      }
-
-      const saved = localStorage.getItem('csd_auth_user');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Purge mock demo users if previously cached in browser
-        if (parsed?.id?.startsWith('USR-') || parsed?.username === 'JC-765432X') {
-          localStorage.removeItem('csd_auth_user');
-          localStorage.removeItem('csd_auth_token');
-          localStorage.removeItem('csd_auth_role');
-          return null;
-        }
-        return parsed;
-      }
-    } catch {
-      // fallback
-    }
-    return null;
-  });
-
   const [token, setToken] = useState(() => {
     try {
       const t =
@@ -59,19 +25,75 @@ export function AuthProvider({ children }) {
       if (!t || t === 'csd_demo_token_active' || t.startsWith('csd_token_')) {
         return null;
       }
-      const saved = localStorage.getItem('csd_auth_user');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.id?.startsWith('USR-') || parsed?.username === 'JC-765432X') {
-          return null;
-        }
-      }
       return t;
     } catch {
       return null;
     }
   });
+
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('csd_auth_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.id?.startsWith('USR-') || parsed?.username === 'JC-765432X') {
+          localStorage.removeItem('csd_auth_user');
+          localStorage.removeItem('csd_auth_token');
+          localStorage.removeItem('csd_auth_role');
+          return null;
+        }
+        return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
+
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  // Authenticated user session verification via GET /auth/me
+  const refreshMe = useCallback(async (authToken) => {
+    const activeToken = authToken || token;
+    if (!activeToken) {
+      setUser(null);
+      setInitialized(true);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${activeToken}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const freshUser = data?.data?.user || data?.data || data?.user;
+        if (freshUser) {
+          setUser(freshUser);
+          localStorage.setItem('csd_auth_user', JSON.stringify(freshUser));
+          localStorage.setItem('csd_auth_role', freshUser.role);
+          setCookie('csd_auth_role', freshUser.role, 7);
+        }
+      } else if (res.status === 401) {
+        // Expired or invalid token
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('csd_auth_user');
+        localStorage.removeItem('csd_auth_token');
+        localStorage.removeItem('csd_auth_role');
+      }
+    } catch (e) {
+      console.warn('Failed to fetch /auth/me on init:', e);
+    } finally {
+      setInitialized(true);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    refreshMe();
+  }, [refreshMe]);
 
   useEffect(() => {
     if (user) {
@@ -113,41 +135,62 @@ export function AuthProvider({ children }) {
         }
         return u;
       }
-      const res = await authService.login(credentials);
-      setUser(res.data.user);
-      setToken(res.data.token);
-      localStorage.setItem('csd_auth_token', res.data.token);
-      localStorage.setItem('csd_auth_user', JSON.stringify(res.data.user));
-      localStorage.setItem('csd_auth_role', res.data.user.role);
-      setCookie('csd_auth_token', res.data.token, 7);
-      setCookie('accessToken', res.data.token, 7);
-      if (res.data.refreshToken) {
-        setCookie('refreshToken', res.data.refreshToken, 30);
+
+      // Real Express REST backend call
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
+
+      const resData = await res.json();
+      if (!res.ok) {
+        throw new Error(resData?.message || 'Login failed');
       }
-      return res.data.user;
+
+      const userObj = resData?.data?.user || resData?.user;
+      const accessToken = resData?.data?.token || resData?.data?.accessToken || resData?.token;
+      const refreshToken = resData?.data?.refreshToken || resData?.refreshToken;
+
+      setUser(userObj);
+      setToken(accessToken);
+      localStorage.setItem('csd_auth_token', accessToken);
+      localStorage.setItem('csd_auth_user', JSON.stringify(userObj));
+      localStorage.setItem('csd_auth_role', userObj.role);
+      setCookie('csd_auth_token', accessToken, 7);
+      setCookie('accessToken', accessToken, 7);
+      if (refreshToken) {
+        setCookie('refreshToken', refreshToken, 30);
+      }
+      return userObj;
     } finally {
       setLoading(false);
     }
   };
 
   const logout = async () => {
-    await authService.logout();
-    setUser(null);
-    setToken(null);
-    deleteCookie('csd_auth_token');
-    deleteCookie('accessToken');
-    deleteCookie('csd_refresh_token');
-    deleteCookie('refreshToken');
-    deleteCookie('csd_auth_role');
-  };
-
-  const switchRole = (newRole) => {
-    const targetUser = getMockUserByRole(newRole);
-    setUser(targetUser);
-    const newToken = `csd_token_${newRole}_${Date.now()}`;
-    setToken(newToken);
-    localStorage.setItem('csd_auth_token', newToken);
-    return targetUser;
+    try {
+      if (token) {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }).catch(() => {});
+      }
+    } finally {
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('csd_auth_user');
+      localStorage.removeItem('csd_auth_role');
+      localStorage.removeItem('csd_auth_token');
+      localStorage.removeItem('csd_refresh_token');
+      deleteCookie('csd_auth_token');
+      deleteCookie('accessToken');
+      deleteCookie('csd_refresh_token');
+      deleteCookie('refreshToken');
+      deleteCookie('csd_auth_role');
+    }
   };
 
   const updateProfile = (data) => {
@@ -173,14 +216,15 @@ export function AuthProvider({ children }) {
     role: currentRole,
     isAuthenticated: !!user && !!token,
     loading,
+    initialized,
     login,
     logout,
-    switchRole,
+    refreshMe,
     updateProfile,
     hasPermission,
     hasRole,
     homePath: user ? getRoleNavigatePath(user.role) : '/login',
-    roleHome: user ? (currentRole === 'beneficiary' ? '/beneficiary/dashboard' : getRoleNavigatePath(user.role)) : '/login'
+    roleHome: user ? (currentRole === 'beneficiary' ? '/beneficiary/dashboard' : getRoleNavigatePath(user.role)) : '/login',
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

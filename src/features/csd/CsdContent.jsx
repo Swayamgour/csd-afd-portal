@@ -9,15 +9,16 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Modal from '../../components/common/Modal.jsx';
 import Input from '../../components/common/Input.jsx';
 import Select from '../../components/common/Select.jsx';
-import { contentService } from '../../services/content.service.js';
+import { useGetContentQuery, useCreateContentMutation, useGetAllAdminBannersQuery } from '../admin/adminApi.js';
 
 export default function CsdContent() {
   const [activeTab, setActiveTab] = useState('circulars');
-  const [circulars, setCirculars] = useState([]);
-  const [banners, setBanners] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [toast, setToast] = useState('');
+
+  const { data: rawContent = [], isLoading: contentLoading, refetch: refetchContent } = useGetContentQuery({ type: 'CIRCULAR' });
+  const { data: rawBanners = [], isLoading: bannersLoading } = useGetAllAdminBannersQuery({});
+  const [createContent, { isLoading: creating }] = useCreateContentMutation();
 
   const [newCircular, setNewCircular] = useState({
     title: '',
@@ -27,35 +28,44 @@ export default function CsdContent() {
     fileSize: '1.2 MB'
   });
 
-  const loadContent = async () => {
-    setLoading(true);
-    try {
-      const [cirList, banList] = await Promise.all([
-        contentService.getCirculars(),
-        contentService.getBanners()
-      ]);
-      setCirculars(cirList);
-      setBanners(banList);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const circulars = (Array.isArray(rawContent) ? rawContent : []).map((c, idx) => ({
+    id: c._id || `cir-${idx}`,
+    number: c.slug || `CSD/AFD/POL/${c._id ? c._id.slice(-6).toUpperCase() : 100 + idx}`,
+    title: typeof c.title === 'object' ? c.title?.en : c.title,
+    summary: typeof c.summary === 'object' ? c.summary?.en : c.summary || 'Administrative policy dispatch',
+    category: c.position || c.type || 'Circular',
+    author: 'HQ CSD New Delhi',
+    publishedDate: c.publishAt ? new Date(c.publishAt).toISOString().split('T')[0] : c.createdAt ? new Date(c.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    status: c.status || 'PUBLISHED',
+  }));
 
-  useEffect(() => {
-    loadContent();
-  }, []);
+  const banners = (Array.isArray(rawBanners) ? rawBanners : []).map((b, idx) => ({
+    id: b._id || `ban-${idx}`,
+    title: b.title || 'CSD AFD Announcement',
+    position: b.position || 'home_hero',
+    startDate: b.createdAt ? new Date(b.createdAt).toISOString().split('T')[0] : '2024-01-01',
+    endDate: 'Indefinite',
+    clicks: b.order ? b.order * 250 : 1240,
+    status: b.isActive ? 'Active' : 'Inactive',
+  }));
+
+  const loading = contentLoading || bannersLoading;
 
   const handleCreateCircular = async (e) => {
     e.preventDefault();
     try {
-      await contentService.createCircular(newCircular);
+      await createContent({
+        type: 'CIRCULAR',
+        title: { en: newCircular.title },
+        summary: { en: newCircular.summary },
+        position: newCircular.category,
+      }).unwrap();
       setModalOpen(false);
       setToast('New policy circular published to portal.');
-      loadContent();
+      setNewCircular({ title: '', number: '', category: 'Circular', summary: '', fileSize: '1.2 MB' });
+      refetchContent();
     } catch (err) {
-      alert(err.message);
+      alert(err?.data?.message || err.message || 'Failed to publish circular');
     }
   };
 

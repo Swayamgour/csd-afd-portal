@@ -1,29 +1,58 @@
 /**
  * Central API Client abstraction.
- * Currently backed by in-memory mock state with simulated network latency (150-300ms).
- * Easily replaced with axios or fetch when real REST / GraphQL endpoints are deployed.
+ * Communicates with backend Express REST API with standard authentication headers.
  */
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
-const wait = (ms = 180) => new Promise((resolve) => setTimeout(resolve, ms));
+const getHeaders = () => {
+  const token = localStorage.getItem('csd_auth_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  };
+};
 
 export const apiClient = {
-  async get(endpoint, data = {}) {
-    await wait();
-    return { status: 200, data };
+  async get(endpoint) {
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      headers: getHeaders()
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.message || 'API request failed');
+    return { status: res.status, data: json.data || json };
   },
 
   async post(endpoint, payload = {}) {
-    await wait(220);
-    return { status: 201, data: payload };
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.message || 'API request failed');
+    return { status: res.status, data: json.data || json };
   },
 
   async put(endpoint, payload = {}) {
-    await wait(200);
-    return { status: 200, data: payload };
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.message || 'API request failed');
+    return { status: res.status, data: json.data || json };
   },
 
   async delete(endpoint) {
-    await wait(180);
-    return { status: 200, success: true };
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.message || 'API request failed');
+    return { status: res.status, data: json.data || json, success: true };
   }
 };
+
+export default apiClient;

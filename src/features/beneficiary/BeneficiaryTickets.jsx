@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, HelpCircle, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { PlusCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
@@ -9,35 +9,25 @@ import Button from '../../components/common/Button.jsx';
 import Modal from '../../components/common/Modal.jsx';
 import Input from '../../components/common/Input.jsx';
 import Select from '../../components/common/Select.jsx';
-import { ticketService } from '../../services/ticket.service.js';
+import { useGetTicketsQuery, useCreateTicketMutation } from '../helpdesk/ticketApi.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 export default function BeneficiaryTickets() {
   const { user } = useAuth();
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: ticketsData, isLoading: loading, isFetching, refetch } = useGetTicketsQuery();
+  const [createTicket, { isLoading: submitting }] = useCreateTicketMutation();
+
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [subject, setSubject] = useState('');
   const [category, setCategory] = useState('Supply Order');
   const [description, setDescription] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState('');
 
-  const loadTickets = async () => {
-    setLoading(true);
-    try {
-      const data = await ticketService.getTickets({ userId: user?.id });
-      setTickets(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadTickets();
-  }, [user]);
+  const tickets = Array.isArray(ticketsData)
+    ? ticketsData
+    : Array.isArray(ticketsData?.items)
+    ? ticketsData.items
+    : [];
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -46,65 +36,60 @@ export default function BeneficiaryTickets() {
       return;
     }
 
-    setSubmitting(true);
     try {
-      await ticketService.createTicket({
+      await createTicket({
         subject,
         category,
-        subCategory: 'General Query',
-        severity: 'Medium',
-        priority: 'P2',
-        source: 'Beneficiary Portal',
-        userId: user?.id,
-        userName: user?.name,
-        userRole: 'Beneficiary',
-        serviceNumber: user?.serviceNumber,
-        description
-      });
+        description,
+        severity: 'MEDIUM',
+      }).unwrap();
+
       setCreateModalOpen(false);
       setSubject('');
       setDescription('');
       setToast('Support ticket registered successfully.');
-      loadTickets();
+      setTimeout(() => setToast(''), 5000);
     } catch (err) {
-      alert(err.message);
-    } finally {
-      setSubmitting(false);
+      alert(err?.data?.message || err.message || 'Failed to create ticket');
     }
   };
 
   const columns = [
     {
       header: 'Ticket ID',
-      accessor: 'id',
-      render: (row) => <span className="font-semibold text-brand">{row.id}</span>
+      accessor: 'ticketNo',
+      render: (row) => <span className="font-semibold text-brand">{row.ticketNo || row._id}</span>,
     },
     { header: 'Subject / Issue', accessor: 'subject' },
     { header: 'Category', accessor: 'category' },
     {
-      header: 'Escalation Level',
-      accessor: 'escalationLevel',
+      header: 'Severity',
+      accessor: 'severity',
       render: (row) => (
         <span className="badge-pill badge-primary badge-sm">
-          Level {row.escalationLevel || 1}
+          {row.severity || 'NORMAL'}
         </span>
-      )
+      ),
     },
-    { header: 'Logged On', accessor: 'createdDate' },
+    {
+      header: 'Logged On',
+      accessor: 'createdAt',
+      render: (row) => (row.createdAt ? new Date(row.createdAt).toLocaleDateString('en-IN') : '-'),
+    },
     {
       header: 'Status',
       accessor: 'status',
-      render: (row) => <StatusBadge status={row.status} />
+      render: (row) => <StatusBadge status={row.status} />,
     },
     {
       header: 'Action',
-      accessor: 'id',
+      accessor: '_id',
       render: (row) => (
-        <Link to={`/helpdesk/tickets/${row.id}`} className="btn sm out">
+        <Link to={`/helpdesk/tickets`} className="btn sm out">
           Conversation
         </Link>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -113,13 +98,24 @@ export default function BeneficiaryTickets() {
         title="Support & Grievance Tickets"
         subtitle="Submit queries or grievance requests regarding AFD demands, payments, or dealer compliance."
         actions={
-          <Button
-            variant="primary"
-            icon={PlusCircle}
-            onClick={() => setCreateModalOpen(true)}
-          >
-            Create Support Ticket
-          </Button>
+          <div className="row gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              icon={RefreshCw}
+              loading={isFetching}
+              onClick={() => refetch()}
+            >
+              Refresh
+            </Button>
+            <Button
+              variant="primary"
+              icon={PlusCircle}
+              onClick={() => setCreateModalOpen(true)}
+            >
+              Raise New Grievance
+            </Button>
+          </div>
         }
       />
 
@@ -131,72 +127,66 @@ export default function BeneficiaryTickets() {
       )}
 
       <Card>
-        <DataTable
-          columns={columns}
-          data={tickets}
-          loading={loading}
-          emptyTitle="No support tickets logged"
-          emptyText="Need assistance with an AFD demand? Click Create Support Ticket to reach our helpdesk."
-        />
+        <DataTable columns={columns} data={tickets} loading={loading} />
       </Card>
 
-      <Modal
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        title="Register Support Ticket"
-        subtitle="Your request will be routed directly to the CSD AFD Helpdesk"
-        maxWidth="540px"
-        footer={
-          <div className="modal-footer-btns">
-            <Button variant="outline" onClick={() => setCreateModalOpen(false)} disabled={submitting}>
-              Cancel
-            </Button>
-            <Button variant="primary" loading={submitting} onClick={handleCreate}>
-              Submit Ticket
-            </Button>
-          </div>
-        }
-      >
-        <div className="ticket-form-body">
-          <Select
-            label="Issue Category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            options={[
-              'Supply Order Generation',
-              'Dealer Overcharging / Handling Fees',
-              'Payment Reconciliation',
-              'Entitlement & Quota Verification',
-              'Delivery Delay',
-              'Technical / Portal Login Trouble'
-            ]}
-            required
-            className="mb-2"
-          />
-
-          <Input
-            id="ticketSubject"
-            label="Ticket Subject"
-            placeholder="Brief summary of the issue..."
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            required
-            className="mb-2"
-          />
-
-          <div className="form-field mb-2">
-            <label className="form-label font-semibold small">Detailed Description *</label>
-            <textarea
-              rows={4}
-              className="fld w-full"
-              placeholder="Provide complete details including Demand ID, dealership name, or error code..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
+      {createModalOpen && (
+        <Modal
+          isOpen={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          title="Register Formal Grievance / Inquiry Ticket"
+          subtitle="Direct escalation to CSD AFD Helpdesk nodal team"
+          maxWidth="560px"
+          footer={
+            <div className="modal-footer-btns">
+              <Button variant="outline" onClick={() => setCreateModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" loading={submitting} onClick={handleCreate}>
+                Submit Ticket
+              </Button>
+            </div>
+          }
+        >
+          <form onSubmit={handleCreate} className="ticket-form">
+            <Select
+              id="ticketCat"
+              label="Issue Category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              options={[
+                { value: 'Supply Order', label: 'Supply Order Delivery Delay' },
+                { value: 'Payment Reconciliation', label: 'Payment / Challan Verification' },
+                { value: 'Dealer Compliance', label: 'Showroom / Dealership Overcharging' },
+                { value: 'Eligibility', label: 'Rank / Service Entitlement Discrepancy' },
+                { value: 'Technical Issue', label: 'Portal / Document Upload Glitch' },
+              ]}
+              className="mb-2"
             />
-          </div>
-        </div>
-      </Modal>
+            <Input
+              id="ticketSubject"
+              label="Subject Brief"
+              placeholder="e.g. Delay in vehicle handover from Hisar dealership"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              required
+              className="mb-2"
+            />
+            <div className="form-group mb-2">
+              <label className="form-label" htmlFor="ticketDesc">Detailed Description</label>
+              <textarea
+                id="ticketDesc"
+                rows={4}
+                className="form-control"
+                placeholder="Provide complete facts, demand number, depot name, or showroom details..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

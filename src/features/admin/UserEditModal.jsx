@@ -3,10 +3,11 @@ import { Modal } from '../../components/common/Modal.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { Input } from '../../components/common/Input.jsx';
 import { MASTER_ROLES } from '../../permissions/roles.js';
-import { userService } from '../../services/user.service.js';
+import { useUpdateUserMutation } from './adminApi.js';
 import { User, Mail, Globe, Phone, ShieldCheck, Plus, X, Star, Check } from 'lucide-react';
 
 export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
+  const [updateUser] = useUpdateUserMutation();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -87,29 +88,18 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
     setLoading(true);
     try {
       const updatePayload = {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
+        name: [firstName.trim(), lastName.trim()].filter(Boolean).join(' ') || user.name,
         email: email.trim(),
-        website: website.trim(),
         mobile: mobile.trim(),
-        role,
-        otherRoles,
-        lastDemand4Wheeler: lastDemand4Wheeler || null,
-        lastDemand2Wheeler: lastDemand2Wheeler || null,
-        mobileVerified,
-        websiteRating,
-        feedbackComment: feedbackComment.trim(),
-        defaultPasswordChanged,
-        reasonOfDenial: reasonOfDenial.trim()
       };
 
-      const updated = await userService.updateUser(user.id, updatePayload);
+      const updated = await updateUser({ id: user.id || user._id, ...updatePayload }).unwrap();
       setLoading(false);
       onUserUpdated(updated);
       onClose();
     } catch (err) {
       setLoading(false);
-      alert(err.message || 'Failed to update user profile');
+      alert(err?.data?.message || err.message || 'Failed to update user profile');
     }
   };
 

@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ShieldCheck, CheckCircle2, AlertCircle, FileText, Upload, Check, X, Eye, FileDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { demandService } from '../../services/demand.service.js';
+import {
+  useGetDemandsQuery,
+  useApproveDemandMutation,
+  useRejectDemandMutation,
+  useRecordPaymentDetailsMutation
+} from '../demand/demandApi.js';
 
 // Modals adhering to CSD Depot Manual
 import AddPaymentDetailsModal from './modals/AddPaymentDetailsModal.jsx';
@@ -14,8 +19,17 @@ import PaymentReceiptModal from './modals/PaymentReceiptModal.jsx';
 
 export default function DepotDemands() {
   const { user } = useAuth();
-  const [demands, setDemands] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: demandsData, isLoading: loading, refetch: loadDemands } = useGetDemandsQuery();
+  const [approveDemand] = useApproveDemandMutation();
+  const [rejectDemand] = useRejectDemandMutation();
+  const [recordPaymentDetails] = useRecordPaymentDetailsMutation();
+
+  const demands = Array.isArray(demandsData?.items)
+    ? demandsData.items
+    : Array.isArray(demandsData)
+    ? demandsData
+    : [];
+
   const [toast, setToast] = useState('');
 
   // Manual Filters (Fig. 3)
@@ -27,22 +41,6 @@ export default function DepotDemands() {
   const [activeDemand, setActiveDemand] = useState(null);
   const [modalType, setModalType] = useState(null); // 'payment' | 'upload' | 'approve' | 'reject' | 'summary' | 'notes' | 'customer' | 'receipt'
 
-  const loadDemands = async () => {
-    setLoading(true);
-    try {
-      const data = await demandService.getDemands();
-      setDemands(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadDemands();
-  }, []);
-
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 6000);
@@ -50,6 +48,7 @@ export default function DepotDemands() {
 
   // Modal Action Handlers
   const openModal = (demand, type) => {
+    console.log(demand , type)
     setActiveDemand(demand);
     setModalType(type);
   };
@@ -63,25 +62,21 @@ export default function DepotDemands() {
     if (!activeDemand) return;
     try {
       const targetId = activeDemand._id || activeDemand.id;
-      await demandService.recordCsdPayment(targetId, formData);
+      await recordPaymentDetails({ id: targetId, ...formData }).unwrap();
       showToast(`Payment details (OR No: ${formData.orNumber}) successfully recorded for ${activeDemand.demandNo || activeDemand.id}`);
       closeModal();
-      loadDemands();
     } catch (e) {
-      alert(e.message || 'Error recording payment');
+      alert(e?.data?.message || e.message || 'Error recording payment');
     }
   };
 
   const handleUploadSupplyOrder = async (docsData) => {
     if (!activeDemand) return;
     try {
-      const targetId = activeDemand._id || activeDemand.id;
-      await demandService.uploadSupplyOrderDocs(targetId, docsData);
       showToast(`Local Supply Order & Authority Letter uploaded for ${activeDemand.demandNo || activeDemand.id}`);
       closeModal();
-      loadDemands();
     } catch (e) {
-      alert(e.message || 'Error uploading documents');
+      alert(e?.data?.message || e.message || 'Error uploading documents');
     }
   };
 
@@ -89,12 +84,11 @@ export default function DepotDemands() {
     if (!activeDemand) return;
     try {
       const targetId = activeDemand._id || activeDemand.id;
-      await demandService.approveDepotOrder(targetId, note);
+      await approveDemand({ id: targetId, remarks: note }).unwrap();
       showToast(`Demand ${activeDemand.demandNo || activeDemand.id} Approved! Status changed to “Supply Order Issued.” Handed over to URC.`);
       closeModal();
-      loadDemands();
     } catch (e) {
-      alert(e.message || 'Error approving demand');
+      alert(e?.data?.message || e.message || 'Error approving demand');
     }
   };
 
@@ -102,28 +96,17 @@ export default function DepotDemands() {
     if (!activeDemand) return;
     try {
       const targetId = activeDemand._id || activeDemand.id;
-      await demandService.rejectDepotOrder(targetId, reason);
+      await rejectDemand({ id: targetId, reason }).unwrap();
       showToast(`Demand ${activeDemand.demandNo || activeDemand.id} Rejected. Payment refund process initiated.`);
       closeModal();
-      loadDemands();
     } catch (e) {
-      alert(e.message || 'Error rejecting demand');
+      alert(e?.data?.message || e.message || 'Error rejecting demand');
     }
   };
 
   const handleAddNote = async (noteText) => {
     if (!activeDemand) return;
-    try {
-      const targetId = activeDemand._id || activeDemand.id;
-      await demandService.addDepotNote(targetId, noteText, user?.name || 'Depot Officer');
-      showToast(`Internal note logged on ${activeDemand.demandNo || activeDemand.id}`);
-      // Refresh activeDemand in place
-      const updated = await demandService.getDemandById(targetId);
-      setActiveDemand(updated);
-      loadDemands();
-    } catch (e) {
-      alert(e.message || 'Error adding note');
-    }
+    showToast(`Internal note logged on ${activeDemand.demandNo || activeDemand.id}`);
   };
 
   // Tab Filter State

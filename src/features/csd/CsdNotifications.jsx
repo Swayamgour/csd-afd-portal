@@ -1,52 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Modal } from '../../components/common/Modal';
 import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
-import { notificationService } from '../../services/notification.service';
+import {
+  useGetNotificationsQuery,
+  useBroadcastNotificationMutation,
+} from '../notifications/notificationApi';
 import { ROLE_LABELS } from '../../permissions/roles';
 
 export function CsdNotifications() {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: notifData, isLoading: loading, isFetching, refetch } = useGetNotificationsQuery();
+  const [broadcastNotification, { isLoading: isBroadcasting }] = useBroadcastNotificationMutation();
+
   const [showModal, setShowModal] = useState(false);
   const [newNotice, setNewNotice] = useState({
     title: '',
     message: '',
     type: 'DIRECTORATE',
-    targetRole: 'ALL'
+    targetRole: 'ALL',
   });
   const [sentMsg, setSentMsg] = useState('');
 
-  useEffect(() => {
-    fetchNotices();
-  }, []);
-
-  const fetchNotices = async () => {
-    setLoading(true);
-    try {
-      const res = await notificationService.getNotifications('csd');
-      setNotifications(res.data || res || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const notifications = Array.isArray(notifData?.items)
+    ? notifData.items
+    : Array.isArray(notifData)
+    ? notifData
+    : [];
 
   const handleBroadcast = async (e) => {
     e.preventDefault();
-    await notificationService.broadcastNotification({
-      ...newNotice,
-      createdAt: 'Just now',
-      read: false
-    });
-    setShowModal(false);
-    setSentMsg(`Directorate notification successfully broadcasted to ${newNotice.targetRole === 'ALL' ? 'all stakeholders' : newNotice.targetRole}.`);
-    fetchNotices();
-    setTimeout(() => setSentMsg(''), 4000);
+    try {
+      await broadcastNotification({
+        title: newNotice.title,
+        message: newNotice.message,
+        targetRole: newNotice.targetRole,
+        type: newNotice.type,
+      }).unwrap();
+
+      setShowModal(false);
+      setNewNotice({ title: '', message: '', type: 'DIRECTORATE', targetRole: 'ALL' });
+      setSentMsg(
+        `Directorate notification successfully broadcasted to ${
+          newNotice.targetRole === 'ALL' ? 'all stakeholders' : newNotice.targetRole
+        }.`
+      );
+      setTimeout(() => setSentMsg(''), 4000);
+    } catch (err) {
+      alert(err?.data?.message || err.message || 'Error broadcasting notice');
+    }
   };
 
   return (
@@ -56,10 +61,21 @@ export function CsdNotifications() {
         subtitle="Operational directives, cyber treasury reconciliations, and policy communications"
         breadcrumbs={[
           { label: 'CSD HQ', href: '/csd/dashboard' },
-          { label: 'Notifications' }
+          { label: 'Notifications' },
         ]}
         actions={
-          <Button onClick={() => setShowModal(true)}>+ Issue Directorate Circular Notice</Button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button
+              variant="outline"
+              size="sm"
+              icon={RefreshCw}
+              loading={isFetching}
+              onClick={() => refetch()}
+            >
+              Refresh
+            </Button>
+            <Button onClick={() => setShowModal(true)}>+ Issue Directorate Circular Notice</Button>
+          </div>
         }
       />
 
@@ -76,25 +92,24 @@ export function CsdNotifications() {
           ) : (
             notifications.map((n) => (
               <div
-                key={n.id}
+                key={n._id || n.id}
                 style={{
                   padding: '1rem',
                   borderRadius: '8px',
                   background: '#f8fafc',
                   border: '1px solid #e2e8f0',
-                  borderLeft: '4px solid var(--navy)'
+                  borderLeft: '4px solid var(--navy)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                   <span className="badge" style={{ background: '#f1f5f9', color: 'var(--navy)', fontSize: '0.75rem' }}>
-                    {n.type || 'DIRECTORATE'}
+                    {n.event || 'DIRECTORATE'}
                   </span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {n.createdAt || n.time || 'Recent'}
+                    {n.createdAt ? new Date(n.createdAt).toLocaleString('en-IN') : 'Recent'}
                   </span>
                 </div>
-                <h4 style={{ margin: '0 0 0.4rem 0', fontSize: '1rem', color: 'var(--navy)' }}>{n.title}</h4>
-                <p style={{ margin: 0, fontSize: '0.86rem', color: '#475569', lineHeight: 1.5 }}>{n.message}</p>
+                <p style={{ margin: 0, fontSize: '0.86rem', color: '#475569', lineHeight: 1.5 }}>{n.body || n.message}</p>
               </div>
             ))
           )}
@@ -116,7 +131,7 @@ export function CsdNotifications() {
             onChange={(e) => setNewNotice({ ...newNotice, targetRole: e.target.value })}
             options={[
               { value: 'ALL', label: 'All Stakeholders (Global)' },
-              ...Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v }))
+              ...Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v })),
             ]}
           />
           <Select
@@ -127,7 +142,7 @@ export function CsdNotifications() {
               { value: 'DIRECTORATE', label: 'Directorate Advisory' },
               { value: 'POLICY', label: 'Policy Update' },
               { value: 'PAYMENT', label: 'Treasury / Payment' },
-              { value: 'DEPOT', label: 'Depot Instruction' }
+              { value: 'DEPOT', label: 'Depot Instruction' },
             ]}
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -144,7 +159,7 @@ export function CsdNotifications() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
             <Button variant="outline" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button type="submit">Publish Circular</Button>
+            <Button type="submit" loading={isBroadcasting}>Publish Circular</Button>
           </div>
         </form>
       </Modal>

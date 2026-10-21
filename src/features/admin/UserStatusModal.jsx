@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Modal } from '../../components/common/Modal.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { StatusBadge } from '../../components/common/StatusBadge.jsx';
-import { userService } from '../../services/user.service.js';
+import { useUpdateUserStatusMutation } from './adminApi.js';
 import { ShieldAlert, Check } from 'lucide-react';
 
 export function UserStatusModal({ isOpen, onClose, user, onStatusUpdated }) {
+  const [updateUserStatus] = useUpdateUserStatusMutation();
   const [newStatus, setNewStatus] = useState(user?.status || 'Active');
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,18 +28,17 @@ export function UserStatusModal({ isOpen, onClose, user, onStatusUpdated }) {
     setLoading(true);
     setError('');
     try {
-      const updated = await userService.updateUserStatus(
-        user.id,
-        newStatus,
-        reason.trim(),
-        'Admin Officer K. S. Pillai'
-      );
+      const dbStatus = newStatus === 'Active' ? 'ACTIVE' : (newStatus === 'Denied' || newStatus === 'Suspended' ? 'LOCKED' : newStatus);
+      const updated = await updateUserStatus({
+        id: user.id || user._id,
+        status: dbStatus
+      }).unwrap();
       setLoading(false);
-      onStatusUpdated(updated);
+      onStatusUpdated({ ...user, status: newStatus });
       onClose();
     } catch (err) {
       setLoading(false);
-      setError(err.message || 'Failed to update user status');
+      setError(err?.data?.message || err.message || 'Failed to update user status');
     }
   };
 

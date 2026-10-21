@@ -22,11 +22,10 @@ import {
 import { useAuth } from '../context/AuthContext.jsx';
 import { DocumentUpload } from '../components/common/DocumentUpload.jsx';
 import { DemandConfirmationModal } from '../components/modals/DemandConfirmationModal.jsx';
-import { OnlinePaymentModal } from '../components/modals/OnlinePaymentModal.jsx';
 import { useCreateDemandMutation } from '../features/demand/demandApi.js';
 import { useCreatePaymentMutation, useVerifyPaymentMutation } from '../features/payment/paymentApi.js';
 import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
-import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery } from '../features/org/orgApi.js';
+import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery } from '../features/org/orgApi.js';
 import { INDIAN_STATES, PAY_LEVELS } from '../data/mock/locations.mock.js';
 
 export default function Checkout() {
@@ -40,6 +39,7 @@ export default function Checkout() {
   const [verifyPaymentMutation, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
   const [uploadFileMutation] = useUploadFileMutation();
 
+  const { data: priceZonesList = [] } = useGetPriceZonesQuery();
   const { data: depotsList = [] } = useGetDepotsQuery();
   const { data: dealersList = [] } = useGetDealersQuery();
   const { data: urcsList = [] } = useGetUrcsQuery();
@@ -291,6 +291,7 @@ export default function Checkout() {
         selectedColor: product.selectedColor || 'Standard',
         dealerPrice: Number(dealerPriceInput) || Number(product.priceToCustomer) || Number(product.productPrice) || 0,
         priceZone: product.selectedZone || product.priceZone || 'DELHI NCR',
+        priceZoneId: product.priceZoneId || (priceZonesList.find((pz) => pz.name === (product.selectedZone || product.priceZone))?._id) || priceZonesList[0]?._id,
         previousPurchase: {
           hasPurchased: prevPurchase === 'Yes',
           purchaseDate: prevPurchase === 'Yes' && prevPurchaseDate ? prevPurchaseDate : null,
@@ -1171,15 +1172,6 @@ export default function Checkout() {
           paymentMethod: paymentMode
         }}
         loading={submitting}
-      />
-
-      <OnlinePaymentModal
-        isOpen={onlineModalOpen}
-        onClose={() => setOnlineModalOpen(false)}
-        onSuccess={handleOnlinePaymentSuccess}
-        amount={netPrice}
-        demandNo="30-76510"
-        productName={product.productName}
       />
     </div>
   );

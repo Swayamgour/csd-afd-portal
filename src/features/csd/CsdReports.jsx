@@ -1,143 +1,131 @@
-import React, { useState, useEffect } from 'react';
-import { FileSpreadsheet, Download, Filter, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileSpreadsheet, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import ExportButton from '../../components/common/ExportButton.jsx';
-import Select from '../../components/common/Select.jsx';
-import FilterBar from '../../components/common/FilterBar.jsx';
-import { reportService } from '../../services/report.service.js';
+import Button from '../../components/common/Button.jsx';
+import StatusBadge from '../../components/common/StatusBadge.jsx';
+import {
+  useGetDemandsReportQuery,
+  useGetOrdersReportQuery,
+  useGetPaymentsReportQuery,
+} from '../admin/adminApi.js';
+import { useGetHelpdeskMisQuery } from '../helpdesk/ticketApi.js';
 
 export default function CsdReports() {
   const [activeReport, setActiveReport] = useState('demands');
-  const [reportData, setReportData] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const {
+    data: demandsData,
+    isLoading: loadingDemands,
+    isFetching: fetchingDemands,
+    refetch: refetchDemands,
+  } = useGetDemandsReportQuery(undefined, { skip: activeReport !== 'demands' });
+
+  const {
+    data: ordersData,
+    isLoading: loadingOrders,
+    isFetching: fetchingOrders,
+    refetch: refetchOrders,
+  } = useGetOrdersReportQuery(undefined, { skip: activeReport !== 'orders' });
+
+  const {
+    data: paymentsData,
+    isLoading: loadingPayments,
+    isFetching: fetchingPayments,
+    refetch: refetchPayments,
+  } = useGetPaymentsReportQuery(undefined, { skip: activeReport !== 'payments' });
+
+  const {
+    data: helpdeskData,
+    isLoading: loadingHelpdesk,
+    isFetching: fetchingHelpdesk,
+    refetch: refetchHelpdesk,
+  } = useGetHelpdeskMisQuery(undefined, { skip: activeReport !== 'helpdesk' });
 
   const tabs = [
     { id: 'demands', label: 'AFD Demand Volume', icon: FileSpreadsheet },
     { id: 'orders', label: 'OEM Supply Orders & Delivery', icon: FileSpreadsheet },
     { id: 'payments', label: 'Treasury Collections & Gateways', icon: FileSpreadsheet },
-    { id: 'helpdesk', label: 'Helpdesk SLA Performance', icon: FileSpreadsheet }
+    { id: 'helpdesk', label: 'Helpdesk SLA Performance', icon: FileSpreadsheet },
   ];
 
-  const loadReport = async () => {
-    setLoading(true);
-    try {
-      const data = await reportService.getReportData(activeReport);
-      setReportData(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  const handleRefresh = () => {
+    if (activeReport === 'demands') refetchDemands();
+    else if (activeReport === 'orders') refetchOrders();
+    else if (activeReport === 'payments') refetchPayments();
+    else if (activeReport === 'helpdesk') refetchHelpdesk();
   };
 
-  useEffect(() => {
-    loadReport();
-  }, [activeReport]);
+  const isFetching = fetchingDemands || fetchingOrders || fetchingPayments || fetchingHelpdesk;
+  const loading = loadingDemands || loadingOrders || loadingPayments || loadingHelpdesk;
 
-  const getColumns = () => {
-    switch (activeReport) {
-      case 'demands':
-        return [
-          { header: 'Period / Quarter', accessor: 'period' },
-          { header: 'Command Region', accessor: 'region' },
-          { header: 'Total Demands', accessor: 'demands', render: (r) => <span className="font-bold">{r.demands}</span> },
-          { header: 'Approved / Sanctioned', accessor: 'approved', render: (r) => <span className="font-semibold text-green">{r.approved}</span> },
-          { header: 'Sanction Value', accessor: 'value', render: (r) => <span className="font-bold text-brand">{r.value}</span> }
-        ];
+  let reportRows = [];
+  let columns = [];
 
-      case 'orders':
-        return [
-          { header: 'Manufacturer (OEM)', accessor: 'brand', render: (r) => <span className="font-semibold text-brand">{r.brand}</span> },
-          { header: 'Orders Issued', accessor: 'orders', render: (r) => <span className="font-bold">{r.orders}</span> },
-          { header: 'Delivered', accessor: 'delivered', render: (r) => <span className="font-semibold text-green">{r.delivered}</span> },
-          { header: 'In Transit', accessor: 'pending', render: (r) => <span className="font-semibold text-saffron">{r.pending}</span> },
-          { header: 'Avg Handover Turnaround', accessor: 'avgDaysToDeliver', render: (r) => `${r.avgDaysToDeliver} Days` }
-        ];
-
-      case 'payments':
-        return [
-          { header: 'Payment Channel', accessor: 'gateway', render: (r) => <span className="font-semibold">{r.gateway}</span> },
-          { header: 'Transaction Count', accessor: 'transactions' },
-          { header: 'Realized Revenue', accessor: 'amount', render: (r) => <span className="font-bold text-ink">{r.amount}</span> },
-          { header: 'Reconciliation Health', accessor: 'status', render: (r) => <span className="badge-pill badge-success badge-sm">{r.status}</span> }
-        ];
-
-      case 'helpdesk':
-        return [
-          { header: 'Grievance Classification', accessor: 'category', render: (r) => <span className="font-semibold">{r.category}</span> },
-          { header: 'Total Tickets', accessor: 'tickets' },
-          { header: 'Average Resolution Time', accessor: 'avgResolutionHours', render: (r) => `${r.avgResolutionHours} hrs` },
-          { header: 'SLA Breaches', accessor: 'breached', render: (r) => <span className="badge-pill badge-danger badge-sm">{r.breached} Breached</span> }
-        ];
-
-      default:
-        return [];
-    }
-  };
+  if (activeReport === 'demands') {
+    reportRows = Array.isArray(demandsData) ? demandsData : (Array.isArray(demandsData?.items) ? demandsData.items : []);
+    columns = [
+      { header: 'Demand No', accessor: 'demandNo', render: (r) => <span className="font-semibold text-brand">{r.demandNo || r._id}</span> },
+      { header: 'Beneficiary', accessor: 'beneficiaryId', render: (r) => r.beneficiaryId?.fullName || r.beneficiaryId?.name || 'Applicant' },
+      { header: 'Product', accessor: 'productSnapshot', render: (r) => r.productSnapshot?.name || 'AFD Product' },
+      { header: 'Depot', accessor: 'depotId', render: (r) => r.depotId?.name || 'Depot' },
+      { header: 'Total Amount', accessor: 'totalAmount', render: (r) => `₹ ${(r.totalAmount || 0).toLocaleString('en-IN')}` },
+      { header: 'Status', accessor: 'status', render: (r) => <StatusBadge status={r.status} /> },
+    ];
+  } else if (activeReport === 'orders') {
+    reportRows = Array.isArray(ordersData) ? ordersData : (Array.isArray(ordersData?.items) ? ordersData.items : []);
+    columns = [
+      { header: 'Order No', accessor: 'orderNo', render: (r) => <span className="font-semibold text-brand">{r.orderNo || r._id}</span> },
+      { header: 'Item Model', accessor: 'items', render: (r) => r.items?.[0]?.name || 'AFD Product' },
+      { header: 'Dealership', accessor: 'dealerId', render: (r) => r.dealerId?.name || 'Dealer' },
+      { header: 'Depot', accessor: 'depotId', render: (r) => r.depotId?.name || 'Depot' },
+      { header: 'Amount', accessor: 'amount', render: (r) => `₹ ${(r.amount || 0).toLocaleString('en-IN')}` },
+      { header: 'Status', accessor: 'status', render: (r) => <StatusBadge status={r.status} /> },
+    ];
+  } else if (activeReport === 'payments') {
+    reportRows = Array.isArray(paymentsData) ? paymentsData : (Array.isArray(paymentsData?.items) ? paymentsData.items : []);
+    columns = [
+      { header: 'Payment Ref', accessor: 'paymentNo', render: (r) => <span className="font-semibold">{r.paymentNo || r._id}</span> },
+      { header: 'Amount', accessor: 'amount', render: (r) => <span className="font-bold text-ink">₹ {(r.amount || 0).toLocaleString('en-IN')}</span> },
+      { header: 'Payment Method', accessor: 'method', render: (r) => r.method || 'Online Gateway' },
+      { header: 'Status', accessor: 'status', render: (r) => <StatusBadge status={r.status} /> },
+      { header: 'Timestamp', accessor: 'createdAt', render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleString('en-IN') : '-' },
+    ];
+  } else if (activeReport === 'helpdesk') {
+    reportRows = Array.isArray(helpdeskData?.commonComplaints) ? helpdeskData.commonComplaints : [];
+    columns = [
+      { header: 'Grievance Category', accessor: 'category', render: (r) => <span className="font-semibold">{r.category}</span> },
+      { header: 'Cases Registered', accessor: 'count', render: (r) => <span className="font-bold">{r.count}</span> },
+    ];
+  }
 
   return (
     <div className="csd-reports-page">
       <PageHeader
-        title="National MIS Analytics & Management Reports"
-        subtitle="Analytical summaries of procurement volumes, treasury collections, and SLA metrics across zonal commands."
+        title="CSD National Directorate MIS & Regulatory Audit"
+        subtitle="Authoritative operational and financial reconciliations from live database registers"
         actions={
-          <ExportButton
-            filename={`CSD_AFD_${activeReport.toUpperCase()}_REPORT`}
-            headers={getColumns().map((c) => c.header)}
-            rows={reportData?.rows || []}
-          />
+          <Button
+            variant="outline"
+            size="sm"
+            icon={RefreshCw}
+            loading={isFetching}
+            onClick={handleRefresh}
+          >
+            Refresh
+          </Button>
         }
       />
 
-      <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} className="mb-3" />
+      <Tabs tabs={tabs} activeTab={activeReport} onChange={setActiveReport} />
 
-      {/* Summary KPI Strip */}
-      {reportData && (
-        <div className="panel p-3 mb-3 bg-brand-soft border-brand row align-center justify-between flex-wrap gap-2">
-          {activeReport === 'demands' && (
-            <>
-              <div><span className="small muted block">Total AFD Demands:</span> <span className="h3 font-bold text-brand">{reportData.total}</span></div>
-              <div><span className="small muted block">Sanctioned:</span> <span className="h3 font-bold text-green">{reportData.approved}</span></div>
-              <div><span className="small muted block">Pending Sanction:</span> <span className="h3 font-bold text-saffron">{reportData.pending}</span></div>
-              <div><span className="small muted block">Total Value:</span> <span className="h3 font-bold text-ink">{reportData.totalValue}</span></div>
-            </>
-          )}
-
-          {activeReport === 'orders' && (
-            <>
-              <div><span className="small muted block">Supply Orders Issued:</span> <span className="h3 font-bold text-brand">{reportData.total}</span></div>
-              <div><span className="small muted block">Physical Delivery:</span> <span className="h3 font-bold text-green">{reportData.delivered}</span></div>
-              <div><span className="small muted block">Carrier In-Transit:</span> <span className="h3 font-bold text-saffron">{reportData.inTransit}</span></div>
-            </>
-          )}
-
-          {activeReport === 'payments' && (
-            <>
-              <div><span className="small muted block">Total Treasury Realization:</span> <span className="h3 font-bold text-brand">{reportData.totalCollected}</span></div>
-              <div><span className="small muted block">SBI Cyber Treasury:</span> <span className="h3 font-bold text-green">{reportData.sbiCyberTreasury}</span></div>
-              <div><span className="small muted block">Bharatkosh Receipts:</span> <span className="h3 font-bold text-ink">{reportData.bharatkosh}</span></div>
-            </>
-          )}
-
-          {activeReport === 'helpdesk' && (
-            <>
-              <div><span className="small muted block">Total Logged Tickets:</span> <span className="h3 font-bold text-brand">{reportData.totalTickets}</span></div>
-              <div><span className="small muted block">Resolved Within SLA:</span> <span className="h3 font-bold text-green">{reportData.resolvedWithinSla}</span></div>
-              <div><span className="small muted block">National SLA Compliance:</span> <span className="h3 font-bold text-green">{reportData.slaComplianceRate}</span></div>
-            </>
-          )}
-        </div>
-      )}
-
-      <Card title="Detailed Tabular Breakdown">
-        <DataTable
-          columns={getColumns()}
-          data={reportData?.rows || []}
-          loading={loading}
-        />
+      <Card
+        title={tabs.find((t) => t.id === activeReport)?.label}
+        subtitle="Live dynamic report synchronized with backend MongoDB aggregates"
+      >
+        <DataTable columns={columns} data={reportRows} loading={loading} />
       </Card>
     </div>
   );

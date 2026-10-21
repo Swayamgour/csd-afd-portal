@@ -6,28 +6,29 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import FilterBar from '../../components/common/FilterBar.jsx';
 import SearchInput from '../../components/common/SearchInput.jsx';
-import { auditService } from '../../services/audit.service.js';
+import { useGetAuthReportQuery } from '../admin/adminApi.js';
 
 export default function CsdLoginHistory() {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadLogs = async () => {
-    setLoading(true);
-    try {
-      const data = await auditService.getAuthLogs({ search: searchTerm });
-      setLogs(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  const queryParams = {
+    limit: 50,
+    ...(searchTerm ? { q: searchTerm } : {}),
   };
 
-  useEffect(() => {
-    loadLogs();
-  }, [searchTerm]);
+  const { data: rawLogs = [], isLoading: loading } = useGetAuthReportQuery(queryParams);
+
+  const rawList = Array.isArray(rawLogs) ? rawLogs : (Array.isArray(rawLogs?.items) ? rawLogs.items : []);
+  const logs = rawList.map((l, idx) => ({
+    id: l._id || l.id || `ses-${idx}`,
+    username: l.identifier || l.username || (typeof l.userId === 'object' ? l.userId?.username : 'user@csd.gov.in'),
+    name: typeof l.userId === 'object' ? (l.userId?.name || l.userId?.username) : (l.name || l.identifier || 'User'),
+    role: typeof l.userId === 'object' ? l.userId?.role : (l.role || 'USER'),
+    loginMethod: l.strategy || l.event || 'Password + OTP',
+    timestamp: l.at || l.createdAt ? new Date(l.at || l.createdAt).toLocaleString() : new Date().toLocaleString(),
+    ip: l.ip || '127.0.0.1',
+    status: l.success ? 'Success' : 'Failed',
+  }));
 
   const columns = [
     {

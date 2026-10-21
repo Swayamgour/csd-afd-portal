@@ -95,6 +95,36 @@ export const ticketApi = api.injectEndpoints({
       transformResponse: (response) => response?.data || response,
       providesTags: ['Report'],
     }),
+
+    getKbArticles: builder.query({
+      query: (params) => ({
+        url: '/helpdesk/kb',
+        params,
+      }),
+      transformResponse: (response) => {
+        if (Array.isArray(response?.data?.items)) return response.data.items;
+        if (Array.isArray(response?.data)) return response.data;
+        if (Array.isArray(response?.items)) return response.items;
+        if (Array.isArray(response)) return response;
+        return [];
+      },
+      providesTags: ['Ticket'],
+    }),
+
+    getKbArticleById: builder.query({
+      query: (id) => `/helpdesk/kb/${id}`,
+      transformResponse: (response) => response?.data || response,
+      providesTags: ['Ticket'],
+    }),
+
+    createKbArticle: builder.mutation({
+      query: (body) => ({
+        url: '/helpdesk/kb',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Ticket'],
+    }),
   }),
 });
 
@@ -107,4 +137,8 @@ export const {
   useClaimTicketMutation,
   useAddTicketMessageMutation,
   useGetHelpdeskMisQuery,
+  useGetKbArticlesQuery,
+  useGetKbArticleByIdQuery,
+  useCreateKbArticleMutation,
 } = ticketApi;
+

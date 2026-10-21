@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../../components/common/Modal.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { Input } from '../../components/common/Input.jsx';
-import { userService } from '../../services/user.service.js';
+import { useUpdateUserMutation } from '../admin/adminApi.js';
 import { User, Mail, Phone, CreditCard, Shield, Award, Building, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) {
+  const [updateUserMutation] = useUpdateUserMutation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -119,34 +120,7 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
       };
 
       const targetId = user.id || user._id;
-      const token = localStorage.getItem('csd_auth_token');
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-
-      // 1. Send update to backend users endpoint
-      const res = await fetch(`${apiUrl}/users/${targetId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        // Fallback: try beneficiaries endpoint if direct user PATCH fails
-        const bRes = await fetch(`${apiUrl}/beneficiaries/${targetId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify(payload),
-        });
-        if (!bRes.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || 'Failed to update user details');
-        }
-      }
+      await updateUserMutation({ id: targetId, ...payload }).unwrap();
 
       setSuccess('User details updated successfully by CS Director.');
       if (onUserUpdated) {

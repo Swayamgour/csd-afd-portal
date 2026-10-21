@@ -1,38 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
-import { ticketService } from '../../services/ticket.service.js';
+import Button from '../../components/common/Button.jsx';
+import { useGetTicketsQuery } from '../helpdesk/ticketApi.js';
 
 export default function OemSupport() {
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: ticketsData, isLoading: loading, isFetching, refetch } = useGetTicketsQuery();
 
-  useEffect(() => {
-    async function load() {
-      const data = await ticketService.getTickets();
-      setTickets(data);
-      setLoading(false);
-    }
-    load();
-  }, []);
+  const tickets = Array.isArray(ticketsData)
+    ? ticketsData
+    : Array.isArray(ticketsData?.items)
+      ? ticketsData.items
+      : [];
 
   const columns = [
-    { header: 'Ticket Ref', accessor: 'id', render: (r) => <span className="font-semibold text-brand">{r.id}</span> },
-    { header: 'Subject', accessor: 'subject' },
+    {
+      header: 'Ticket Ref',
+      accessor: 'ticketNo',
+      render: (r) => <span className="font-semibold text-brand">{r.ticketNo || r._id}</span>,
+    },
+    { header: 'Subject', accessor: 'subject', render: (r) => <span className="font-semibold">{r.subject}</span> },
     { header: 'Category', accessor: 'category' },
     { header: 'Status', accessor: 'status', render: (r) => <StatusBadge status={r.status} /> },
     {
       header: 'Review',
-      accessor: 'id',
+      accessor: '_id',
       render: (r) => (
-        <Link to={`/helpdesk/tickets/${r.id}`} className="btn sm out">
+        <Link to={`/helpdesk/tickets/${r._id || r.id}`} className="btn sm out">
           Inspect
         </Link>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -40,6 +42,17 @@ export default function OemSupport() {
       <PageHeader
         title="OEM Technical & Supply Support Desk"
         subtitle="Manage queries regarding homologation files, chassis allocation sync, and portal API integrations"
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            icon={RefreshCw}
+            loading={isFetching}
+            onClick={() => refetch()}
+          >
+            Refresh
+          </Button>
+        }
       />
       <Card>
         <DataTable columns={columns} data={tickets} loading={loading} />

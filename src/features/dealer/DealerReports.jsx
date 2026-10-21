@@ -1,46 +1,69 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import ExportButton from '../../components/common/ExportButton.jsx';
-import { reportService } from '../../services/report.service.js';
+import Button from '../../components/common/Button.jsx';
+import StatusBadge from '../../components/common/StatusBadge.jsx';
+import { useGetOrdersReportQuery } from '../admin/adminApi.js';
 
 export default function DealerReports() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: ordersData, isLoading: loading, isFetching, refetch } = useGetOrdersReportQuery();
 
-  useEffect(() => {
-    async function load() {
-      const res = await reportService.getReportData('orders');
-      setData(res.rows || []);
-      setLoading(false);
-    }
-    load();
-  }, []);
+  const orders = Array.isArray(ordersData)
+    ? ordersData
+    : Array.isArray(ordersData?.items)
+    ? ordersData.items
+    : [];
 
   const columns = [
-    { header: 'OEM Line', accessor: 'brand' },
-    { header: 'Allotted Orders', accessor: 'orders' },
-    { header: 'Delivered', accessor: 'delivered' },
-    { header: 'Stockyard In Transit', accessor: 'pending' },
-    { header: 'Average Handover Days', accessor: 'avgDaysToDeliver', render: (r) => `${r.avgDaysToDeliver} Days` }
+    {
+      header: 'Supply Order No.',
+      accessor: 'orderNo',
+      render: (r) => <span className="font-semibold text-brand">{r.orderNo || r._id}</span>,
+    },
+    {
+      header: 'Vehicle Model',
+      accessor: 'items',
+      render: (r) => r.items?.[0]?.name || r.productName || 'AFD Product',
+    },
+    {
+      header: 'Assigned Depot',
+      accessor: 'depotId',
+      render: (r) => r.depotId?.name || 'Depot',
+    },
+    {
+      header: 'Chassis / Tracking',
+      accessor: 'delivery',
+      render: (r) => r.delivery?.trackingNo || 'Pending Allocation',
+    },
+    {
+      header: 'Order Value',
+      accessor: 'amount',
+      render: (r) => `₹ ${(r.amount || 0).toLocaleString('en-IN')}`,
+    },
+    { header: 'Status', accessor: 'status', render: (r) => <StatusBadge status={r.status} /> },
   ];
 
   return (
     <div className="dealer-reports-page">
       <PageHeader
         title="Dealership Delivery Performance Reports"
-        subtitle="Monthly audit of vehicles delivered and average turnaround times"
+        subtitle="Live audit of orders assigned to this dealership and delivery fulfillment tracking"
         actions={
-          <ExportButton
-            filename="DEALER_DELIVERY_REPORT"
-            headers={columns.map((c) => c.header)}
-            rows={data}
-          />
+          <Button
+            variant="outline"
+            size="sm"
+            icon={RefreshCw}
+            loading={isFetching}
+            onClick={() => refetch()}
+          >
+            Refresh
+          </Button>
         }
       />
       <Card>
-        <DataTable columns={columns} data={data} loading={loading} />
+        <DataTable columns={columns} data={orders} loading={loading} />
       </Card>
     </div>
   );

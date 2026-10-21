@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
 import { Card } from '../../components/common/Card.jsx';
 import { DataTable } from '../../components/common/DataTable.jsx';
@@ -7,6 +7,7 @@ import { Button } from '../../components/common/Button.jsx';
 import { Modal } from '../../components/common/Modal.jsx';
 import { DirectorEditUserModal } from './DirectorEditUserModal.jsx';
 import { UserDetailsModal } from '../admin/UserDetailsModal.jsx';
+import { useGetUsersQuery, useApproveUserMutation, useRejectUserMutation } from '../admin/adminApi.js';
 import {
   Users,
   UserCheck,
@@ -26,8 +27,6 @@ import {
 } from 'lucide-react';
 
 export function DirectorApprovals({ defaultTab = 'PENDING' }) {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [statusTab, setStatusTab] = useState(defaultTab);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
@@ -41,113 +40,35 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
   const [rejectCustomRemarks, setRejectCustomRemarks] = useState('');
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
-  useEffect(() => {
-    fetchBeneficiaries();
-  }, []);
+  // RTK Query: Single source of truth for users list & mutations
+  const { data: rawUsers = [], isLoading: loading, refetch } = useGetUsersQuery({ limit: 300 });
+  const [approveUserMutation] = useApproveUserMutation();
+  const [rejectUserMutation] = useRejectUserMutation();
 
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 4500);
   };
 
-  const fetchBeneficiaries = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('csd_auth_token');
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-
-      // 1. Fetch users from API
-      const res = await fetch(`${apiUrl}/users?limit=300`, {
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
-      });
-
-      let list = [];
-      if (res.ok) {
-        const json = await res.json();
-        list = json?.data?.items || json?.data || [];
-      } else {
-        // Fallback: try beneficiaries direct endpoint
-        const bRes = await fetch(`${apiUrl}/beneficiaries?limit=300`, {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          }
-        });
-        if (bRes.ok) {
-          const bJson = await bRes.json();
-          list = (bJson?.data?.items || bJson?.data || []).map((b) => ({
-            ...b,
-            id: String(b._id),
-            role: 'BENEFICIARY',
-            name: b.name || b.userId?.name,
-            email: b.userId?.email || b.email,
-            mobile: b.userId?.mobile || b.mobile,
-            verificationStatus: b.verificationStatus || 'PENDING',
-            beneficiary: b,
-          }));
-        }
-      }
-
-      // Filter only beneficiaries (self-registered defence personnel)
-      const benUsers = list.filter((u) => {
-        const r = String(u.role || '').toUpperCase();
-        return r === 'BENEFICIARY' || r === 'CUSTOMER' || u.beneficiary || u.serviceNumber;
-      });
-
-      setUsers(benUsers);
-    } catch (err) {
-      console.error('[DirectorApprovals] fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const users = useMemo(() => {
+    const list = Array.isArray(rawUsers) ? rawUsers : [];
+    return list.filter((u) => {
+      const r = String(u.role || '').toUpperCase();
+      return r === 'BENEFICIARY' || r === 'CUSTOMER' || u.beneficiary || u.serviceNumber;
+    });
+  }, [rawUsers]);
 
   // 1-Click Approve Action
   const handleApprove = async (user) => {
     const targetId = user.id || user._id;
     setActionLoadingId(targetId);
     try {
-      const token = localStorage.getItem('csd_auth_token');
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-
-      const res = await fetch(`${apiUrl}/users/${targetId}/approve`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ remarks: 'Verified and approved by CS Director' })
-      });
-
-      if (!res.ok) {
-        // Fallback to beneficiaries verify
-        const bRes = await fetch(`${apiUrl}/beneficiaries/${targetId}/verify`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          },
-          body: JSON.stringify({ status: 'APPROVED', remarks: 'Verified and approved by CS Director' })
-        });
-        if (!bRes.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || 'Failed to approve user');
-        }
-      }
-
+      await approveUserMutation({ id: targetId, remarks: 'Verified and approved by CS Director' }).unwrap();
       showToast(`✓ Beneficiary "${user.name || user.username}" approved successfully. Entitlement unlocked!`);
-      // Update local state immediately
-      setUsers((prev) =>
-        prev.map((u) =>
-          (u.id === targetId || u._id === targetId)
-            ? { ...u, status: 'Active', verificationStatus: 'VERIFIED', adminApproval: 'APPROVED' }
-            : u
-        )
-      );
+      refetch();
     } catch (err) {
       console.error('[DirectorApprovals] approval error:', err);
-      alert(err.message || 'Failed to approve registration.');
+      alert(err?.data?.message || err.message || 'Failed to approve registration.');
     } finally {
       setActionLoadingId(null);
     }
@@ -165,49 +86,14 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
 
     setActionLoadingId(targetId);
     try {
-      const token = localStorage.getItem('csd_auth_token');
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-
-      const res = await fetch(`${apiUrl}/users/${targetId}/reject`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ remarks: finalRemarks })
-      });
-
-      if (!res.ok) {
-        // Fallback to beneficiaries verify
-        const bRes = await fetch(`${apiUrl}/beneficiaries/${targetId}/verify`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          },
-          body: JSON.stringify({ status: 'REJECTED', remarks: finalRemarks })
-        });
-        if (!bRes.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || 'Failed to reject user');
-        }
-      }
-
+      await rejectUserMutation({ id: targetId, remarks: finalRemarks }).unwrap();
       showToast(`Application for "${rejectModalUser.name || rejectModalUser.username}" was REJECTED.`);
       setRejectModalUser(null);
       setRejectCustomRemarks('');
-
-      // Update local state immediately
-      setUsers((prev) =>
-        prev.map((u) =>
-          (u.id === targetId || u._id === targetId)
-            ? { ...u, status: 'Denied', verificationStatus: 'REJECTED', adminApproval: 'REJECTED', remarks: finalRemarks }
-            : u
-        )
-      );
+      refetch();
     } catch (err) {
       console.error('[DirectorApprovals] reject error:', err);
-      alert(err.message || 'Failed to reject registration.');
+      alert(err?.data?.message || err.message || 'Failed to reject registration.');
     } finally {
       setActionLoadingId(null);
     }
@@ -573,7 +459,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
       )}
 
       {/* Header */}
-      <PageHeader
+      {/* <PageHeader
         title="CS Director: Registration Approvals & User Records"
         subtitle="Exclusive authority desk for vetting new beneficiary registrations, verifying armed forces credentials, and editing user profiles."
         breadcrumbs={[
@@ -582,13 +468,15 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
         ]}
         actions={
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Button variant="outline" size="sm" onClick={fetchBeneficiaries} disabled={loading}>
+            <Button variant="outline" size="sm"
+              //  onClick={fetchBeneficiaries}
+              disabled={loading}>
               <RefreshCw size={14} style={{ marginRight: '0.35rem', animation: loading ? 'spin 1s linear infinite' : 'none' }} />
               {loading ? 'Refreshing...' : 'Refresh Queue'}
             </Button>
           </div>
         }
-      />
+      /> */}
 
       {/* CS Director Official Authority Banner */}
       <div

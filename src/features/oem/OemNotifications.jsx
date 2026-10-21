@@ -1,30 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
-import { notificationService } from '../../services/notification.service.js';
+import Button from '../../components/common/Button.jsx';
+import { useGetNotificationsQuery } from '../notifications/notificationApi.js';
 
 export default function OemNotifications() {
-  const [notifs, setNotifs] = useState([]);
+  const { data: notifData, isLoading: loading, isFetching, refetch } = useGetNotificationsQuery();
 
-  useEffect(() => {
-    async function load() {
-      const data = await notificationService.getNotifications('oem');
-      setNotifs(data);
-    }
-    load();
-  }, []);
+  const notifs = Array.isArray(notifData?.items)
+    ? notifData.items
+    : Array.isArray(notifData)
+    ? notifData
+    : [];
 
   return (
-    <div className="oem-notifs-page">
-      <PageHeader title="OEM Directives & Alerts" subtitle="Procurement and price updates from CSD Head Office" />
+    <div className="oem-notifications-page">
+      <PageHeader
+        title="OEM Institutional Notifications"
+        subtitle="Defence rate contracts, quarterly allocation updates, and factory dispatch alerts"
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            icon={RefreshCw}
+            loading={isFetching}
+            onClick={() => refetch()}
+          >
+            Refresh
+          </Button>
+        }
+      />
+
       <Card>
-        {notifs.map((n) => (
-          <div key={n.id} className="panel p-3 mb-2 bg-white">
-            <span className="notif-type-tag mb-1 inline-block">{n.type}</span>
-            <h4 className="font-semibold h4 mb-1">{n.title}</h4>
-            <p className="small muted mb-0">{n.message}</p>
-          </div>
-        ))}
+        <div className="notif-feed">
+          {notifs.length === 0 ? (
+            <p className="muted small p-3 text-center">No notifications in your OEM portal feed.</p>
+          ) : (
+            notifs.map((n) => (
+              <div key={n._id || n.id} className="panel p-3 mb-2 bg-white">
+                <span className="notif-type-tag mb-1 inline-block">{n.event || 'NOTICE'}</span>
+                <p className="small mb-0">{n.body || n.message}</p>
+                <span className="micro muted mt-1 block">
+                  {n.createdAt ? new Date(n.createdAt).toLocaleString('en-IN') : ''}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
       </Card>
     </div>
   );

@@ -410,9 +410,13 @@ export default function Register() {
       return;
     }
 
-    // 2. Persist to local users registry with PENDING admin approval status
-    const localRecord = userService.registerBeneficiaryUser(payload);
-    setRegisteredUser(localRecord);
+    // 2. State transition to approval pending state
+    setRegisteredUser({
+      ...payload,
+      id: payload.cardId || payload.username,
+      verificationStatus: 'PENDING',
+      status: 'Pending',
+    });
 
     // 3. Mark registration completed & transition to approval pending state
     setIsOtpModalOpen(false);
