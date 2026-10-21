@@ -211,7 +211,7 @@ export default function LoginForm({ onNeedOtp }) {
       )}
 
       {/* USERNAME FIELD */}
-      <Field id="username" label="User ID / Username / Email / Service Number" req err={errors.username}>
+      <Field id="username" label="User ID" req err={errors.username}>
         <div className="fld">
           <User size={18} aria-hidden />
           <input
@@ -312,6 +312,17 @@ export default function LoginForm({ onNeedOtp }) {
             className="btn xs out"
             style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
             onClick={() => {
+              setUsername('cs_director');
+              setPassword('Director@123456');
+            }}
+          >
+            🏢 CS Director 
+          </button>
+          <button
+            type="button"
+            className="btn xs out"
+            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            onClick={() => {
               setUsername('systemadmin');
               setPassword('Admin@123456');
             }}
@@ -323,8 +334,8 @@ export default function LoginForm({ onNeedOtp }) {
             className="btn xs out"
             style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
             onClick={() => {
-              setUsername('goura6392@gmail.com');
-              setPassword('Admin@123456');
+              setUsername('aman');
+              setPassword('Pa$$w0rd!');
             }}
           >
             🎖️ Beneficiary (Rajesh Kumar)

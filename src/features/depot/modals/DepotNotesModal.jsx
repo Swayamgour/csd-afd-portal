@@ -26,7 +26,7 @@ export default function DepotNotesModal({ isOpen, onClose, demand, onAddNote }) 
         <div className="csd-modal-header between">
           <div className="row align-center gap-1">
             <MessageSquare size={18} className="text-brand" />
-            <h3 className="csd-modal-title">Depot Internal Notes · {demand.id}</h3>
+            <h3 className="csd-modal-title">Depot Internal Notes · {demand.demandNo || demand.id}</h3>
           </div>
           <button type="button" className="csd-modal-close-btn" onClick={onClose} aria-label="Close modal">
             <X size={18} />

@@ -12,19 +12,21 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
 
   const existing = demand.csdPayment || {};
 
+  const cleanDemandId = String(demand.demandNo || demand.id || demand._id || '').replace('#', '');
+
   const [formData, setFormData] = useState({
-    orNumber: existing.orNumber || `OR-${demand.id.replace('#', '')}`,
-    totalAmountReceived: existing.totalAmountReceived || demand.totalAmount || demand.csdPrice || '',
+    orNumber: existing.orNumber || (cleanDemandId ? `OR-${cleanDemandId}` : `OR-${Date.now().toString().slice(-6)}`),
+    totalAmountReceived: existing.totalAmountReceived || demand.totalAmount || demand.pricing?.totalPrice || demand.csdPrice || '',
     excessPayment: existing.excessPayment || '',
     tcsCollected: existing.tcsCollected || '',
     orDate: existing.orDate || new Date().toISOString().split('T')[0],
     csdBankRef: existing.csdBankRef || 'CSD-SBI-MUMBAI-MAIN',
-    amountFromBeneficiary: existing.amountFromBeneficiary || demand.totalAmount || demand.csdPrice || '',
+    amountFromBeneficiary: existing.amountFromBeneficiary || demand.totalAmount || demand.pricing?.totalPrice || demand.csdPrice || '',
     datePaymentReceived: existing.datePaymentReceived || new Date().toISOString().split('T')[0],
     csdBankRefLoan: existing.csdBankRefLoan || '',
     amountReceivedLoan: existing.amountReceivedLoan || '',
     datePaymentReceivedLoan: existing.datePaymentReceivedLoan || '',
-    poNumber: existing.poNumber || `PO-${demand.id.replace('#', '')}`,
+    poNumber: existing.poNumber || (cleanDemandId ? `PO-${cleanDemandId}` : `PO-${Date.now().toString().slice(-6)}`),
     poDate: existing.poDate || new Date().toISOString().split('T')[0]
   });
 

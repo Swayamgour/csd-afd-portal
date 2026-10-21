@@ -23,9 +23,13 @@ export default function ViewCustomerModal({ isOpen, onClose, demand }) {
               <User size={32} />
             </div>
             <div>
-              <h4 className="depot-customer-name">{demand.beneficiaryName || 'Subedar Major M. Test'}</h4>
+              <h4 className="depot-customer-name">
+                {demand.beneficiaryId?.fullName || demand.beneficiaryName || demand.userId?.name || 'Verified Defence Beneficiary'}
+              </h4>
               <span className="badge-pill badge-primary badge-sm">Verified Defence Beneficiary</span>
-              <p className="micro muted mt-05">Username: <strong>{demand.username || demand.beneficiaryName}</strong></p>
+              <p className="micro muted mt-05">
+                Username: <strong>{demand.userId?.username || demand.username || demand.beneficiaryName}</strong>
+              </p>
             </div>
           </div>
 
@@ -33,31 +37,35 @@ export default function ViewCustomerModal({ isOpen, onClose, demand }) {
             <tbody>
               <tr>
                 <td className="w-40"><span className="row align-center gap-05"><Award size={14} className="text-muted" /> Service Number:</span></td>
-                <td><strong>{demand.serviceNumber || 'JC-765432X'}</strong></td>
+                <td><strong>{demand.beneficiaryId?.serviceNumber || demand.serviceNumber || 'N/A'}</strong></td>
+              </tr>
+              <tr>
+                <td><span className="row align-center gap-05"><Award size={14} className="text-muted" /> Rank / Category:</span></td>
+                <td><strong>{demand.beneficiaryId?.rank || demand.rank || 'Entitled Personnel'}</strong> ({demand.beneficiaryId?.category || 'SERVING'})</td>
               </tr>
               <tr>
                 <td><span className="row align-center gap-05"><CreditCard size={14} className="text-muted" /> Grocery / Smart Card ID:</span></td>
-                <td>{demand.canteenCardNo || 'AF-SMART-984210'}</td>
+                <td>{demand.beneficiaryId?.cardId || demand.canteenCardNo || 'N/A'}</td>
               </tr>
               <tr>
                 <td><span className="row align-center gap-05"><CreditCard size={14} className="text-muted" /> PAN Number:</span></td>
-                <td>{demand.panNumber || 'ABCDE1234F'}</td>
+                <td>{demand.beneficiaryId?.panNumber || demand.panNumber || 'N/A'}</td>
               </tr>
               <tr>
                 <td><span className="row align-center gap-05"><Phone size={14} className="text-muted" /> Registered Mobile:</span></td>
-                <td>+91 98765 43210</td>
+                <td>{demand.beneficiaryId?.mobile || demand.userId?.mobile || demand.mobile || 'N/A'}</td>
               </tr>
               <tr>
                 <td><span className="row align-center gap-05"><Mail size={14} className="text-muted" /> Email Address:</span></td>
-                <td>{demand.username ? `${demand.username}@defence.gov.in` : 'applicant@defence.gov.in'}</td>
+                <td>{demand.userId?.email || demand.beneficiaryId?.email || (demand.username ? `${demand.username}@defence.gov.in` : 'N/A')}</td>
               </tr>
               <tr>
                 <td><span className="row align-center gap-05"><MapPin size={14} className="text-muted" /> Allotted URC:</span></td>
-                <td><strong>{demand.urc || 'myurc'}</strong></td>
+                <td><strong>{demand.urcId?.name || demand.urc || 'Base Hospital Canteen'}</strong></td>
               </tr>
               <tr>
                 <td><span className="row align-center gap-05"><MapPin size={14} className="text-muted" /> Jurisdictional Depot:</span></td>
-                <td><strong>{demand.depot || 'Mydepot'}</strong></td>
+                <td><strong>{demand.depotId?.name || demand.depot || 'Delhi Regional Depot'}</strong></td>
               </tr>
             </tbody>
           </table>

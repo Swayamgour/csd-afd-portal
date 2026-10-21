@@ -139,6 +139,17 @@ export const MOCK_USERS = [
     designation: 'Principal Systems Administrator (NIC / CSD Cell)',
     department: 'Digital Governance & IT Directorate',
     status: 'Active',
+  },
+  {
+    id: 'USR-DIR-001',
+    username: 'cs_director',
+    name: 'Director Canteen Services',
+    email: 'cs.director@csdindia.gov.in',
+    phone: '+91 90000 00002',
+    role: ROLES.CS_DIRECTOR,
+    designation: 'Director of Canteen Services (CSD Directorate)',
+    department: 'CS Directorate, Ministry of Defence',
+    status: 'Active',
   }
 ];
 

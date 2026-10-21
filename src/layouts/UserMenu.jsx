@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { ROLE_LABELS, ROLE_HOMES } from '../permissions/roles.js';
+import { ROLE_LABELS, ROLE_HOMES, normalizeRole } from '../permissions/roles.js';
 import { User, LogOut, Shield, ChevronDown, Settings, LayoutDashboard } from 'lucide-react';
 
 export default function UserMenu() {
@@ -9,6 +9,7 @@ export default function UserMenu() {
   const { user, role, logout } = useAuth();
   const menuRef = useRef(null);
   const navigate = useNavigate();
+  const normRole = normalizeRole(role || user?.role);
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
@@ -26,7 +27,7 @@ export default function UserMenu() {
   };
 
   const getProfileLink = () => {
-    switch (role) {
+    switch (normRole) {
       case 'beneficiary':
         return '/beneficiary/profile';
       case 'csd':
@@ -67,7 +68,7 @@ export default function UserMenu() {
         </div>
         <div className="user-menu-info text-left hide-mobile">
           <span className="user-menu-name small font-semibold block">{user?.name}</span>
-          <span className="user-menu-role muted small block">{ROLE_LABELS[role] || role}</span>
+          <span className="user-menu-role muted small block">{ROLE_LABELS[normRole] || ROLE_LABELS[role] || role}</span>
         </div>
         <ChevronDown size={14} className="text-muted hide-mobile" />
       </button>
@@ -79,9 +80,9 @@ export default function UserMenu() {
             <p className="small muted mb-0">{user?.email || user?.serviceNumber}</p>
             <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
               <span className="badge-pill badge-primary badge-sm">
-                {ROLE_LABELS[role] || role}
+                {ROLE_LABELS[normRole] || ROLE_LABELS[role] || role}
               </span>
-              {role === 'beneficiary' && (
+              {normRole === 'beneficiary' && (
                 <span
                   className="badge-pill badge-sm"
                   style={{
@@ -98,13 +99,13 @@ export default function UserMenu() {
 
           <div className="user-dropdown-links">
             <Link
-              to={role === 'beneficiary' ? '/beneficiary/dashboard' : (ROLE_HOMES[role] || '/admin/dashboard')}
+              to={normRole === 'beneficiary' ? '/beneficiary/dashboard' : (ROLE_HOMES[normRole] || ROLE_HOMES[role] || '/admin/dashboard')}
               className="user-dropdown-item row align-center gap-1 small"
               onClick={() => setOpen(false)}
               role="menuitem"
             >
               <LayoutDashboard size={15} />
-              <span>{role === 'beneficiary' ? 'Beneficiary Dashboard' : 'Control Dashboard'}</span>
+              <span>{normRole === 'beneficiary' ? 'Beneficiary Dashboard' : 'Control Dashboard'}</span>
             </Link>
 
             <Link

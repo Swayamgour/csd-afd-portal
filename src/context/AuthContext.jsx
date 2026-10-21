@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ROLES, ROLE_HOMES, getRoleNavigatePath } from '../permissions/roles.js';
+import { ROLES, ROLE_HOMES, getRoleNavigatePath, normalizeRole } from '../permissions/roles.js';
 import { ROLE_PERMISSIONS } from '../permissions/permissions.js';
 import { getMockUserByRole, MOCK_USERS } from '../data/mock/users.mock.js';
 import { authService } from '../services/auth.service.js';
@@ -162,10 +162,10 @@ export function AuthProvider({ children }) {
 
   const hasRole = (targetRole) => {
     if (!user) return false;
-    return String(user.role).toLowerCase() === String(targetRole).toLowerCase();
+    return normalizeRole(user.role) === normalizeRole(targetRole);
   };
 
-  const currentRole = user?.role ? String(user.role).toLowerCase() : null;
+  const currentRole = user?.role ? normalizeRole(user.role) : null;
 
   const value = {
     user,

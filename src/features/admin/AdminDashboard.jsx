@@ -412,74 +412,52 @@ export const AdminDashboard = () => {
 
         return (
           <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            {isPending && (
-              <>
-                <Button
-                  size="sm"
-                  style={{
-                    background: '#16a34a',
-                    color: '#ffffff',
-                    border: 'none',
-                    fontWeight: 600,
-                    padding: '0.3rem 0.75rem',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                  }}
-                  disabled={isLoading}
-                  onClick={() => handleApprove(u)}
-                >
-                  {isLoading ? 'Approving...' : '✓ Approve'}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  style={{
-                    color: '#dc2626',
-                    borderColor: '#fca5a5',
-                    fontWeight: 600,
-                    padding: '0.3rem 0.65rem'
-                  }}
-                  disabled={isLoading}
-                  onClick={() => openRejectModal(u)}
-                >
-                  Reject
-                </Button>
-              </>
-            )}
-
-            {isApproved && (
-              <Button
-                size="sm"
-                variant="outline"
+            {isPending ? (
+              <span
                 style={{
-                  color: '#dc2626',
-                  borderColor: '#e2e8f0',
-                  fontSize: '0.75rem',
-                  padding: '0.2rem 0.5rem'
+                  fontSize: '0.72rem',
+                  color: '#92400e',
+                  background: '#fef3c7',
+                  border: '1px solid #fde68a',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
                 }}
-                disabled={isLoading}
-                onClick={() => openRejectModal(u)}
-                title="Revoke approval status"
+                title="Registration approval is awaiting action by CS Director"
               >
-                Revoke / Reject
-              </Button>
-            )}
-
-            {!isPending && !isApproved && (
-              <Button
-                size="sm"
+                Pending CS Director Approval
+              </span>
+            ) : isApproved ? (
+              <span
                 style={{
-                  background: '#16a34a',
-                  color: '#fff',
-                  border: 'none',
-                  fontSize: '0.75rem',
-                  padding: '0.2rem 0.5rem'
+                  fontSize: '0.72rem',
+                  color: '#166534',
+                  background: '#dcfce7',
+                  border: '1px solid #bbf7d0',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  fontWeight: 600
                 }}
-                disabled={isLoading}
-                onClick={() => handleApprove(u)}
-                title="Re-approve user account"
               >
-                ✓ Re-Approve
-              </Button>
+                Approved
+              </span>
+            ) : (
+              <span
+                style={{
+                  fontSize: '0.72rem',
+                  color: '#991b1b',
+                  background: '#fee2e2',
+                  border: '1px solid #fecaca',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  fontWeight: 600
+                }}
+              >
+                Rejected
+              </span>
             )}
 
             <button
@@ -857,8 +835,6 @@ export const AdminDashboard = () => {
           isOpen={true}
           onClose={() => setSelectedUserForDetails(null)}
           user={users.find((u) => (u.id || u._id) === (selectedUserForDetails.id || selectedUserForDetails._id)) || selectedUserForDetails}
-          onApprove={(u) => handleApprove(u)}
-          onReject={(u) => openRejectModal(u)}
           onEdit={() => setSelectedUserForDetails(null)}
           onChangeStatus={() => setSelectedUserForDetails(null)}
         />

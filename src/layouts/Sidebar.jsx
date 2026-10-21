@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { ROLE_SIDEBAR_NAV } from './navConfig.js';
-import { ROLE_LABELS } from '../permissions/roles.js';
+import { ROLE_LABELS, normalizeRole } from '../permissions/roles.js';
 import { ShieldCheck, ExternalLink, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Sidebar({
@@ -12,7 +12,8 @@ export default function Sidebar({
   onToggleCollapse
 }) {
   const { role, user } = useAuth();
-  const navItems = ROLE_SIDEBAR_NAV[role] || ROLE_SIDEBAR_NAV.beneficiary;
+  const normRole = normalizeRole(role || user?.role);
+  const navItems = ROLE_SIDEBAR_NAV[normRole] || ROLE_SIDEBAR_NAV[role] || ROLE_SIDEBAR_NAV.beneficiary;
 
   return (
     <>
@@ -59,7 +60,7 @@ export default function Sidebar({
           <div className="sidebar-role-badge-box">
             <span className="sidebar-role-title small muted block">Portal Module</span>
             <span className="sidebar-role-name font-semibold small block text-saffron">
-              {ROLE_LABELS[role]}
+              {ROLE_LABELS[normRole] || ROLE_LABELS[role] || role}
             </span>
             {user?.depot && <span className="sidebar-depot-tag micro muted block">{user.depot}</span>}
           </div>

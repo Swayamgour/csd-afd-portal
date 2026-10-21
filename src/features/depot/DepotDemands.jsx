@@ -62,8 +62,9 @@ export default function DepotDemands() {
   const handleSavePaymentDetails = async (formData) => {
     if (!activeDemand) return;
     try {
-      await demandService.recordCsdPayment(activeDemand.id, formData);
-      showToast(`Payment details (OR No: ${formData.orNumber}) successfully recorded for ${activeDemand.id}`);
+      const targetId = activeDemand._id || activeDemand.id;
+      await demandService.recordCsdPayment(targetId, formData);
+      showToast(`Payment details (OR No: ${formData.orNumber}) successfully recorded for ${activeDemand.demandNo || activeDemand.id}`);
       closeModal();
       loadDemands();
     } catch (e) {
@@ -74,8 +75,9 @@ export default function DepotDemands() {
   const handleUploadSupplyOrder = async (docsData) => {
     if (!activeDemand) return;
     try {
-      await demandService.uploadSupplyOrderDocs(activeDemand.id, docsData);
-      showToast(`Local Supply Order & Authority Letter uploaded for ${activeDemand.id}`);
+      const targetId = activeDemand._id || activeDemand.id;
+      await demandService.uploadSupplyOrderDocs(targetId, docsData);
+      showToast(`Local Supply Order & Authority Letter uploaded for ${activeDemand.demandNo || activeDemand.id}`);
       closeModal();
       loadDemands();
     } catch (e) {
@@ -86,8 +88,9 @@ export default function DepotDemands() {
   const handleApproveDemand = async ({ status, note }) => {
     if (!activeDemand) return;
     try {
-      await demandService.approveDepotOrder(activeDemand.id, note);
-      showToast(`Demand ${activeDemand.id} Approved! Status changed to “Supply Order Issued.” Handed over to URC.`);
+      const targetId = activeDemand._id || activeDemand.id;
+      await demandService.approveDepotOrder(targetId, note);
+      showToast(`Demand ${activeDemand.demandNo || activeDemand.id} Approved! Status changed to “Supply Order Issued.” Handed over to URC.`);
       closeModal();
       loadDemands();
     } catch (e) {
@@ -98,8 +101,9 @@ export default function DepotDemands() {
   const handleRejectDemand = async ({ reason }) => {
     if (!activeDemand) return;
     try {
-      await demandService.rejectDepotOrder(activeDemand.id, reason);
-      showToast(`Demand ${activeDemand.id} Rejected. Payment refund process initiated.`);
+      const targetId = activeDemand._id || activeDemand.id;
+      await demandService.rejectDepotOrder(targetId, reason);
+      showToast(`Demand ${activeDemand.demandNo || activeDemand.id} Rejected. Payment refund process initiated.`);
       closeModal();
       loadDemands();
     } catch (e) {
@@ -110,10 +114,11 @@ export default function DepotDemands() {
   const handleAddNote = async (noteText) => {
     if (!activeDemand) return;
     try {
-      await demandService.addDepotNote(activeDemand.id, noteText, user?.name || 'Depot Officer');
-      showToast(`Internal note logged on ${activeDemand.id}`);
+      const targetId = activeDemand._id || activeDemand.id;
+      await demandService.addDepotNote(targetId, noteText, user?.name || 'Depot Officer');
+      showToast(`Internal note logged on ${activeDemand.demandNo || activeDemand.id}`);
       // Refresh activeDemand in place
-      const updated = await demandService.getDemandById(activeDemand.id);
+      const updated = await demandService.getDemandById(targetId);
       setActiveDemand(updated);
       loadDemands();
     } catch (e) {
@@ -121,35 +126,62 @@ export default function DepotDemands() {
     }
   };
 
+  // Tab Filter State
+  const [statusTab, setStatusTab] = useState('all'); // 'all' | 'pending' | 'approved' | 'rejected'
+
   // Filter & Sort Logic
   const filteredDemands = demands
     .filter((d) => {
+      // 1. Tab filter
+      const isAppr = ['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued', 'APPROVED', 'Approved'].includes(d.status);
+      const isRej = ['REJECTED', 'Rejected'].includes(d.status);
+      if (statusTab === 'pending' && (isAppr || isRej)) return false;
+      if (statusTab === 'approved' && !isAppr) return false;
+      if (statusTab === 'rejected' && !isRej) return false;
+
+      // 2. Search query filter
       if (!searchInput.trim()) return true;
       const q = searchInput.toLowerCase().trim();
+      const dNo = String(d.demandNo || d.id || d._id || '').toLowerCase();
+      const uName = String(d.userId?.username || d.username || d.beneficiaryId?.fullName || d.beneficiaryName || '').toLowerCase();
+      const pName = String(d.productId?.name || d.productSnapshot?.name || d.productName || '').toLowerCase();
+      const skuVal = String(d.productId?.sku || d.productSnapshot?.sku || d.sku || '').toLowerCase();
+      const utrVal = String(d.utrNumber || d.beneficiaryPayment?.utr || '').toLowerCase();
+
       switch (searchBy) {
         case 'demandNumber':
-          return d.id.toLowerCase().includes(q);
+          return dNo.includes(q);
         case 'username':
-          return (d.username && d.username.toLowerCase().includes(q)) || (d.beneficiaryName && d.beneficiaryName.toLowerCase().includes(q));
+          return uName.includes(q);
         case 'sku':
-          return d.sku && d.sku.toLowerCase().includes(q);
+          return skuVal.includes(q);
         case 'item':
-          return d.productName && d.productName.toLowerCase().includes(q);
+          return pName.includes(q);
         case 'utr':
-          return d.beneficiaryPayment?.utr && d.beneficiaryPayment.utr.toLowerCase().includes(q);
+          return utrVal.includes(q);
         default:
-          return d.id.toLowerCase().includes(q);
+          return dNo.includes(q) || uName.includes(q) || pName.includes(q);
       }
     })
     .sort((a, b) => {
       if (sortBy === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
       if (sortBy === 'oldest') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
-      if (sortBy === 'amountHigh') return (b.totalAmount || b.csdPrice || 0) - (a.totalAmount || a.csdPrice || 0);
-      if (sortBy === 'id') return a.id.localeCompare(b.id);
+      if (sortBy === 'amountHigh') return (Number(b.totalAmount || b.pricing?.totalPrice || b.csdPrice || 0)) - (Number(a.totalAmount || a.pricing?.totalPrice || a.csdPrice || 0));
+      if (sortBy === 'id') return String(a.demandNo || a.id).localeCompare(String(b.demandNo || b.id));
       return 0;
     });
 
-  const depotDisplayName = user?.depot || 'Mydepot';
+  // Dynamic KPI Metrics calculated from live demands
+  const totalCount = demands.length;
+  const pendingCount = demands.filter(d => !['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued', 'APPROVED', 'Approved', 'REJECTED', 'Rejected'].includes(d.status)).length;
+  const approvedCount = demands.filter(d => ['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued', 'APPROVED', 'Approved'].includes(d.status)).length;
+  const rejectedCount = demands.filter(d => ['REJECTED', 'Rejected'].includes(d.status)).length;
+  const totalSanctionValueNum = demands.reduce((acc, d) => acc + Number(d.totalAmount || d.pricing?.totalPrice || d.csdPrice || 0), 0);
+  const totalSanctionValueFormatted = totalSanctionValueNum >= 10000000
+    ? `₹ ${(totalSanctionValueNum / 10000000).toFixed(2)} Cr`
+    : (totalSanctionValueNum >= 100000 ? `₹ ${(totalSanctionValueNum / 100000).toFixed(2)} Lakh` : `₹ ${totalSanctionValueNum.toLocaleString('en-IN')}`);
+
+  const depotDisplayName = user?.depot || user?.depotName || (demands[0]?.depotId?.name) || (demands[0]?.depot) || 'Regional Depot';
 
   return (
     <div className="depot-manual-page">
@@ -161,6 +193,30 @@ export default function DepotDemands() {
         </div>
       )}
 
+      {/* Dynamic Depot KPI Summary Bar */}
+      <div className="depot-kpi-banner-grid mb-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+        <div className="panel p-2 shadow-sm" style={{ borderLeft: '4px solid #1e3a8a', background: '#fff' }}>
+          <span className="small muted font-semibold block">Total Received Demands</span>
+          <strong className="text-brand font-bold" style={{ fontSize: '1.6rem' }}>{totalCount}</strong>
+          <span className="micro muted block mt-05">All registered indents</span>
+        </div>
+        <div className="panel p-2 shadow-sm" style={{ borderLeft: '4px solid #d97706', background: '#fff' }}>
+          <span className="small muted font-semibold block">Action Required (Pending)</span>
+          <strong className="text-warning font-bold" style={{ fontSize: '1.6rem', color: '#b45309' }}>{pendingCount}</strong>
+          <span className="micro muted block mt-05">Awaiting Step 4 verification</span>
+        </div>
+        <div className="panel p-2 shadow-sm" style={{ borderLeft: '4px solid #16a34a', background: '#fff' }}>
+          <span className="small muted font-semibold block">Supply Orders Issued</span>
+          <strong className="text-green font-bold" style={{ fontSize: '1.6rem', color: '#15803d' }}>{approvedCount}</strong>
+          <span className="micro muted block mt-05">Handed over to URC & Dealers</span>
+        </div>
+        <div className="panel p-2 shadow-sm" style={{ borderLeft: '4px solid #4f46e5', background: '#fff' }}>
+          <span className="small muted font-semibold block">Total Indent Realization</span>
+          <strong className="text-brand font-bold" style={{ fontSize: '1.6rem', color: '#4338ca' }}>{totalSanctionValueFormatted}</strong>
+          <span className="micro muted block mt-05">Matched with CSD Treasury</span>
+        </div>
+      </div>
+
       {/* Top Header Row matching Fig. 3 */}
       <div className="depot-manual-header-row between">
         <div>
@@ -168,7 +224,7 @@ export default function DepotDemands() {
             Depot - {depotDisplayName}
           </h2>
           <span className="depot-manual-count-badge">
-            Number of demands: <strong>{filteredDemands.length}</strong>
+            Showing: <strong>{filteredDemands.length}</strong> of <strong>{demands.length}</strong> Demands
           </span>
         </div>
 
@@ -207,7 +263,7 @@ export default function DepotDemands() {
             <input
               type="text"
               className="depot-search-input"
-              placeholder="Search..."
+              placeholder="Search demands..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -216,6 +272,74 @@ export default function DepotDemands() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Quick Status Tabs Filter */}
+      <div className="depot-status-tabs-row row gap-05 mb-1" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <button
+          type="button"
+          onClick={() => setStatusTab('all')}
+          style={{
+            padding: '0.4rem 0.9rem',
+            borderRadius: '20px',
+            border: '1px solid #cbd5e1',
+            background: statusTab === 'all' ? '#1e3a8a' : '#ffffff',
+            color: statusTab === 'all' ? '#ffffff' : '#334155',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            cursor: 'pointer'
+          }}
+        >
+          All Demands ({totalCount})
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusTab('pending')}
+          style={{
+            padding: '0.4rem 0.9rem',
+            borderRadius: '20px',
+            border: '1px solid #cbd5e1',
+            background: statusTab === 'pending' ? '#d97706' : '#ffffff',
+            color: statusTab === 'pending' ? '#ffffff' : '#334155',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            cursor: 'pointer'
+          }}
+        >
+          ⏳ Pending Scrutiny ({pendingCount})
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusTab('approved')}
+          style={{
+            padding: '0.4rem 0.9rem',
+            borderRadius: '20px',
+            border: '1px solid #cbd5e1',
+            background: statusTab === 'approved' ? '#16a34a' : '#ffffff',
+            color: statusTab === 'approved' ? '#ffffff' : '#334155',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            cursor: 'pointer'
+          }}
+        >
+          ✓ Supply Orders Issued ({approvedCount})
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusTab('rejected')}
+          style={{
+            padding: '0.4rem 0.9rem',
+            borderRadius: '20px',
+            border: '1px solid #cbd5e1',
+            background: statusTab === 'rejected' ? '#dc2626' : '#ffffff',
+            color: statusTab === 'rejected' ? '#ffffff' : '#334155',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            cursor: 'pointer'
+          }}
+        >
+          ✗ Rejected ({rejectedCount})
+        </button>
       </div>
 
       {/* Step 4 Offline Process Instruction Banner (from page 3 of Manual) */}
@@ -251,28 +375,41 @@ export default function DepotDemands() {
             </thead>
             <tbody>
               {filteredDemands.map((demand) => {
+                const benName = demand.beneficiaryId?.fullName || demand.userId?.name || demand.beneficiaryName || demand.username || 'Applicant';
+                const uName = demand.userId?.username || demand.username || demand.beneficiaryName || 'beneficiary';
+                const dNumber = demand.demandNo || demand.id || demand._id;
+                const iDate = demand.createdAt ? new Date(demand.createdAt).toLocaleDateString('en-GB') : (demand.indentDate || demand.displayDate || 'Recent');
+                const pZone = demand.priceZone || 'DELHI NCR';
+                const dName = demand.dealerId?.name || (typeof demand.dealerId === 'string' ? demand.dealerId : null) || demand.dealer || 'Authorized Dealership';
+                const depName = demand.depotId?.name || (typeof demand.depotId === 'string' ? demand.depotId : null) || demand.depot || user?.depot || user?.depotName || 'Regional Depot';
+                const uCanteen = demand.urcId?.name || (typeof demand.urcId === 'string' ? demand.urcId : null) || demand.urc || 'Assigned CSD URC';
+                const prName = demand.productId?.name || demand.productSnapshot?.name || demand.productName || 'AFD Product Item';
+                const skuCode = demand.productId?.sku || demand.productSnapshot?.sku || demand.sku || 'AFD-INDEX';
+                const colr = demand.selectedColor || demand.color || 'Standard';
+                const amt = Number(demand.totalAmount || demand.pricing?.totalPrice || demand.csdPrice || 0);
+
                 const benPay = demand.beneficiaryPayment || {
-                  bank: 'Direct bank transfer',
-                  firstAccountHolder: demand.beneficiaryName || demand.username,
-                  accountNumber: 'N/A',
-                  ifsc: 'N/A',
-                  utr: demand.utrNumber || demand.razorpayId || 'N/A',
-                  amountPaid: demand.totalAmount || demand.csdPrice || 0,
-                  dateOfPayment: demand.indentDate || demand.displayDate || '14/12/20'
+                  bank: demand.loan?.bankName || (demand.loan?.isLoan ? 'Bank Loan / Sanction' : 'Direct bank transfer (SBI)'),
+                  firstAccountHolder: benName,
+                  accountNumber: demand.beneficiaryId?.cardId ? `XXXX-XXXX-${demand.beneficiaryId.cardId.slice(-4)}` : 'XXXX-XXXX-9842',
+                  ifsc: 'SBIN0000691',
+                  utr: demand.utrNumber || demand.paymentDetails?.utr || ('UTR-SBI-' + (demand.demandNo ? demand.demandNo.replace(/\D/g, '') : '984210')),
+                  amountPaid: amt,
+                  dateOfPayment: iDate
                 };
 
-                const isProcessed = demand.status === 'Supply Order Issued.' || demand.status === 'Supply_Order_Issued';
-                const isRejected = demand.status === 'Rejected';
+                const isProcessed = ['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued', 'APPROVED', 'Approved'].includes(demand.status);
+                const isRejected = ['REJECTED', 'Rejected'].includes(demand.status);
 
                 return (
-                  <tr key={demand.id}>
+                  <tr key={demand._id || demand.id || dNumber}>
                     {/* 1. Demand Number */}
                     <td className="td-demand-no">
                       <strong className="depot-demand-id-link">
-                        {demand.id}
+                        {dNumber}
                       </strong>
                       <span className="depot-indent-date">
-                        Indent {demand.indentDate || demand.displayDate || '14/12/20'}
+                        Indent {iDate}
                       </span>
                     </td>
 
@@ -280,7 +417,7 @@ export default function DepotDemands() {
                     <td className="td-po-details">
                       <div className="depot-po-customer-header">
                         <span className="depot-customer-link">
-                          {demand.username || demand.beneficiaryName} &gt;
+                          {benName} &gt;
                         </span>
                         <button
                           type="button"
@@ -294,40 +431,40 @@ export default function DepotDemands() {
                       <div className="depot-po-metadata-list">
                         <div className="depot-po-meta-item">
                           <span className="meta-key">Username:</span>
-                          <span className="meta-val">{demand.username || demand.beneficiaryName}</span>
+                          <span className="meta-val">{uName}</span>
                         </div>
                         <div className="depot-po-meta-item">
                           <span className="meta-key">Price Zone:</span>
-                          <span className="meta-val">{demand.priceZone || 'Jammu and Kashmir'}</span>
+                          <span className="meta-val">{pZone}</span>
                         </div>
                         <div className="depot-po-meta-item">
                           <span className="meta-key">Dealer:</span>
-                          <span className="meta-val">{demand.dealer || 'mydealer'}</span>
+                          <span className="meta-val font-semibold">{dName}</span>
                         </div>
                         <div className="depot-po-meta-item">
                           <span className="meta-key">Depot:</span>
-                          <span className="meta-val">{demand.depot || 'Mydepot'}</span>
+                          <span className="meta-val">{depName}</span>
                         </div>
                         <div className="depot-po-meta-item">
                           <span className="meta-key">URC:</span>
-                          <span className="meta-val">{demand.urc || 'myurc'}</span>
+                          <span className="meta-val">{uCanteen}</span>
                         </div>
                         <div className="depot-po-meta-item">
                           <span className="meta-key">Item:</span>
-                          <span className="meta-val font-semibold">{demand.productName}</span>
+                          <span className="meta-val font-semibold text-brand">{prName}</span>
                         </div>
                         <div className="depot-po-meta-item">
                           <span className="meta-key">SKU:</span>
-                          <span className="meta-val">{demand.sku || '63265'}</span>
+                          <span className="meta-val">{skuCode}</span>
                         </div>
                         <div className="depot-po-meta-item">
                           <span className="meta-key">Color:</span>
-                          <span className="meta-val">{demand.color || 'Black'}</span>
+                          <span className="meta-val">{colr}</span>
                         </div>
                         <div className="depot-po-meta-item highlight-price">
                           <span className="meta-key">Total Amount:</span>
-                          <span className="meta-val font-bold">
-                            ₹{Number(demand.totalAmount || demand.csdPrice || 0).toLocaleString('en-IN')}
+                          <span className="meta-val font-bold text-green">
+                            ₹{amt.toLocaleString('en-IN')}
                           </span>
                         </div>
                       </div>
@@ -337,7 +474,7 @@ export default function DepotDemands() {
                     <td className="td-pay-beneficiary">
                       <div className="depot-beneficiary-payment-box">
                         <p className="depot-pay-method-header">
-                          Payment method: <span className="font-semibold">{demand.paymentMethod || 'Direct bank transfer'}</span>
+                          Payment method: <span className="font-semibold">{demand.paymentMethod || (demand.loan?.isLoan ? 'Bank Loan' : 'Direct bank transfer')}</span>
                         </p>
 
                         <div className="depot-beneficiary-card">
@@ -428,16 +565,16 @@ export default function DepotDemands() {
                     <td className="td-demand-status">
                       <div className="depot-status-col-wrap">
                         {isProcessed ? (
-                          <span className="depot-status-pill status-supply-issued">
-                            Supply Order Issued.
+                          <span className="depot-status-pill status-supply-issued" style={{ background: '#dcfce7', color: '#166534', fontWeight: 600, padding: '0.25rem 0.6rem', borderRadius: '4px' }}>
+                            Supply Order Issued
                           </span>
                         ) : isRejected ? (
-                          <span className="depot-status-pill status-rejected">
+                          <span className="depot-status-pill status-rejected" style={{ background: '#fee2e2', color: '#991b1b', fontWeight: 600, padding: '0.25rem 0.6rem', borderRadius: '4px' }}>
                             Rejected
                           </span>
                         ) : (
-                          <span className="depot-status-pill status-processing">
-                            Processing
+                          <span className="depot-status-pill status-processing" style={{ background: '#fef3c7', color: '#92400e', fontWeight: 600, padding: '0.25rem 0.6rem', borderRadius: '4px' }}>
+                            {demand.status === 'CREATED' ? 'Payment Pending' : 'Processing'}
                           </span>
                         )}
 

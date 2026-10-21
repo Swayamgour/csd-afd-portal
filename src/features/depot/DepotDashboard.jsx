@@ -44,7 +44,7 @@ export default function DepotDashboard() {
     },
     { header: 'Applicant', accessor: 'beneficiaryName', render: (row) => <div><span className="font-semibold block">{row.beneficiaryName}</span><span className="micro muted">{row.serviceNumber}</span></div> },
     { header: 'Product Item', accessor: 'productName' },
-    { header: 'Sanction Price', accessor: 'csdPrice', render: (row) => `₹ ${row.csdPrice?.toLocaleString('en-IN')}` },
+    { header: 'Sanction Price', accessor: 'csdPrice', render: (row) => `₹ ${Number(row.totalAmount || row.csdPrice || 0).toLocaleString('en-IN')}` },
     {
       header: 'Status',
       accessor: 'status',
@@ -61,15 +61,25 @@ export default function DepotDashboard() {
     }
   ];
 
+  const totalDemandsCount = demands.length;
+  const supplyOrdersCount = demands.filter(d => ['APPROVED', 'SUPPLY_ORDER_ISSUED', 'Supply Order Issued.'].includes(d.status)).length + orders.length;
+  const pendingQueueCount = demands.filter(d => ['CREATED', 'PROCESSING', 'Processing'].includes(d.status)).length;
+  const totalValueNum = demands.reduce((acc, d) => acc + (Number(d.totalAmount || d.csdPrice || 0)), 0);
+  const totalValueFormatted = totalValueNum >= 10000000 
+    ? `₹ ${(totalValueNum / 10000000).toFixed(2)} Cr` 
+    : (totalValueNum >= 100000 ? `₹ ${(totalValueNum / 100000).toFixed(2)} L` : `₹ ${totalValueNum.toLocaleString('en-IN')}`);
+
+  const depotTitle = user?.depot || user?.depotName || (demands[0]?.depotId?.name) || (demands[0]?.depot) || 'Delhi Regional Depot';
+
   return (
     <div className="depot-dashboard-page">
       <PageHeader
-        title={`Regional Depot Directorate · ${user?.depot || 'Delhi Regional Depot'}`}
-        subtitle={`Commanding Officer: ${user?.name} · Area Jurisdictional Operations & Demand Sanction Desk`}
+        title={`Regional Depot Directorate · ${depotTitle}`}
+        subtitle={`Commanding Officer: ${user?.name || 'Depot Manager'} · Area Jurisdictional Operations & Demand Sanction Desk`}
         actions={
           <div className="row gap-1">
             <Link to="/depot/demands" className="btn btn-primary">
-              Open Received Demands
+              Open Received Demands ({totalDemandsCount})
             </Link>
           </div>
         }
@@ -78,7 +88,7 @@ export default function DepotDashboard() {
       <div className="kpi-grid mb-3">
         <StatCard
           title="Regional AFD Demands"
-          value="184"
+          value={String(totalDemandsCount)}
           subtext="Under Local Scrutiny"
           icon={FileText}
           variant="primary"
@@ -86,7 +96,7 @@ export default function DepotDashboard() {
         />
         <StatCard
           title="Supply Orders Issued"
-          value="912"
+          value={String(supplyOrdersCount)}
           subtext="Dispatched to Dealers"
           icon={Truck}
           variant="success"
@@ -94,16 +104,16 @@ export default function DepotDashboard() {
         />
         <StatCard
           title="Pending Sanction Queue"
-          value="28 Demands"
-          subtext="Awaiting CO Signature"
+          value={`${pendingQueueCount} Demands`}
+          subtext="Awaiting Action / Sign-off"
           icon={ShieldCheck}
           variant="warning"
           onClick={() => navigate('/depot/demands')}
         />
         <StatCard
-          title="Daily Treasury Realization"
-          value="₹ 1.84 Cr"
-          subtext="Matched SBI e-Pay"
+          title="Total Sanction Realization"
+          value={totalValueFormatted}
+          subtext="Matched Portal Treasury"
           icon={CreditCard}
           variant="default"
           onClick={() => navigate('/depot/transactions')}

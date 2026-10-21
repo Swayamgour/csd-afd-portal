@@ -26,8 +26,8 @@ export default function DepotOrderSummaryModal({ isOpen, onClose, demand }) {
           <div className="depot-summary-header-card">
             <div>
               <span className="micro muted uppercase block font-semibold">Demand Number</span>
-              <strong className="text-brand font-bold">{demand.id}</strong>
-              <span className="small muted block">Indent Date: {demand.indentDate || demand.displayDate || '14/12/20'}</span>
+              <strong className="text-brand font-bold">{demand.demandNo || demand.id}</strong>
+              <span className="small muted block">Indent Date: {demand.createdAt ? new Date(demand.createdAt).toLocaleDateString('en-GB') : (demand.indentDate || demand.displayDate || 'Recent')}</span>
             </div>
             <div>
               <span className="micro muted uppercase block font-semibold">Current Status</span>
@@ -35,7 +35,7 @@ export default function DepotOrderSummaryModal({ isOpen, onClose, demand }) {
             </div>
             <div>
               <span className="micro muted uppercase block font-semibold">Total CSD Value</span>
-              <strong className="text-green font-bold">₹{Number(demand.totalAmount || demand.csdPrice || 0).toLocaleString('en-IN')}</strong>
+              <strong className="text-green font-bold">₹{Number(demand.totalAmount || demand.pricing?.totalPrice || demand.csdPrice || 0).toLocaleString('en-IN')}</strong>
             </div>
           </div>
 
@@ -48,31 +48,31 @@ export default function DepotOrderSummaryModal({ isOpen, onClose, demand }) {
                 <tbody>
                   <tr>
                     <td>Item Name:</td>
-                    <td><strong>{demand.productName}</strong></td>
+                    <td><strong>{demand.productName || demand.productId?.name || demand.productSnapshot?.name || 'Selected Item'}</strong></td>
                   </tr>
                   <tr>
                     <td>SKU Index:</td>
-                    <td>{demand.sku || 'N/A'}</td>
+                    <td>{demand.productId?.sku || demand.productSnapshot?.sku || demand.sku || 'AFD-INDEX'}</td>
                   </tr>
                   <tr>
                     <td>Color:</td>
-                    <td>{demand.color || 'Standard'}</td>
+                    <td>{demand.selectedColor || demand.color || 'Standard'}</td>
                   </tr>
                   <tr>
                     <td>Price Zone:</td>
-                    <td>{demand.priceZone || 'Default'}</td>
+                    <td>{demand.priceZone || 'DELHI NCR'}</td>
                   </tr>
                   <tr>
                     <td>Depot:</td>
-                    <td>{demand.depot || 'Mydepot'}</td>
+                    <td>{demand.depotId?.name || demand.depot || 'Regional Depot'}</td>
                   </tr>
                   <tr>
                     <td>URC:</td>
-                    <td>{demand.urc || 'myurc'}</td>
+                    <td>{demand.urcId?.name || demand.urc || 'Assigned URC'}</td>
                   </tr>
                   <tr>
                     <td>Allotted Dealer:</td>
-                    <td>{demand.dealer || 'mydealer'}</td>
+                    <td>{demand.dealerId?.name || demand.dealer || 'Authorized Dealership'}</td>
                   </tr>
                 </tbody>
               </table>
@@ -85,23 +85,23 @@ export default function DepotOrderSummaryModal({ isOpen, onClose, demand }) {
                 <tbody>
                   <tr>
                     <td>Username:</td>
-                    <td><strong>{demand.username || demand.beneficiaryName}</strong></td>
+                    <td><strong>{demand.userId?.username || demand.username || demand.beneficiaryName}</strong></td>
                   </tr>
                   <tr>
                     <td>Service No:</td>
-                    <td>{demand.serviceNumber || 'JC-765432X'}</td>
+                    <td>{demand.beneficiaryId?.serviceNumber || demand.serviceNumber || 'JC-765432X'}</td>
                   </tr>
                   <tr>
                     <td>Full Name:</td>
-                    <td>{demand.beneficiaryName || 'Subedar Major M. Test'}</td>
+                    <td>{demand.beneficiaryId?.fullName || demand.beneficiaryName || demand.userId?.name}</td>
                   </tr>
                   <tr>
                     <td>Rank / Category:</td>
-                    <td>JCO / OR Entitlement</td>
+                    <td>{demand.beneficiaryId?.rank || demand.rank || 'JCO / Entitled Personnel'} ({demand.beneficiaryId?.category || 'SERVING'})</td>
                   </tr>
                   <tr>
                     <td>Payment Mode:</td>
-                    <td>{demand.paymentMethod || 'Direct bank transfer'}</td>
+                    <td>{demand.paymentMethod || 'Direct bank transfer / RTGS'}</td>
                   </tr>
                   <tr>
                     <td>Payment Status:</td>

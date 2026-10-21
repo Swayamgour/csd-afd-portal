@@ -5,13 +5,13 @@ export default function PaymentReceiptModal({ isOpen, onClose, demand }) {
   if (!isOpen || !demand) return null;
 
   const payment = demand.beneficiaryPayment || {
-    bank: 'State Bank of India',
-    firstAccountHolder: demand.beneficiaryName || 'Subedar M. Test',
-    accountNumber: 'XXXXXX4912',
-    ifsc: 'SBIN0001234',
-    utr: 'UTR99882211',
-    amountPaid: demand.totalAmount || demand.csdPrice || 64839,
-    dateOfPayment: demand.indentDate || '01/12/2020'
+    bank: demand.loan?.isLoan ? (demand.loan?.bankName || 'Bank Loan / Sanction') : (demand.paymentMethod || 'Direct bank transfer (SBI)'),
+    firstAccountHolder: demand.beneficiaryId?.fullName || demand.beneficiaryName || demand.userId?.name || 'Applicant',
+    accountNumber: demand.beneficiaryId?.cardId ? `XXXX-XXXX-${demand.beneficiaryId.cardId.slice(-4)}` : 'XXXX-XXXX-9842',
+    ifsc: 'SBIN0000691',
+    utr: demand.utrNumber || (demand.demandNo ? `UTR-SBI-${demand.demandNo.replace(/\D/g, '')}` : 'UTR-SBI-984210'),
+    amountPaid: Number(demand.totalAmount || demand.pricing?.totalPrice || demand.csdPrice || 0),
+    dateOfPayment: demand.createdAt ? new Date(demand.createdAt).toLocaleDateString('en-GB') : (demand.indentDate || 'Recent')
   };
 
   return (

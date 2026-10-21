@@ -1,10 +1,42 @@
 import { apiClient } from './apiClient.js';
-import { MOCK_ORDERS } from '../data/mock/orders.mock.js';
 
-let ordersStore = [...MOCK_ORDERS];
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+
+let ordersStore = [];
 
 export const orderService = {
   async getOrders(filter = {}) {
+    try {
+      const token = localStorage.getItem('csd_auth_token');
+      const res = await fetch(`${API_BASE}/orders`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const serverItems = Array.isArray(json.data) ? json.data : (Array.isArray(json.data?.items) ? json.data.items : []);
+        const mapped = serverItems.map((o) => ({
+          _id: o._id,
+          id: o.orderNo || o._id,
+          orderNo: o.orderNo || o._id,
+          demandId: o.demandId,
+          beneficiaryName: o.beneficiaryId?.fullName || o.beneficiaryId?.name || 'Applicant',
+          productName: o.items?.[0]?.name || 'AFD Product',
+          sku: o.items?.[0]?.sku || 'AFD-SKU',
+          amount: o.amount || 0,
+          csdPrice: o.amount || 0,
+          status: o.status || 'PLACED',
+          dealer: o.dealerId?.name || 'Authorized Dealership',
+          depot: o.depotId?.name || 'Regional Depot',
+          createdAt: o.createdAt,
+          ...o
+        }));
+        ordersStore = mapped;
+        return mapped;
+      }
+    } catch (e) {
+      console.warn('Orders live fetch failed, checking local store', e);
+    }
+
     let list = [...ordersStore];
     if (filter.beneficiaryId) {
       list = list.filter((o) => o.beneficiaryId === filter.beneficiaryId);

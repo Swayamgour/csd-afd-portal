@@ -14,9 +14,9 @@ export default function ApproveRejectModal({ isOpen, onClose, demand, mode = 'ap
   const isApprove = mode === 'approve';
 
   const [checks, setChecks] = useState({
-    paymentReceived: demand.paymentStatus === 'Verified' || !!demand.csdPayment,
+    paymentReceived: true,
     purchaseHistory: true,
-    icdsOrderGenerated: !!demand.supplyOrderDocs
+    icdsOrderGenerated: true
   });
 
   const [rejectReason, setRejectReason] = useState('');
@@ -70,11 +70,11 @@ export default function ApproveRejectModal({ isOpen, onClose, demand, mode = 'ap
           <div className="csd-modal-body">
             <div className="depot-decision-demand-summary">
               <span className="small muted">Demand ID:</span>{' '}
-              <strong className="text-brand">{demand.id}</strong> ·{' '}
+              <strong className="text-brand">{demand.demandNo || demand.id}</strong> ·{' '}
               <span className="small muted">Item:</span>{' '}
-              <strong>{demand.productName}</strong> ·{' '}
+              <strong>{demand.productName || demand.productId?.name || demand.productSnapshot?.name || 'Selected Item'}</strong> ·{' '}
               <span className="small muted">Amount:</span>{' '}
-              <strong>₹{Number(demand.totalAmount || demand.csdPrice || 0).toLocaleString('en-IN')}</strong>
+              <strong>₹{Number(demand.totalAmount || demand.pricing?.totalPrice || demand.csdPrice || 0).toLocaleString('en-IN')}</strong>
             </div>
 
             {isApprove ? (

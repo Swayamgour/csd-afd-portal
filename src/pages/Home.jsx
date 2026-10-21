@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowUpRight, ArrowRight, Headset, Info, ShieldAlert, BadgePercent, BadgeCheck, Truck, Wallet, Car, Bike, Refrigerator, BookOpen, FileCheck2, CircleCheck, Phone } from "lucide-react";
 import ProductCard from "../components/ProductCard.jsx";
 import SearchBox from "../components/SearchBox.jsx";
@@ -8,6 +8,8 @@ import { products } from "../data/products.js";
 import { fetchProducts } from "../data/api.js";
 import { onImgError } from "../data/utils.js";
 import { useGetBannersQuery } from "../features/admin/adminApi.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import { normalizeRole } from "../permissions/roles.js";
 
 const perks = [
   [BadgePercent, "Concessional prices", "Special CSD rates for the Armed Forces family"],
@@ -37,11 +39,23 @@ export const Shop = ({ to = "/products", children = "Shop now" }) => (
 export default function Home() {
   const [cat, setCat] = useState("car");
   const [allProducts, setAllProducts] = useState(products);
+  const { isAuthenticated, role, roleHome, user } = useAuth();
+  const navigate = useNavigate();
+
+  // If a departmental officer (Depot, Dealer, CSD HO, URC, Admin) visits the home page, redirect to their operations dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      const canonicalRole = normalizeRole(role || user?.role);
+      if (canonicalRole && canonicalRole !== 'beneficiary') {
+        navigate(roleHome || '/depot/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, role, roleHome, user, navigate]);
 
   useEffect(() => {
     fetchProducts().then((res) => {
       if (Array.isArray(res) && res.length) setAllProducts(res);
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const cats = useMemo(() => [
@@ -81,9 +95,9 @@ export default function Home() {
                   isSingle
                     ? { opacity: 1, animation: 'none' }
                     : {
-                        animationDuration: `${duration}s`,
-                        animationDelay: `${delay}s`,
-                      }
+                      animationDuration: `${duration}s`,
+                      animationDelay: `${delay}s`,
+                    }
                 }
                 onError={(e) => {
                   e.currentTarget.src = "/assets/home_page.png";

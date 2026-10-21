@@ -56,6 +56,9 @@ const BeneficiaryDocuments = lazyImport(() => import('./features/beneficiary/Ben
 const BeneficiaryTickets = lazyImport(() => import('./features/beneficiary/BeneficiaryTickets.jsx'), 'BeneficiaryTickets');
 const BeneficiarySettings = lazyImport(() => import('./features/beneficiary/BeneficiarySettings.jsx'), 'BeneficiarySettings');
 
+// CS Director Portal (Registration Approvals & Record Management)
+const DirectorApprovals = lazyImport(() => import('./features/director/DirectorApprovals.jsx'), 'DirectorApprovals');
+
 // 2. CSD-HO Official Pages (HQ Directorate)
 const CsdDashboard = lazyImport(() => import('./features/csd/CsdDashboard.jsx'), 'CsdDashboard');
 const CsdUsers = lazyImport(() => import('./features/csd/CsdUsers.jsx'), 'CsdUsers');
@@ -301,6 +304,11 @@ export default function App() {
           <Route path="/admin/security" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminSecurity /></RoleRoute>} />
           <Route path="/admin/profile" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminProfile /></RoleRoute>} />
           <Route path="/admin/banners" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminBanners /></RoleRoute>} />
+
+          {/* 9. CS DIRECTOR PORTAL (Sole Authority for Registration Approvals & User Edits) */}
+          <Route path="/director/approvals" element={<RoleRoute allowedRoles={[ROLES.CS_DIRECTOR]}><DirectorApprovals defaultTab="PENDING" /></RoleRoute>} />
+          <Route path="/director/beneficiaries" element={<RoleRoute allowedRoles={[ROLES.CS_DIRECTOR]}><DirectorApprovals defaultTab="ALL" /></RoleRoute>} />
+          <Route path="/director/users" element={<RoleRoute allowedRoles={[ROLES.CS_DIRECTOR]}><DirectorApprovals defaultTab="ALL" /></RoleRoute>} />
 
         </Route>
 

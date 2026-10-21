@@ -107,6 +107,36 @@ export const demandApi = api.injectEndpoints({
       transformResponse: (response) => response?.data || response,
       invalidatesTags: ['Order', 'Dashboard', 'Demand'],
     }),
+
+    approveDemand: builder.mutation({
+      query: ({ id, remarks }) => ({
+        url: `/demands/${id}/approve`,
+        method: 'PATCH',
+        body: { remarks },
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Demand', 'Dashboard', 'Order'],
+    }),
+
+    rejectDemand: builder.mutation({
+      query: ({ id, reason }) => ({
+        url: `/demands/${id}/reject`,
+        method: 'PATCH',
+        body: { reason },
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Demand', 'Dashboard', 'Order'],
+    }),
+
+    recordPaymentDetails: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/demands/${id}/payment-details`,
+        method: 'PATCH',
+        body,
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Demand', 'Dashboard', 'Order'],
+    }),
   }),
 });
 
@@ -120,4 +150,7 @@ export const {
   useGetOrderByIdQuery,
   useDealerVerifyDemandMutation,
   useUpdateOrderStatusMutation,
+  useApproveDemandMutation,
+  useRejectDemandMutation,
+  useRecordPaymentDetailsMutation,
 } = demandApi;

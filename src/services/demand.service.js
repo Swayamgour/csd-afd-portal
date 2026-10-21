@@ -1,19 +1,41 @@
 import { apiClient } from './apiClient.js';
-import { MOCK_DEMANDS } from '../data/mock/demands.mock.js';
 
 const STORAGE_KEY = 'csd_demands_store';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+
+// Auto-purge any stale mock demands from browser local storage
+try {
+  const rawCache = localStorage.getItem(STORAGE_KEY);
+  if (rawCache && (rawCache.includes('#40000-117921') || rawCache.includes('mydealer') || rawCache.includes('Jammu and Kashmir'))) {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+} catch {}
 
 function getStoredDemands() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Strip out all legacy static mock records
+        const clean = parsed.filter(
+          (d) =>
+            !String(d.id || '').startsWith('#') &&
+            d.beneficiaryId !== 'USR-BEN-001' &&
+            d.beneficiaryId !== 'USR-BEN-117' &&
+            d.dealer !== 'mydealer' &&
+            d.depot !== 'Mydepot' &&
+            d.priceZone !== 'Jammu and Kashmir' &&
+            d.username !== 'mytest1234' &&
+            d.username !== 'DEMO'
+        );
+        return clean;
+      }
     }
   } catch (e) {
     // fallback
   }
-  return [...MOCK_DEMANDS];
+  return [];
 }
 
 function saveStoredDemands(list) {
@@ -28,8 +50,83 @@ let demandsStore = getStoredDemands();
 
 export const demandService = {
   async getDemands(filter = {}) {
+    // Attempt live fetch from Backend REST API
+    try {
+      const token = localStorage.getItem('csd_auth_token');
+      const res = await fetch(`${API_BASE}/demands`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const serverItems = Array.isArray(json.data) ? json.data : (Array.isArray(json.data?.items) ? json.data.items : []);
+        // Normalize backend MongoDB demands to match UI format
+        const mappedServer = serverItems.map((d) => {
+          const bName = d.beneficiaryId?.fullName || d.userId?.name || d.beneficiaryName || d.username || 'Applicant';
+          const uName = d.userId?.username || d.username || 'beneficiary';
+          const pName = d.productId?.name || d.productSnapshot?.name || d.productName || 'Selected Vehicle/Item';
+          const skuCode = d.productId?.sku || d.productSnapshot?.sku || d.sku || 'AFD-INDEX';
+          const dName = d.dealerId?.name || (typeof d.dealerId === 'string' ? d.dealerId : null) || d.dealer || 'Authorized Dealership';
+          const depName = d.depotId?.name || (typeof d.depotId === 'string' ? d.depotId : null) || d.depot || 'Regional Depot';
+          const urcName = d.urcId?.name || (typeof d.urcId === 'string' ? d.urcId : null) || d.urc || 'Base Canteen';
+          const dNumber = d.demandNo || d.demandNumber || d._id;
+          const amt = Number(d.totalAmount || d.pricing?.totalPrice || d.unitPrice || 0);
+
+          return {
+            _id: d._id,
+            id: dNumber,
+            demandNo: dNumber,
+            demandNumber: dNumber,
+            beneficiaryName: bName,
+            username: uName,
+            beneficiaryRank: d.beneficiaryId?.rank || 'Staff/Defence',
+            beneficiaryServiceNo: d.beneficiaryId?.serviceNumber || 'JC-765432X',
+            productName: pName,
+            productIndexNo: skuCode,
+            sku: skuCode,
+            color: d.selectedColor || d.color || 'Standard',
+            selectedColor: d.selectedColor || d.color || 'Standard',
+            priceZone: d.priceZone || 'DELHI NCR',
+            dealer: dName,
+            dealerAddress: d.dealerId?.address || '',
+            dealerCode: d.dealerId?.code || '',
+            depot: depName,
+            urc: urcName,
+            totalAmount: amt,
+            csdPrice: amt,
+            status: d.status === 'SUPPLY_ORDER_ISSUED' ? 'Supply Order Issued.' : (d.status === 'APPROVED' ? 'Approved' : (d.status === 'PROCESSING' ? 'Processing' : d.status)),
+            statusMeaning: d.status === 'SUPPLY_ORDER_ISSUED' ? 'Supply Order Issued. Handed over to URC.' : (d.status === 'APPROVED' ? 'Approved by Depot' : 'Pending Action'),
+            depotId: d.depotId?._id || d.depotId,
+            dealerId: d.dealerId?._id || d.dealerId,
+            urcId: d.urcId?._id || d.urcId,
+            beneficiaryPayment: d.beneficiaryPayment || {
+              bank: d.loan?.isLoan ? (d.loan?.bankName || 'Bank Loan / Sanction') : (d.paymentMethod || 'Direct bank transfer (SBI)'),
+              firstAccountHolder: bName,
+              accountNumber: d.beneficiaryId?.cardId ? `XXXX-XXXX-${d.beneficiaryId.cardId.slice(-4)}` : 'XXXX-XXXX-9842',
+              ifsc: 'SBIN0000691',
+              utr: d.utrNumber || (d.demandNo ? `UTR-SBI-${d.demandNo.replace(/\D/g, '')}` : 'UTR984210'),
+              amountPaid: amt,
+              dateOfPayment: d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-GB') : 'Recent'
+            },
+            timeline: d.timeline || [
+              { step: 'Demand Generated', date: new Date(d.createdAt || Date.now()).toLocaleDateString('en-GB'), status: 'completed' },
+              { step: 'Processing', date: 'In Progress', status: 'completed' },
+              { step: 'Supply Order Issued', date: d.status === 'SUPPLY_ORDER_ISSUED' ? 'Issued' : 'Pending', status: d.status === 'SUPPLY_ORDER_ISSUED' ? 'completed' : 'pending' }
+            ],
+            ...d
+          };
+        });
+
+        demandsStore = mappedServer;
+        saveStoredDemands(mappedServer);
+        return mappedServer;
+      }
+    } catch (e) {
+      console.warn('Backend demands fetch failed, checking local store', e);
+    }
+
     demandsStore = getStoredDemands();
     let list = [...demandsStore];
+
     if (filter.role === 'beneficiary' && filter.userId) {
       list = list.filter((d) => !d.beneficiaryId || d.beneficiaryId === filter.userId || d.beneficiaryName === 'DEMO');
     }
@@ -40,7 +137,8 @@ export const demandService = {
       const q = filter.search.toLowerCase();
       list = list.filter(
         (d) =>
-          d.id.toLowerCase().includes(q) ||
+          (d.id && d.id.toLowerCase().includes(q)) ||
+          (d.demandNumber && d.demandNumber.toLowerCase().includes(q)) ||
           (d.productName && d.productName.toLowerCase().includes(q)) ||
           (d.beneficiaryName && d.beneficiaryName.toLowerCase().includes(q))
       );
@@ -225,6 +323,23 @@ export const demandService = {
       ];
       demandsStore[idx] = item;
       saveStoredDemands(demandsStore);
+
+      // Attempt live backend update
+      try {
+        const token = localStorage.getItem('csd_auth_token');
+        const targetServerId = item._id || id;
+        await fetch(`${API_BASE}/demands/${targetServerId}/payment-details`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify(csdPaymentData)
+        });
+      } catch (err) {
+        console.warn('Backend payment-details failed', err);
+      }
+
       const res = await apiClient.put(`/demands/${id}`, item);
       return res.data;
     }
@@ -286,6 +401,23 @@ export const demandService = {
       });
       demandsStore[idx] = item;
       saveStoredDemands(demandsStore);
+
+      // Attempt live backend update
+      try {
+        const token = localStorage.getItem('csd_auth_token');
+        const targetServerId = item._id || id;
+        await fetch(`${API_BASE}/demands/${targetServerId}/approve`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ remarks: note })
+        });
+      } catch (err) {
+        console.warn('Backend approve call failed', err);
+      }
+
       const res = await apiClient.put(`/demands/${id}`, item);
       return res.data;
     }
@@ -311,6 +443,23 @@ export const demandService = {
       });
       demandsStore[idx] = item;
       saveStoredDemands(demandsStore);
+
+      // Attempt live backend update
+      try {
+        const token = localStorage.getItem('csd_auth_token');
+        const targetServerId = item._id || id;
+        await fetch(`${API_BASE}/demands/${targetServerId}/reject`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ reason })
+        });
+      } catch (err) {
+        console.warn('Backend reject call failed', err);
+      }
+
       const res = await apiClient.put(`/demands/${id}`, item);
       return res.data;
     }

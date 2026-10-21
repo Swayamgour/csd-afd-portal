@@ -281,46 +281,23 @@ export const AdminUsers = () => {
       accessor: 'actions',
       render: (u) => (
         <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* One-click Beneficiary Approval Buttons */}
+          {/* Beneficiary status indicator (Admin view-only; Approvals exclusive to CS Director) */}
           {u.role === 'BENEFICIARY' && (u.status === 'Pending' || u.adminApproval === 'PENDING' || u.verificationStatus === 'PENDING') && (
-            <button
-              type="button"
-              className="btn sm"
+            <span
+              className="badge"
               style={{
-                background: '#16a34a',
-                color: '#fff',
-                fontSize: '0.75rem',
-                padding: '0.2rem 0.55rem',
-                borderRadius: '6px',
-                border: 'none',
+                fontSize: '0.68rem',
                 fontWeight: 600,
-                cursor: 'pointer'
+                background: '#fef3c7',
+                color: '#92400e',
+                border: '1px solid #fde68a',
+                padding: '0.2rem 0.45rem',
+                borderRadius: '4px'
               }}
-              title="Approve Beneficiary Registration & Unlock Demands"
-              onClick={() => handleApproveBeneficiary(u)}
+              title="Awaiting review & approval by CS Director"
             >
-              Approve
-            </button>
-          )}
-
-          {u.role === 'BENEFICIARY' && (u.status === 'Pending' || u.adminApproval === 'PENDING' || u.verificationStatus === 'PENDING') && (
-            <button
-              type="button"
-              className="btn sm out"
-              style={{
-                borderColor: '#dc2626',
-                color: '#dc2626',
-                fontSize: '0.75rem',
-                padding: '0.2rem 0.55rem',
-                borderRadius: '6px',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-              title="Reject Beneficiary Registration"
-              onClick={() => handleRejectBeneficiary(u)}
-            >
-              Reject
-            </button>
+              Pending CS Director
+            </span>
           )}
 
           <button
@@ -489,8 +466,6 @@ export const AdminUsers = () => {
         isOpen={!!selectedUserForDetails}
         user={selectedUserForDetails}
         onClose={() => setSelectedUserForDetails(null)}
-        onApprove={(u) => handleApproveBeneficiary(u)}
-        onReject={(u) => setSelectedUserForStatus(u)}
         onEdit={(u) => setSelectedUserForEdit(u)}
         onChangeStatus={(u) => setSelectedUserForStatus(u)}
       />

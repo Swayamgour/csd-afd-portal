@@ -22,11 +22,17 @@ import {
   MessageSquare,
   BookOpen,
   KeyRound,
-  Image
+  Image,
+  UserCheck
 } from 'lucide-react';
 import { ROLES } from '../permissions/roles.js';
 
 export const ROLE_SIDEBAR_NAV = {
+  [ROLES.CS_DIRECTOR]: [
+    { title: 'Registration Approvals', to: '/director/approvals', icon: UserCheck },
+    { title: 'User Directory & Edits', to: '/director/beneficiaries', icon: Users },
+  ],
+
   [ROLES.BENEFICIARY]: [
     { title: 'Overview', to: '/beneficiary/dashboard', icon: LayoutDashboard },
     { title: 'Eligibility Check', to: '/beneficiary/eligibility', icon: ShieldCheck },

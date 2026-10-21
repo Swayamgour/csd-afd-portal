@@ -15,6 +15,7 @@ import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import SearchBox from "./SearchBox.jsx";
 import FontSizeResizer from "./common/FontSizeResizer.jsx";
+import { normalizeRole } from "../permissions/roles.js";
 
 const nav = [
   ["/", "Home"],
@@ -142,12 +143,33 @@ export default function Header() {
               <span>Alerts</span>
             </Link>
           )}
+          {isAuthenticated && normalizeRole(role || user?.role) !== 'beneficiary' && (
+            <Link
+              to={roleHome || '/depot/dashboard'}
+              className="act"
+              aria-label="Department Dashboard"
+              title="Go to Departmental Dashboard"
+              style={{
+                background: "var(--brand, #003366)",
+                color: "#ffffff",
+                padding: "0.35rem 0.75rem",
+                borderRadius: "4px",
+                fontWeight: 600,
+                fontSize: "0.85rem",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem"
+              }}
+            >
+              <span>Dashboard</span>
+            </Link>
+          )}
           {isAuthenticated && user ? (
             <Link
-              to={String(role || user.role).toLowerCase() === 'beneficiary' ? '/beneficiary/profile' : (roleHome || '/beneficiary/profile')}
+              to={normalizeRole(role || user.role) === 'beneficiary' ? '/beneficiary/profile' : (roleHome || '/depot/dashboard')}
               className="act"
-              aria-label="Beneficiary Profile"
-              title="View Beneficiary Profile"
+              aria-label="User Profile"
+              title={normalizeRole(role || user.role) === 'beneficiary' ? "View Beneficiary Profile" : "Go to Dashboard"}
             >
               <User size={20} color="var(--brand)" />
               <span style={{ fontWeight: 600, color: "var(--brand)" }}>
