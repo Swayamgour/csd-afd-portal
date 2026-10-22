@@ -22,8 +22,13 @@ import {
 import { useAuth } from '../context/AuthContext.jsx';
 import { DocumentUpload } from '../components/common/DocumentUpload.jsx';
 import { DemandConfirmationModal } from '../components/modals/DemandConfirmationModal.jsx';
+import { OnlinePaymentModal } from '../components/modals/OnlinePaymentModal.jsx';
 import { useCreateDemandMutation } from '../features/demand/demandApi.js';
-import { useCreatePaymentMutation, useVerifyPaymentMutation } from '../features/payment/paymentApi.js';
+import {
+  useCreatePaymentMutation,
+  useVerifyPaymentMutation,
+  useSubmitDirectTransferMutation,
+} from '../features/payment/paymentApi.js';
 import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
 import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery } from '../features/org/orgApi.js';
 import { INDIAN_STATES, PAY_LEVELS } from '../data/mock/locations.mock.js';
@@ -37,6 +42,7 @@ export default function Checkout() {
   const [createDemandMutation, { isLoading: isCreatingDemand }] = useCreateDemandMutation();
   const [createPaymentMutation, { isLoading: isCreatingPayment }] = useCreatePaymentMutation();
   const [verifyPaymentMutation, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
+  const [submitDirectTransferMutation, { isLoading: isSubmittingDirectTransfer }] = useSubmitDirectTransferMutation();
   const [uploadFileMutation] = useUploadFileMutation();
 
   const { data: priceZonesList = [] } = useGetPriceZonesQuery();
@@ -44,8 +50,8 @@ export default function Checkout() {
   const { data: dealersList = [] } = useGetDealersQuery();
   const { data: urcsList = [] } = useGetUrcsQuery();
 
-  // Load product selection from location state or sessionStorage
-  const [productData, setProductData] = useState(() => {
+  // Load product selection strictly from location state or sessionStorage
+  const [productData] = useState(() => {
     if (location.state?.productData) return location.state.productData;
     const saved = sessionStorage.getItem('csd_checkout_product');
     if (saved) {
@@ -54,59 +60,49 @@ export default function Checkout() {
     return null;
   });
 
-  // Default fallback if directly visited
-  const fallbackProduct = {
-    productId: '64224',
-    productName: 'Maruti Suzuki Alto K10 VXi',
-    sku: '64224',
-    manufacturerCode: '7116',
-    productImage: '/assets/maruti1.png',
-    selectedColor: 'Granite Grey',
-    selectedZone: 'DELHI NCR (DELHI GREATER NOIDA FARIDABAD GURGAON)',
-    selectedDealer: 'AAA VEHICLEADES PVT. LTD. MUNDKA',
-    selectedDepot: 'DELHI CSD DEPOT',
-    selectedUrc: '7 WING AF CANTEEN',
-    productPrice: 398500,
-    quantity: 1,
-    taxClass: 'tax-class-8'
-  };
+  const product = productData;
 
-  const product = productData || fallbackProduct;
+  const isPendingApproval = user?.role === 'BENEFICIARY' && (
+    profileData?.verificationStatus === 'PENDING' ||
+    user?.verificationStatus === 'PENDING' ||
+    user?.status === 'Pending' ||
+    user?.status === 'PENDING'
+  );
 
   const prof = profileData || {};
   const userAccount = prof.userId || user || {};
 
   // Beneficiary Pre-filled Details (From Real Database Profile)
   const beneficiary = {
-    priceZone: product.selectedZone,
-    depot: product.selectedDepot,
-    urc: product.selectedUrc,
-    email: userAccount.email || 'beneficiary@gov.in',
-    username: prof.serviceNumber || userAccount.username || 'ARMY-SVC',
-    name: prof.name || userAccount.name || 'CSD Beneficiary',
-    groceryCardNumber: prof.cardId || 'CSD-CARD-DEF',
-    chipNumber: prof.chipNumber || '1111112222333444',
-    phone: userAccount.mobile || prof.mobile || '+91 98765 00000',
+    priceZone: product?.selectedZone || '',
+    depot: product?.selectedDepot || '',
+    urc: product?.selectedUrc || '',
+    email: userAccount.email || '',
+    username: prof.serviceNumber || userAccount.username || '',
+    name: prof.name || userAccount.name || '',
+    groceryCardNumber: prof.cardId || '',
+    chipNumber: prof.chipNumber || '',
+    phone: userAccount.mobile || prof.mobile || '',
     employmentStatus: prof.employmentStatus || 'SERVING',
     organization: prof.organization || 'Indian Armed Forces',
-    dateOfBirth: prof.dob ? new Date(prof.dob).toLocaleDateString('en-IN') : '27/11/1992',
-    dateOfEnrollment: prof.dateOfEnrollment ? new Date(prof.dateOfEnrollment).toLocaleDateString('en-IN') : '23/11/2015',
-    dateOfRetirement: prof.dateOfRetirement ? new Date(prof.dateOfRetirement).toLocaleDateString('en-IN') : '25/11/2027',
+    dateOfBirth: prof.dob ? new Date(prof.dob).toLocaleDateString('en-IN') : '',
+    dateOfEnrollment: prof.dateOfEnrollment ? new Date(prof.dateOfEnrollment).toLocaleDateString('en-IN') : '',
+    dateOfRetirement: prof.dateOfRetirement ? new Date(prof.dateOfRetirement).toLocaleDateString('en-IN') : '',
     entitlementCategory: prof.entitlement || 'AFD-I & AFD-II Standard',
-    ppoNumber: prof.ppo || 'N/A',
-    panNumber: prof.pan || 'NOTSET'
+    ppoNumber: prof.ppo || '',
+    panNumber: prof.pan || ''
   };
 
   // Financial Calculations
-  const isCsdRateList = Boolean(product.basicPrice || product.priceToCustomer);
-  const subtotal = product.basicPrice || product.productPrice || 398500;
-  const discountVal = (product.csdDiscountAmount || 0) + (product.marketScheme || 0);
-  const csdBasic = product.csdBasicWithDiscount || (subtotal - discountVal);
-  const additionalCost = isCsdRateList ? (product.cgstAmount || 0) : Math.round(subtotal * 0.14);
-  const cess = isCsdRateList ? (product.sgstAmount || 0) : Math.round(subtotal * 0.17);
-  const incidentalCharges = isCsdRateList ? (product.csdProfitAmount || 0) : Math.round(subtotal * 0.005);
-  const tcsVal = product.tcsAmount || 0;
-  const netPrice = product.priceToCustomer || (csdBasic + additionalCost + cess + incidentalCharges + tcsVal);
+  const isCsdRateList = Boolean(product?.basicPrice || product?.priceToCustomer);
+  const subtotal = product?.basicPrice || product?.productPrice || 0;
+  const discountVal = (product?.csdDiscountAmount || 0) + (product?.marketScheme || 0);
+  const csdBasic = product?.csdBasicWithDiscount || (subtotal - discountVal);
+  const additionalCost = isCsdRateList ? (product?.cgstAmount || 0) : Math.round(subtotal * 0.14);
+  const cess = isCsdRateList ? (product?.sgstAmount || 0) : Math.round(subtotal * 0.17);
+  const incidentalCharges = isCsdRateList ? (product?.csdProfitAmount || 0) : Math.round(subtotal * 0.005);
+  const tcsVal = product?.tcsAmount || 0;
+  const netPrice = product?.priceToCustomer || (csdBasic + additionalCost + cess + incidentalCharges + tcsVal);
 
   // Form State: Yet to be filled section
   const [prevPurchase, setPrevPurchase] = useState('No');
@@ -131,9 +127,14 @@ export default function Checkout() {
   const [loanAmount, setLoanAmount] = useState('');
   const [loanSanctionFile, setLoanSanctionFile] = useState(null);
 
-  // Payment Mode (Fig. 15)
+  // Payment Details State
   const [paymentMode, setPaymentMode] = useState('Direct Bank Transfer'); // Direct Bank Transfer / Online Payment
+  const [utrNumber, setUtrNumber] = useState('');
+  const [bankName, setBankName] = useState('State Bank of India');
+  const [depositDate, setDepositDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [remarks, setRemarks] = useState('');
+  const [pendingDemand, setPendingDemand] = useState(null);
+  const [gatewayOrderId, setGatewayOrderId] = useState('');
 
   // Modals & Validation states
   const [formErrors, setFormErrors] = useState({});
@@ -141,14 +142,30 @@ export default function Checkout() {
   const [onlineModalOpen, setOnlineModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // If no product in state or session, show clean empty state
+  if (!product) {
+    return (
+      <div className="checkout-page-container text-center py-5">
+        <div className="checkout-card p-5 text-center">
+          <AlertCircle size={40} className="text-danger mx-auto mb-2" />
+          <h2>No Product Selected for Checkout</h2>
+          <p className="muted mb-4">Please select a product and procurement specification from the catalogue before proceeding.</p>
+          <Link to="/products" className="btn-primary-action inline-flex mx-auto">
+            Browse Catalogue
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   // Fig. 16, 17, 18: Price validation between Dealer Price and Net Price
   const enteredDealerPrice = Number(dealerPriceInput) || 0;
   const isPriceMatched = enteredDealerPrice === netPrice;
 
   // Matched dealer object for address display from live org API
   const dealerInfo = dealersList.find((d) => d.name === product.selectedDealer || d._id === product.dealerId) || dealersList[0] || {
-    name: product.selectedDealer || 'AAA VEHICLEADES PVT. LTD. MUNDKA',
-    address: 'DELHI ROHTAK ROAD NEAR HIRAN KUDNA MODE METRO PILLAR NO 616 DELHI 110041'
+    name: product.selectedDealer || 'Authorized Dealer',
+    address: 'CSD Authorized Dealer Address'
   };
 
   const matchedDepot = depotsList.find((d) => d.name === product.selectedDepot || d._id === product.depotId) || depotsList[0];
@@ -165,6 +182,11 @@ export default function Checkout() {
 
   const validateCheckoutForm = () => {
     const errs = {};
+
+    if (isPendingApproval) {
+      alert('Your account is pending approval. Demand generation is unavailable until approval.');
+      return false;
+    }
 
     if (prevPurchase === 'Yes' && !prevPurchaseDate) {
       errs.prevPurchaseDate = 'Date of last purchase of Ibid item is required.';
@@ -187,6 +209,13 @@ export default function Checkout() {
       errs.dealerPrice = 'Billing Dealer Price mentioned in Availability certificate is a required field.';
     } else if (enteredDealerPrice !== netPrice) {
       errs.dealerPrice = 'Dealer Price and Net Price to be Paid must be the same.';
+    }
+
+    // Direct Bank Transfer validation
+    if (paymentMode === 'Direct Bank Transfer') {
+      if (!utrNumber.trim()) {
+        errs.utrNumber = 'Bank UTR / Transaction Reference Number is required for Direct Bank Transfer.';
+      }
     }
 
     // Loan Validation
@@ -219,22 +248,10 @@ export default function Checkout() {
 
   const handleConfirmedDemand = async () => {
     setConfirmationModalOpen(false);
-
-    if (paymentMode === 'Online Payment') {
-      setOnlineModalOpen(true);
-      return;
-    }
-
-    // Direct Bank Transfer path
-    await finalizeDemandCreation('Direct Bank Transfer', 'On hold');
+    await executeDemandSubmission();
   };
 
-  const handleOnlinePaymentSuccess = async (paymentDetails) => {
-    setOnlineModalOpen(false);
-    await finalizeDemandCreation('Online Payment (Razorpay)', 'Processing', paymentDetails);
-  };
-
-  const finalizeDemandCreation = async (methodName, initialStatus, paymentDetails = null) => {
+  const executeDemandSubmission = async () => {
     setSubmitting(true);
     try {
       const uploadSingleFile = async (fileObj, docType) => {
@@ -303,7 +320,7 @@ export default function Checkout() {
           pinCode: pincode || '110010',
           mobile: userAccount.mobile || user?.mobile || '',
         },
-        paymentMethod: methodName || paymentMode || 'Direct Bank Transfer',
+        paymentMethod: paymentMode || 'Direct Bank Transfer',
         documents: uploadedDocs,
         loan: {
           isLoan: hasLoan === 'Yes',
@@ -317,34 +334,28 @@ export default function Checkout() {
       const result = await createDemandMutation(demandPayload).unwrap();
       const createdDemand = result?.data || result;
 
-      // Real payment creation and verification
-      if (methodName.includes('Online')) {
+      if (paymentMode === 'Online Payment') {
+        // Initiate real payment on backend
         const payRes = await createPaymentMutation({
           demandId: createdDemand._id,
-          amount: createdDemand.totalPrice || netPrice,
-          method: 'GATEWAY',
-          gateway: 'RAZORPAY',
         }).unwrap();
         const payData = payRes?.data || payRes;
-        await verifyPaymentMutation({
-          paymentId: payData._id,
-          demandId: createdDemand._id,
-          gatewayPaymentId: paymentDetails?.transactionId || 'pay_' + Date.now(),
-        }).unwrap();
-      } else {
-        const payRes = await createPaymentMutation({
-          demandId: createdDemand._id,
-          amount: createdDemand.totalPrice || netPrice,
-          method: 'DIRECT_TRANSFER',
-          utr: 'UTR' + Date.now(),
-          bankName: 'State Bank of India',
-        }).unwrap();
-        const payData = payRes?.data || payRes;
-        await verifyPaymentMutation({
-          paymentId: payData._id,
-          demandId: createdDemand._id,
-        }).unwrap();
+
+        setPendingDemand(createdDemand);
+        setGatewayOrderId(payData.gatewayOrderId || '');
+        setSubmitting(false);
+        setOnlineModalOpen(true);
+        return;
       }
+
+      // Direct Bank Transfer path: record transfer details strictly on server
+      await submitDirectTransferMutation({
+        demandId: createdDemand._id,
+        utrNumber: utrNumber.trim(),
+        bankName: bankName || 'State Bank of India',
+        depositDate: depositDate || new Date().toISOString(),
+        remarks: remarks || 'Direct bank transfer reference submitted at checkout',
+      }).unwrap();
 
       setSubmitting(false);
 
@@ -360,9 +371,9 @@ export default function Checkout() {
         productName: product.productName,
         dealerName: dealerInfo.name,
         dealerAddress: dealerInfo.address,
-        paymentMethod: methodName,
-        status: 'PAID',
-        paymentStatus: 'Verified',
+        paymentMethod: 'Direct Bank Transfer',
+        status: 'PAYMENT_PENDING',
+        paymentStatus: 'PENDING_VERIFICATION',
       };
 
       sessionStorage.setItem('csd_last_created_demand', JSON.stringify(finalDemandData));
@@ -370,6 +381,45 @@ export default function Checkout() {
     } catch (err) {
       setSubmitting(false);
       alert(err?.data?.message || err?.message || 'Failed to submit demand.');
+    }
+  };
+
+  const handleOnlinePaymentSuccess = async (paymentDetails) => {
+    setOnlineModalOpen(false);
+    setSubmitting(true);
+    try {
+      if (!pendingDemand?._id) throw new Error('Missing demand ID for payment verification');
+
+      await verifyPaymentMutation({
+        demandId: pendingDemand._id,
+        gatewayOrderId: paymentDetails.gatewayOrderId || gatewayOrderId,
+        gatewayPaymentId: paymentDetails.gatewayPaymentId,
+        gatewaySignature: paymentDetails.gatewaySignature,
+      }).unwrap();
+
+      const finalDemandData = {
+        ...pendingDemand,
+        id: pendingDemand.demandNo || pendingDemand._id,
+        demandNo: pendingDemand.demandNo || pendingDemand._id?.slice(-8).toUpperCase(),
+        csdPrice: pendingDemand.totalPrice || netPrice,
+        subtotal,
+        additionalCost,
+        cess,
+        incidentalCharges,
+        productName: product.productName,
+        dealerName: dealerInfo.name,
+        dealerAddress: dealerInfo.address,
+        paymentMethod: 'Online Payment (Razorpay)',
+        status: 'PAID',
+        paymentStatus: 'PAID',
+      };
+
+      sessionStorage.setItem('csd_last_created_demand', JSON.stringify(finalDemandData));
+      navigate('/checkout/success', { state: { demand: finalDemandData } });
+    } catch (err) {
+      alert(err?.data?.message || err?.message || 'Payment verification failed on server.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -989,6 +1039,62 @@ export default function Checkout() {
                   </div>
                 </div>
 
+                {/* Direct Bank Transfer Details (UTR, Bank Name, Deposit Date) */}
+                {paymentMode === 'Direct Bank Transfer' && (
+                  <div className="previous-purchase-date-box mb-3">
+                    <div className="csd-alert-banner info mb-3">
+                      <Landmark size={18} className="alert-banner-icon" />
+                      <div>
+                        <strong>Bank Transfer Particulars</strong>
+                        <p className="mb-0 text-xs">Beneficiaries must transfer funds to the CSD Public Fund Account and enter their transaction reference (UTR) below for depot verification.</p>
+                      </div>
+                    </div>
+                    <div className="checkout-form-row-2">
+                      <div className="csd-form-group">
+                        <label className="csd-form-label">
+                          Depositing Bank <span className="doc-upload-required-star">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="csd-form-input"
+                          value={bankName}
+                          onChange={(e) => setBankName(e.target.value)}
+                          placeholder="e.g. State Bank of India"
+                        />
+                      </div>
+                      <div className="csd-form-group">
+                        <label className="csd-form-label">
+                          Date of Transfer / Deposit <span className="doc-upload-required-star">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          className="csd-form-input"
+                          value={depositDate}
+                          onChange={(e) => setDepositDate(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="csd-form-group mt-2">
+                      <label className="csd-form-label">
+                        Bank UTR / Transaction Reference Number <span className="doc-upload-required-star">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        className={`csd-form-input ${formErrors.utrNumber ? 'has-error' : ''}`}
+                        value={utrNumber}
+                        onChange={(e) => setUtrNumber(e.target.value)}
+                        placeholder="Enter 16-22 character UTR / NEFT / RTGS Reference Number"
+                        required
+                      />
+                      {formErrors.utrNumber && (
+                        <span className="csd-form-error-text">
+                          <AlertCircle size={14} /> {formErrors.utrNumber}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Additional Remarks (Fig. 15) */}
                 <div className="csd-form-group">
                   <label className="csd-form-label">
@@ -1128,13 +1234,20 @@ export default function Checkout() {
               {/* Submit CTA */}
               <button
                 type="submit"
-                disabled={!isPriceMatched || submitting}
-                className="btn-submit-demand"
+                disabled={!isPriceMatched || submitting || isPendingApproval}
+                className={`btn-submit-demand ${isPendingApproval ? 'btn-disabled-login' : ''}`}
+                title={isPendingApproval ? 'Your account is pending approval. Demand generation is unavailable until approval.' : undefined}
               >
-                {submitting ? 'Processing Demand...' : 'Submit Demand'}
+                {submitting ? 'Processing Demand...' : isPendingApproval ? 'ACCOUNT APPROVAL PENDING' : 'Submit Demand'}
               </button>
 
-              {!isPriceMatched && (
+              {isPendingApproval && (
+                <p className="csd-form-error-text error-text-center mt-2">
+                  ⚠ Your account is pending approval. Demand generation is unavailable until approval.
+                </p>
+              )}
+
+              {!isPriceMatched && !isPendingApproval && (
                 <p className="csd-form-error-text error-text-center">
                   ⚠ Please match Dealer Price with Net Price to proceed.
                 </p>
@@ -1153,7 +1266,7 @@ export default function Checkout() {
         </div>
       </form>
 
-      {/* Confirmation & Payment Modals */}
+      {/* Confirmation Modal */}
       <DemandConfirmationModal
         isOpen={confirmationModalOpen}
         onClose={() => setConfirmationModalOpen(false)}
@@ -1170,6 +1283,17 @@ export default function Checkout() {
           paymentMethod: paymentMode
         }}
         loading={submitting}
+      />
+
+      {/* Real Online Payment Gateway Modal */}
+      <OnlinePaymentModal
+        isOpen={onlineModalOpen}
+        onClose={() => setOnlineModalOpen(false)}
+        onSuccess={handleOnlinePaymentSuccess}
+        amount={pendingDemand?.totalAmount || netPrice}
+        demandNo={pendingDemand?.demandNo || ''}
+        productName={product?.productName || ''}
+        gatewayOrderId={gatewayOrderId}
       />
     </div>
   );

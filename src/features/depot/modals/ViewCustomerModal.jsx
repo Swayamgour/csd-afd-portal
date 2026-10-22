@@ -1,8 +1,31 @@
-import React from 'react';
-import { X, User, Phone, Mail, MapPin, Award, CreditCard } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, User, Phone, Mail, MapPin, Award, CreditCard, FileText, Eye, FileCheck } from 'lucide-react';
+import DocumentPreviewModal from '../../../components/common/DocumentPreviewModal.jsx';
+
+const DOCUMENT_LABELS = {
+  CANTEEN_CARD: 'CSD Smart Card / Canteen Card',
+  AVAILABILITY_CERTIFICATE: 'Dealer Availability Certificate',
+  PAN_CARD: 'PAN Card',
+  PPO_DISCHARGE_BOOK: 'PPO / Discharge Book',
+  PENSION_SLIP: 'Latest Pension Slip / Pay Slip',
+  PAYMENT_RECEIPT: 'CSD Payment Receipt',
+  SANCTION_LETTER: 'Bank Loan Sanction Letter',
+  OTHER: 'Supporting Identity Document'
+};
+
+const getFileUrl = (url) => {
+  if (!url) return '#';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const backendBase = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/v1\/?$/, '') || 'http://localhost:5000';
+  return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
+};
 
 export default function ViewCustomerModal({ isOpen, onClose, demand }) {
+  const [previewDoc, setPreviewDoc] = useState(null);
+
   if (!isOpen || !demand) return null;
+
+  const docs = Array.isArray(demand.documents) ? demand.documents : [];
 
   return (
     <div className="csd-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
@@ -10,7 +33,7 @@ export default function ViewCustomerModal({ isOpen, onClose, demand }) {
         <div className="csd-modal-header between">
           <div className="row align-center gap-1">
             <User size={18} className="text-brand" />
-            <h3 className="csd-modal-title">Customer Details · {demand.username || demand.beneficiaryName}</h3>
+            <h3 className="csd-modal-title">Customer Details · {demand.username || demand.beneficiaryName || demand.userId?.name}</h3>
           </div>
           <button type="button" className="csd-modal-close-btn" onClick={onClose} aria-label="Close modal">
             <X size={18} />
@@ -69,6 +92,75 @@ export default function ViewCustomerModal({ isOpen, onClose, demand }) {
               </tr>
             </tbody>
           </table>
+
+          {/* Attached Customer Verification Documents */}
+          {docs.length > 0 && (
+            <div className="mt-2 pt-2 border-t">
+              <div className="between align-center mb-1">
+                <h5 className="font-bold text-xs uppercase text-slate-700 m-0 row align-center gap-05">
+                  <FileCheck size={14} className="text-brand" />
+                  <span>Attached Documents ({docs.length})</span>
+                </h5>
+                <span className="micro muted">Submitted at Checkout</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {docs.map((doc, idx) => (
+                  <div
+                    key={doc._id || idx}
+                    className="between align-center p-2 rounded border"
+                    style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}
+                  >
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <span
+                        className="badge-pill badge-primary badge-sm text-[10px] font-bold block mb-05"
+                        style={{ width: 'fit-content', padding: '1px 5px', fontSize: '9px' }}
+                      >
+                        {DOCUMENT_LABELS[doc.type] || doc.type}
+                      </span>
+                      <span
+                        className="font-medium text-xs text-ink block"
+                        style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        title={doc.name}
+                      >
+                        {doc.name}
+                      </span>
+                    </div>
+                    {doc.url ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPreviewDoc({
+                            ...doc,
+                            label: DOCUMENT_LABELS[doc.type] || doc.type
+                          })
+                        }
+                        className="btn btn-sm btn-outline font-semibold"
+                        style={{
+                          cursor: 'pointer',
+                          padding: '3px 8px',
+                          fontSize: '11px',
+                          borderRadius: '4px',
+                          border: '1px solid #1e4fd8',
+                          color: '#1e4fd8',
+                          background: '#fff',
+                          flexShrink: 0,
+                          marginLeft: '8px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Eye size={11} /> View
+                      </button>
+                    ) : (
+                      <span className="micro muted">File Pending</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="csd-modal-footer justify-end">
@@ -77,6 +169,15 @@ export default function ViewCustomerModal({ isOpen, onClose, demand }) {
           </button>
         </div>
       </div>
+
+      {/* In-Portal Document Previewer Modal */}
+      {previewDoc && (
+        <DocumentPreviewModal
+          isOpen={!!previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          doc={previewDoc}
+        />
+      )}
     </div>
   );
 }

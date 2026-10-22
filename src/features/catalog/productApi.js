@@ -86,17 +86,32 @@ export const productApi = api.injectEndpoints({
     }),
 
     getProductOptions: builder.query({
-      query: (id) => `/products/${id}/options`,
+      query: (args) => {
+        const id = typeof args === 'string' ? args : args?.id;
+        const params = {};
+        if (typeof args === 'object' && args !== null) {
+          if (args.priceZoneId) params.priceZoneId = args.priceZoneId;
+          if (args.depotId) params.depotId = args.depotId;
+        }
+        return {
+          url: `/products/${id}/options`,
+          params,
+        };
+      },
       transformResponse: (response) => response?.data || response,
-      providesTags: (_result, _error, id) => [
-        { type: 'Product', id },
-        'Product',
-        'Dealer',
-        'Depot',
-        'Urc',
-        'PriceZone',
-        'Oem',
-      ],
+      providesTags: (_result, _error, args) => {
+        const id = typeof args === 'string' ? args : args?.id;
+        return [
+          { type: 'Product', id },
+          'Product',
+          'Dealer',
+          'Depot',
+          'Urc',
+          'PriceZone',
+          'Oem',
+          'DealerProduct',
+        ];
+      },
     }),
 
     createProduct: builder.mutation({

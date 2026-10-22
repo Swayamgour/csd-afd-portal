@@ -54,10 +54,10 @@ export function BeneficiaryDemands() {
     },
     {
       header: 'Total Price',
-      accessor: 'totalPrice',
+      accessor: 'totalAmount',
       render: (row) => (
         <span className="font-bold text-slate-900">
-          ₹ {(row.totalPrice || row.netPayable || 0).toLocaleString('en-IN')}
+          ₹ {(row.totalAmount ?? row.totalPrice ?? 0).toLocaleString('en-IN')}
         </span>
       ),
     },
@@ -131,9 +131,13 @@ export function BeneficiaryDemands() {
               <option value="All">All Statuses</option>
               <option value="CREATED">Created</option>
               <option value="PAYMENT_PENDING">Payment Pending</option>
-              <option value="PAID">Paid / Processing</option>
+              <option value="PAID">Paid</option>
+              <option value="DEALER_VERIFICATION">Dealer Verification</option>
+              <option value="DEPOT_PROCESSING">Depot Processing</option>
+              <option value="APPROVED">Approved</option>
               <option value="SUPPLY_ORDER_ISSUED">Supply Order Issued</option>
-              <option value="DELIVERED">Delivered</option>
+              <option value="PROCESSING">Processing</option>
+              <option value="COMPLETED">Completed</option>
               <option value="CANCELLED">Cancelled</option>
               <option value="REJECTED">Rejected</option>
             </select>

@@ -4,6 +4,7 @@ import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
+import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useGetProductsQuery, useGetCategoriesQuery } from '../catalog/productApi.js';
 
@@ -40,7 +41,7 @@ export default function DepotProducts() {
             <img
               src={img}
               alt=""
-              className="w-12 h-9 object-cover rounded border border-slate-200 bg-slate-50 flex-shrink-0"
+              className="product-table-thumb"
               onError={(e) => {
                 e.target.src = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=200';
               }}
@@ -126,36 +127,35 @@ export default function DepotProducts() {
           { label: 'Product Catalogue' },
         ]}
         actions={
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="sm"
+            icon={RefreshCw}
+            loading={isFetching}
             onClick={() => refetch()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-50 transition"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
-            <span>Sync Catalogue</span>
-          </button>
+            Sync Catalogue
+          </Button>
         }
       />
 
       <Card>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 border-b border-slate-100 bg-slate-50/50">
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <div className="catalogue-filter-bar">
+          <div className="catalogue-search-wrapper">
+            <Search className="search-icon" />
             <input
               type="text"
               placeholder="Search depot catalogue by model, SKU, or index..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <Layers className="w-3.5 h-3.5 text-slate-400" />
+          <div className="catalogue-category-filter">
+            <Layers className="filter-icon" />
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand"
             >
               <option value="">All Categories</option>
               {categories.map((c) => (

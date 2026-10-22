@@ -5,6 +5,7 @@ import Card from '../../components/common/Card.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
+import Button from '../../components/common/Button.jsx';
 import { useGetCategoriesQuery, useGetEligibilityRulesQuery } from '../catalog/productApi.js';
 
 export default function CsdCategories() {
@@ -172,18 +173,14 @@ export default function CsdCategories() {
           { label: 'Categories & Entitlements' },
         ]}
         actions={
-          <button
-            type="button"
-            onClick={handleSyncAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-50 transition"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
+          <Button variant="outline" size="sm" onClick={handleSyncAll}>
+            <RefreshCw size={14} className="mr-xs" />
             <span>Sync Rules & Categories</span>
-          </button>
+          </Button>
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="kpi-grid">
         {kpis.map((kpi, idx) => (
           <StatCard
             key={idx}
@@ -194,30 +191,22 @@ export default function CsdCategories() {
         ))}
       </div>
 
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      <div className="portal-tabs-nav">
         <button
           type="button"
           onClick={() => setActiveTab('categories')}
-          className={`pb-2.5 px-4 text-xs font-semibold border-b-2 transition flex items-center gap-1.5 ${
-            activeTab === 'categories'
-              ? 'border-brand text-brand'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
+          className={`portal-tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
         >
-          <Layers className="w-4 h-4" />
+          <Layers size={16} />
           <span>Product Categories ({categories.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('entitlements')}
-          className={`pb-2.5 px-4 text-xs font-semibold border-b-2 transition flex items-center gap-1.5 ${
-            activeTab === 'entitlements'
-              ? 'border-brand text-brand'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
+          className={`portal-tab-btn ${activeTab === 'entitlements' ? 'active' : ''}`}
         >
-          <ShieldCheck className="w-4 h-4" />
+          <ShieldCheck size={16} />
           <span>Statutory Entitlement Rules ({eligibilityRules.length})</span>
         </button>
       </div>

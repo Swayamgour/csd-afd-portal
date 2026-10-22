@@ -381,16 +381,13 @@ export default function CsdProducts() {
           { label: 'Product Catalogue' },
         ]}
         actions={
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => refetch()}
-              className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition"
-              title="Refresh Products"
-            >
-              <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-brand' : ''}`} />
-            </button>
-            <Button variant="primary" icon={PlusCircle} onClick={openCreateModal}>
-              Catalogue New Product
+          <div className="csd-toolbar-actions">
+            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
+              <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+              {isFetching ? 'Syncing...' : 'Sync Products'}
+            </Button>
+            <Button variant="primary" size="sm" onClick={openCreateModal}>
+              <PlusCircle size={14} className="mr-xs" /> Catalogue New Product
             </Button>
           </div>
         }
@@ -404,7 +401,7 @@ export default function CsdProducts() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="kpi-grid">
         {kpiStats.map((kpi, idx) => (
           <StatCard
             key={idx}

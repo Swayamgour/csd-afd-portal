@@ -20,37 +20,43 @@ export default function CheckoutSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [demand, setDemand] = useState(() => {
+  const [demand] = useState(() => {
     if (location.state?.demand) return location.state.demand;
     try {
       const saved = sessionStorage.getItem('csd_last_created_demand');
       if (saved) return JSON.parse(saved);
     } catch (e) {
-      // fallback
+      // ignore parse error
     }
-    return {
-      id: '#30-76510',
-      productName: 'MARUTI VITARA BREZZA VXI 1.5L 5MT (BS-VI)',
-      sku: '64224-53',
-      color: 'GRANITE GREY',
-      totalAmount: 721826,
-      csdPrice: 721826,
-      dealer: 'AAA VEHICLEADES PVT. LTD. MUNDKA (PILLAR)',
-      dealerName: 'AAA VEHICLEADES PVT. LTD. MUNDKA (PILLAR)',
-      depot: 'DELHI',
-      urc: '7 WING AF',
-      paymentMethod: 'Direct bank transfer',
-      status: 'On hold'
-    };
+    return null;
   });
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const cleanDemandId = demand.id?.replace('#', '') || '30-76510';
-  const displayAmount = demand.totalAmount || demand.csdPrice || 721826;
-  const isDirectTransfer = demand.paymentMethod?.toLowerCase().includes('bank') || demand.paymentMethod?.toLowerCase().includes('direct');
+  if (!demand) {
+    return (
+      <div className="checkout-success-container text-center py-5">
+        <div className="success-card p-5">
+          <h2>No Demand Found</h2>
+          <p className="muted mb-4">No recent demand record found in session. Please check your Demands dashboard.</p>
+          <div className="row justify-center gap-2">
+            <Link to="/demands" className="btn-primary-action">
+              <FileText size={16} /> Go to My Demands
+            </Link>
+            <Link to="/products" className="btn-secondary-action">
+              Browse Products
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const cleanDemandId = demand.demandNo || demand.id || demand._id;
+  const displayAmount = demand.totalAmount || demand.totalPrice || demand.csdPrice || 0;
+  const isDirectTransfer = (demand.paymentMethod || '').toLowerCase().includes('bank') || (demand.paymentMethod || '').toLowerCase().includes('direct');
 
   return (
     <div className="checkout-success-container">
@@ -78,7 +84,7 @@ export default function CheckoutSuccess() {
             Official Demand Number
           </span>
           <span className="success-demand-box-value">
-            {demand.id}
+            {cleanDemandId}
           </span>
         </div>
 
@@ -87,9 +93,9 @@ export default function CheckoutSuccess() {
           <div className="csd-alert-banner warning alert-banner-max-w">
             <AlertTriangle size={20} className="alert-banner-icon" />
             <div>
-              <strong>Action Required: Bank Payment Upload</strong>
+              <strong>Action Required: Bank Payment Verification</strong>
               <br />
-              Since you selected <strong>Direct Bank Transfer</strong>, your demand status is currently <strong>On hold</strong>. Please deposit the net amount into the Canteen Stores Department Public Fund account and upload the payment receipt under the <strong>Demands</strong> tab to proceed to depot sanction.
+              Since you selected <strong>Direct Bank Transfer</strong>, your demand status is currently <strong>{demand.status || 'PAYMENT_PENDING'}</strong>. Your payment reference (UTR) has been recorded and is pending official verification by the Depot Finance Officer.
             </div>
           </div>
         )}
@@ -102,8 +108,8 @@ export default function CheckoutSuccess() {
             <FileText size={18} color="var(--brand)" />
             <span>Demand Particulars</span>
           </h2>
-          <span className={`checkout-spec-pill ${demand.status === 'Processing' ? 'status-processing' : 'status-onhold'}`}>
-            Status: {demand.status || (isDirectTransfer ? 'On hold' : 'Processing')}
+          <span className="checkout-spec-pill">
+            Status: {demand.status || (isDirectTransfer ? 'PAYMENT_PENDING' : 'CREATED')}
           </span>
         </div>
 
@@ -113,12 +119,12 @@ export default function CheckoutSuccess() {
               Product / Vehicle
             </div>
             <div className="beneficiary-field-value">
-              {demand.productName}
+              {demand.productName || demand.productSnapshot?.name}
             </div>
-            {demand.sku && (
+            {(demand.sku || demand.productSnapshot?.sku) && (
               <div className="csd-form-helper-text">
-                SKU: <strong>{demand.sku}</strong>
-                {demand.color && ` • Color: ${demand.color}`}
+                SKU: <strong>{demand.sku || demand.productSnapshot?.sku}</strong>
+                {(demand.color || demand.selectedColor) && ` • Color: ${demand.color || demand.selectedColor}`}
               </div>
             )}
           </div>
@@ -131,7 +137,7 @@ export default function CheckoutSuccess() {
               ₹ {displayAmount?.toLocaleString('en-IN')}
             </div>
             <div className="csd-form-helper-text">
-              Inclusive of 14% Addl Cost, 17% Cess & 0.5% Incidental
+              Authoritative Net CSD Concessional Amount
             </div>
           </div>
 
@@ -141,7 +147,7 @@ export default function CheckoutSuccess() {
             </div>
             <div className="beneficiary-field-value flex-align-center-gap-xs">
               <Building size={15} color="var(--color-slate-400)" />
-              <span>{demand.dealer || demand.dealerName || 'AAA VEHICLEADES PVT. LTD. MUNDKA (PILLAR)'}</span>
+              <span>{demand.dealerName || demand.dealer?.name || demand.dealer || 'Authorized Dealer'}</span>
             </div>
           </div>
 
@@ -151,7 +157,7 @@ export default function CheckoutSuccess() {
             </div>
             <div className="beneficiary-field-value flex-align-center-gap-xs">
               <Store size={15} color="var(--color-slate-400)" />
-              <span>Depot: {demand.depot || 'DELHI'} • URC: {demand.urc || '7 WING AF'}</span>
+              <span>Depot: {demand.depotName || demand.depot?.name || demand.depot || 'Authorized Depot'} • URC: {demand.urcName || demand.urc?.name || demand.urc || 'Authorized URC'}</span>
             </div>
           </div>
 
@@ -161,7 +167,7 @@ export default function CheckoutSuccess() {
             </div>
             <div className="beneficiary-field-value flex-align-center-gap-xs">
               <CreditCard size={15} color="var(--color-slate-400)" />
-              <span>{demand.paymentMethod || 'Direct Bank Transfer'}</span>
+              <span>{demand.paymentMethod || (isDirectTransfer ? 'Direct Bank Transfer' : 'Online Payment')}</span>
             </div>
           </div>
 
@@ -170,7 +176,7 @@ export default function CheckoutSuccess() {
               Submission Date
             </div>
             <div className="beneficiary-field-value">
-              {demand.displayDate || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              {demand.createdAt ? new Date(demand.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </div>
           </div>
         </div>
@@ -179,7 +185,7 @@ export default function CheckoutSuccess() {
       {/* Action Buttons matching Section 15 */}
       <div className="success-actions-row">
         <Link
-          to={`/demands/${encodeURIComponent(demand.id)}`}
+          to={`/demands/${encodeURIComponent(cleanDemandId)}`}
           className="btn-primary-action"
         >
           <span>View Demand</span>

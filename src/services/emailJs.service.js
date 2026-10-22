@@ -147,43 +147,10 @@ export const sendOtpEmail = async ({ email, name = 'Beneficiary', otp, expiryMin
 
   return {
     success: true,
-    isDevMock: true,
-    message: `Verification OTP generated for ${email}. (Development OTP: ${otp})`,
-    otp
+    message: `Verification OTP dispatched to ${email}.`,
   };
 };
 
-/**
- * Validates entered OTP against generated state and expiry timestamp
- */
-export const verifyOtpCode = ({ enteredOtp, expectedOtp, expiresAt }) => {
-  if (!enteredOtp || !enteredOtp.trim()) {
-    return { valid: false, error: 'Please enter the 6-digit OTP code.' };
-  }
-
-  const cleanEntered = enteredOtp.trim();
-
-  if (cleanEntered.length !== 6 || !/^\d{6}$/.test(cleanEntered)) {
-    return { valid: false, error: 'OTP must be exactly 6 digits.' };
-  }
-
-  if (Date.now() > expiresAt) {
-    return {
-      valid: false,
-      error: 'OTP has expired (5-minute validity window elapsed). Please request a new OTP.',
-      expired: true
-    };
-  }
-
-  if (cleanEntered !== expectedOtp) {
-    return { valid: false, error: 'Incorrect OTP entered. Please verify and try again.' };
-  }
-
-  return { valid: true };
-};
-
 export default {
-  generateOtp,
   sendOtpEmail,
-  verifyOtpCode
 };

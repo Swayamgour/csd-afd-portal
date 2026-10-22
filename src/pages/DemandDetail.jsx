@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -18,10 +18,15 @@ import {
   Phone,
   Mail,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Check,
+  XCircle,
+  Landmark,
+  BadgeCheck
 } from 'lucide-react';
 import { useGetDemandByIdQuery } from '../features/demand/demandApi.js';
 import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal.jsx';
+import DocumentPreviewModal from '../components/common/DocumentPreviewModal.jsx';
 
 export default function DemandDetail() {
   const { id } = useParams();
@@ -39,6 +44,7 @@ export default function DemandDetail() {
 
   // Payment upload modal
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const handlePaymentSubmitSuccess = async () => {
     setPaymentModalOpen(false);
@@ -59,7 +65,7 @@ export default function DemandDetail() {
       <div className="portal-card-state-error">
         <AlertCircle size={48} className="portal-error-icon" />
         <h2 className="portal-error-title">Demand Not Found</h2>
-        <p className="portal-error-desc">The requested demand #{id} could not be located in the CSD database.</p>
+        <p className="portal-error-desc">The requested demand could not be located in the CSD database.</p>
         <Link to="/demands" className="btn btn-primary portal-btn-inline">
           Back to Demands
         </Link>
@@ -67,32 +73,43 @@ export default function DemandDetail() {
     );
   }
 
-  const netAmount = demand.totalAmount || demand.csdPrice || 721826;
-  const subtotal = demand.subtotal || Math.round(netAmount / 1.315);
-  const additionalCost = demand.additionalCost || Math.round(subtotal * 0.14);
-  const cess = demand.cess || Math.round(subtotal * 0.17);
-  const incidental = demand.incidentalCharges || Math.round(subtotal * 0.005);
+  const demandId = demand.demandNo || demand._id;
+  const beneficiary = demand.beneficiaryId || {};
+  const dealer = demand.dealerId || {};
+  const depot = demand.depotId || {};
+  const urc = demand.urcId || {};
+  const product = demand.productId || {};
+  const snapshot = demand.productSnapshot || {};
 
-  // Status mapping for timeline
-  const statusesList = [
-    { key: 'submitted', label: 'Demand Submitted', sub: 'Online submission recorded' },
-    { key: 'payment', label: 'Payment Pending', sub: 'Beneficiary payment clearance' },
-    { key: 'processing', label: 'Processing', sub: 'Pending on Regional Depot' },
-    { key: 'supply_order', label: 'Supply Order Issued', sub: 'Pending with local URC' },
-    { key: 'delivered', label: 'Delivery Completed', sub: 'Product delivered by dealer' }
+  const netAmount = demand.totalAmount || demand.unitPrice || 0;
+  const paymentsList = demand.payments || [];
+
+  // Canonical lifecycle steps
+  const canonicalTimeline = [
+    { key: 'CREATED', label: 'Demand Created', sub: 'Beneficiary demand registered' },
+    { key: 'PAYMENT_PENDING', label: 'Payment Pending', sub: 'Awaiting payment verification' },
+    { key: 'PAID', label: 'Payment Verified', sub: 'Funds confirmed in CSD Fund' },
+    { key: 'DEALER_VERIFICATION', label: 'Dealer Verification', sub: 'Chassis & vehicle allocation' },
+    { key: 'DEPOT_PROCESSING', label: 'Depot Processing', sub: 'Regional Depot officer review' },
+    { key: 'APPROVED', label: 'Approved', sub: 'Supply Order sanctioned' },
+    { key: 'COMPLETED', label: 'Delivered', sub: 'Vehicle delivered to beneficiary' },
   ];
 
-  const currentStatusLower = (demand.status || '').toLowerCase();
-  let activeStepIndex = 0;
-  if (currentStatusLower === 'on hold' || currentStatusLower === 'payment pending') {
-    activeStepIndex = 1;
-  } else if (currentStatusLower === 'processing' || currentStatusLower === 'depot sanctioned') {
-    activeStepIndex = 2;
-  } else if (currentStatusLower === 'supply order issued' || currentStatusLower === 'supply_order_issued') {
-    activeStepIndex = 3;
-  } else if (currentStatusLower === 'delivery completed' || currentStatusLower === 'delivered') {
-    activeStepIndex = 4;
-  }
+  const statusOrder = [
+    'CREATED',
+    'PAYMENT_PENDING',
+    'PAID',
+    'DEALER_VERIFICATION',
+    'DEPOT_PROCESSING',
+    'APPROVED',
+    'SUPPLY_ORDER_ISSUED',
+    'PROCESSING',
+    'COMPLETED'
+  ];
+
+  const currentStatus = (demand.status || 'CREATED').toUpperCase();
+  const currentStepIndex = Math.max(0, statusOrder.indexOf(currentStatus));
+  const isTerminated = currentStatus === 'CANCELLED' || currentStatus === 'REJECTED' || currentStatus === 'EXPIRED';
 
   return (
     <div className="demand-detail-container">
@@ -103,7 +120,7 @@ export default function DemandDetail() {
           <li><ChevronRight size={13} /></li>
           <li><Link to="/demands" className="checkout-breadcrumb-link">Demands</Link></li>
           <li><ChevronRight size={13} /></li>
-          <li><span aria-current="page" className="checkout-breadcrumb-active">{demand.id}</span></li>
+          <li><span aria-current="page" className="checkout-breadcrumb-active">{demandId}</span></li>
         </ol>
       </nav>
 
@@ -115,25 +132,31 @@ export default function DemandDetail() {
               <ArrowLeft size={18} />
             </Link>
             <h1 className="checkout-page-heading m-0">
-              Demand {demand.id}
+              Demand #{demandId}
             </h1>
-            <span className={`checkout-spec-pill ${currentStatusLower === 'processing' ? 'status-processing' : 'status-onhold'}`}>
-              {demand.status}
+            <span className={`checkout-spec-pill ${
+              currentStatus === 'APPROVED' || currentStatus === 'COMPLETED' || currentStatus === 'PAID'
+                ? 'badge-verified-pill'
+                : isTerminated
+                ? 'status-onhold text-danger'
+                : 'status-processing'
+            }`}>
+              {currentStatus}
             </span>
           </div>
           <div className="csd-form-helper-text mt-xs">
-            Date of Booking: <strong>{demand.displayDate || (demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : 'Dec 7, 2020')}</strong> • Username: <strong>{demand.username || demand.beneficiaryName || 'DEMO'}</strong>
+            Date of Booking: <strong>{new Date(demand.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</strong> • Beneficiary: <strong>{beneficiary.fullName || beneficiary.name || 'Verified Beneficiary'}</strong>
           </div>
         </div>
 
         <div className="portal-flex-wrap-gap-xs">
-          {demand.status?.toLowerCase() === 'on hold' && (
+          {demand.status === 'PAYMENT_PENDING' && (
             <button
               onClick={() => setPaymentModalOpen(true)}
               className="btn-action-upload-details flex-align-center-gap-xs"
             >
               <CreditCard size={16} />
-              Upload Payment Details
+              Update Bank Transfer UTR
             </button>
           )}
 
@@ -147,17 +170,28 @@ export default function DemandDetail() {
         </div>
       </div>
 
-      {/* 8. Demand Status Timeline (Section 17) */}
-      <div className="checkout-card">
+      {/* Termination Notice if Cancelled / Rejected */}
+      {isTerminated && (
+        <div className="csd-alert-banner danger mb-4">
+          <XCircle size={20} className="alert-banner-icon" />
+          <div>
+            <strong>Demand {currentStatus}</strong>
+            <p className="mb-0 text-xs">This demand cannot proceed further. Reason: {demand.remarks || 'Terminated per CSD administrative rules.'}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Demand Status Timeline */}
+      <div className="checkout-card mb-4">
         <h2 className="checkout-card-title mb-md">
           <Clock size={18} color="var(--brand)" />
           <span>Demand Status Timeline</span>
         </h2>
 
         <div className="demand-timeline-grid">
-          {statusesList.map((st, idx) => {
-            const isCompleted = idx < activeStepIndex;
-            const isCurrent = idx === activeStepIndex;
+          {canonicalTimeline.map((st, idx) => {
+            const isCompleted = !isTerminated && idx < currentStepIndex;
+            const isCurrent = !isTerminated && (st.key === currentStatus || (idx === currentStepIndex));
 
             return (
               <div
@@ -183,7 +217,7 @@ export default function DemandDetail() {
         </div>
       </div>
 
-      {/* Grid of Sections (Section 17 Requirements) */}
+      {/* Grid of Canonical Sections */}
       <div className="checkout-form-row-2">
 
         {/* 1. Product Information */}
@@ -194,24 +228,26 @@ export default function DemandDetail() {
           </h3>
           <div className="beneficiary-read-only-grid">
             <div className="beneficiary-field-box beneficiary-field-full">
-              <div className="beneficiary-field-label">Vehicle / Item</div>
-              <div className="beneficiary-field-value">{demand.productName}</div>
+              <div className="beneficiary-field-label">Vehicle / Item Name</div>
+              <div className="beneficiary-field-value">{product.name || snapshot.name || 'CSD AFD Product'}</div>
             </div>
             <div className="beneficiary-field-box">
-              <div className="beneficiary-field-label">SKU</div>
-              <div className="beneficiary-field-value">{demand.sku || '64224-53'}</div>
+              <div className="beneficiary-field-label">SKU / Index No</div>
+              <div className="beneficiary-field-value">{product.sku || snapshot.sku || 'N/A'}</div>
             </div>
             <div className="beneficiary-field-box">
               <div className="beneficiary-field-label">Color</div>
-              <div className="beneficiary-field-value">{demand.color || 'GRANITE GREY'}</div>
+              <div className="beneficiary-field-value">{demand.selectedColor || 'Standard'}</div>
             </div>
             <div className="beneficiary-field-box">
-              <div className="beneficiary-field-label">Category</div>
-              <div className="beneficiary-field-value">{demand.category || '4 Wheelers'}</div>
+              <div className="beneficiary-field-label">Quantity</div>
+              <div className="beneficiary-field-value">{demand.quantity || 1} Unit</div>
             </div>
-            <div className="beneficiary-field-box beneficiary-field-full">
-              <div className="beneficiary-field-label">Price Zone</div>
-              <div className="beneficiary-field-value">{demand.priceZone || 'DELHI NCR (DELHI GREATER NOIDA FARIDABAD GURGAON)'}</div>
+            <div className="beneficiary-field-box">
+              <div className="beneficiary-field-label">Chassis / Engine Allocation</div>
+              <div className="beneficiary-field-value">
+                {demand.dealerVerification?.chassisNo ? `${demand.dealerVerification.chassisNo} / ${demand.dealerVerification?.engineNo || ''}` : 'Pending Dealer Allocation'}
+              </div>
             </div>
           </div>
         </div>
@@ -224,31 +260,29 @@ export default function DemandDetail() {
           </h3>
           <div className="beneficiary-read-only-grid">
             <div className="beneficiary-field-box beneficiary-field-full">
-              <div className="beneficiary-field-label">Beneficiary Name</div>
-              <div className="beneficiary-field-value">{demand.beneficiaryName || 'Subedar Major Rajesh Kumar'}</div>
+              <div className="beneficiary-field-label">Beneficiary Full Name</div>
+              <div className="beneficiary-field-value">{beneficiary.fullName || beneficiary.name || 'CSD Beneficiary'}</div>
             </div>
             <div className="beneficiary-field-box">
-              <div className="beneficiary-field-label">Username / Service No</div>
-              <div className="beneficiary-field-value">{demand.username || 'JC-765432X'}</div>
+              <div className="beneficiary-field-label">Service Number</div>
+              <div className="beneficiary-field-value">{beneficiary.serviceNumber || 'N/A'}</div>
             </div>
             <div className="beneficiary-field-box">
-              <div className="beneficiary-field-label">Grocery Card No</div>
-              <div className="beneficiary-field-value">abcd123456789000000</div>
+              <div className="beneficiary-field-label">Rank / Designation</div>
+              <div className="beneficiary-field-value">{beneficiary.rank || 'N/A'}</div>
             </div>
             <div className="beneficiary-field-box">
-              <div className="beneficiary-field-label">Entitlement</div>
-              <div className="beneficiary-field-value">Officers (Pay Level 10-18)</div>
+              <div className="beneficiary-field-label">Pay Level</div>
+              <div className="beneficiary-field-value">{beneficiary.payLevel || 'Standard'}</div>
             </div>
             <div className="beneficiary-field-box">
-              <div className="beneficiary-field-label">PAN Number</div>
-              <div className="beneficiary-field-value">BLBPPT151N</div>
+              <div className="beneficiary-field-label">Entitlement Category</div>
+              <div className="beneficiary-field-value">{beneficiary.entitlement || beneficiary.category || 'AFD Entitled'}</div>
             </div>
-            {demand.registrationAddress && (
-              <div className="beneficiary-field-box beneficiary-field-full">
-                <div className="beneficiary-field-label">Registration Address</div>
-                <div className="beneficiary-field-value">{demand.registrationAddress}</div>
-              </div>
-            )}
+            <div className="beneficiary-field-box beneficiary-field-full">
+              <div className="beneficiary-field-label">Delivery & Registration Address</div>
+              <div className="beneficiary-field-value">{demand.deliveryAddress?.address || 'CSD Registered Address'} ({demand.deliveryAddress?.state || ''} - {demand.deliveryAddress?.pinCode || ''})</div>
+            </div>
           </div>
         </div>
 
@@ -256,165 +290,221 @@ export default function DemandDetail() {
         <div className="demand-detail-section">
           <h3 className="demand-detail-section-title">
             <Building size={17} color="#1e4fd8" />
-            <span>3. Dealer Information</span>
+            <span>3. Authorized Dealer Information</span>
           </h3>
           <div className="beneficiary-read-only-grid">
             <div className="beneficiary-field-box beneficiary-field-full">
               <div className="beneficiary-field-label">Dealer Name</div>
-              <div className="beneficiary-field-value">{demand.dealer || demand.dealerName || 'AAA VEHICLEADES PVT. LTD. MUNDKA (PILLAR)'}</div>
+              <div className="beneficiary-field-value">{dealer.name || 'Authorized CSD Dealership'}</div>
             </div>
             <div className="beneficiary-field-box">
               <div className="beneficiary-field-label">Dealer Code</div>
-              <div className="beneficiary-field-value">{demand.dealerCode || '1802'}</div>
+              <div className="beneficiary-field-value">{dealer.code || 'N/A'}</div>
+            </div>
+            <div className="beneficiary-field-box">
+              <div className="beneficiary-field-label">Location (City / State)</div>
+              <div className="beneficiary-field-value">{dealer.city || ''} {dealer.state ? `(${dealer.state})` : ''}</div>
             </div>
             <div className="beneficiary-field-box beneficiary-field-full">
-              <div className="beneficiary-field-label">Dealer Address</div>
-              <div className="beneficiary-field-value">{demand.dealerAddress || 'DELHI ROHTAK ROAD NEAR HIRAN KUDNA MODE METRO PILLAR NO 616 DELHI 110041'}</div>
+              <div className="beneficiary-field-label">Showroom Address</div>
+              <div className="beneficiary-field-value">{dealer.address || 'Authorized Dealership Address'}</div>
             </div>
           </div>
         </div>
 
-        {/* 4 & 5. Depot & URC Information */}
+        {/* 4 & 5. CSD Location Hierarchy */}
         <div className="demand-detail-section">
           <h3 className="demand-detail-section-title">
             <Store size={17} color="#1e4fd8" />
-            <span>4 & 5. Depot and URC Details</span>
+            <span>4 & 5. CSD Location Hierarchy</span>
           </h3>
           <div className="beneficiary-read-only-grid">
             <div className="beneficiary-field-box beneficiary-field-full">
-              <div className="beneficiary-field-label">Regional CSD Depot</div>
-              <div className="beneficiary-field-value">{demand.depot || 'DELHI'} Depot</div>
-              <div className="csd-form-helper-text">Under CSD Directorate Head Office</div>
+              <div className="beneficiary-field-label">Authorized Price Zone</div>
+              <div className="beneficiary-field-value">{demand.priceZone || 'CSD Price Zone'}</div>
             </div>
-            <div className="beneficiary-field-box beneficiary-field-full">
-              <div className="beneficiary-field-label">Parent URC Canteen</div>
-              <div className="beneficiary-field-value">{demand.urc || '7 WING AF'}</div>
-              <div className="csd-form-helper-text">URC Code: 685 • Address: C/O 56 APO</div>
+            <div className="beneficiary-field-box">
+              <div className="beneficiary-field-label">Sanctioning CSD Depot</div>
+              <div className="beneficiary-field-value">{depot.name || 'CSD Depot'}</div>
+              <div className="csd-form-helper-text">Code: {depot.code || 'N/A'} ({depot.city || ''})</div>
+            </div>
+            <div className="beneficiary-field-box">
+              <div className="beneficiary-field-label">Collecting URC Canteen</div>
+              <div className="beneficiary-field-value">{urc.name || 'Parent URC'}</div>
+              <div className="csd-form-helper-text">Code: {urc.code || 'N/A'} ({urc.city || ''})</div>
             </div>
           </div>
         </div>
 
-        {/* 6. Payment Information */}
+        {/* 6. Pricing & Authoritative Valuation */}
         <div className="demand-detail-section">
           <h3 className="demand-detail-section-title">
             <CreditCard size={17} color="#1e4fd8" />
-            <span>6. Payment Information</span>
+            <span>6. Authoritative Pricing</span>
           </h3>
-          {demand.productSnapshot?.basicPrice ? (
-            <table className="demand-summary-calc-table">
-              <tbody>
+          <table className="demand-summary-calc-table">
+            <tbody>
+              <tr>
+                <td>Unit Base / CSD Basic Price</td>
+                <td>₹ {Number(demand.unitPrice || snapshot.price || 0).toLocaleString('en-IN')}</td>
+              </tr>
+              {demand.taxAmount > 0 && (
                 <tr>
-                  <td>Basic Price (incl. Dealer Margin)</td>
-                  <td>₹ {Number(demand.productSnapshot.basicPrice).toLocaleString('en-IN')}</td>
+                  <td>Concessional Taxes & Statutory Cess</td>
+                  <td>₹ {Number(demand.taxAmount).toLocaleString('en-IN')}</td>
                 </tr>
-                {(demand.productSnapshot.csdDiscountAmount > 0 || demand.productSnapshot.marketScheme > 0) && (
-                  <tr className="row-discount-positive">
-                    <td>CSD Discount & Market Scheme</td>
-                    <td>- ₹ {(Number(demand.productSnapshot.csdDiscountAmount || 0) + Number(demand.productSnapshot.marketScheme || 0)).toLocaleString('en-IN')}</td>
-                  </tr>
-                )}
-                <tr>
-                  <td>CSD Basic with Discount</td>
-                  <td className="font-semibold">₹ {Number(demand.productSnapshot.csdBasicWithDiscount || demand.productSnapshot.basicPrice).toLocaleString('en-IN')}</td>
+              )}
+              {demand.loan?.isLoan && (
+                <tr className="text-brand">
+                  <td>Sanctioned Bank Loan Component</td>
+                  <td>₹ {Number(demand.loan.loanAmount || 0).toLocaleString('en-IN')} ({demand.loan.bankName || 'Bank'})</td>
                 </tr>
-                <tr>
-                  <td>GST (SGST + CGST with Concession)</td>
-                  <td>₹ {(Number(demand.productSnapshot.sgstAmount || 0) + Number(demand.productSnapshot.cgstAmount || 0)).toLocaleString('en-IN')}</td>
-                </tr>
-                {demand.productSnapshot.csdProfitAmount > 0 && (
-                  <tr>
-                    <td>CSD Profit Margin (0.50%)</td>
-                    <td>₹ {Number(demand.productSnapshot.csdProfitAmount).toLocaleString('en-IN')}</td>
-                  </tr>
-                )}
-                {demand.productSnapshot.tcsAmount > 0 && (
-                  <tr>
-                    <td>TCS @ 1% (Above 10 Lacs)</td>
-                    <td>₹ {Number(demand.productSnapshot.tcsAmount).toLocaleString('en-IN')}</td>
-                  </tr>
-                )}
-                <tr className="demand-summary-net-row">
-                  <td>Net Price Paid (Price to Customer)</td>
-                  <td className="demand-summary-net-price">₹ {netAmount.toLocaleString('en-IN')}</td>
-                </tr>
-              </tbody>
-            </table>
-          ) : (
-            <table className="demand-summary-calc-table">
-              <tbody>
-                <tr>
-                  <td>Subtotal</td>
-                  <td>₹ {subtotal.toLocaleString('en-IN')}</td>
-                </tr>
-                <tr>
-                  <td>Additional Cost (14%)</td>
-                  <td>₹ {additionalCost.toLocaleString('en-IN')}</td>
-                </tr>
-                <tr>
-                  <td>Cess (17%)</td>
-                  <td>₹ {cess.toLocaleString('en-IN')}</td>
-                </tr>
-                <tr>
-                  <td>Incidental Charges (0.5%)</td>
-                  <td>₹ {incidental.toLocaleString('en-IN')}</td>
-                </tr>
-                <tr className="demand-summary-net-row">
-                  <td>Net Price Paid</td>
-                  <td className="demand-summary-net-price">₹ {netAmount.toLocaleString('en-IN')}</td>
-                </tr>
-              </tbody>
-            </table>
-          )}
+              )}
+              <tr className="demand-summary-net-row">
+                <td>Total Net Demand Amount</td>
+                <td className="demand-summary-net-price">₹ {netAmount.toLocaleString('en-IN')}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <div className="beneficiary-field-box mt-sm">
-            <div>Method: <strong>{demand.paymentMethod || 'Direct bank transfer'}</strong></div>
-            {demand.razorpayId && <div>Razorpay Gateway ID: <code>{demand.razorpayId}</code></div>}
-            {demand.paymentData?.utrNumber && <div>Bank Transfer UTR: <code>{demand.paymentData.utrNumber}</code></div>}
+        {/* 7. Payment State & Verification */}
+        <div className="demand-detail-section">
+          <h3 className="demand-detail-section-title">
+            <Landmark size={17} color="#1e4fd8" />
+            <span>7. Payment State</span>
+          </h3>
+          <div className="beneficiary-read-only-grid">
+            <div className="beneficiary-field-box">
+              <div className="beneficiary-field-label">Payment Mode</div>
+              <div className="beneficiary-field-value">{demand.paymentMethod || 'Direct Bank Transfer'}</div>
+            </div>
+            <div className="beneficiary-field-box">
+              <div className="beneficiary-field-label">Payment Status</div>
+              <div className="beneficiary-field-value font-semibold">
+                {demand.paymentStatus || 'UNPAID'}
+              </div>
+            </div>
+            {demand.remarks && (
+              <div className="beneficiary-field-box beneficiary-field-full">
+                <div className="beneficiary-field-label">Payment Particulars / UTR Reference</div>
+                <div className="beneficiary-field-value">{demand.remarks}</div>
+              </div>
+            )}
+            {paymentsList.length > 0 && (
+              <div className="beneficiary-field-box beneficiary-field-full">
+                <div className="beneficiary-field-label">Payment Records on Ledger</div>
+                <div className="portal-flex-col-gap-xs mt-1">
+                  {paymentsList.map((p, idx) => (
+                    <div key={idx} className="between py-1 border-b text-xs">
+                      <span>Receipt: <strong>{p.paymentNo}</strong> ({p.method})</span>
+                      <span>₹ {Number(p.amount).toLocaleString('en-IN')} • <strong className="text-success">{p.status}</strong></span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 7. Documents */}
+        {/* 8. Eligibility Details */}
+        <div className="demand-detail-section">
+          <h3 className="demand-detail-section-title">
+            <BadgeCheck size={17} color="#1e4fd8" />
+            <span>8. Official Eligibility Verification</span>
+          </h3>
+          <div className="beneficiary-read-only-grid">
+            <div className="beneficiary-field-box">
+              <div className="beneficiary-field-label">Eligibility Verification Status</div>
+              <div className="beneficiary-field-value text-success font-semibold">
+                {demand.eligibility?.eligible !== false ? '✓ ELIGIBLE FOR PURCHASE' : 'INELIGIBLE'}
+              </div>
+            </div>
+            <div className="beneficiary-field-box">
+              <div className="beneficiary-field-label">Verification Note / Rule Reason</div>
+              <div className="beneficiary-field-value">{demand.eligibility?.reason || 'Verified under AFD Entitlement Rules'}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 9. Attached Documents */}
         <div className="demand-detail-section">
           <h3 className="demand-detail-section-title">
             <FileText size={17} color="var(--brand)" />
-            <span>7. Attached Documents</span>
+            <span>9. Attached Documents</span>
           </h3>
           <div className="portal-flex-col-gap-sm">
-            {(demand.documents || [
-              { name: 'Canteen Card.pdf', size: '1.2 MB', status: 'Uploaded' },
-              { name: 'PAN Copy.pdf', size: '640 KB', status: 'Uploaded' },
-              { name: 'Availability Certificate.pdf', size: '1.1 MB', status: 'Uploaded' }
-            ]).map((doc, i) => (
-              <div
-                key={i}
-                className="doc-upload-preview-card"
-              >
-                <div className="doc-upload-preview-left">
-                  <div className="doc-upload-file-icon">
-                    <FileText size={18} />
+            {(demand.documents && demand.documents.length > 0) ? (
+              demand.documents.map((doc, i) => (
+                <div key={i} className="doc-upload-preview-card">
+                  <div className="doc-upload-preview-left">
+                    <div className="doc-upload-file-icon">
+                      <FileText size={18} />
+                    </div>
+                    <div className="doc-upload-file-details">
+                      <span className="doc-upload-filename">{doc.name || doc.type}</span>
+                      <span className="doc-upload-meta-status">{doc.type}</span>
+                    </div>
                   </div>
-                  <div className="doc-upload-file-details">
-                    <span className="doc-upload-filename">{doc.name}</span>
-                    <span className="doc-upload-meta-status">{doc.size || '1.1 MB'}</span>
-                  </div>
+                  {doc.url ? (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDoc(doc)}
+                      className="checkout-spec-pill badge-verified-pill flex-align-center-gap-xs cursor-pointer"
+                      style={{ border: 'none', background: 'var(--brand-light, #eff6ff)', color: 'var(--brand, #1e4fd8)' }}
+                    >
+                      <ExternalLink size={12} /> View
+                    </button>
+                  ) : (
+                    <span className="checkout-spec-pill badge-verified-pill">Attached</span>
+                  )}
                 </div>
-                <span className="checkout-spec-pill badge-verified-pill">
-                  {doc.status || 'Verified'}
-                </span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-muted small">No external documents attached to this demand.</p>
+            )}
           </div>
         </div>
 
       </div>
 
-      {/* Payment Details Modal (Fig. 21 & 22) */}
+      {/* 10. Audit Status History */}
+      {demand.statusHistory && demand.statusHistory.length > 0 && (
+        <div className="checkout-card mt-4">
+          <h3 className="checkout-card-title mb-3">
+            <Clock size={16} /> Audit Trail & Status History
+          </h3>
+          <div className="portal-flex-col-gap-xs">
+            {demand.statusHistory.map((h, i) => (
+              <div key={i} className="between py-2 border-b text-xs">
+                <div>
+                  <strong>{h.from || 'START'}</strong> → <strong className="text-brand">{h.to}</strong>: {h.note || 'State updated'}
+                </div>
+                <div className="text-muted">
+                  {new Date(h.at).toLocaleString('en-IN')}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Payment Details Modal */}
       {paymentModalOpen && (
         <PaymentDetailsModal
           isOpen={paymentModalOpen}
           onClose={() => setPaymentModalOpen(false)}
           demand={demand}
           onSubmitSuccess={handlePaymentSubmitSuccess}
+        />
+      )}
+
+      {/* In-Portal Document Previewer Modal */}
+      {previewDoc && (
+        <DocumentPreviewModal
+          isOpen={!!previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          doc={previewDoc}
         />
       )}
     </div>

@@ -162,7 +162,7 @@ export default function UrcDashboard() {
       />
 
       {/* 5 SCOPED URC SUMMARY CARDS */}
-      <div className="csd-stats-grid">
+      <div className="csd-kpi-grid">
         <StatCard
           title="Received Orders"
           value={String(receivedOrdersCount)}

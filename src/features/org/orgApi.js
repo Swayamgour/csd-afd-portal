@@ -155,6 +155,41 @@ export const orgApi = api.injectEndpoints({
       transformResponse: (response) => response?.data || response,
       providesTags: ['PriceZone'],
     }),
+
+    getDealerProducts: builder.query({
+      query: (params = {}) => ({
+        url: '/dealer-products',
+        params,
+      }),
+      transformResponse: extractArray,
+      providesTags: ['DealerProduct'],
+    }),
+
+    createDealerProduct: builder.mutation({
+      query: (body) => ({
+        url: '/dealer-products',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['DealerProduct', 'Dealer', 'Product'],
+    }),
+
+    updateDealerProduct: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/dealer-products/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['DealerProduct', 'Dealer', 'Product'],
+    }),
+
+    deleteDealerProduct: builder.mutation({
+      query: (id) => ({
+        url: `/dealer-products/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['DealerProduct', 'Dealer', 'Product'],
+    }),
   }),
 });
 
@@ -177,5 +212,10 @@ export const {
   useUpdateOemMutation,
   useGetPriceZonesQuery,
   useGetPriceZoneByIdQuery,
+  useGetDealerProductsQuery,
+  useCreateDealerProductMutation,
+  useUpdateDealerProductMutation,
+  useDeleteDealerProductMutation,
 } = orgApi;
+
 

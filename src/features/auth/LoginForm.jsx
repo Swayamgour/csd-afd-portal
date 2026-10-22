@@ -38,6 +38,86 @@ export default function LoginForm({ onNeedOtp }) {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+
+  // ```jsx
+  const quickTestAccounts = [
+    {
+      role: "ADMIN",
+      label: "System Admin",
+      icon: "⚙️",
+      username: "admincsd",
+      password: "Test@123456",
+    },
+    {
+      role: "CS_DIRECTOR",
+      label: "CS Director",
+      icon: "🏛️",
+      username: "cs_director_test",
+      password: "Test@123456",
+    },
+    {
+      role: "CSD_HO",
+      label: "CSD HO",
+      icon: "🏢",
+      username: "csd_ho_test",
+      password: "Test@123456",
+    },
+    {
+      role: "DEPOT_OFFICIAL",
+      label: "Depot Official",
+      icon: "🏭",
+      username: "depot_delhi_test",
+      password: "Test@123456",
+    },
+    {
+      role: "URC",
+      label: "URC Officer",
+      icon: "🏪",
+      username: "urc_delhi_test",
+      password: "Test@123456",
+    },
+    {
+      role: "OEM",
+      label: "OEM (Mahindra)",
+      icon: "🚗",
+      username: "oem_mahindra_test",
+      password: "Test@123456",
+    },
+    {
+      role: "DEALER",
+      label: "Dealer (Supreme Mobiles)",
+      icon: "🏬",
+      username: "dealer_hisar",
+      password: "Dealer@123456",
+    },
+    {
+      role: "DEALER",
+      label: "Dealer (Koncept Mahindra)",
+      icon: "🏬",
+      username: "dealer_koncept",
+      password: "Dealer@123456",
+    },
+    {
+      role: "BENEFICIARY",
+      label: "Beneficiary (Rajesh Kumar)",
+      icon: "🎖️",
+      username: "rajesh_kumar",
+      password: "Beneficiary@123456",
+    },
+    {
+      role: "BENEFICIARY",
+      label: "Beneficiary (Pending)",
+      icon: "⏳",
+      username: "pending_beneficiary",
+      password: "Pending@123456",
+    },
+  ];
+
+
+
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
@@ -224,7 +304,7 @@ export default function LoginForm({ onNeedOtp }) {
       </button>
 
       {/* Quick Role Fill for Development & Testing */}
-      <div className="login-quick-fill-box">
+      {/* <div className="login-quick-fill-box">
         <span className="login-quick-fill-label">Quick Fill Test Accounts:</span>
         <div className="login-quick-fill-btns">
           <button
@@ -268,7 +348,30 @@ export default function LoginForm({ onNeedOtp }) {
             🎖️ Beneficiary (Rajesh Kumar)
           </button>
         </div>
+      </div> */}
+
+      <div className="login-quick-fill-box">
+        <span className="login-quick-fill-label">
+          Quick Fill Test Accounts:
+        </span>
+
+        <div className="login-quick-fill-btns">
+          {quickTestAccounts.map((account) => (
+            <button
+              key={`${account.role} -${account.username} `}
+              type="button"
+              className="btn xs out login-quick-btn"
+              onClick={() => {
+                setUsername(account.username);
+                setPassword(account.password);
+              }}
+            >
+              {account.icon} {account.label}
+            </button>
+          ))}
+        </div>
       </div>
+
     </form>
   );
 }

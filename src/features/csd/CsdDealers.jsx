@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Store,
   Building2,
@@ -12,6 +13,7 @@ import {
   Phone,
   Mail,
   AlertCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
@@ -27,6 +29,7 @@ import {
 } from '../org/orgApi.js';
 
 export default function CsdDealers() {
+  const navigate = useNavigate();
   const { data: dealers = [], isLoading: loading, isFetching: refreshing, refetch } = useGetDealersQuery();
   const { data: oems = [] } = useGetOemsQuery({ active: true });
   const [createDealer, { isLoading: isCreating }] = useCreateDealerMutation();
@@ -203,6 +206,15 @@ export default function CsdDealers() {
       accessor: '_id',
       render: (row) => (
         <div className="csd-action-row">
+          <button
+            type="button"
+            onClick={() => navigate('/csd/dealer-products')}
+            className="csd-btn-action-view"
+            title="Authorize Products (DealerProduct Matrix)"
+            style={{ color: '#047857', borderColor: '#a7f3d0', background: '#ecfdf5' }}
+          >
+            <ShieldCheck size={13} /> Products
+          </button>
           <button
             type="button"
             onClick={() => setSelectedDealerForView(row)}

@@ -17,6 +17,7 @@ import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Modal from '../../components/common/Modal.jsx';
+import Button from '../../components/common/Button.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
 import { useGetOrdersQuery } from '../demand/demandApi.js';
 
@@ -155,18 +156,21 @@ export default function CsdOrders() {
           { label: 'Supply Orders' },
         ]}
         actions={
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => refetch()}
-            className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition"
+            disabled={isFetching}
             title="Refresh Orders"
           >
-            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-brand' : ''}`} />
-          </button>
+            <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+            {isFetching ? 'Syncing...' : 'Sync Orders'}
+          </Button>
         }
       />
 
       {/* Live KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="kpi-grid">
         {kpiStats.map((kpi, idx) => (
           <StatCard
             key={idx}

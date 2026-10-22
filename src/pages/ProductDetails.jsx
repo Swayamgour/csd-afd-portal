@@ -13,8 +13,12 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { COLOR_HEX } from "../data/art.js";
 import { FEATURES, STEPS } from "../data/details.js";
 import { CAT_LABEL, CAT_PLURAL, inr, priceText, priceFrom, rupees, onImgError } from "../data/utils.js";
-import { useGetProductByIdQuery, useGetProductsQuery, useCheckProductEligibilityMutation } from "../features/catalog/productApi.js";
-import { useGetDealersQuery, useGetDepotsQuery, useGetUrcsQuery, useGetPriceZonesQuery } from "../features/org/orgApi.js";
+import {
+  useGetProductByIdQuery,
+  useGetProductsQuery,
+  useCheckProductEligibilityMutation,
+  useGetProductOptionsQuery,
+} from "../features/catalog/productApi.js";
 import { DealerDetailsModal } from "../components/modals/DealerDetailsModal.jsx";
 import { URCDetailsModal } from "../components/modals/URCDetailsModal.jsx";
 import { EligibilityModal } from "../components/modals/EligibilityModal.jsx";
@@ -23,7 +27,6 @@ const val = (v) => (Array.isArray(v) ? v.join(" / ") : v && v !== "-" ? v : null
 
 /** keep only images that actually load */
 function useGallery(p) {
-  console.log(p)
   const [imgs, setImgs] = useState([]);
   useEffect(() => {
     if (!p) return;
@@ -108,10 +111,40 @@ export default function ProductDetails() {
   const { data: allProductsData } = useGetProductsQuery({ limit: 20 });
   const all = allProductsData?.items || [];
 
-  const { data: priceZonesList = [] } = useGetPriceZonesQuery();
-  const { data: dealersList = [] } = useGetDealersQuery();
-  const { data: depotsList = [] } = useGetDepotsQuery();
-  const { data: urcsList = [] } = useGetUrcsQuery();
+  // CSD AFD Selection states - Clean MongoDB ObjectIds
+  const [selectedZoneId, setSelectedZoneId] = useState('');
+  const [selectedDealerId, setSelectedDealerId] = useState('');
+  const [selectedDepotId, setSelectedDepotId] = useState('');
+  const [selectedUrcId, setSelectedUrcId] = useState('');
+
+  // Authoritative Backend Options API (strictly implements Branch A & Branch B)
+  const {
+    data: optionsData,
+    isLoading: loadingOptions,
+  } = useGetProductOptionsQuery(
+    {
+      id,
+      priceZoneId: selectedZoneId || undefined,
+      depotId: selectedDepotId || undefined,
+    },
+    { skip: !id }
+  );
+
+  const priceZonesList = useMemo(() => {
+    return optionsData?.priceZones || optionsData?.eligiblePriceZones || [];
+  }, [optionsData]);
+
+  const availableDealers = useMemo(() => {
+    return optionsData?.dealers || optionsData?.eligibleDealers || [];
+  }, [optionsData]);
+
+  const availableDepots = useMemo(() => {
+    return optionsData?.depots || optionsData?.eligibleDepots || [];
+  }, [optionsData]);
+
+  const availableUrcs = useMemo(() => {
+    return optionsData?.urcs || optionsData?.eligibleUrcs || [];
+  }, [optionsData]);
 
   const [checkEligibilityMutation, { isLoading: checkingEligibility }] =
     useCheckProductEligibilityMutation();
@@ -129,10 +162,10 @@ export default function ProductDetails() {
       id: prod._id || prod.id,
       category: catCode.includes('bike') ? 'bike' : catCode.includes('white') ? 'white-goods' : 'car',
       brand: prod.brandId?.name || prod.brand || 'Authorized OEM',
-      price: prod.priceToCustomer || prod.price || 500000,
-      lo: prod.priceToCustomer || prod.price || 500000,
-      hi: prod.mrp || (prod.price ? prod.price * 1.15 : 600000),
-      mrp: prod.mrp || (prod.price ? Math.round(prod.price * 1.15) : 600000),
+      price: prod.priceToCustomer || prod.price || 0,
+      lo: prod.priceToCustomer || prod.price || 0,
+      hi: prod.mrp || (prod.price ? Math.round(prod.price * 1.15) : 0),
+      mrp: prod.mrp || (prod.price ? Math.round(prod.price * 1.15) : 0),
       indexNo: prod.indexNo || prod.sku || 'N/A',
       basicPrice: prod.basicPrice,
       csdDiscountPercent: prod.csdDiscountPercent || 0,
@@ -145,11 +178,11 @@ export default function ProductDetails() {
       csdProfitAmount: prod.csdProfitAmount || 0,
       csdFinalPriceWithConcession: prod.csdFinalPriceWithConcession,
       tcsAmount: prod.tcsAmount || 0,
-      priceToCustomer: prod.priceToCustomer || prod.price || 500000,
-      dealerRefName: prod.dealerRefName || 'SUPREME MOBILES PVT. LTD.- HISAR',
-      priceListRef: prod.priceListRef || "CSD PRICE LIST= OCTOBER'26 (w.e.f- 03.10.2026)",
-      image: prod.images?.[0] || prod.image || '/assets/maruti1.png',
-      images: prod.images?.length ? prod.images : ['/assets/maruti1.png'],
+      priceToCustomer: prod.priceToCustomer || prod.price || 0,
+      dealerRefName: prod.dealerRefName || '',
+      priceListRef: prod.priceListRef || '',
+      image: prod.images?.[0] || prod.image || '',
+      images: prod.images?.length ? prod.images : (prod.image ? [prod.image] : []),
       colors: colorsList,
       engine: prod.engineCapacity ? `${prod.engineCapacity} cc` : (prod.attributes?.engine || prod.engine || '1197 cc'),
       fuel: prod.fuelType ? [prod.fuelType] : (prod.attributes?.fuel ? [prod.attributes.fuel] : prod.fuel || ['Petrol']),
@@ -174,18 +207,34 @@ export default function ProductDetails() {
   const [zoom, setZoom] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // CSD AFD Selection states - Clean MongoDB ObjectIds
-  const [selectedZoneId, setSelectedZoneId] = useState('');
-  const [selectedDealerId, setSelectedDealerId] = useState('');
-  const [selectedDepotId, setSelectedDepotId] = useState('');
-  const [selectedUrcId, setSelectedUrcId] = useState('');
-
   // Modals state
   const [dealerModalOpen, setDealerModalOpen] = useState(false);
   const [urcModalOpen, setUrcModalOpen] = useState(false);
   const [eligibilityModalOpen, setEligibilityModalOpen] = useState(false);
   const [eligibilityResult, setEligibilityResult] = useState(null);
   const [checkoutErrors, setCheckoutErrors] = useState({});
+
+  // Cascading reset handlers strictly following rules:
+  // PriceZone change resets depot and urc
+  const handlePriceZoneChange = (zoneId) => {
+    setSelectedZoneId(zoneId);
+    setSelectedDepotId('');
+    setSelectedUrcId('');
+  };
+
+  // Depot change resets urc
+  const handleDepotChange = (depotId) => {
+    setSelectedDepotId(depotId);
+    setSelectedUrcId('');
+  };
+
+  const handleDealerChange = (dealerId) => {
+    setSelectedDealerId(dealerId);
+  };
+
+  const handleUrcChange = (urcId) => {
+    setSelectedUrcId(urcId);
+  };
 
   useEffect(() => {
     if (p) {
@@ -196,96 +245,52 @@ export default function ProductDetails() {
     }
   }, [p]);
 
-  // Dynamic Cascading Computations
+  // Current entity objects resolved strictly against backend option sets
   const currentZone = useMemo(() => {
-    return priceZonesList.find((z) => String(z._id) === String(selectedZoneId) || z.name === selectedZoneId) || priceZonesList[0];
+    return priceZonesList.find((z) => String(z._id) === String(selectedZoneId)) || null;
   }, [priceZonesList, selectedZoneId]);
 
-  const availableDepots = useMemo(() => {
-    if (!currentZone) return depotsList;
-    if (currentZone.depotIds?.length) {
-      const ids = currentZone.depotIds.map((d) => String(d._id || d));
-      const filtered = depotsList.filter((dep) => ids.includes(String(dep._id)));
-      if (filtered.length) return filtered;
-    }
-    if (currentZone.state) {
-      const byState = depotsList.filter((dep) => dep.state?.toUpperCase() === currentZone.state?.toUpperCase());
-      if (byState.length) return byState;
-    }
-    return depotsList;
-  }, [currentZone, depotsList]);
-
   const currentDepot = useMemo(() => {
-    return availableDepots.find((d) => String(d._id) === String(selectedDepotId)) || availableDepots[0];
+    return availableDepots.find((d) => String(d._id) === String(selectedDepotId)) || null;
   }, [availableDepots, selectedDepotId]);
 
-  const availableDealers = useMemo(() => {
-    if (!dealersList.length) return [];
-    const prodOemId = p?.oemId?._id || p?.oemId || p?.brandId?.oemId;
-    let list = dealersList;
-    if (prodOemId) {
-      const oemMatched = list.filter((d) => {
-        const dOem = d.oemId?._id || d.oemId;
-        return String(dOem) === String(prodOemId);
-      });
-      if (oemMatched.length) list = oemMatched;
-    }
-    if (currentZone?.state) {
-      const stateMatched = list.filter((d) => d.state?.toUpperCase() === currentZone.state?.toUpperCase());
-      if (stateMatched.length) return stateMatched;
-    }
-    return list;
-  }, [dealersList, p, currentZone]);
-
   const currentDealer = useMemo(() => {
-    return availableDealers.find((d) => String(d._id) === String(selectedDealerId)) || availableDealers[0] || {
-      name: 'Authorized Dealer',
-      address: 'Delhi Cantt, New Delhi',
-      phone: '+91 11 2345 6789',
-    };
+    return availableDealers.find((d) => String(d._id) === String(selectedDealerId)) || null;
   }, [availableDealers, selectedDealerId]);
 
-  const availableUrcs = useMemo(() => {
-    if (!currentDepot) return urcsList;
-    const filtered = urcsList.filter((u) => {
-      const depId = u.depotId?._id || u.depotId;
-      return String(depId) === String(currentDepot._id);
-    });
-    return filtered.length ? filtered : urcsList;
-  }, [currentDepot, urcsList]);
-
   const currentUrc = useMemo(() => {
-    return availableUrcs.find((u) => String(u._id) === String(selectedUrcId)) || availableUrcs[0] || {
-      name: 'Delhi Cantt URC',
-      location: 'Delhi',
-    };
+    return availableUrcs.find((u) => String(u._id) === String(selectedUrcId)) || null;
   }, [availableUrcs, selectedUrcId]);
 
-  // Synchronize selection state cascades
+  // Auto-sync valid selections or prune invalid state if server options change
   useEffect(() => {
-    if (priceZonesList.length && !selectedZoneId) {
+    if (priceZonesList.length > 0 && !selectedZoneId) {
       setSelectedZoneId(priceZonesList[0]._id);
     }
   }, [priceZonesList, selectedZoneId]);
 
   useEffect(() => {
-    if (availableDepots.length) {
-      const exists = availableDepots.some((d) => String(d._id) === String(selectedDepotId));
-      if (!exists) setSelectedDepotId(availableDepots[0]._id);
-    }
-  }, [availableDepots, selectedDepotId]);
-
-  useEffect(() => {
-    if (availableDealers.length) {
-      const exists = availableDealers.some((d) => String(d._id) === String(selectedDealerId));
-      if (!exists) setSelectedDealerId(availableDealers[0]._id);
+    if (availableDealers.length > 0 && !selectedDealerId) {
+      setSelectedDealerId(availableDealers[0]._id);
+    } else if (selectedDealerId && !availableDealers.some((d) => String(d._id) === String(selectedDealerId))) {
+      setSelectedDealerId(availableDealers[0]?._id || '');
     }
   }, [availableDealers, selectedDealerId]);
 
   useEffect(() => {
-    if (availableUrcs.length) {
-      const exists = availableUrcs.some((u) => String(u._id) === String(selectedUrcId));
-      if (!exists) setSelectedUrcId(availableUrcs[0]._id);
+    if (availableDepots.length > 0 && !selectedDepotId) {
+      setSelectedDepotId(availableDepots[0]._id);
+    } else if (selectedDepotId && !availableDepots.some((d) => String(d._id) === String(selectedDepotId))) {
+      setSelectedDepotId(availableDepots[0]?._id || '');
+      setSelectedUrcId('');
+    }
+  }, [availableDepots, selectedDepotId]);
+
+  useEffect(() => {
+    if (availableUrcs.length > 0 && !selectedUrcId) {
+      setSelectedUrcId(availableUrcs[0]._id);
+    } else if (selectedUrcId && !availableUrcs.some((u) => String(u._id) === String(selectedUrcId))) {
+      setSelectedUrcId(availableUrcs[0]?._id || '');
     }
   }, [availableUrcs, selectedUrcId]);
 
@@ -347,10 +352,16 @@ export default function ProductDetails() {
 
     const errs = {};
     if (!color) errs.color = 'Please select Color';
-    if (!selectedZoneId && !currentZone) errs.zone = 'Please select Price Zone';
-    if (!selectedDealerId && !currentDealer) errs.dealer = 'Please select Dealer';
-    if (!selectedDepotId && !currentDepot) errs.depot = 'Please select Depot';
-    if (!selectedUrcId && !currentUrc) errs.urc = 'Please select URC';
+    if (!selectedZoneId) errs.zone = 'Please select Price Zone';
+    if (!selectedDealerId) {
+      errs.dealer = availableDealers.length === 0 ? 'No authorized dealer available for this product.' : 'Please select Dealer';
+    }
+    if (!selectedDepotId) {
+      errs.depot = availableDepots.length === 0 ? 'No depots available for the selected price zone.' : 'Please select Depot';
+    }
+    if (!selectedUrcId) {
+      errs.urc = availableUrcs.length === 0 ? 'No URC available for the selected depot.' : 'Please select URC';
+    }
 
     if (Object.keys(errs).length > 0) {
       setCheckoutErrors(errs);
@@ -378,6 +389,13 @@ export default function ProductDetails() {
   const handleContinueToCheckout = () => {
     setEligibilityModalOpen(false);
 
+    if (eligibilityResult && eligibilityResult.eligible === false) {
+      alert(`Cannot proceed: ${eligibilityResult.reason || 'You are not eligible to purchase this product under CSD AFD rules.'}`);
+      return;
+    }
+
+    const serverP = optionsData?.pricing;
+
     const checkoutData = {
       productId: p._id || p.id,
       productName: p.name,
@@ -388,29 +406,29 @@ export default function ProductDetails() {
       brand: p.brand,
       oemId: p.oemId?._id || p.oemId || p.brandId?.oemId,
       selectedColor: color || (p.colors?.[0] || 'Standard'),
-      priceZoneId: currentZone?._id,
-      selectedZone: currentZone?.name || 'DELHI NCR',
-      priceZone: currentZone?.name || 'DELHI NCR',
-      dealerId: currentDealer?._id,
-      selectedDealer: currentDealer?.name,
-      depotId: currentDepot?._id,
-      selectedDepot: currentDepot?.name,
-      urcId: currentUrc?._id,
-      selectedUrc: currentUrc?.name,
-      productPrice: p.priceToCustomer || p.price || 0,
-      basicPrice: p.basicPrice,
+      priceZoneId: currentZone?._id || selectedZoneId,
+      selectedZone: currentZone?.name || '',
+      priceZone: currentZone?.name || '',
+      dealerId: currentDealer?._id || selectedDealerId,
+      selectedDealer: currentDealer?.name || '',
+      depotId: currentDepot?._id || selectedDepotId,
+      selectedDepot: currentDepot?.name || '',
+      urcId: currentUrc?._id || selectedUrcId,
+      selectedUrc: currentUrc?.name || '',
+      productPrice: serverP?.priceToCustomer || serverP?.price || p.priceToCustomer || p.price || 0,
+      basicPrice: serverP?.basicPrice ?? p.basicPrice,
       csdDiscountPercent: p.csdDiscountPercent,
-      csdDiscountAmount: p.csdDiscountAmount,
-      marketScheme: p.marketScheme,
-      csdBasicWithDiscount: p.csdBasicWithDiscount,
-      cgstAmount: p.cgstAmount,
-      sgstAmount: p.sgstAmount,
+      csdDiscountAmount: serverP?.csdDiscountAmount ?? p.csdDiscountAmount,
+      marketScheme: serverP?.marketScheme ?? p.marketScheme,
+      csdBasicWithDiscount: serverP?.csdBasicWithDiscount ?? p.csdBasicWithDiscount,
+      cgstAmount: serverP?.cgstAmount ?? p.cgstAmount,
+      sgstAmount: serverP?.sgstAmount ?? p.sgstAmount,
       csdInvoiceAmount: p.csdInvoiceAmount,
-      csdProfitAmount: p.csdProfitAmount,
+      csdProfitAmount: serverP?.csdProfitAmount ?? p.csdProfitAmount,
       csdFinalPriceWithConcession: p.csdFinalPriceWithConcession,
-      tcsAmount: p.tcsAmount,
-      priceToCustomer: p.priceToCustomer,
-      taxPercent: p.taxPercent || 14,
+      tcsAmount: serverP?.tcsAmount ?? p.tcsAmount,
+      priceToCustomer: serverP?.priceToCustomer ?? p.priceToCustomer,
+      taxPercent: serverP?.taxPercent ?? (p.taxPercent || 14),
       quantity: 1,
       taxClass: currentZone?.taxClass || 'tax-class-8'
     };
@@ -531,8 +549,8 @@ export default function ProductDetails() {
                   </span>
                 </div>
                 <select
-                  value={selectedZoneId || currentZone?._id || ''}
-                  onChange={(e) => setSelectedZoneId(e.target.value)}
+                  value={selectedZoneId || ''}
+                  onChange={(e) => handlePriceZoneChange(e.target.value)}
                   className={`select-input pdp-form-select ${checkoutErrors.zone ? 'has-error' : ''}`}
                 >
                   <option value="">-- Select Price Zone --</option>
@@ -556,8 +574,8 @@ export default function ProductDetails() {
                 </label>
                 <div className="pdp-input-action-row">
                   <select
-                    value={selectedDealerId || currentDealer?._id || ''}
-                    onChange={(e) => setSelectedDealerId(e.target.value)}
+                    value={selectedDealerId || ''}
+                    onChange={(e) => handleDealerChange(e.target.value)}
                     className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.dealer ? 'has-error' : ''}`}
                   >
                     <option value="">-- Select Dealer --</option>
@@ -570,11 +588,15 @@ export default function ProductDetails() {
                   <button
                     type="button"
                     onClick={() => setDealerModalOpen(true)}
+                    disabled={!currentDealer}
                     className="btn-view-dealer"
                   >
                     View Dealer
                   </button>
                 </div>
+                {availableDealers.length === 0 && (
+                  <p className="micro text-danger mt-1">No authorized dealer available for this product.</p>
+                )}
                 {checkoutErrors.dealer && (
                   <span className="micro text-danger pdp-error-text">
                     {checkoutErrors.dealer}
@@ -588,8 +610,8 @@ export default function ProductDetails() {
                   Depot <span className="pdp-req-star">*</span>
                 </label>
                 <select
-                  value={selectedDepotId || currentDepot?._id || ''}
-                  onChange={(e) => setSelectedDepotId(e.target.value)}
+                  value={selectedDepotId || ''}
+                  onChange={(e) => handleDepotChange(e.target.value)}
                   className={`select-input pdp-form-select ${checkoutErrors.depot ? 'has-error' : ''}`}
                 >
                   <option value="">-- Select Depot --</option>
@@ -599,6 +621,9 @@ export default function ProductDetails() {
                     </option>
                   ))}
                 </select>
+                {selectedZoneId && availableDepots.length === 0 && (
+                  <p className="micro text-danger mt-1">No depot available for the selected price zone.</p>
+                )}
                 {checkoutErrors.depot && (
                   <span className="micro text-danger pdp-error-text">
                     {checkoutErrors.depot}
@@ -613,8 +638,8 @@ export default function ProductDetails() {
                 </label>
                 <div className="pdp-input-action-row">
                   <select
-                    value={selectedUrcId || currentUrc?._id || ''}
-                    onChange={(e) => setSelectedUrcId(e.target.value)}
+                    value={selectedUrcId || ''}
+                    onChange={(e) => handleUrcChange(e.target.value)}
                     className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.urc ? 'has-error' : ''}`}
                   >
                     <option value="">-- Select URC --</option>
@@ -627,11 +652,15 @@ export default function ProductDetails() {
                   <button
                     type="button"
                     onClick={() => setUrcModalOpen(true)}
+                    disabled={!currentUrc}
                     className="btn-view-urc"
                   >
                     View URC
                   </button>
                 </div>
+                {selectedDepotId && availableUrcs.length === 0 && (
+                  <p className="micro text-danger mt-1">No URC available for the selected depot.</p>
+                )}
                 {checkoutErrors.urc && (
                   <span className="micro text-danger pdp-error-text">
                     {checkoutErrors.urc}
@@ -644,43 +673,43 @@ export default function ProductDetails() {
                 <div className="between align-center mb-1">
                   <span className="small font-bold pdp-rate-customer-label">Price to Customer (Net CSD Payable):</span>
                   <div className="h3 font-bold text-brand pdp-price-amount">
-                    ₹ {(p.priceToCustomer || p.price || 0).toLocaleString('en-IN')}
+                    ₹ {(optionsData?.pricing?.priceToCustomer || optionsData?.pricing?.price || p.priceToCustomer || p.price || 0).toLocaleString('en-IN')}
                   </div>
                 </div>
 
-                {p.basicPrice ? (
+                {(optionsData?.pricing?.basicPrice || p.basicPrice) ? (
                   <div className="csd-official-rate-sheet pdp-official-breakdown">
                     <div className="pdp-breakdown-title">
                       📋 Official CSD Rate Breakdown (INDEX NO: {p.indexNo})
                     </div>
                     <div className="between py-1 pdp-breakdown-row">
                       <span className="muted">Basic Price (incl. Dealer Margin):</span>
-                      <span>₹ {Number(p.basicPrice).toLocaleString('en-IN')}</span>
+                      <span>₹ {Number(optionsData?.pricing?.basicPrice ?? p.basicPrice).toLocaleString('en-IN')}</span>
                     </div>
-                    {(p.csdDiscountAmount > 0 || p.marketScheme > 0) && (
+                    {((optionsData?.pricing?.csdDiscountAmount ?? p.csdDiscountAmount) > 0 || (optionsData?.pricing?.marketScheme ?? p.marketScheme) > 0) && (
                       <div className="between py-1 text-green pdp-breakdown-row">
                         <span>CSD Discount & Schemes:</span>
-                        <span>- ₹ {(Number(p.csdDiscountAmount) + Number(p.marketScheme || 0)).toLocaleString('en-IN')}</span>
+                        <span>- ₹ {(Number(optionsData?.pricing?.csdDiscountAmount ?? p.csdDiscountAmount) + Number(optionsData?.pricing?.marketScheme ?? p.marketScheme ?? 0)).toLocaleString('en-IN')}</span>
                       </div>
                     )}
                     <div className="between py-1 pdp-breakdown-row">
                       <span className="muted">CSD Basic with Discount:</span>
-                      <span className="font-semibold">₹ {Number(p.csdBasicWithDiscount || p.basicPrice).toLocaleString('en-IN')}</span>
+                      <span className="font-semibold">₹ {Number(optionsData?.pricing?.csdBasicWithDiscount ?? p.csdBasicWithDiscount ?? p.basicPrice).toLocaleString('en-IN')}</span>
                     </div>
                     <div className="between py-1 pdp-breakdown-row">
                       <span className="muted">GST (SGST + CGST with Concession):</span>
-                      <span>+ ₹ {(Number(p.sgstAmount || 0) + Number(p.cgstAmount || 0)).toLocaleString('en-IN')}</span>
+                      <span>+ ₹ {(Number(optionsData?.pricing?.sgstAmount ?? p.sgstAmount ?? 0) + Number(optionsData?.pricing?.cgstAmount ?? p.cgstAmount ?? 0)).toLocaleString('en-IN')}</span>
                     </div>
-                    {p.csdProfitAmount > 0 && (
+                    {Number(optionsData?.pricing?.csdProfitAmount ?? p.csdProfitAmount) > 0 && (
                       <div className="between py-1 pdp-breakdown-row">
                         <span className="muted">CSD Profit Margin (0.50%):</span>
-                        <span>+ ₹ {Number(p.csdProfitAmount).toLocaleString('en-IN')}</span>
+                        <span>+ ₹ {Number(optionsData?.pricing?.csdProfitAmount ?? p.csdProfitAmount).toLocaleString('en-IN')}</span>
                       </div>
                     )}
-                    {p.tcsAmount > 0 && (
+                    {Number(optionsData?.pricing?.tcsAmount ?? p.tcsAmount) > 0 && (
                       <div className="between py-1 pdp-breakdown-row">
                         <span className="muted">TCS @ 1% (Above 10 Lacs):</span>
-                        <span>+ ₹ {Number(p.tcsAmount).toLocaleString('en-IN')}</span>
+                        <span>+ ₹ {Number(optionsData?.pricing?.tcsAmount ?? p.tcsAmount).toLocaleString('en-IN')}</span>
                       </div>
                     )}
                     <div className="micro muted mt-1 pt-1 pdp-dealer-ref-note">

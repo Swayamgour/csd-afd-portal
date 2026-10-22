@@ -198,7 +198,7 @@ export default function DepotDashboard() {
         <h3 className="depot-section-heading">
           Depot Demand Sanction & Verification Stages
         </h3>
-        <div className="depot-stats-grid">
+        <div className="depot-kpi-grid">
           <StatCard
             title="New Demands"
             value={String(newDemandsCount)}

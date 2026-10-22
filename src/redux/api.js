@@ -72,6 +72,7 @@ export const api = createApi({
     "PriceZone",
     "Eligibility",
     "Oem",
+    "DealerProduct",
     "Audit",
     "Report",
     "Ticket",

@@ -69,43 +69,35 @@ export default function Demands() {
     }
   };
 
-  // Helper for Status Badge styling matching CSD Portal (Fig. 20 & 25)
+  // Helper for Status Badge styling matching CSD Portal
   const getStatusBadge = (status) => {
-    const s = (status || '').toLowerCase();
-    if (s === 'on hold') {
-      return {
-        className: 'status-badge-onhold',
-        label: 'On hold'
-      };
+    const s = (status || '').toUpperCase().replace(/\s+/g, '_');
+    switch (s) {
+      case 'COMPLETED':
+        return { className: 'status-badge-delivered', label: 'Completed' };
+      case 'APPROVED':
+        return { className: 'status-badge-issued', label: 'Approved' };
+      case 'SUPPLY_ORDER_ISSUED':
+        return { className: 'status-badge-issued', label: 'Supply Order Issued' };
+      case 'DEPOT_PROCESSING':
+        return { className: 'status-badge-processing', label: 'Depot Processing' };
+      case 'DEALER_VERIFICATION':
+        return { className: 'status-badge-processing', label: 'Dealer Verification' };
+      case 'PROCESSING':
+        return { className: 'status-badge-processing', label: 'Processing' };
+      case 'PAID':
+        return { className: 'status-badge-issued', label: 'Paid' };
+      case 'PAYMENT_PENDING':
+        return { className: 'status-badge-pending', label: 'Payment Pending' };
+      case 'CREATED':
+        return { className: 'status-badge-default', label: 'Created' };
+      case 'REJECTED':
+      case 'CANCELLED':
+      case 'EXPIRED':
+        return { className: 'status-badge-onhold', label: status };
+      default:
+        return { className: 'status-badge-default', label: status || 'Submitted' };
     }
-    if (s === 'processing') {
-      return {
-        className: 'status-badge-processing',
-        label: 'Processing'
-      };
-    }
-    if (s === 'payment pending') {
-      return {
-        className: 'status-badge-pending',
-        label: 'Payment Pending'
-      };
-    }
-    if (s === 'supply order issued') {
-      return {
-        className: 'status-badge-issued',
-        label: 'Supply Order Issued'
-      };
-    }
-    if (s === 'delivery completed' || s === 'delivered') {
-      return {
-        className: 'status-badge-delivered',
-        label: 'Delivery Completed'
-      };
-    }
-    return {
-      className: 'status-badge-default',
-      label: status || 'Submitted'
-    };
   };
 
   return (

@@ -32,7 +32,7 @@ export const HelpdeskFeedback = () => {
         ]}
       />
 
-      <div className="csd-stats-grid mb-md">
+      <div className="csd-kpi-grid mb-md">
         <StatCard title="Overall CSAT Score" value="4.7 / 5.0" change="+0.2" isPositive={true} subtitle="94% Satisfied" />
         <StatCard title="Total Surveys Completed" value="842" subtitle="This Month" />
         <StatCard title="5-Star Ratings" value="712" subtitle="84.5% of total" />

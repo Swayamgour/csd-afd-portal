@@ -224,7 +224,7 @@ export const AdminDashboard = () => {
               Operational Demand & Fulfillment Lifecycle
             </h3>
           </div>
-          <div className="dashboard-stats-grid-6">
+          <div className="dashboard-kpi-grid-6">
             <SummaryStatCard
               title="Total Demands"
               count={totalDemands}
@@ -272,7 +272,7 @@ export const AdminDashboard = () => {
               Catalog & Organizational Master Entities
             </h3>
           </div>
-          <div className="dashboard-stats-grid-6">
+          <div className="dashboard-kpi-grid-6">
             <SummaryStatCard
               title="Total Products"
               count={totalProducts}
@@ -319,7 +319,7 @@ export const AdminDashboard = () => {
               Beneficiary Entitlement & Registrations
             </h3>
           </div>
-          <div className="dashboard-stats-grid-4">
+          <div className="dashboard-kpi-grid-4">
             <SummaryStatCard
               title="Total Beneficiaries"
               count={totalBeneficiaries}

@@ -41,7 +41,7 @@ export const HelpdeskReports = () => {
         actions={<ExportButton data={reportData} filename="Helpdesk_SLA_Performance" />}
       />
 
-      <div className="csd-stats-grid mb-md">
+      <div className="csd-kpi-grid mb-md">
         <StatCard title="Overall SLA Compliance" value="94.8%" change="+1.2%" isPositive={true} subtitle="Target: >=92%" />
         <StatCard title="Total Tickets Handled" value="1,863" subtitle="This Quarter" />
         <StatCard title="First Contact Resolution" value="63.8%" subtitle="L1 Frontline Closure" />

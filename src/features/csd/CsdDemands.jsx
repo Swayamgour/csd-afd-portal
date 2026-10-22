@@ -23,11 +23,13 @@ import Modal from '../../components/common/Modal.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
+import DocumentPreviewModal from '../../components/common/DocumentPreviewModal.jsx';
 
 export default function CsdDemands() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDemand, setSelectedDemand] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const queryParams = useMemo(() => {
     const p = {};
@@ -44,13 +46,13 @@ export default function CsdDemands() {
 
   const kpiStats = useMemo(() => {
     const total = demands.length;
-    const processing = demands.filter((d) => ['PROCESSING', 'PAYMENT_VERIFIED', 'PURCHASE_HISTORY_CHECK'].includes(d.status)).length;
+    const processing = demands.filter((d) => ['DEALER_VERIFICATION', 'DEPOT_PROCESSING', 'PROCESSING'].includes(d.status)).length;
     const approved = demands.filter((d) => ['APPROVED', 'SUPPLY_ORDER_ISSUED', 'COMPLETED'].includes(d.status)).length;
     const pendingPayment = demands.filter((d) => d.paymentStatus === 'UNPAID' || d.status === 'PAYMENT_PENDING').length;
 
     return [
       { title: 'Total AFD Demands', value: total, subtitle: 'National Indent Volume' },
-      { title: 'Depot Processing', value: processing, subtitle: 'Verification Queue' },
+      { title: 'Processing & Verification', value: processing, subtitle: 'Verification Queue' },
       { title: 'Approved & Supply Issued', value: approved, subtitle: `${total > 0 ? Math.round((approved / total) * 100) : 0}% Sanctioned` },
       { title: 'Pending Payment / Unpaid', value: pendingPayment, subtitle: 'Awaiting Settlement' },
     ];
@@ -160,18 +162,21 @@ export default function CsdDemands() {
           { label: 'Demand Monitoring' },
         ]}
         actions={
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => refetch()}
-            className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition"
+            disabled={isFetching}
             title="Refresh Demands"
           >
-            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-brand' : ''}`} />
-          </button>
+            <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+            {isFetching ? 'Syncing...' : 'Sync Demands'}
+          </Button>
         }
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="kpi-grid">
         {kpiStats.map((kpi, idx) => (
           <StatCard
             key={idx}
@@ -205,12 +210,15 @@ export default function CsdDemands() {
               <option value="">All Demand Statuses</option>
               <option value="CREATED">Created</option>
               <option value="PAYMENT_PENDING">Payment Pending</option>
-              <option value="PROCESSING">Processing</option>
-              <option value="PAYMENT_VERIFIED">Payment Verified</option>
+              <option value="PAID">Paid</option>
+              <option value="DEALER_VERIFICATION">Dealer Verification</option>
+              <option value="DEPOT_PROCESSING">Depot Processing</option>
               <option value="APPROVED">Approved</option>
               <option value="SUPPLY_ORDER_ISSUED">Supply Order Issued</option>
+              <option value="PROCESSING">Processing</option>
               <option value="COMPLETED">Completed</option>
               <option value="REJECTED">Rejected</option>
+              <option value="CANCELLED">Cancelled</option>
             </select>
 
             {(statusFilter || searchTerm) && (
@@ -334,22 +342,30 @@ export default function CsdDemands() {
                 <h5 className="font-bold text-slate-800">Uploaded Verification Documents</h5>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {selectedDemand.documents.map((doc, i) => (
-                    <a
+                    <button
                       key={i}
-                      href={doc.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 transition text-brand font-medium"
+                      type="button"
+                      onClick={() => setPreviewDoc(doc)}
+                      className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 transition text-brand font-medium text-left cursor-pointer"
                     >
                       <span className="truncate">{doc.name || doc.type}</span>
-                      <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                    </a>
+                      <Eye className="w-3.5 h-3.5 flex-shrink-0 ml-2" />
+                    </button>
                   ))}
                 </div>
               </div>
             )}
           </div>
         </Modal>
+      )}
+
+      {/* In-Portal Document Previewer Modal */}
+      {previewDoc && (
+        <DocumentPreviewModal
+          isOpen={!!previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          doc={previewDoc}
+        />
       )}
     </div>
   );

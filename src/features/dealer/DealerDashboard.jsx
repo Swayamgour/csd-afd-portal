@@ -33,6 +33,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import Modal from '../../components/common/Modal.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import DocumentPreviewModal from '../../components/common/DocumentPreviewModal.jsx';
 import {
   useGetDemandsQuery,
   useGetOrdersQuery,
@@ -43,6 +44,7 @@ import {
 export default function DealerDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   // Active view tab: 'verification' (Demands) or 'handover' (Orders)
   const [activeTab, setActiveTab] = useState('verification');
@@ -311,23 +313,17 @@ export default function DealerDashboard() {
           return <span className="micro muted italic">Not attached</span>;
         }
 
-        const isAbsolute = cert.url?.startsWith('http');
-        const viewUrl = isAbsolute
-          ? cert.url
-          : `http://localhost:5000${cert.url?.startsWith('/') ? '' : '/'}${cert.url}`;
-
         return (
-          <a
-            href={viewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn xs out row align-center gap-0-25 text-brand"
-            title="Inspect uploaded Availability Certificate"
+          <button
+            type="button"
+            onClick={() => setPreviewDoc(cert)}
+            className="btn xs out row align-center gap-0-25 text-brand cursor-pointer"
+            title="Inspect uploaded Availability Certificate in portal"
           >
             <FileText size={13} />
             <span>View Cert</span>
-            <ExternalLink size={11} />
-          </a>
+            <Eye size={11} />
+          </button>
         );
       }
     },
@@ -553,28 +549,22 @@ export default function DealerDashboard() {
       </div>
 
       {/* Main Operations Tabs */}
-      <div className="tabs-header row gap-1 mb-2 border-b">
+      <div className="portal-tabs-nav mb-3">
         <button
           type="button"
-          className={`tab-btn px-3 py-2 font-semibold text-sm border-b-2 ${
-            activeTab === 'verification'
-              ? 'border-brand text-brand font-bold'
-              : 'border-transparent text-muted'
-          }`}
+          className={`portal-tab-btn ${activeTab === 'verification' ? 'active' : ''}`}
           onClick={() => setActiveTab('verification')}
         >
-          📋 Demand Verification Desk ({pendingCount} Action Required)
+          <FileCheck className="w-4 h-4" />
+          <span>Demand Verification Desk ({pendingCount} Action Required)</span>
         </button>
         <button
           type="button"
-          className={`tab-btn px-3 py-2 font-semibold text-sm border-b-2 ${
-            activeTab === 'handover'
-              ? 'border-brand text-brand font-bold'
-              : 'border-transparent text-muted'
-          }`}
+          className={`portal-tab-btn ${activeTab === 'handover' ? 'active' : ''}`}
           onClick={() => setActiveTab('handover')}
         >
-          🚚 Showroom Vehicle Handover & Gatepass ({orders.length} Orders)
+          <Truck className="w-4 h-4" />
+          <span>Showroom Vehicle Handover & Gatepass ({orders.length} Orders)</span>
         </button>
       </div>
 
@@ -789,16 +779,14 @@ export default function DealerDashboard() {
                         <span className="micro text-success">✓ Scanned Signed Document</span>
                       </div>
                     </div>
-                    <a
-                      href={fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn sm primary row align-center gap-0-5"
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDoc(cert)}
+                      className="btn sm primary row align-center gap-0-5 cursor-pointer"
                     >
                       <Eye size={14} />
                       <span>Open Certificate</span>
-                      <ExternalLink size={12} />
-                    </a>
+                    </button>
                   </div>
                 );
               })()}
@@ -934,6 +922,15 @@ export default function DealerDashboard() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* In-Portal Document Previewer Modal */}
+      {previewDoc && (
+        <DocumentPreviewModal
+          isOpen={!!previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          doc={previewDoc}
+        />
       )}
     </div>
   );

@@ -22,10 +22,12 @@ import {
   useGetDepotsQuery,
   useCreateDepotMutation,
   useUpdateDepotMutation,
+  useGetPriceZonesQuery,
 } from '../org/orgApi.js';
 
 export default function CsdDepots() {
   const { data: depots = [], isLoading: loading, isFetching: refreshing, refetch } = useGetDepotsQuery();
+  const { data: priceZones = [] } = useGetPriceZonesQuery({ active: true });
   const [createDepot, { isLoading: isCreating }] = useCreateDepotMutation();
   const [updateDepot, { isLoading: isUpdating }] = useUpdateDepotMutation();
 
@@ -39,6 +41,7 @@ export default function CsdDepots() {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
+    priceZoneId: '',
     person: '',
     email: '',
     phone: '',
@@ -57,6 +60,7 @@ export default function CsdDepots() {
     setFormData({
       name: '',
       code: '',
+      priceZoneId: priceZones[0]?._id || '',
       person: '',
       email: '',
       phone: '',
@@ -73,6 +77,7 @@ export default function CsdDepots() {
     setFormData({
       name: depot.name || '',
       code: depot.code || '',
+      priceZoneId: depot.priceZoneId?._id || depot.priceZoneId || '',
       person: depot.person || '',
       email: depot.email || '',
       phone: depot.phone || '',
@@ -85,6 +90,10 @@ export default function CsdDepots() {
 
   const handleSaveDepot = async (e) => {
     e.preventDefault();
+    if (!formData.priceZoneId) {
+      alert('Depot must be associated with a valid Price Zone according to CSD location hierarchy.');
+      return;
+    }
     try {
       if (selectedDepotForEdit) {
         await updateDepot({
@@ -146,6 +155,18 @@ export default function CsdDepots() {
           {row.code}
         </span>
       ),
+    },
+    {
+      header: 'Price Zone',
+      accessor: 'priceZoneId',
+      render: (row) => {
+        const zone = row.priceZoneId && typeof row.priceZoneId === 'object' ? row.priceZoneId : priceZones.find((z) => (z._id || z.id) === row.priceZoneId);
+        return (
+          <span className="portal-code-badge" style={{ background: '#e0e7ff', color: '#3730a3', border: '1px solid #c7d2fe' }}>
+            {zone?.name || zone?.code || '—'}
+          </span>
+        );
+      },
     },
     {
       header: 'Location / State',
@@ -296,6 +317,25 @@ export default function CsdDepots() {
                   className="director-field-input"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="director-field-label">
+                Jurisdictional Price Zone *
+              </label>
+              <select
+                required
+                value={formData.priceZoneId}
+                onChange={(e) => setFormData({ ...formData, priceZoneId: e.target.value })}
+                className="director-field-input"
+              >
+                <option value="">Select Price Zone...</option>
+                {priceZones.map((pz) => (
+                  <option key={pz._id || pz.id} value={pz._id || pz.id}>
+                    {pz.name} ({pz.code}) - {pz.state || 'National'}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="csd-form-grid-3">

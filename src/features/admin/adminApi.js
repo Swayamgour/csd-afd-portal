@@ -61,7 +61,7 @@ export const adminApi = api.injectEndpoints({
         method: 'PATCH',
         body: { remarks },
       }),
-      invalidatesTags: ['User', 'Beneficiary', 'Auth'],
+      invalidatesTags: ['User', 'Beneficiary', 'Auth', 'Dashboard'],
     }),
 
     rejectUser: builder.mutation({
@@ -70,7 +70,7 @@ export const adminApi = api.injectEndpoints({
         method: 'PATCH',
         body: { remarks },
       }),
-      invalidatesTags: ['User', 'Beneficiary', 'Auth'],
+      invalidatesTags: ['User', 'Beneficiary', 'Auth', 'Dashboard'],
     }),
 
     updateUserStatus: builder.mutation({
@@ -79,7 +79,7 @@ export const adminApi = api.injectEndpoints({
         method: 'PATCH',
         body: { status },
       }),
-      invalidatesTags: ['User', 'Beneficiary'],
+      invalidatesTags: ['User', 'Beneficiary', 'Dashboard'],
     }),
 
     getBeneficiaries: builder.query({
@@ -96,7 +96,7 @@ export const adminApi = api.injectEndpoints({
         method: 'PATCH',
         body: { status, remarks },
       }),
-      invalidatesTags: ['Beneficiary', 'User', 'Auth'],
+      invalidatesTags: ['Beneficiary', 'User', 'Auth', 'Dashboard'],
     }),
 
     // Banners Management

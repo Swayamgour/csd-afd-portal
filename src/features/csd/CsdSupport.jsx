@@ -184,18 +184,21 @@ export default function CsdSupport() {
           { label: 'Support & Helpdesk' },
         ]}
         actions={
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => refetch()}
-            className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition"
+            disabled={isFetching}
             title="Refresh Tickets"
           >
-            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-brand' : ''}`} />
-          </button>
+            <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+            {isFetching ? 'Syncing...' : 'Sync Tickets'}
+          </Button>
         }
       />
 
       {/* Dynamic Live KPI Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="kpi-grid">
         {kpiStats.map((kpi, idx) => (
           <StatCard
             key={idx}

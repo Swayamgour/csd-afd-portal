@@ -1,15 +1,32 @@
 import React, { useState } from 'react';
 import { X, CreditCard, Building2, Smartphone, ShieldCheck, Landmark, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 
+async function computeHmacSha256(secret, message) {
+  const enc = new TextEncoder();
+  const key = await window.crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sigBuffer = await window.crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return Array.from(new Uint8Array(sigBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 export function OnlinePaymentModal({
   isOpen,
   onClose,
   onSuccess,
   amount,
-  demandNo = '30-76510',
-  productName = 'MARUTI VITARA BREZZA VXI 1.5L 5MT'
+  demandNo = '',
+  productName = '',
+  gatewayOrderId = '',
+  keyId = 'rzp_test_5173CSDPortal'
 }) {
-  const [method, setMethod] = useState('netbanking'); // netbanking, card, emi, banktransfer
+  const [method, setMethod] = useState('netbanking'); // netbanking, card, banktransfer
   const [selectedBank, setSelectedBank] = useState('SBI');
   const [cardNo, setCardNo] = useState('');
   const [expiry, setExpiry] = useState('');
@@ -20,22 +37,30 @@ export function OnlinePaymentModal({
 
   if (!isOpen) return null;
 
-  const totalFormatted = Number(amount || 721826).toLocaleString('en-IN');
+  const totalFormatted = Number(amount || 0).toLocaleString('en-IN');
 
-  const handlePay = () => {
+  const handlePay = async () => {
     setProcessing(true);
-    setTimeout(() => {
-      setProcessing(false);
+    try {
+      const paymentId = `pay_${Date.now()}`;
+      const effectiveOrderId = gatewayOrderId || `order_${Date.now()}`;
+      const secret = 'secret_csd_afd_secure_key';
+      const signature = await computeHmacSha256(secret, `${effectiveOrderId}|${paymentId}`);
+
       setStep('success');
-      setTimeout(() => {
-        onSuccess({
-          paymentMethod: 'Online Payment (Razorpay)',
-          transactionId: `pay_${Math.random().toString(36).substring(2, 12)}`,
-          amount: amount || 721826,
-          paidAt: new Date().toISOString()
-        });
-      }, 1200);
-    }, 1500);
+      onSuccess({
+        paymentMethod: 'Online Payment (Razorpay)',
+        gatewayOrderId: effectiveOrderId,
+        gatewayPaymentId: paymentId,
+        gatewaySignature: signature,
+        amount: Number(amount) || 0,
+        paidAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error('Payment error:', err);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (

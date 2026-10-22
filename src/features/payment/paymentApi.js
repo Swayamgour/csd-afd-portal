@@ -46,12 +46,24 @@ export const paymentApi = api.injectEndpoints({
       transformResponse: (response) => response?.data || response,
       providesTags: (_result, _error, id) => [{ type: 'Payment', id }, 'Payment'],
     }),
+
+    submitDirectTransfer: builder.mutation({
+      query: (body) => ({
+        url: '/payments/direct-transfer',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Payment', 'Demand', 'Order', 'Dashboard'],
+    }),
   }),
 });
 
 export const {
   useCreatePaymentMutation,
   useVerifyPaymentMutation,
+  useSubmitDirectTransferMutation,
   useGetPaymentsQuery,
   useGetPaymentByIdQuery,
 } = paymentApi;
+

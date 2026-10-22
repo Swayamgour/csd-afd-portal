@@ -368,7 +368,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
       </div>
 
       {/* Metric Cards */}
-      <div className="csd-stats-grid">
+      <div className="csd-kpi-grid">
         <StatCard
           title="Pending Approvals"
           value={String(metrics.pending)}

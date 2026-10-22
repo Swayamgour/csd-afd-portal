@@ -16,6 +16,16 @@ import DepotOrderSummaryModal from './modals/DepotOrderSummaryModal.jsx';
 import DepotNotesModal from './modals/DepotNotesModal.jsx';
 import ViewCustomerModal from './modals/ViewCustomerModal.jsx';
 import PaymentReceiptModal from './modals/PaymentReceiptModal.jsx';
+import DocumentPreviewModal from '../../components/common/DocumentPreviewModal.jsx';
+
+const DOC_LABELS = {
+  CANTEEN_CARD: 'Canteen Card',
+  AVAILABILITY_CERTIFICATE: 'Avail Cert',
+  PAN_CARD: 'PAN Card',
+  PPO_DISCHARGE_BOOK: 'PPO Book',
+  PENSION_SLIP: 'Pension Slip',
+  OTHER: 'Doc'
+};
 
 export default function DepotDemands() {
   const { user } = useAuth();
@@ -40,6 +50,7 @@ export default function DepotDemands() {
   // Active Modals State
   const [activeDemand, setActiveDemand] = useState(null);
   const [modalType, setModalType] = useState(null); // 'payment' | 'upload' | 'approve' | 'reject' | 'summary' | 'notes' | 'customer' | 'receipt'
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -414,6 +425,52 @@ export default function DepotDemands() {
                             ₹{amt.toLocaleString('en-IN')}
                           </span>
                         </div>
+                        {Array.isArray(demand.documents) && demand.documents.length > 0 && (
+                          <div className="depot-po-meta-item mt-05" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                            <div className="row align-center gap-05">
+                              <span className="meta-key">Verification Docs ({demand.documents.length}):</span>
+                              <button
+                                type="button"
+                                className="small text-brand font-semibold underline"
+                                onClick={() => openModal(demand, 'summary')}
+                                title="View detailed summary and documents list"
+                                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '11px' }}
+                              >
+                                View All
+                              </button>
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                              {demand.documents.map((d, dIdx) => {
+                                const docLabel = DOC_LABELS[d.type] || d.type || 'Doc';
+                                return (
+                                  <button
+                                    key={d._id || dIdx}
+                                    type="button"
+                                    onClick={() => setPreviewDoc({ ...d, label: docLabel })}
+                                    className="depot-doc-pill-btn"
+                                    title={`Click to preview ${docLabel} inside portal`}
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '4px',
+                                      background: '#f0fdf4',
+                                      border: '1px solid #86efac',
+                                      color: '#15803d',
+                                      padding: '2px 7px',
+                                      borderRadius: '4px',
+                                      fontSize: '11px',
+                                      fontWeight: 600,
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    <Eye size={11} />
+                                    <span>{docLabel}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </td>
 
@@ -662,6 +719,15 @@ export default function DepotDemands() {
         onClose={closeModal}
         demand={activeDemand}
       />
+
+      {/* In-Portal Document Previewer Modal */}
+      {previewDoc && (
+        <DocumentPreviewModal
+          isOpen={!!previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          doc={previewDoc}
+        />
+      )}
     </div>
   );
 }

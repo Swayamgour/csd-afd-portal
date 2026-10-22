@@ -323,7 +323,7 @@ export const AdminUsers = () => {
       )}
 
       {/* KPI METRIC CARDS */}
-      <div className="stats-grid mb-xl">
+      <div className="kpi-grid mb-xl">
         <StatCard
           title="Total User Accounts"
           value={totalCount}

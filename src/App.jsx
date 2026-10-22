@@ -220,6 +220,7 @@ export default function App() {
           <Route path="/csd/categories" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdCategories /></RoleRoute>} />
           <Route path="/csd/oems" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdOems /></RoleRoute>} />
           <Route path="/csd/dealers" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDealers /></RoleRoute>} />
+          <Route path="/csd/dealer-products" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><DealerProducts /></RoleRoute>} />
           <Route path="/csd/depots" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDepots /></RoleRoute>} />
           <Route path="/csd/urcs" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdUrcs /></RoleRoute>} />
           <Route path="/csd/demands" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDemands /></RoleRoute>} />
@@ -269,7 +270,7 @@ export default function App() {
           {/* 6. DEALER PORTAL */}
           <Route path="/dealer/dashboard" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerDashboard /></RoleRoute>} />
           <Route path="/dealer/demands" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerDashboard /></RoleRoute>} />
-          <Route path="/dealer/products" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerProducts /></RoleRoute>} />
+          <Route path="/dealer/products" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER, ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><DealerProducts /></RoleRoute>} />
           <Route path="/dealer/orders" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerOrders /></RoleRoute>} />
           <Route path="/dealer/customers" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerCustomers /></RoleRoute>} />
           <Route path="/dealer/documents" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerDocuments /></RoleRoute>} />

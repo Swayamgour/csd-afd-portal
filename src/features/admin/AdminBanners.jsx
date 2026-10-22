@@ -287,7 +287,7 @@ export default function AdminBanners() {
       />
 
       {/* METRICS */}
-      <div className="csd-stats-grid">
+      <div className="csd-kpi-grid">
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
