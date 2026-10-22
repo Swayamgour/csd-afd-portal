@@ -64,7 +64,7 @@ export function BeneficiaryDashboard() {
       header: 'Demand Number',
       accessor: 'demandNo',
       render: (row) => (
-        <span style={{ fontWeight: 700, color: '#1e40af' }}>
+        <span className="depot-cell-bold-blue">
           {row.demandNo || row._id?.slice(-8).toUpperCase() || 'DEM-PENDING'}
         </span>
       ),
@@ -73,7 +73,7 @@ export function BeneficiaryDashboard() {
       header: 'Product',
       accessor: 'product',
       render: (row) => (
-        <div style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, color: '#0f172a' }}>
+        <div className="depot-cell-product-truncate depot-cell-bold-dark">
           {row.productSnapshot?.name || row.productId?.name || row.productName || 'AFD Item'}
         </div>
       ),
@@ -82,7 +82,7 @@ export function BeneficiaryDashboard() {
       header: 'Dealer',
       accessor: 'dealer',
       render: (row) => (
-        <span style={{ fontSize: '0.78rem', color: '#475569' }}>
+        <span className="depot-cell-subtext">
           {row.dealerId?.name || row.dealer || 'Authorized Dealer'}
         </span>
       ),
@@ -91,7 +91,7 @@ export function BeneficiaryDashboard() {
       header: 'Depot',
       accessor: 'depot',
       render: (row) => (
-        <span style={{ fontSize: '0.78rem', color: '#475569' }}>
+        <span className="depot-cell-subtext">
           {row.depotId?.name || row.depot || 'Regional Depot'}
         </span>
       ),
@@ -100,7 +100,7 @@ export function BeneficiaryDashboard() {
       header: 'URC',
       accessor: 'urc',
       render: (row) => (
-        <span style={{ fontSize: '0.78rem', color: '#475569' }}>
+        <span className="depot-cell-subtext">
           {row.urcId?.name || row.urc || 'Station Canteen'}
         </span>
       ),
@@ -109,7 +109,7 @@ export function BeneficiaryDashboard() {
       header: 'Amount',
       accessor: 'totalAmount',
       render: (row) => (
-        <span style={{ fontWeight: 700, color: '#0f172a' }}>
+        <span className="depot-cell-bold-dark font-bold">
           ₹ {Number(row.totalAmount || row.totalPrice || row.netPayable || 0).toLocaleString('en-IN')}
         </span>
       ),
@@ -119,14 +119,7 @@ export function BeneficiaryDashboard() {
       accessor: 'paymentStatus',
       render: (row) => (
         <span
-          style={{
-            fontSize: '0.7rem',
-            fontWeight: 700,
-            padding: '0.15rem 0.45rem',
-            borderRadius: '4px',
-            background: row.paymentStatus === 'PAID' ? '#dcfce7' : '#fef3c7',
-            color: row.paymentStatus === 'PAID' ? '#15803d' : '#b45309',
-          }}
+          className={`depot-pill-payment ${row.paymentStatus === 'PAID' ? 'depot-pill-paid' : 'depot-pill-unpaid'}`}
         >
           {row.paymentStatus || 'UNPAID'}
         </span>
@@ -180,103 +173,34 @@ export function BeneficiaryDashboard() {
     <div className="beneficiary-dashboard-page">
       {/* Verification / Approval Alert Banner */}
       {isPendingApproval && (
-        <div
-          style={{
-            background: '#fffbeb',
-            border: '1px solid #fde68a',
-            borderRadius: '12px',
-            padding: '1.25rem 1.5rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '1rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-          }}
-        >
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              background: '#fef3c7',
-              color: '#d97706',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
+        <div className="beneficiary-pending-card">
+          <div className="beneficiary-pending-icon-circle">
             <Clock size={22} />
           </div>
-          <div style={{ flex: 1 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.35rem',
-              }}
-            >
-              <h3
-                style={{
-                  margin: 0,
-                  color: '#92400e',
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                }}
-              >
+          <div className="portal-flex-1">
+            <div className="portal-flex-center mb-0-5">
+              <h3 className="beneficiary-pending-heading">
                 Beneficiary Account Pending Administrator Approval
               </h3>
               {user?.isEmailVerified && (
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    padding: '0.15rem 0.5rem',
-                    borderRadius: '9999px',
-                    background: '#dcfce7',
-                    color: '#166534',
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                  }}
-                >
+                <span className="beneficiary-verified-tag">
                   <ShieldCheck size={12} /> Email Verified ✓
                 </span>
               )}
             </div>
-            <p
-              style={{
-                margin: 0,
-                color: '#78350f',
-                fontSize: '0.92rem',
-                lineHeight: 1.5,
-              }}
-            >
+            <p className="beneficiary-pending-desc">
               Your registration is under verification by CSD authorities. You can browse the product catalog and view technical specifications. Demand generation and payment gateway will be enabled upon approval.
             </p>
-            <div style={{ marginTop: '0.85rem', display: 'flex', gap: '0.75rem' }}>
+            <div className="portal-flex-center mt-1">
               <Link
                 to="/products"
-                className="btn btn-sm"
-                style={{
-                  background: '#d97706',
-                  color: '#fff',
-                  border: 'none',
-                  fontWeight: 600,
-                  display: 'inline-block',
-                }}
+                className="btn btn-sm beneficiary-btn-amber"
               >
                 Browse Products
               </Link>
               <Link
                 to="/beneficiary/profile"
-                className="btn btn-sm out"
-                style={{
-                  borderColor: '#d97706',
-                  color: '#92400e',
-                  fontWeight: 600,
-                }}
+                className="btn btn-sm out beneficiary-btn-amber-outline"
               >
                 Complete Profile ({dashboardData?.profileCompletion || 0}%)
               </Link>
@@ -286,18 +210,7 @@ export function BeneficiaryDashboard() {
       )}
 
       {isRejected && (
-        <div
-          style={{
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: '12px',
-            padding: '1.25rem 1.5rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '1rem',
-          }}
-        >
+        <div className="beneficiary-rejected-card">
           <AlertCircle className="w-8 h-8 text-red-600 flex-shrink-0" />
           <div>
             <h3 className="font-bold text-red-800 text-base mb-1">
@@ -367,14 +280,7 @@ export function BeneficiaryDashboard() {
       </div>
 
       {/* Dynamic 6-Card Section 21 KPI Stat Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '0.85rem',
-          marginBottom: '1.5rem',
-        }}
-      >
+      <div className="beneficiary-kpi-grid">
         <StatCard
           title="My Demands"
           value={dashboardData?.totalDemands ?? recentDemands.length}

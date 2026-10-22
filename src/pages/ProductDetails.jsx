@@ -40,6 +40,17 @@ function useGallery(p) {
   return imgs;
 }
 
+const getColorClass = (col) => {
+  const c = (col || '').toLowerCase();
+  if (c.includes('red')) return 'swatch-color-red';
+  if (c.includes('black')) return 'swatch-color-black';
+  if (c.includes('silver')) return 'swatch-color-silver';
+  if (c.includes('blue')) return 'swatch-color-blue';
+  if (c.includes('white')) return 'swatch-color-white';
+  if (c.includes('grey') || c.includes('gray')) return 'swatch-color-grey';
+  return 'swatch-color-default';
+};
+
 function Choice({ label, options = [], value, set, swatch }) {
   if (!options.length) return null;
   return (
@@ -47,8 +58,8 @@ function Choice({ label, options = [], value, set, swatch }) {
       <p>{label}: <strong>{value}</strong></p>
       <div className="row">
         {options.map((o) => swatch ? (
-          <button key={o} type="button" className="swatch" aria-pressed={o === value} aria-label={o} title={o}
-            style={{ background: COLOR_HEX[o] || "#999" }} onClick={() => set(o)}>{o === value && <Check size={14} aria-hidden />}</button>
+          <button key={o} type="button" className={`swatch ${getColorClass(o)}`} aria-pressed={o === value} aria-label={o} title={o}
+            onClick={() => set(o)}>{o === value && <Check size={14} aria-hidden />}</button>
         ) : (
           <button key={o} type="button" className="chip" aria-pressed={o === value} onClick={() => set(o)}>{o}</button>
         ))}
@@ -66,9 +77,9 @@ function Emi({ p }) {
     <section className="emi" aria-labelledby="emi-h">
       <h3 id="emi-h"><CircleDollarSign size={18} aria-hidden /> EMI estimator</h3>
       <p className="emi-big">{inr(Math.round(emi))}<small>/month</small></p>
-      <label>Down payment <b>{down}%</b><input type="range" min="0" max="50" step="5" value={down} onChange={(e) => setDown(+e.target.value)} style={{ "--pct": `${(down / 50) * 100}%` }} /></label>
-      <label>Tenure <b>{yrs} yrs</b><input type="range" min="1" max="7" value={yrs} onChange={(e) => setYrs(+e.target.value)} style={{ "--pct": `${((yrs - 1) / 6) * 100}%` }} /></label>
-      <label>Interest <b>{rate}%</b><input type="range" min="6" max="14" step="0.5" value={rate} onChange={(e) => setRate(+e.target.value)} style={{ "--pct": `${((rate - 6) / 8) * 100}%` }} /></label>
+      <label>Down payment <b>{down}%</b><input type="range" min="0" max="50" step="5" value={down} onChange={(e) => setDown(+e.target.value)} className="emi-slider-input" /></label>
+      <label>Tenure <b>{yrs} yrs</b><input type="range" min="1" max="7" value={yrs} onChange={(e) => setYrs(+e.target.value)} className="emi-slider-input" /></label>
+      <label>Interest <b>{rate}%</b><input type="range" min="6" max="14" step="0.5" value={rate} onChange={(e) => setRate(+e.target.value)} className="emi-slider-input" /></label>
       <p className="muted small">Estimate on the starting price of {priceFrom(p)}. Actual EMI depends on your bank.</p>
     </section>
   );
@@ -423,10 +434,17 @@ export default function ProductDetails() {
         {/* ---------- gallery ---------- */}
         <div className="gallery">
           <div className={`stage ${zoom ? "zoom" : ""}`}
-            onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); setZoom({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 }); }}
-            onMouseLeave={() => setZoom(null)}>
+            onMouseMove={(e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              const x = ((e.clientX - r.left) / r.width) * 100;
+              const y = ((e.clientY - r.top) / r.height) * 100;
+              e.currentTarget.style.setProperty('--zx', `${x}%`);
+              e.currentTarget.style.setProperty('--zy', `${y}%`);
+              setZoom(true);
+            }}
+            onMouseLeave={() => setZoom(false)}>
             <img className="main-img" src={gallery[Math.min(main, gallery.length - 1)]} alt={`${p.name} view ${main + 1}`}
-              style={zoom ? { transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined} onError={(e) => onImgError(e, p.name)} />
+              onError={(e) => onImgError(e, p.name)} />
             <span className="tag">{CAT_LABEL[p.category]}</span>
             {appl && p.discount > 0 && <span className="disc">{p.discount}% OFF</span>}
             <button className={`fav-big ${w ? "on" : ""}`} aria-pressed={w} aria-label={w ? "Remove from wishlist" : "Add to wishlist"} onClick={() => toggleWish(p)}><Heart size={20} fill={w ? "currentColor" : "none"} /></button>
@@ -622,50 +640,50 @@ export default function ProductDetails() {
               </div>
 
               {/* Concessional Price Display matching Official CSD Price List */}
-              <div className="pdp-price-box" style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+              <div className="pdp-price-box pdp-rate-sheet-box">
                 <div className="between align-center mb-1">
-                  <span className="small font-bold" style={{ color: '#0f172a' }}>Price to Customer (Net CSD Payable):</span>
-                  <div className="h3 font-bold text-brand" style={{ margin: 0 }}>
+                  <span className="small font-bold pdp-rate-customer-label">Price to Customer (Net CSD Payable):</span>
+                  <div className="h3 font-bold text-brand pdp-price-amount">
                     ₹ {(p.priceToCustomer || p.price || 0).toLocaleString('en-IN')}
                   </div>
                 </div>
 
                 {p.basicPrice ? (
-                  <div className="csd-official-rate-sheet mt-2" style={{ fontSize: '0.82rem', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '0.75rem' }}>
-                    <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '0.4rem', marginBottom: '0.4rem', fontWeight: 600, color: '#1e3a8a' }}>
+                  <div className="csd-official-rate-sheet pdp-official-breakdown">
+                    <div className="pdp-breakdown-title">
                       📋 Official CSD Rate Breakdown (INDEX NO: {p.indexNo})
                     </div>
-                    <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                    <div className="between py-1 pdp-breakdown-row">
                       <span className="muted">Basic Price (incl. Dealer Margin):</span>
                       <span>₹ {Number(p.basicPrice).toLocaleString('en-IN')}</span>
                     </div>
                     {(p.csdDiscountAmount > 0 || p.marketScheme > 0) && (
-                      <div className="between py-1 text-green" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                      <div className="between py-1 text-green pdp-breakdown-row">
                         <span>CSD Discount & Schemes:</span>
                         <span>- ₹ {(Number(p.csdDiscountAmount) + Number(p.marketScheme || 0)).toLocaleString('en-IN')}</span>
                       </div>
                     )}
-                    <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                    <div className="between py-1 pdp-breakdown-row">
                       <span className="muted">CSD Basic with Discount:</span>
                       <span className="font-semibold">₹ {Number(p.csdBasicWithDiscount || p.basicPrice).toLocaleString('en-IN')}</span>
                     </div>
-                    <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                    <div className="between py-1 pdp-breakdown-row">
                       <span className="muted">GST (SGST + CGST with Concession):</span>
                       <span>+ ₹ {(Number(p.sgstAmount || 0) + Number(p.cgstAmount || 0)).toLocaleString('en-IN')}</span>
                     </div>
                     {p.csdProfitAmount > 0 && (
-                      <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                      <div className="between py-1 pdp-breakdown-row">
                         <span className="muted">CSD Profit Margin (0.50%):</span>
                         <span>+ ₹ {Number(p.csdProfitAmount).toLocaleString('en-IN')}</span>
                       </div>
                     )}
                     {p.tcsAmount > 0 && (
-                      <div className="between py-1" style={{ borderBottom: '1px dotted #e2e8f0' }}>
+                      <div className="between py-1 pdp-breakdown-row">
                         <span className="muted">TCS @ 1% (Above 10 Lacs):</span>
                         <span>+ ₹ {Number(p.tcsAmount).toLocaleString('en-IN')}</span>
                       </div>
                     )}
-                    <div className="micro muted mt-1 pt-1" style={{ fontStyle: 'italic', color: '#64748b' }}>
+                    <div className="micro muted mt-1 pt-1 pdp-dealer-ref-note">
                       Ref Dealer: {p.dealerRefName} | Rate List: {p.priceListRef}
                     </div>
                   </div>
@@ -678,36 +696,15 @@ export default function ProductDetails() {
 
               {/* Login Required Notice */}
               {!isAuthenticated && (
-                <div style={{
-                  background: '#eff6ff',
-                  border: '1px solid #bfdbfe',
-                  borderRadius: '8px',
-                  padding: '0.85rem 1rem',
-                  marginBottom: '1rem',
-                  fontSize: '0.85rem',
-                  lineHeight: 1.45,
-                  color: '#1e40af',
-                  textAlign: 'left'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Lock size={16} style={{ color: '#2563eb', flexShrink: 0 }} />
+                <div className="pdp-login-notice">
+                  <div className="pdp-notice-inner">
+                    <div className="pdp-notice-text-wrap">
+                      <Lock size={16} className="pdp-notice-icon" />
                       <span><strong>Login Required:</strong> Please log in to unlock checkout and generate demand.</span>
                     </div>
                     <Link
                       to={`/login?redirect=${encodeURIComponent(`/products/${id}`)}`}
-                      style={{
-                        background: '#1e3a8a',
-                        color: '#ffffff',
-                        padding: '0.35rem 0.85rem',
-                        borderRadius: '6px',
-                        fontWeight: 600,
-                        fontSize: '0.8rem',
-                        textDecoration: 'none',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.3rem'
-                      }}
+                      className="pdp-notice-login-link"
                     >
                       Login Now <ArrowRight size={13} />
                     </Link>
@@ -717,18 +714,8 @@ export default function ProductDetails() {
 
               {/* Pending Approval Notice */}
               {isAuthenticated && isPendingApproval && (
-                <div style={{
-                  background: '#fffbeb',
-                  border: '1px solid #fde68a',
-                  borderRadius: '8px',
-                  padding: '0.85rem 1rem',
-                  marginBottom: '1rem',
-                  fontSize: '0.85rem',
-                  lineHeight: 1.45,
-                  color: '#78350f',
-                  textAlign: 'left'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem', color: '#92400e', fontWeight: 600 }}>
+                <div className="pdp-pending-notice">
+                  <div className="pdp-pending-title">
                     <AlertCircle size={16} /> Account Pending Admin Approval
                   </div>
                   Your account is pending admin approval. You can view products, but demand generation will be available after your account is approved by the administrator.
@@ -740,14 +727,7 @@ export default function ProductDetails() {
                 type="button"
                 onClick={handleCheckoutClick}
                 disabled={!isAuthenticated || checkingEligibility || isPendingApproval}
-                className="btn-checkout-cta"
-                style={
-                  !isAuthenticated
-                    ? { opacity: 0.65, cursor: 'not-allowed', background: '#94a3b8' }
-                    : isPendingApproval
-                      ? { opacity: 0.65, cursor: 'not-allowed', background: '#94a3b8' }
-                      : undefined
-                }
+                className={`btn-checkout-cta ${(!isAuthenticated || isPendingApproval) ? 'btn-checkout-disabled' : ''}`}
                 title={
                   !isAuthenticated
                     ? 'Please login to proceed with checkout'
@@ -757,7 +737,7 @@ export default function ProductDetails() {
                 }
               >
                 {!isAuthenticated ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                  <span className="btn-checkout-content">
                     <Lock size={16} /> LOGIN TO CHECKOUT
                   </span>
                 ) : isPendingApproval ? (
@@ -828,7 +808,7 @@ export default function ProductDetails() {
             <p className="about">{about}</p>
             <h3>Key highlights</h3>
             <ul className="hl wide">{highlights.map(([Ic, l, v]) => (<li key={l}><span><Ic size={18} aria-hidden /></span><div><small>{l}</small><strong>{v}</strong></div></li>))}</ul>
-            {p.colors?.length > 0 && (<><h3><Palette size={16} aria-hidden /> Available colours</h3><ul className="colors">{p.colors.map((c2) => <li key={c2}><i style={{ background: COLOR_HEX[c2] || "#999" }} />{c2}</li>)}</ul></>)}
+            {p.colors?.length > 0 && (<><h3><Palette size={16} aria-hidden /> Available colours</h3><ul className="colors">{p.colors.map((c2) => <li key={c2}><i className={`swatch-dot ${getColorClass(c2)}`} />{c2}</li>)}</ul></>)}
           </div>
         )}
 
@@ -875,7 +855,7 @@ export default function ProductDetails() {
       <div className="mbar">
         <div><small>{appl ? "Price" : "Starting at"}</small><strong>{priceFrom(p)}</strong></div>
         <button
-          className="btn"
+          className={`btn ${!isAuthenticated ? 'btn-disabled-login' : ''}`}
           onClick={() => {
             if (!isAuthenticated) {
               navigate(`/login?redirect=${encodeURIComponent(`/products/${id}`)}&reason=auth-required`);
@@ -884,7 +864,6 @@ export default function ProductDetails() {
             }
           }}
           disabled={!isAuthenticated}
-          style={!isAuthenticated ? { opacity: 0.65, cursor: 'not-allowed', background: '#94a3b8' } : undefined}
           title={!isAuthenticated ? 'Please log in to proceed' : undefined}
         >
           {!isAuthenticated ? <Lock size={16} aria-hidden /> : <ShoppingCart size={16} aria-hidden />}

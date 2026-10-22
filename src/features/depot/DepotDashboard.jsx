@@ -90,7 +90,7 @@ export default function DepotDashboard() {
       header: 'Demand No',
       accessor: 'demandNo',
       render: (row) => (
-        <span style={{ fontWeight: 700, color: '#1e40af' }}>
+        <span className="depot-cell-bold-blue">
           {row.demandNo || row._id?.slice(-8).toUpperCase()}
         </span>
       ),
@@ -100,10 +100,10 @@ export default function DepotDashboard() {
       accessor: 'beneficiary',
       render: (row) => (
         <div>
-          <span style={{ fontWeight: 600, display: 'block', color: '#0f172a' }}>
+          <span className="depot-cell-bold-dark">
             {row.beneficiaryId?.name || row.productSnapshot?.dealerRefName || 'Beneficiary'}
           </span>
-          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+          <span className="depot-cell-subtext">
             {row.beneficiaryId?.serviceNumber || row.beneficiaryId?.rank || ''}
           </span>
         </div>
@@ -113,7 +113,7 @@ export default function DepotDashboard() {
       header: 'Product',
       accessor: 'product',
       render: (row) => (
-        <div style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div className="depot-cell-product-truncate">
           {row.productSnapshot?.name || row.productId?.name || 'AFD Vehicle/Item'}
         </div>
       ),
@@ -133,14 +133,7 @@ export default function DepotDashboard() {
       accessor: 'paymentStatus',
       render: (row) => (
         <span
-          style={{
-            fontSize: '0.72rem',
-            fontWeight: 700,
-            padding: '0.15rem 0.45rem',
-            borderRadius: '4px',
-            background: row.paymentStatus === 'PAID' ? '#dcfce7' : '#fef3c7',
-            color: row.paymentStatus === 'PAID' ? '#15803d' : '#b45309',
-          }}
+          className={`depot-pill-payment ${row.paymentStatus === 'PAID' ? 'depot-pill-paid' : 'depot-pill-unpaid'}`}
         >
           {row.paymentStatus || 'UNPAID'}
         </span>
@@ -160,7 +153,7 @@ export default function DepotDashboard() {
       header: 'Action',
       accessor: '_id',
       render: (row) => (
-        <Link to="/depot/demands" style={{ textDecoration: 'none' }}>
+        <Link to="/depot/demands" className="depot-link-action">
           <Button variant="outline" size="sm">
             Process
           </Button>
@@ -170,12 +163,12 @@ export default function DepotDashboard() {
   ];
 
   return (
-    <div className="depot-dashboard-page" style={{ paddingBottom: '3rem' }}>
+    <div className="depot-dashboard-page depot-page-pad">
       <PageHeader
         title={`Regional Depot Directorate · ${depotTitle}`}
         subtitle={`Commanding Officer: ${user?.name || 'Depot Official'} · Area Jurisdictional Operations & Demand Processing Desk`}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div className="portal-flex-center">
             <Button
               variant="outline"
               size="sm"
@@ -187,10 +180,7 @@ export default function DepotDashboard() {
             >
               <RefreshCw
                 size={14}
-                style={{
-                  marginRight: '0.35rem',
-                  animation: fetchingDemands ? 'spin 1s linear infinite' : 'none',
-                }}
+                className={fetchingDemands ? 'depot-refresh-spin' : 'depot-refresh-icon'}
               />
               {fetchingDemands ? 'Syncing...' : 'Sync Demands'}
             </Button>
@@ -204,17 +194,11 @@ export default function DepotDashboard() {
       />
 
       {/* 10 SCOPED DEPOT SUMMARY CARDS */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#334155', marginBottom: '0.75rem' }}>
+      <div className="depot-section-mb">
+        <h3 className="depot-section-heading">
           Depot Demand Sanction & Verification Stages
         </h3>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '0.75rem',
-          }}
-        >
+        <div className="depot-stats-grid">
           <StatCard
             title="New Demands"
             value={String(newDemandsCount)}
@@ -303,7 +287,7 @@ export default function DepotDashboard() {
         title="Active Depot Processing Queue"
         subtitle="Jurisdictional demand records assigned to your depot station"
         actions={
-          <Link to="/depot/demands" style={{ fontSize: '0.82rem', color: '#1e40af', fontWeight: 600 }}>
+          <Link to="/depot/demands" className="depot-link-action">
             Open Complete Queue →
           </Link>
         }

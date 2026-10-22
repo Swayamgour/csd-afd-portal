@@ -177,8 +177,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
             <select
               value={role}
               onChange={(e) => handlePrimaryRoleChange(e.target.value)}
-              className="select-input"
-              style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+              className="director-field-input"
             >
               {MASTER_ROLES.map((r) => (
                 <option key={r.code} value={r.code}>
@@ -188,14 +187,13 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
             </select>
           </div>
 
-          <div style={{ marginTop: '1rem', paddingTop: '0.85rem', borderTop: '1px solid #f1f5f9' }}>
+          <div className="mt-md pt-sm border-t">
             <label className="form-label font-semibold">Other Secondary Roles</label>
-            <div className="row align-center gap-1" style={{ marginBottom: '0.75rem' }}>
+            <div className="row align-center gap-1 mb-sm">
               <select
                 value={selectedOtherRoleToAdd}
                 onChange={(e) => setSelectedOtherRoleToAdd(e.target.value)}
-                className="select-input"
-                style={{ flex: 1, padding: '0.55rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="director-field-input flex-1"
               >
                 <option value="">-- Add another role --</option>
                 {availableOtherRoles.map((r) => (
@@ -222,14 +220,13 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
                 return (
                   <span
                     key={rCode}
-                    className="badge row align-center gap-1"
-                    style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.35rem 0.65rem', borderRadius: '20px' }}
+                    className="badge badge-role-tag row align-center gap-1"
                   >
                     <span>{rObj ? rObj.label : rCode}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveOtherRole(rCode)}
-                      style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: 0 }}
+                      className="portal-btn-icon-plain"
                     >
                       <X size={13} />
                     </button>
@@ -247,8 +244,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
               <label className="form-label">Date of Last Demand (4-Wheeler)</label>
               <input
                 type="date"
-                className="select-input"
-                style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="director-field-input"
                 value={lastDemand4Wheeler}
                 onChange={(e) => setLastDemand4Wheeler(e.target.value)}
               />
@@ -257,15 +253,14 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
               <label className="form-label">Date of Last Demand (2-Wheeler)</label>
               <input
                 type="date"
-                className="select-input"
-                style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="director-field-input"
                 value={lastDemand2Wheeler}
                 onChange={(e) => setLastDemand2Wheeler(e.target.value)}
               />
             </div>
           </div>
 
-          <div style={{ marginTop: '0.85rem' }}>
+          <div className="mt-sm">
             <label className="checkbox-label row align-center gap-1 small pointer">
               <input
                 type="checkbox"
@@ -276,7 +271,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
             </label>
           </div>
 
-          <div className="form-grid-2" style={{ marginTop: '0.85rem' }}>
+          <div className="form-grid-2 mt-sm">
             <div>
               <label className="form-label">Website Rating</label>
               <div className="row align-center gap-1">
@@ -285,13 +280,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
                     key={star}
                     type="button"
                     onClick={() => setWebsiteRating(star)}
-                    style={{
-                      background: 'transparent',
-                      border: 0,
-                      cursor: 'pointer',
-                      color: star <= websiteRating ? '#f59e0b' : '#cbd5e1',
-                      padding: '2px'
-                    }}
+                    className={`star-rating-btn ${star <= websiteRating ? 'is-active' : ''}`}
                   >
                     <Star size={20} fill={star <= websiteRating ? '#f59e0b' : 'none'} />
                   </button>
@@ -304,27 +293,25 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
               <label className="form-label">Feedback Remarks</label>
               <textarea
                 rows={2}
-                className="select-input"
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontFamily: 'inherit' }}
+                className="director-field-input"
                 value={feedbackComment}
                 onChange={(e) => setFeedbackComment(e.target.value)}
               />
             </div>
           </div>
 
-          <div style={{ marginTop: '0.85rem' }}>
+          <div className="mt-sm">
             <label className="form-label">Reason of Denial (If applicable)</label>
             <textarea
               rows={2}
-              className="select-input"
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontFamily: 'inherit' }}
+              className="director-field-input"
               value={reasonOfDenial}
               onChange={(e) => setReasonOfDenial(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="between" style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+        <div className="between mt-md pt-sm border-t">
           <span className="micro muted">
             Saving changes will automatically increment <code>userEditedCount</code> (currently {user.userEditedCount || 0}).
           </span>

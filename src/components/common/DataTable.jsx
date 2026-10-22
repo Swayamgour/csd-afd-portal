@@ -19,7 +19,7 @@ export function DataTable({
           <thead>
             <tr>
               {columns.map((col, idx) => (
-                <th key={idx} className={col.className || ''} style={col.width ? { width: col.width } : undefined}>
+                <th key={idx} className={col.className || ''} width={col.width || undefined}>
                   {col.header}
                 </th>
               ))}

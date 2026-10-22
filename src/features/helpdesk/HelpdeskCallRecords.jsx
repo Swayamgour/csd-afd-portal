@@ -25,7 +25,7 @@ export const HelpdeskCallRecords = () => {
     {
       header: 'Disposition',
       accessor: 'disposition',
-      render: (c) => <span className="badge" style={{ background: '#f1f5f9', color: '#1e293b' }}>{c.disposition}</span>
+      render: (c) => <span className="badge badge-subtle-slate">{c.disposition}</span>
     },
     { header: 'Attending Agent', accessor: 'agent' },
     { header: 'Call Timestamp', accessor: 'time' }

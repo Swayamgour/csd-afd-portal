@@ -16,8 +16,8 @@ export const HelpdeskFeedback = () => {
     { header: 'Feedback ID', accessor: 'id', render: (f) => <strong>{f.id}</strong> },
     { header: 'Beneficiary', accessor: 'citizen' },
     { header: 'Linked Ticket', accessor: 'ticketId' },
-    { header: 'Citizen Rating', accessor: 'rating', render: (f) => <span style={{ fontWeight: 600 }}>{f.rating}</span> },
-    { header: 'Beneficiary Remarks', accessor: 'comment', render: (f) => <span style={{ fontStyle: 'italic' }}>"{f.comment}"</span> },
+    { header: 'Citizen Rating', accessor: 'rating', render: (f) => <span className="font-semibold">{f.rating}</span> },
+    { header: 'Beneficiary Remarks', accessor: 'comment', render: (f) => <span className="portal-italic-comment">"{f.comment}"</span> },
     { header: 'Received On', accessor: 'date' }
   ];
 
@@ -32,7 +32,7 @@ export const HelpdeskFeedback = () => {
         ]}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="csd-stats-grid mb-md">
         <StatCard title="Overall CSAT Score" value="4.7 / 5.0" change="+0.2" isPositive={true} subtitle="94% Satisfied" />
         <StatCard title="Total Surveys Completed" value="842" subtitle="This Month" />
         <StatCard title="5-Star Ratings" value="712" subtitle="84.5% of total" />

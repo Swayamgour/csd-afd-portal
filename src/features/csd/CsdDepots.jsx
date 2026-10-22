@@ -133,8 +133,8 @@ export default function CsdDepots() {
       accessor: 'name',
       render: (row) => (
         <div>
-          <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.88rem' }}>{row.name}</strong>
-          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{row.address || row.city}</span>
+          <strong className="csd-row-title">{row.name}</strong>
+          <span className="csd-loc-secondary">{row.address || row.city}</span>
         </div>
       ),
     },
@@ -142,16 +142,7 @@ export default function CsdDepots() {
       header: 'Depot Code',
       accessor: 'code',
       render: (row) => (
-        <span
-          style={{
-            fontFamily: 'monospace',
-            fontWeight: 700,
-            color: '#1e40af',
-            background: '#eff6ff',
-            padding: '0.15rem 0.45rem',
-            borderRadius: '4px',
-          }}
-        >
+        <span className="csd-code-badge">
           {row.code}
         </span>
       ),
@@ -161,8 +152,8 @@ export default function CsdDepots() {
       accessor: 'city',
       render: (row) => (
         <div>
-          <span style={{ fontWeight: 600, color: '#334155' }}>{row.city || '—'}</span>
-          <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block' }}>{row.state || ''}</span>
+          <span className="csd-loc-primary">{row.city || '—'}</span>
+          <span className="csd-loc-secondary">{row.state || ''}</span>
         </div>
       ),
     },
@@ -171,8 +162,8 @@ export default function CsdDepots() {
       accessor: 'person',
       render: (row) => (
         <div>
-          <span style={{ color: '#1e293b', fontWeight: 500 }}>{row.person || 'Depot Manager'}</span>
-          <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block' }}>{row.phone || row.email || ''}</span>
+          <span className="csd-contact-name">{row.person || 'Depot Manager'}</span>
+          <span className="csd-contact-phone">{row.phone || row.email || ''}</span>
         </div>
       ),
     },
@@ -180,17 +171,7 @@ export default function CsdDepots() {
       header: 'Status',
       accessor: 'active',
       render: (row) => (
-        <span
-          style={{
-            fontSize: '0.72rem',
-            padding: '0.15rem 0.5rem',
-            borderRadius: '9999px',
-            fontWeight: 700,
-            background: row.active ? '#dcfce7' : '#fee2e2',
-            color: row.active ? '#15803d' : '#991b1b',
-            border: `1px solid ${row.active ? '#bbf7d0' : '#fecaca'}`,
-          }}
-        >
+        <span className={row.active ? 'csd-badge-active' : 'csd-badge-inactive'}>
           {row.active ? 'ACTIVE' : 'INACTIVE'}
         </span>
       ),
@@ -199,21 +180,11 @@ export default function CsdDepots() {
       header: 'Actions',
       accessor: '_id',
       render: (row) => (
-        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+        <div className="csd-action-row">
           <button
             type="button"
             onClick={() => setSelectedDepotForView(row)}
-            style={{
-              padding: '0.25rem 0.5rem',
-              borderRadius: '4px',
-              border: '1px solid #cbd5e1',
-              background: '#f8fafc',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.25rem',
-              fontSize: '0.75rem',
-            }}
+            className="csd-btn-action-view"
             title="Inspect Depot"
           >
             <Eye size={13} /> View
@@ -221,19 +192,7 @@ export default function CsdDepots() {
           <button
             type="button"
             onClick={() => handleOpenEdit(row)}
-            style={{
-              padding: '0.25rem 0.5rem',
-              borderRadius: '4px',
-              border: '1px solid #bfdbfe',
-              background: '#eff6ff',
-              color: '#1d4ed8',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.25rem',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-            }}
+            className="csd-btn-action-edit"
             title="Edit Details"
           >
             <Edit2 size={13} /> Edit
@@ -241,17 +200,7 @@ export default function CsdDepots() {
           <button
             type="button"
             onClick={() => handleToggleStatus(row)}
-            style={{
-              padding: '0.25rem 0.5rem',
-              borderRadius: '4px',
-              border: '1px solid',
-              borderColor: row.active ? '#fca5a5' : '#86efac',
-              background: row.active ? '#fef2f2' : '#f0fdf4',
-              color: row.active ? '#dc2626' : '#16a34a',
-              cursor: 'pointer',
-              fontSize: '0.72rem',
-              fontWeight: 600,
-            }}
+            className={row.active ? 'csd-btn-action-delete' : 'csd-btn-action-view'}
           >
             {row.active ? 'Deactivate' : 'Activate'}
           </button>
@@ -261,26 +210,9 @@ export default function CsdDepots() {
   ];
 
   return (
-    <div className="csd-depots-page" style={{ paddingBottom: '3rem' }}>
+    <div className="csd-module-page">
       {toastMessage && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '1.5rem',
-            right: '1.5rem',
-            background: '#065f46',
-            color: '#fff',
-            padding: '0.85rem 1.35rem',
-            borderRadius: '8px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.6rem',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-          }}
-        >
+        <div className="portal-toast-fixed">
           <CheckCircle2 size={18} />
           {toastMessage}
         </div>
@@ -291,13 +223,13 @@ export default function CsdDepots() {
         subtitle="Operational oversight of Area Depots managing regional AFD sanction queues and supply orders"
         breadcrumbs={[{ label: 'Catalog Master', href: '/csd/products' }, { label: 'Depots' }]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div className="csd-toolbar-actions">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={refreshing}>
-              <RefreshCw size={14} style={{ marginRight: '0.35rem', animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+              <RefreshCw size={14} className={`mr-xs ${refreshing ? 'spin-icon' : ''}`} />
               {refreshing ? 'Syncing...' : 'Sync Depots'}
             </Button>
             <Button variant="primary" size="sm" onClick={handleOpenAdd}>
-              <Plus size={14} style={{ marginRight: '0.35rem' }} /> Add New Depot
+              <Plus size={14} className="mr-xs" /> Add New Depot
             </Button>
           </div>
         }
@@ -307,20 +239,14 @@ export default function CsdDepots() {
         title="Regional Depot Roster"
         subtitle="Jurisdictional hubs executing demand sanctioning, payment verification, and Supply Order issuance"
         actions={
-          <div style={{ position: 'relative', minWidth: '240px' }}>
-            <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+          <div className="csd-search-wrap">
+            <Search size={14} className="csd-search-icon-pos" />
             <input
               type="text"
               placeholder="Search depot name, code, state..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.35rem 0.65rem 0.35rem 1.85rem',
-                borderRadius: '6px',
-                border: '1px solid #cbd5e1',
-                fontSize: '0.8rem',
-              }}
+              className="csd-search-field-input director-field-input"
             />
           </div>
         }
@@ -342,10 +268,10 @@ export default function CsdDepots() {
             setSelectedDepotForEdit(null);
           }}
         >
-          <form onSubmit={handleSaveDepot} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem' }}>
+          <form onSubmit={handleSaveDepot} className="director-modal-form">
+            <div className="csd-form-grid-2-1">
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                <label className="director-field-label">
                   Depot Name *
                 </label>
                 <input
@@ -354,11 +280,11 @@ export default function CsdDepots() {
                   placeholder="e.g. DELHI CSD DEPOT"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  style={{ width: '100%', padding: '0.45rem', borderRadius: '5px', border: '1px solid #cbd5e1' }}
+                  className="director-field-input"
                 />
               </div>
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                <label className="director-field-label">
                   Depot Code *
                 </label>
                 <input
@@ -367,14 +293,14 @@ export default function CsdDepots() {
                   placeholder="e.g. DEP-DEL"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  style={{ width: '100%', padding: '0.45rem', borderRadius: '5px', border: '1px solid #cbd5e1' }}
+                  className="director-field-input"
                 />
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+            <div className="csd-form-grid-3">
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                <label className="director-field-label">
                   Commanding Officer / Nodal
                 </label>
                 <input
@@ -382,11 +308,11 @@ export default function CsdDepots() {
                   placeholder="Depot Manager"
                   value={formData.person}
                   onChange={(e) => setFormData({ ...formData, person: e.target.value })}
-                  style={{ width: '100%', padding: '0.45rem', borderRadius: '5px', border: '1px solid #cbd5e1' }}
+                  className="director-field-input"
                 />
               </div>
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                <label className="director-field-label">
                   Official Email
                 </label>
                 <input
@@ -394,11 +320,11 @@ export default function CsdDepots() {
                   placeholder="depot@csdindia.gov.in"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  style={{ width: '100%', padding: '0.45rem', borderRadius: '5px', border: '1px solid #cbd5e1' }}
+                  className="director-field-input"
                 />
               </div>
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                <label className="director-field-label">
                   Contact Phone
                 </label>
                 <input
@@ -406,13 +332,13 @@ export default function CsdDepots() {
                   placeholder="Depot Phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  style={{ width: '100%', padding: '0.45rem', borderRadius: '5px', border: '1px solid #cbd5e1' }}
+                  className="director-field-input"
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
+              <label className="director-field-label">
                 Premises Address
               </label>
               <input
@@ -420,13 +346,13 @@ export default function CsdDepots() {
                 placeholder="Station / Area Depot Address"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                style={{ width: '100%', padding: '0.45rem', borderRadius: '5px', border: '1px solid #cbd5e1' }}
+                className="director-field-input"
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="csd-form-grid-2">
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                <label className="director-field-label">
                   City
                 </label>
                 <input
@@ -434,11 +360,11 @@ export default function CsdDepots() {
                   placeholder="City"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  style={{ width: '100%', padding: '0.45rem', borderRadius: '5px', border: '1px solid #cbd5e1' }}
+                  className="director-field-input"
                 />
               </div>
               <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                <label className="director-field-label">
                   State
                 </label>
                 <input
@@ -446,24 +372,24 @@ export default function CsdDepots() {
                   placeholder="State"
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  style={{ width: '100%', padding: '0.45rem', borderRadius: '5px', border: '1px solid #cbd5e1' }}
+                  className="director-field-input"
                 />
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+            <div className="portal-flex-wrap-gap-sm">
               <input
                 type="checkbox"
                 id="depotActive"
                 checked={formData.active}
                 onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
               />
-              <label htmlFor="depotActive" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>
+              <label htmlFor="depotActive" className="director-field-label">
                 Operational & Open for Inbound Demands
               </label>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+            <div className="director-modal-actions">
               <Button
                 type="button"
                 variant="outline"
@@ -488,55 +414,46 @@ export default function CsdDepots() {
           title={`Depot Profile: ${selectedDepotForView.name}`}
           onClose={() => setSelectedDepotForView(null)}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#0f172a' }}>{selectedDepotForView.name}</h3>
-                <span
-                  style={{
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '9999px',
-                    background: selectedDepotForView.active ? '#dcfce7' : '#fee2e2',
-                    color: selectedDepotForView.active ? '#15803d' : '#991b1b',
-                  }}
-                >
+          <div className="director-modal-form">
+            <div className="csd-card-preview-box">
+              <div className="csd-card-preview-header">
+                <h3 className="csd-card-preview-title">{selectedDepotForView.name}</h3>
+                <span className={selectedDepotForView.active ? 'csd-badge-active' : 'csd-badge-inactive'}>
                   {selectedDepotForView.active ? 'ACTIVE' : 'INACTIVE'}
                 </span>
               </div>
-              <div style={{ fontSize: '0.85rem', color: '#475569' }}>
+              <div className="csd-subtext-muted">
                 Code: <strong>{selectedDepotForView.code}</strong>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', fontSize: '0.85rem' }}>
+            <div className="csd-preview-grid-2">
               <div>
-                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Commanding Officer / Nodal</span>
-                <strong>{selectedDepotForView.person || '—'}</strong>
+                <span className="csd-preview-field-label">Commanding Officer / Nodal</span>
+                <div className="csd-preview-field-value">{selectedDepotForView.person || '—'}</div>
               </div>
               <div>
-                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Contact Phone</span>
-                <strong>{selectedDepotForView.phone || '—'}</strong>
+                <span className="csd-preview-field-label">Contact Phone</span>
+                <div className="csd-preview-field-value">{selectedDepotForView.phone || '—'}</div>
               </div>
               <div>
-                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Official Email</span>
-                <strong>{selectedDepotForView.email || '—'}</strong>
+                <span className="csd-preview-field-label">Official Email</span>
+                <div className="csd-preview-field-value">{selectedDepotForView.email || '—'}</div>
               </div>
               <div>
-                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Jurisdiction</span>
-                <strong>{selectedDepotForView.city ? `${selectedDepotForView.city}, ${selectedDepotForView.state || ''}` : '—'}</strong>
+                <span className="csd-preview-field-label">Jurisdiction</span>
+                <div className="csd-preview-field-value">{selectedDepotForView.city ? `${selectedDepotForView.city}, ${selectedDepotForView.state || ''}` : '—'}</div>
               </div>
             </div>
 
             {selectedDepotForView.address && (
               <div>
-                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Premises Address</span>
-                <span style={{ fontSize: '0.85rem', color: '#1e293b' }}>{selectedDepotForView.address}</span>
+                <span className="csd-preview-field-label">Premises Address</span>
+                <div className="csd-preview-field-value">{selectedDepotForView.address}</div>
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+            <div className="director-modal-actions">
               <Button variant="outline" onClick={() => setSelectedDepotForView(null)}>
                 Close
               </Button>

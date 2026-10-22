@@ -31,15 +31,15 @@ export const AdminPermissions = () => {
   );
 
   const columns = [
-    { header: 'Module', accessor: 'module', render: (p) => <span className="badge" style={{ background: '#f1f5f9', color: 'var(--navy)' }}>{p.module}</span> },
+    { header: 'Module', accessor: 'module', render: (p) => <span className="badge-perm-count">{p.module}</span> },
     { header: 'Permission Identifier', accessor: 'permission', render: (p) => <code>{p.permission}</code> },
     {
       header: 'Authorized Stakeholder Roles',
       accessor: 'roles',
       render: (p) => (
-        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+        <div className="portal-flex-wrap-gap-xs">
           {p.roles.map((r, idx) => (
-            <span key={idx} className="badge" style={{ fontSize: '0.7rem', background: '#e0f2fe', color: '#0369a1' }}>
+            <span key={idx} className="badge-role-tag">
               {r}
             </span>
           ))}
@@ -60,7 +60,7 @@ export const AdminPermissions = () => {
       />
 
       <Card>
-        <div style={{ marginBottom: '1.25rem' }}>
+        <div className="mb-lg">
           <SearchInput
             value={search}
             onChange={(e) => setSearch(e.target.value)}

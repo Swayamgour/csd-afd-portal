@@ -61,7 +61,7 @@ export default function UrcDashboard() {
       header: 'Order Number',
       accessor: 'orderNo',
       render: (r) => (
-        <span style={{ fontWeight: 700, color: '#1e40af' }}>
+        <span className="portal-text-brand font-semibold">
           {r.orderNo || r._id?.slice(-8).toUpperCase()}
         </span>
       ),
@@ -70,7 +70,7 @@ export default function UrcDashboard() {
       header: 'Demand Number',
       accessor: 'demandId',
       render: (r) => (
-        <span style={{ fontWeight: 600, color: '#475569' }}>
+        <span className="portal-text-slate font-semibold">
           {r.demandId?.demandNo || r.demandId || '—'}
         </span>
       ),
@@ -80,10 +80,10 @@ export default function UrcDashboard() {
       accessor: 'beneficiary',
       render: (r) => (
         <div>
-          <span style={{ fontWeight: 600, display: 'block', color: '#0f172a' }}>
+          <span className="portal-profile-name font-semibold">
             {r.beneficiaryId?.name || 'Authorized Beneficiary'}
           </span>
-          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+          <span className="portal-subtext-muted fs-xs">
             {r.beneficiaryId?.serviceNumber || ''}
           </span>
         </div>
@@ -93,7 +93,7 @@ export default function UrcDashboard() {
       header: 'Product',
       accessor: 'product',
       render: (r) => (
-        <div style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div className="truncate-max-w-160">
           {r.productId?.name || 'AFD Vehicle/Item'}
         </div>
       ),
@@ -131,12 +131,12 @@ export default function UrcDashboard() {
   ];
 
   return (
-    <div className="urc-dashboard-page" style={{ paddingBottom: '3rem' }}>
+    <div className="urc-dashboard-page pb-3xl">
       <PageHeader
         title={`Unit Run Canteen (URC) Operations · ${user?.urc || 'Delhi Cantt Station URC'}`}
         subtitle={`Officer-in-Charge: ${user?.name || 'URC Official'} · Local Station Delivery & Handover Desk`}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div className="portal-flex-align-center-gap-sm">
             <Button
               variant="outline"
               size="sm"
@@ -148,10 +148,7 @@ export default function UrcDashboard() {
             >
               <RefreshCw
                 size={14}
-                style={{
-                  marginRight: '0.35rem',
-                  animation: fetchingOrders ? 'spin 1s linear infinite' : 'none',
-                }}
+                className={`mr-xs ${fetchingOrders ? 'spin' : ''}`}
               />
               {fetchingOrders ? 'Syncing...' : 'Sync Orders'}
             </Button>
@@ -165,14 +162,7 @@ export default function UrcDashboard() {
       />
 
       {/* 5 SCOPED URC SUMMARY CARDS */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1rem',
-          marginBottom: '1.5rem',
-        }}
-      >
+      <div className="csd-stats-grid">
         <StatCard
           title="Received Orders"
           value={String(receivedOrdersCount)}
@@ -220,7 +210,7 @@ export default function UrcDashboard() {
         title="Station Order Processing Queue"
         subtitle="Operational supply orders routed through your designated CSD Depot"
         actions={
-          <Link to="/urc/orders" style={{ fontSize: '0.82rem', color: '#1e40af', fontWeight: 600 }}>
+          <Link to="/urc/orders" className="portal-link-brand font-semibold">
             Full Order Registry →
           </Link>
         }

@@ -70,13 +70,13 @@ export function EligibilityModal({
               <div className="eligibility-icon-circle-ineligible">
                 <AlertCircle size={32} />
               </div>
-              <h4 style={{ color: '#be123c', fontWeight: 700, margin: '0.5rem 0' }}>
+              <h4 className="eligibility-heading-ineligible">
                 Entitlement Requirement Not Met
               </h4>
               {Array.isArray(eligibilityResult?.reasons) && eligibilityResult.reasons.length > 0 ? (
-                <div style={{ marginTop: '0.75rem', textAlign: 'left', background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: '8px', padding: '0.75rem' }}>
+                <div className="eligibility-reasons-box">
                   {eligibilityResult.reasons.map((r, idx) => (
-                    <div key={idx} style={{ fontSize: '0.85rem', color: '#9f1239', marginBottom: '0.35rem', fontWeight: 500 }}>
+                    <div key={idx} className="eligibility-reason-item">
                       • {r.message || r.code}
                     </div>
                   ))}
@@ -86,7 +86,7 @@ export function EligibilityModal({
                   {reason}
                 </p>
               )}
-              <p className="eligibility-text-sub" style={{ marginTop: '0.75rem' }}>
+              <p className="eligibility-text-sub eligibility-text-mt">
                 Defence Ministry policy regulates vehicle entitlement according to pay level, minimum service years, and quota frequency.
               </p>
             </div>

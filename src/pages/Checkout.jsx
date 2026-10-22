@@ -438,7 +438,7 @@ export default function Checkout() {
                 </span>
               </div>
 
-              <p className="csd-form-helper-text" style={{ marginBottom: '1.25rem' }}>
+              <p className="csd-form-helper-text helper-text-mb-md">
                 The data in this section is fetched from the registration form and it cannot be changed.
               </p>
 
@@ -765,8 +765,7 @@ export default function Checkout() {
                       type="text"
                       value={country}
                       disabled
-                      className="csd-form-input"
-                      style={{ background: '#f1f5f9' }}
+                      className="csd-form-input bg-slate-muted"
                     />
                   </div>
                 </div>
@@ -810,7 +809,7 @@ export default function Checkout() {
                   {/* Dealer Price Mentioned in Availability Certificate (Fig. 15 & 16) */}
                   <div className="dealer-price-validation-box">
                     <div className="dealer-price-header-row">
-                      <label className="csd-form-label" style={{ margin: 0, fontWeight: 700 }}>
+                      <label className="csd-form-label label-clean-bold">
                         Dealer Price mentioned in Availability certificate <span className="doc-upload-required-star">*</span>
                       </label>
                       <button
@@ -971,8 +970,7 @@ export default function Checkout() {
                         }
                         setPaymentMode('Online Payment');
                       }}
-                      className={`checkout-radio-card ${paymentMode === 'Online Payment' ? 'active' : ''}`}
-                      style={{ opacity: hasLoan === 'Yes' ? 0.6 : 1, cursor: hasLoan === 'Yes' ? 'not-allowed' : 'pointer' }}
+                      className={`checkout-radio-card ${paymentMode === 'Online Payment' ? 'active' : ''} ${hasLoan === 'Yes' ? 'disabled-faded' : ''}`}
                     >
                       <input
                         type="radio"
@@ -1030,7 +1028,7 @@ export default function Checkout() {
                   <span className="checkout-spec-pill">
                     {product.sku}
                   </span>
-                  <span className="checkout-spec-pill" style={{ background: '#ecfdf5', color: '#047857' }}>
+                  <span className="checkout-spec-pill badge-green-pill">
                     {product.taxClass || 'tax-class-8'}
                   </span>
                 </div>
@@ -1047,7 +1045,7 @@ export default function Checkout() {
                 <div className="demand-summary-meta-line">
                   Dealer Address: <span className="text-muted">{dealerInfo.address}</span>
                 </div>
-                <div className="checkout-form-row-2" style={{ marginTop: '4px' }}>
+                <div className="checkout-form-row-2 row-mt-xs">
                   <div className="demand-summary-meta-line">Depot: <strong>{product.selectedDepot}</strong></div>
                   <div className="demand-summary-meta-line">URC: <strong>{product.selectedUrc}</strong></div>
                 </div>
@@ -1063,14 +1061,14 @@ export default function Checkout() {
                         <td>₹ {subtotal.toLocaleString('en-IN')}</td>
                       </tr>
                       {discountVal > 0 && (
-                        <tr style={{ color: '#059669' }}>
+                        <tr className="row-discount-positive">
                           <td>CSD Discount & Market Scheme</td>
                           <td>- ₹ {discountVal.toLocaleString('en-IN')}</td>
                         </tr>
                       )}
                       <tr>
                         <td>CSD Basic with Discount</td>
-                        <td style={{ fontWeight: 600 }}>₹ {csdBasic.toLocaleString('en-IN')}</td>
+                        <td className="font-semibold">₹ {csdBasic.toLocaleString('en-IN')}</td>
                       </tr>
                       <tr>
                         <td>CGST Concession</td>
@@ -1116,7 +1114,7 @@ export default function Checkout() {
                   <tr className="demand-summary-net-row">
                     <td>
                       <div>Net Price to be Paid</div>
-                      <small style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 500, display: 'block' }}>
+                      <small className="summary-detail-sub">
                         Inclusive of all Taxes and Levies
                       </small>
                     </td>
@@ -1137,7 +1135,7 @@ export default function Checkout() {
               </button>
 
               {!isPriceMatched && (
-                <p className="csd-form-error-text" style={{ justifyContent: 'center', marginTop: '0.65rem' }}>
+                <p className="csd-form-error-text error-text-center">
                   ⚠ Please match Dealer Price with Net Price to proceed.
                 </p>
               )}
@@ -1145,8 +1143,8 @@ export default function Checkout() {
 
             {/* Statutory Security Seal */}
             <div className="csd-alert-banner info">
-              <ShieldCheck size={20} color="#16a34a" flexShrink={0} />
-              <span style={{ fontSize: '0.78rem' }}>
+              <ShieldCheck size={20} color="var(--color-success)" flexShrink={0} />
+              <span className="text-xs-clean">
                 Statutory AFD Portal: All allocations are protected by Armed Forces HQ guidelines. No dealer handling charges allowed.
               </span>
             </div>

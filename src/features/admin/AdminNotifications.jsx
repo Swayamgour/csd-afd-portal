@@ -59,17 +59,17 @@ export const AdminNotifications = () => {
     {
       header: 'Event / Type',
       accessor: 'event',
-      render: (n) => <span className="badge" style={{ background: '#f1f5f9', color: 'var(--navy)' }}>{n.event || 'SYSTEM'}</span>,
+      render: (n) => <span className="badge-perm-count">{n.event || 'SYSTEM'}</span>,
     },
     {
       header: 'Message Content',
       accessor: 'body',
-      render: (n) => <span style={{ fontSize: '0.85rem' }}>{n.body || n.message}</span>,
+      render: (n) => <span className="fs-sm">{n.body || n.message}</span>,
     },
     {
       header: 'Channel',
       accessor: 'channel',
-      render: (n) => <span className="badge" style={{ background: '#e0f2fe', color: '#0369a1' }}>{n.channel || 'IN_APP'}</span>,
+      render: (n) => <span className="badge-role-tag">{n.channel || 'IN_APP'}</span>,
     },
     {
       header: 'Status',
@@ -93,7 +93,7 @@ export const AdminNotifications = () => {
           { label: 'Notifications' },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="flex-gap-sm">
             <Button
               variant="outline"
               size="sm"
@@ -109,7 +109,7 @@ export const AdminNotifications = () => {
       />
 
       {sentMsg && (
-        <div className="alert alert-success" style={{ marginBottom: '1.25rem' }}>✓ {sentMsg}</div>
+        <div className="alert alert-success mb-lg">✓ {sentMsg}</div>
       )}
 
       <Card>
@@ -122,7 +122,7 @@ export const AdminNotifications = () => {
       </Card>
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Dispatch System Notification">
-        <form onSubmit={handleBroadcast} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleBroadcast} className="flex-col-gap-md">
           <Input
             label="Notice Title"
             placeholder="e.g. Scheduled Maintenance Notice"
@@ -139,19 +139,18 @@ export const AdminNotifications = () => {
               ...Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v })),
             ]}
           />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Message Content</label>
+          <div className="portal-form-group">
+            <label className="portal-label">Message Content</label>
             <textarea
               rows={4}
-              className="form-control"
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+              className="portal-textarea"
               placeholder="Enter system announcement..."
               value={newNotice.message}
               onChange={(e) => setNewNotice({ ...newNotice, message: e.target.value })}
               required
             />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <div className="flex-end-gap-sm mt-sm">
             <Button variant="outline" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
             <Button type="submit" loading={isBroadcasting}>Broadcast</Button>
           </div>

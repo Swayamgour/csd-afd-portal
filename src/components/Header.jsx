@@ -146,20 +146,9 @@ export default function Header() {
           {isAuthenticated && normalizeRole(role || user?.role) !== 'beneficiary' && (
             <Link
               to={roleHome || '/depot/dashboard'}
-              className="act"
+              className="act header-dashboard-link"
               aria-label="Department Dashboard"
               title="Go to Departmental Dashboard"
-              style={{
-                background: "var(--brand, #003366)",
-                color: "#ffffff",
-                padding: "0.35rem 0.75rem",
-                borderRadius: "4px",
-                fontWeight: 600,
-                fontSize: "0.85rem",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.35rem"
-              }}
             >
               <span>Dashboard</span>
             </Link>
@@ -172,7 +161,7 @@ export default function Header() {
               title={normalizeRole(role || user.role) === 'beneficiary' ? "View Beneficiary Profile" : "Go to Dashboard"}
             >
               <User size={20} color="var(--brand)" />
-              <span style={{ fontWeight: 600, color: "var(--brand)" }}>
+              <span className="header-user-label">
                 {user?.name ? user.name.split(" ")[0] : (user?.username || "Profile")}
               </span>
             </Link>

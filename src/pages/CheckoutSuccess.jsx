@@ -84,8 +84,8 @@ export default function CheckoutSuccess() {
 
         {/* Direct Bank Transfer Notice if applicable */}
         {isDirectTransfer && (
-          <div className="csd-alert-banner warning" style={{ maxWidth: '640px', margin: '1rem auto 0', textAlign: 'left' }}>
-            <AlertTriangle size={20} color="#d97706" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div className="csd-alert-banner warning alert-banner-max-w">
+            <AlertTriangle size={20} className="alert-banner-icon" />
             <div>
               <strong>Action Required: Bank Payment Upload</strong>
               <br />
@@ -98,8 +98,8 @@ export default function CheckoutSuccess() {
       {/* Demand Summary Card (Section 15 Requirements) */}
       <div className="success-card">
         <div className="checkout-card-header">
-          <h2 className="success-card-title" style={{ margin: 0, paddingBottom: 0, borderBottom: 'none' }}>
-            <FileText size={18} color="#1e4fd8" />
+          <h2 className="success-card-title success-title-clean">
+            <FileText size={18} color="var(--brand)" />
             <span>Demand Particulars</span>
           </h2>
           <span className={`checkout-spec-pill ${demand.status === 'Processing' ? 'status-processing' : 'status-onhold'}`}>
@@ -127,7 +127,7 @@ export default function CheckoutSuccess() {
             <div className="beneficiary-field-label">
               Net Amount Payable
             </div>
-            <div className="beneficiary-field-value" style={{ color: '#16a34a', fontSize: '1.15rem', fontWeight: 800 }}>
+            <div className="beneficiary-field-value text-success-val">
               ₹ {displayAmount?.toLocaleString('en-IN')}
             </div>
             <div className="csd-form-helper-text">
@@ -139,8 +139,8 @@ export default function CheckoutSuccess() {
             <div className="beneficiary-field-label">
               Allocated Dealer
             </div>
-            <div className="beneficiary-field-value" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Building size={15} color="#64748b" />
+            <div className="beneficiary-field-value flex-align-center-gap-xs">
+              <Building size={15} color="var(--color-slate-400)" />
               <span>{demand.dealer || demand.dealerName || 'AAA VEHICLEADES PVT. LTD. MUNDKA (PILLAR)'}</span>
             </div>
           </div>
@@ -149,8 +149,8 @@ export default function CheckoutSuccess() {
             <div className="beneficiary-field-label">
               Regional Depot & URC
             </div>
-            <div className="beneficiary-field-value" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Store size={15} color="#64748b" />
+            <div className="beneficiary-field-value flex-align-center-gap-xs">
+              <Store size={15} color="var(--color-slate-400)" />
               <span>Depot: {demand.depot || 'DELHI'} • URC: {demand.urc || '7 WING AF'}</span>
             </div>
           </div>
@@ -159,8 +159,8 @@ export default function CheckoutSuccess() {
             <div className="beneficiary-field-label">
               Payment Method
             </div>
-            <div className="beneficiary-field-value" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <CreditCard size={15} color="#64748b" />
+            <div className="beneficiary-field-value flex-align-center-gap-xs">
+              <CreditCard size={15} color="var(--color-slate-400)" />
               <span>{demand.paymentMethod || 'Direct Bank Transfer'}</span>
             </div>
           </div>

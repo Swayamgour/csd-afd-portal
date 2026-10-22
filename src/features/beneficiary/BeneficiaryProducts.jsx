@@ -55,79 +55,22 @@ export const BeneficiaryProducts = () => {
 
       {/* Mandatory Pending Approval Notice */}
       {isPendingApproval && (
-        <div
-          style={{
-            background: '#fffbeb',
-            border: '1px solid #fde68a',
-            borderRadius: '10px',
-            padding: '1.25rem',
-            marginBottom: '1.25rem',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '1rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-          }}
-        >
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: '#fef3c7',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#d97706',
-              flexShrink: 0,
-            }}
-          >
+        <div className="beneficiary-pending-card">
+          <div className="beneficiary-pending-icon-circle">
             <Clock size={20} />
           </div>
-          <div style={{ flex: 1 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.35rem',
-              }}
-            >
-              <h4
-                style={{
-                  margin: 0,
-                  color: '#92400e',
-                  fontWeight: 700,
-                  fontSize: '0.98rem',
-                }}
-              >
+          <div className="portal-flex-1">
+            <div className="portal-flex-center mb-0-5">
+              <h4 className="beneficiary-pending-heading">
                 Catalogue Browsing Mode · Account Pending Administrator Verification
               </h4>
               {user?.isEmailVerified && (
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.2rem',
-                    padding: '0.1rem 0.45rem',
-                    borderRadius: '9999px',
-                    background: '#dcfce7',
-                    color: '#166534',
-                    fontSize: '0.7rem',
-                    fontWeight: 600,
-                  }}
-                >
+                <span className="beneficiary-verified-tag">
                   <ShieldCheck size={11} /> Email Verified ✓
                 </span>
               )}
             </div>
-            <p
-              style={{
-                margin: 0,
-                color: '#78350f',
-                fontSize: '0.88rem',
-                lineHeight: 1.45,
-              }}
-            >
+            <p className="beneficiary-pending-desc">
               You can explore products and specifications. Checkout and demand creation will be enabled upon administrator verification.
             </p>
           </div>

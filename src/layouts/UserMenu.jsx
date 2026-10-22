@@ -78,18 +78,13 @@ export default function UserMenu() {
           <div className="user-dropdown-header mb-1 pb-1 border-bottom">
             <p className="small font-bold mb-0">{user?.name}</p>
             <p className="small muted mb-0">{user?.email || user?.serviceNumber}</p>
-            <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
+            <div className="user-badges-flex">
               <span className="badge-pill badge-primary badge-sm">
                 {ROLE_LABELS[normRole] || ROLE_LABELS[role] || role}
               </span>
               {normRole === 'beneficiary' && (
                 <span
-                  className="badge-pill badge-sm"
-                  style={{
-                    background: (user?.status === 'Active' || user?.adminApproval === 'APPROVED' || user?.verificationStatus === 'APPROVED' || user?.verificationStatus === 'VERIFIED') ? '#dcfce7' : '#fef3c7',
-                    color: (user?.status === 'Active' || user?.adminApproval === 'APPROVED' || user?.verificationStatus === 'APPROVED' || user?.verificationStatus === 'VERIFIED') ? '#166534' : '#92400e',
-                    fontWeight: 600
-                  }}
+                  className={`badge-pill badge-sm ${(user?.status === 'Active' || user?.adminApproval === 'APPROVED' || user?.verificationStatus === 'APPROVED' || user?.verificationStatus === 'VERIFIED') ? 'badge-status-approved' : 'badge-status-pending'}`}
                 >
                   {(user?.status === 'Active' || user?.adminApproval === 'APPROVED' || user?.verificationStatus === 'APPROVED' || user?.verificationStatus === 'VERIFIED') ? '✓ Approved' : '⏳ Approval Pending'}
                 </span>

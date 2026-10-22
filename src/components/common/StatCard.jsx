@@ -22,7 +22,7 @@ export function StatCard({
       className={`panel stat-card stat-${variant} ${onClick ? 'cursor-pointer hover-lift' : ''} ${className}`}
       onClick={onClick}
     >
-      <div className="stat-top between" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="stat-top between stat-top-between">
         <span className="stat-title muted small">{title}</span>
         {Icon && (
           <div className="stat-icon-wrap" aria-hidden="true">
@@ -31,14 +31,13 @@ export function StatCard({
         )}
       </div>
 
-      <div className="stat-value" style={{ fontSize: '1.6rem', fontWeight: 700, margin: '0.4rem 0' }}>{value}</div>
+      <div className="stat-value stat-value-large">{value}</div>
 
       {(displaySub || trendObj) && (
-        <div className="stat-footer small" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div className="stat-footer small stat-footer-flex">
           {trendObj && (
             <span
-              className={`stat-trend ${trendObj.isUp ? 'text-green' : 'text-danger'}`}
-              style={{ color: trendObj.isUp ? '#16a34a' : '#b91c1c', display: 'inline-flex', alignItems: 'center', gap: '2px', fontWeight: 600 }}
+              className={`stat-trend stat-trend-indicator ${trendObj.isUp ? 'stat-trend-up' : 'stat-trend-down'}`}
             >
               {trendObj.isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
               <span className="trend-num">{trendObj.value}</span>

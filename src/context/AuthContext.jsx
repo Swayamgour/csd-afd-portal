@@ -120,9 +120,9 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     setLoading(true);
     try {
-      if (credentials?.directUser && credentials?.directToken) {
-        const u = credentials.directUser;
-        const t = credentials.directToken;
+      if (credentials?.authenticatedUser && credentials?.authenticatedToken) {
+        const u = credentials.authenticatedUser;
+        const t = credentials.authenticatedToken;
         setUser(u);
         setToken(t);
         localStorage.setItem('csd_auth_token', t);

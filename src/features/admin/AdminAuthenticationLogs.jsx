@@ -20,21 +20,14 @@ export const AdminAuthenticationLogs = () => {
     { header: 'Session Ref', accessor: 'id', render: (a) => <strong>{a.id}</strong> },
     { header: 'Authenticated Identity', accessor: 'user' },
     { header: 'Auth Method', accessor: 'method' },
-    { header: 'Client IP Address', accessor: 'ip', render: (a) => <span style={{ fontFamily: 'monospace' }}>{a.ip}</span> },
+    { header: 'Client IP Address', accessor: 'ip', render: (a) => <span className="font-mono">{a.ip}</span> },
     { header: 'Geolocation', accessor: 'location' },
-    { header: 'Client User-Agent', accessor: 'userAgent', render: (a) => <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{a.userAgent}</span> },
+    { header: 'Client User-Agent', accessor: 'userAgent', render: (a) => <span className="portal-subtext-muted fs-xs">{a.userAgent}</span> },
     {
       header: 'Outcome',
       accessor: 'status',
       render: (a) => (
-        <span style={{
-          padding: '2px 8px',
-          borderRadius: '4px',
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          background: a.status === 'SUCCESS' ? '#f0fdf4' : '#fee2e2',
-          color: a.status === 'SUCCESS' ? '#15803d' : '#b91c1c'
-        }}>
+        <span className={a.status === 'SUCCESS' ? 'badge-success-subtle-sm' : 'badge-danger-subtle-sm'}>
           {a.status}
         </span>
       )

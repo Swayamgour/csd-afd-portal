@@ -64,7 +64,7 @@ export function CsdNotifications() {
           { label: 'Notifications' },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="portal-flex-gap-sm">
             <Button
               variant="outline"
               size="sm"
@@ -80,36 +80,30 @@ export function CsdNotifications() {
       />
 
       {sentMsg && (
-        <div className="alert alert-success" style={{ marginBottom: '1.25rem' }}>✓ {sentMsg}</div>
+        <div className="alert alert-success mb-md">✓ {sentMsg}</div>
       )}
 
       <Card>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        <div className="csd-notif-list">
           {notifications.length === 0 ? (
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)', margin: '1.5rem 0' }}>
+            <p className="csd-notif-empty">
               No current notifications in the directorate tray.
             </p>
           ) : (
             notifications.map((n) => (
               <div
                 key={n._id || n.id}
-                style={{
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderLeft: '4px solid var(--navy)',
-                }}
+                className="csd-notif-item"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                  <span className="badge" style={{ background: '#f1f5f9', color: 'var(--navy)', fontSize: '0.75rem' }}>
+                <div className="csd-notif-header">
+                  <span className="badge csd-badge-notif">
                     {n.event || 'DIRECTORATE'}
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <span className="csd-notif-date">
                     {n.createdAt ? new Date(n.createdAt).toLocaleString('en-IN') : 'Recent'}
                   </span>
                 </div>
-                <p style={{ margin: 0, fontSize: '0.86rem', color: '#475569', lineHeight: 1.5 }}>{n.body || n.message}</p>
+                <p className="csd-notif-body">{n.body || n.message}</p>
               </div>
             ))
           )}
@@ -117,7 +111,7 @@ export function CsdNotifications() {
       </Card>
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Issue Directorate Advisory Bulletin">
-        <form onSubmit={handleBroadcast} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleBroadcast} className="director-modal-form">
           <Input
             label="Notification Title"
             placeholder="e.g. FY 2024-25 Q3 Demand Allocation Quotas"
@@ -145,19 +139,18 @@ export function CsdNotifications() {
               { value: 'DEPOT', label: 'Depot Instruction' },
             ]}
           />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Circular / Message Content</label>
+          <div className="portal-form-group">
+            <label className="director-field-label">Circular / Message Content</label>
             <textarea
               rows={4}
-              className="form-control"
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+              className="director-field-input"
               placeholder="Enter message details for broadcast..."
               value={newNotice.message}
               onChange={(e) => setNewNotice({ ...newNotice, message: e.target.value })}
               required
             />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <div className="director-modal-actions">
             <Button variant="outline" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
             <Button type="submit" loading={isBroadcasting}>Publish Circular</Button>
           </div>

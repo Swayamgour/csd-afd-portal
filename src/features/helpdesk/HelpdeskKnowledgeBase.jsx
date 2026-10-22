@@ -63,7 +63,7 @@ export const HelpdeskKnowledgeBase = () => {
           { label: 'Knowledge Base' },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="portal-flex-gap-sm">
             <Button
               variant="outline"
               size="sm"
@@ -79,14 +79,14 @@ export const HelpdeskKnowledgeBase = () => {
       />
 
       {successMsg && (
-        <div className="alert alert-success" style={{ marginBottom: '1.25rem' }}>✓ {successMsg}</div>
+        <div className="alert alert-success mb-md">✓ {successMsg}</div>
       )}
 
       {/* TOP SEARCH HERO */}
-      <Card style={{ marginBottom: '1.5rem', background: 'linear-gradient(135deg, #0b1f3a, #16365f)', color: '#fff' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center', padding: '1rem 0' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '1.3rem' }}>How can we assist the citizen today?</h3>
-          <p style={{ margin: '0 0 1rem 0', color: '#cbd5e1', fontSize: '0.85rem' }}>
+      <Card className="helpdesk-kb-hero-card">
+        <div className="helpdesk-kb-hero-inner">
+          <h3 className="helpdesk-kb-hero-title">How can we assist the citizen today?</h3>
+          <p className="helpdesk-kb-hero-sub">
             Search verified articles on AFD entitlements, SBI ePay UTR reconciliation, and delivery SOPs.
           </p>
           <SearchInput
@@ -102,32 +102,32 @@ export const HelpdeskKnowledgeBase = () => {
         <LoadingState text="Loading certified operating guidelines..." />
       ) : filteredArticles.length === 0 ? (
         <Card>
-          <p style={{ textAlign: 'center', color: 'var(--text-muted)', margin: '2rem 0' }}>
+          <p className="csd-notif-empty">
             No articles match your criteria. Try adjusting keywords or publish an article.
           </p>
         </Card>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+        <div className="helpdesk-kb-grid">
           {filteredArticles.map((art) => (
             <Card key={art._id || art.id}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span className="badge" style={{ background: '#f1f5f9', color: 'var(--navy)', fontSize: '0.75rem' }}>
+              <div className="portal-flex-between mb-xs">
+                <span className="badge csd-badge-notif">
                   {art.category || 'General'}
                 </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                <span className="csd-notif-date">
                   v{art.version || 1}
                 </span>
               </div>
-              <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem' }}>
-                <Link to={`/helpdesk/knowledge-base/${art._id || art.id}`} style={{ color: 'var(--navy)' }}>
+              <h4 className="helpdesk-article-card-title">
+                <Link to={`/helpdesk/knowledge-base/${art._id || art.id}`} className="helpdesk-article-link">
                   {art.title}
                 </Link>
               </h4>
-              <p style={{ margin: '0 0 1rem 0', fontSize: '0.85rem', color: '#64748b', lineHeight: 1.5 }}>
+              <p className="helpdesk-article-snippet">
                 {art.content ? art.content.slice(0, 140) + '...' : 'Operating guidelines & grievance protocols.'}
               </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem' }}>
-                <span style={{ fontSize: '0.75rem', color: '#16a34a' }}>
+              <div className="helpdesk-article-footer">
+                <span className="sla-compliant-text">
                   Status: {art.status || 'PUBLISHED'}
                 </span>
                 <Link to={`/helpdesk/knowledge-base/${art._id || art.id}`}>
@@ -141,7 +141,7 @@ export const HelpdeskKnowledgeBase = () => {
 
       {/* CREATE ARTICLE MODAL */}
       <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Author Knowledge Article">
-        <form onSubmit={handleCreateArticle} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleCreateArticle} className="director-modal-form">
           <Input
             label="Article Title"
             placeholder="e.g. Procedure for Manual UTR Reconciliation with SBI ePay"
@@ -161,12 +161,11 @@ export const HelpdeskKnowledgeBase = () => {
               { value: 'Technical', label: 'Technical & System Gateway' },
             ]}
           />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Article Content / SOP Steps</label>
+          <div className="portal-form-group">
+            <label className="director-field-label">Article Content / SOP Steps</label>
             <textarea
               rows={6}
-              className="form-control"
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+              className="director-field-input"
               placeholder="Detail the root cause, standard steps for resolution, citizen advice, and escalation triggers..."
               value={newArticle.content}
               onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
@@ -179,7 +178,7 @@ export const HelpdeskKnowledgeBase = () => {
             value={newArticle.tags}
             onChange={(e) => setNewArticle({ ...newArticle, tags: e.target.value })}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <div className="director-modal-actions">
             <Button variant="outline" type="button" onClick={() => setShowCreateModal(false)}>Cancel</Button>
             <Button type="submit" loading={isPublishing}>Publish to Repository</Button>
           </div>

@@ -309,7 +309,7 @@ export default function AdminAddUser() {
   );
 
   return (
-    <div className="admin-add-user-page" style={{ maxWidth: '1240px', margin: '0 auto' }}>
+    <div className="admin-add-user-page user-page-container">
       <PageHeader
         title="Add New User"
         subtitle="Create a brand new user and add them to this site with complete WordPress & ACF metadata."
@@ -319,7 +319,7 @@ export default function AdminAddUser() {
           { label: 'Add New User' }
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.65rem' }}>
+          <div className="flex-gap-sm">
             <Button
               variant="outline"
               icon={ArrowLeft}
@@ -347,17 +347,7 @@ export default function AdminAddUser() {
       />
 
       {submitError && (
-        <div
-          className="alert alert-danger row align-center gap-1"
-          style={{
-            marginBottom: '1.5rem',
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            color: '#b91c1c',
-            padding: '1rem 1.25rem',
-            borderRadius: '10px'
-          }}
-        >
+        <div className="alert alert-danger row align-center gap-1 admin-alert-danger">
           <AlertCircle size={20} />
           <span className="font-medium">{submitError}</span>
         </div>
@@ -370,7 +360,7 @@ export default function AdminAddUser() {
         <input type="hidden" name="_wp_http_referer" value="/wp-admin/user-new.php" />
 
         {/* ACF Form Meta Hidden Payload */}
-        <div id="acf-form-data" className="acf-hidden" style={{ display: 'none' }}>
+        <div id="acf-form-data" className="acf-hidden d-none">
           <input type="hidden" id="_acf_screen" name="_acf_screen" value="user" />
           <input type="hidden" id="_acf_post_id" name="_acf_post_id" value="user_0" />
           <input type="hidden" id="_acf_validation" name="_acf_validation" value="1" />
@@ -378,17 +368,9 @@ export default function AdminAddUser() {
           <input type="hidden" id="_acf_changed" name="_acf_changed" value="0" />
         </div>
 
-        <div
-          className="add-user-layout-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) 340px',
-            gap: '1.5rem',
-            alignItems: 'start'
-          }}
-        >
+        <div className="add-user-layout-grid admin-user-layout-grid">
           {/* MAIN CONTENT AREA */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="flex-col-gap-xl">
 
             {/* =========================================================
                 SECTION 1: WORDPRESS BASIC USER INFORMATION (table.form-table)
@@ -415,17 +397,17 @@ export default function AdminAddUser() {
                     helperText="Required. Max 60 characters."
                   />
                   {checkingUsername && (
-                    <span className="micro muted" style={{ display: 'block', marginTop: '-0.3rem' }}>
+                    <span className="micro muted d-block mt-neg-xs">
                       Checking username availability...
                     </span>
                   )}
                   {usernameAvailable === true && (
-                    <span className="micro text-success" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '-0.3rem' }}>
+                    <span className="micro text-success flex-align-center-gap-xs mt-neg-xs">
                       <Check size={12} /> Username is available
                     </span>
                   )}
                   {usernameAvailable === false && (
-                    <span className="micro text-danger" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '-0.3rem' }}>
+                    <span className="micro text-danger flex-align-center-gap-xs mt-neg-xs">
                       <AlertCircle size={12} /> Username already exists
                     </span>
                   )}
@@ -446,17 +428,17 @@ export default function AdminAddUser() {
                     helperText="Required. Official credentials and notifications will be sent here."
                   />
                   {checkingEmail && (
-                    <span className="micro muted" style={{ display: 'block', marginTop: '-0.3rem' }}>
+                    <span className="micro muted d-block mt-neg-xs">
                       Checking email uniqueness...
                     </span>
                   )}
                   {emailAvailable === true && (
-                    <span className="micro text-success" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '-0.3rem' }}>
+                    <span className="micro text-success flex-align-center-gap-xs mt-neg-xs">
                       <Check size={12} /> Email is available
                     </span>
                   )}
                   {emailAvailable === false && (
-                    <span className="micro text-danger" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '-0.3rem' }}>
+                    <span className="micro text-danger flex-align-center-gap-xs mt-neg-xs">
                       <AlertCircle size={12} /> Email already exists
                     </span>
                   )}
@@ -483,7 +465,7 @@ export default function AdminAddUser() {
                 />
 
                 {/* Website (url) */}
-                <div style={{ gridColumn: 'span 2' }}>
+                <div className="col-span-2">
                   <Input
                     id="url"
                     name="url"
@@ -498,39 +480,25 @@ export default function AdminAddUser() {
               </div>
 
               {/* Password (pass1 & pass2) */}
-              <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
-                <div className="form-grid-2" style={{ alignItems: 'start' }}>
+              <div className="border-top-divider">
+                <div className="form-grid-2 align-items-start">
                   {/* Left Column: Password */}
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem', minHeight: '30px' }}>
-                      <label htmlFor="pass1" className="form-label" style={{ fontWeight: 600, margin: 0 }}>
-                        Password <span className="req-star" style={{ color: '#ef4444' }}>*</span>
+                    <div className="flex-between-center mb-xs min-h-30">
+                      <label htmlFor="pass1" className="form-label fw-semibold m-0">
+                        Password <span className="req-star text-danger">*</span>
                       </label>
                       <button
                         type="button"
                         onClick={generatePassword}
-                        className="wp-generate-pw"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px',
-                          padding: '0.25rem 0.65rem',
-                          fontSize: '0.78rem',
-                          fontWeight: 600,
-                          color: '#1e4fd8',
-                          background: '#eff6ff',
-                          border: '1px solid #bfdbfe',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease'
-                        }}
+                        className="wp-generate-pw wp-generate-pw-btn"
                       >
                         <RefreshCw size={12} />
                         <span>Generate password</span>
                       </button>
                     </div>
 
-                    <div style={{ position: 'relative', width: '100%' }}>
+                    <div className="pos-relative-w-full">
                       <input
                         id="pass1"
                         name="pass1"
@@ -541,47 +509,14 @@ export default function AdminAddUser() {
                         autoComplete="new-password"
                         spellCheck="false"
                         required
-                        style={{
-                          width: '100%',
-                          height: '42px',
-                          padding: '0.5rem 74px 0.5rem 0.85rem',
-                          borderRadius: '8px',
-                          border: errors.pass1 ? '1.5px solid #ef4444' : '1px solid #cbd5e1',
-                          fontSize: '0.92rem',
-                          fontFamily: showPassword ? 'monospace' : 'inherit',
-                          background: '#fff',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
+                        className={`portal-input-field pr-pw ${errors.pass1 ? 'border-danger-15' : 'border-slate-300'} ${showPassword ? 'font-mono' : ''}`}
                       />
-                      <div
-                        style={{
-                          position: 'absolute',
-                          right: '6px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          height: '30px'
-                        }}
-                      >
+                      <div className="pw-action-buttons-group">
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           title={showPassword ? 'Hide password' : 'Show password'}
-                          style={{
-                            width: '28px',
-                            height: '28px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: 'transparent',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            color: '#64748b'
-                          }}
+                          className="pw-icon-btn"
                         >
                           {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                         </button>
@@ -590,26 +525,14 @@ export default function AdminAddUser() {
                           onClick={copyPasswordToClipboard}
                           title="Copy password to clipboard"
                           disabled={!pass1}
-                          style={{
-                            width: '28px',
-                            height: '28px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: 'transparent',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: pass1 ? 'pointer' : 'not-allowed',
-                            color: copied ? '#16a34a' : '#64748b',
-                            opacity: pass1 ? 1 : 0.4
-                          }}
+                          className={`pw-icon-btn ${copied ? 'text-success' : 'text-slate-500'} ${pass1 ? 'cursor-pointer' : 'cursor-disabled'}`}
                         >
                           {copied ? <Check size={15} /> : <Copy size={15} />}
                         </button>
                       </div>
                     </div>
                     {errors.pass1 && (
-                      <p className="err" role="alert" style={{ margin: '0.25rem 0 0', color: '#ef4444', fontSize: '0.8rem' }}>
+                      <p className="err form-err-msg" role="alert">
                         ⚠ {errors.pass1}
                       </p>
                     )}
@@ -617,13 +540,13 @@ export default function AdminAddUser() {
 
                   {/* Right Column: Repeat Password */}
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.45rem', minHeight: '30px' }}>
-                      <label htmlFor="pass2" className="form-label" style={{ fontWeight: 600, margin: 0 }}>
-                        Repeat Password <span className="description" style={{ fontWeight: 400, color: '#64748b', fontSize: '0.82rem' }}>(required)</span>
+                    <div className="flex-align-center mb-xs min-h-30">
+                      <label htmlFor="pass2" className="form-label fw-semibold m-0">
+                        Repeat Password <span className="description fw-normal text-muted fs-sm">(required)</span>
                       </label>
                     </div>
 
-                    <div style={{ width: '100%' }}>
+                    <div className="w-full">
                       <input
                         id="pass2"
                         name="pass2"
@@ -633,24 +556,13 @@ export default function AdminAddUser() {
                         onChange={(e) => setPass2(e.target.value)}
                         autoComplete="new-password"
                         spellCheck="false"
-                        style={{
-                          width: '100%',
-                          height: '42px',
-                          padding: '0.5rem 0.85rem',
-                          borderRadius: '8px',
-                          border: errors.pass2 ? '1.5px solid #ef4444' : '1px solid #cbd5e1',
-                          fontSize: '0.92rem',
-                          fontFamily: showPassword ? 'monospace' : 'inherit',
-                          background: '#fff',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
+                        className={`portal-input-field ${errors.pass2 ? 'border-danger-15' : 'border-slate-300'} ${showPassword ? 'font-mono' : ''}`}
                       />
-                      <p className="micro muted" id="pass2-desc" style={{ margin: '0.35rem 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+                      <p className="micro muted mt-xs" id="pass2-desc">
                         Type the password again.
                       </p>
                       {errors.pass2 && (
-                        <p className="err" role="alert" style={{ margin: '0.25rem 0 0', color: '#ef4444', fontSize: '0.8rem' }}>
+                        <p className="err form-err-msg" role="alert">
                           ⚠ {errors.pass2}
                         </p>
                       )}
@@ -662,37 +574,24 @@ export default function AdminAddUser() {
                 {pass1 && (
                   <div
                     id="pass-strength-result"
-                    style={{
-                      marginTop: '0.75rem',
-                      background: '#f8fafc',
-                      padding: '0.85rem 1rem',
-                      borderRadius: '8px',
-                      border: '1px solid #e2e8f0'
-                    }}
+                    className="pw-strength-container"
                   >
-                    <div className="between" style={{ marginBottom: '0.35rem' }}>
+                    <div className="between mb-xs">
                       <span className="small font-semibold">Password Strength:</span>
-                      <span className="small font-bold" style={{ color: currentStrength.color }}>
+                      <span className={`small font-bold pw-text-score-${score}`}>
                         {currentStrength.label}
                       </span>
                     </div>
-                    <div style={{ height: '5px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          height: '100%',
-                          width: currentStrength.width,
-                          backgroundColor: currentStrength.color,
-                          transition: 'width 0.3s ease'
-                        }}
-                      />
+                    <div className="pw-strength-track">
+                      <div className={`pw-strength-fill pw-bar-score-${score}`} />
                     </div>
                   </div>
                 )}
 
                 {/* Weak Password Confirmation Checkbox (pw_weak) */}
                 {isPasswordWeak && (
-                  <div style={{ marginTop: '0.85rem', padding: '0.75rem 1rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px' }}>
-                    <label className="checkbox-label row align-center gap-1 small pointer font-semibold" style={{ color: '#92400e' }}>
+                  <div className="pw-weak-warning-box">
+                    <label className="checkbox-label row align-center gap-1 small pointer font-semibold text-warning-dark">
                       <input
                         type="checkbox"
                         name="pw_weak"
@@ -703,7 +602,7 @@ export default function AdminAddUser() {
                       <span>Confirm use of weak password</span>
                     </label>
                     {errors.pwWeak && (
-                      <p className="err" role="alert" style={{ color: '#b45309', fontSize: '0.8rem', marginTop: '0.3rem' }}>
+                      <p className="err pw-weak-err" role="alert">
                         ⚠ {errors.pwWeak}
                       </p>
                     )}
@@ -712,9 +611,9 @@ export default function AdminAddUser() {
               </div>
 
               {/* Send User Notification (send_user_notification) */}
-              <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
-                <div style={{ padding: '0.85rem 1rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
-                  <label className="checkbox-label row align-center gap-1 pointer font-semibold" style={{ color: '#166534' }}>
+              <div className="border-top-divider">
+                <div className="notif-optin-box">
+                  <label className="checkbox-label row align-center gap-1 pointer font-semibold text-success-dark">
                     <input
                       type="checkbox"
                       id="send_user_notification"
@@ -725,24 +624,23 @@ export default function AdminAddUser() {
                     />
                     <span>Send the new user an email about their account</span>
                   </label>
-                  <p className="micro muted" style={{ margin: '0.25rem 0 0 1.6rem', color: '#15803d' }}>
+                  <p className="micro muted notif-optin-desc">
                     Dispatches credentials and login instructions to the user's registered email address.
                   </p>
                 </div>
               </div>
 
               {/* Role (role) */}
-              <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9' }}>
+              <div className="border-top-divider">
                 <label className="form-label font-semibold" htmlFor="role">
-                  Role <span className="req-star">*</span>
+                  Role <span className="req-star text-danger">*</span>
                 </label>
                 <select
                   id="role"
                   name="role"
                   value={role}
                   onChange={(e) => handlePrimaryRoleChange(e.target.value)}
-                  className="select-input"
-                  style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                  className="select-input portal-select-custom"
                 >
                   {WP_ROLES.map((r) => (
                     <option key={r.value} value={r.value}>
@@ -750,7 +648,7 @@ export default function AdminAddUser() {
                     </option>
                   ))}
                 </select>
-                <p className="micro muted" style={{ marginTop: '0.35rem' }}>
+                <p className="micro muted mt-xs">
                   Determines the primary capabilities and storefront access of this user.
                 </p>
               </div>
@@ -768,7 +666,7 @@ export default function AdminAddUser() {
                 <label className="form-label font-semibold">
                   Created by Admin <span className="req-star">*</span>
                 </label>
-                <div className="row align-center gap-2" style={{ marginTop: '0.35rem' }}>
+                <div className="row align-center gap-2 mt-xs">
                   <label className="radio-label row align-center gap-1 pointer small">
                     <input
                       type="radio"
@@ -832,7 +730,7 @@ export default function AdminAddUser() {
                 </div>
 
                 {/* User Edited Count (user_edited_count) */}
-                <div style={{ gridColumn: 'span 2' }}>
+                <div className="col-span-2">
                   <Input
                     id="acf-field_5ff445d166fc7"
                     name="acf[field_5ff445d166fc7]"
@@ -854,8 +752,7 @@ export default function AdminAddUser() {
                     type="date"
                     id="acf-field_5fdc59cbbd5ea"
                     name="acf[field_5fdc59cbbd5ea]"
-                    className="select-input"
-                    style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                    className="select-input portal-date-input"
                     value={lastPurchase4Wheeler}
                     onChange={(e) => setLastPurchase4Wheeler(e.target.value)}
                   />
@@ -871,8 +768,7 @@ export default function AdminAddUser() {
                     type="date"
                     id="acf-field_5fdc5a06bd5eb"
                     name="acf[field_5fdc5a06bd5eb]"
-                    className="select-input"
-                    style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                    className="select-input portal-date-input"
                     value={lastPurchase2Wheeler}
                     onChange={(e) => setLastPurchase2Wheeler(e.target.value)}
                   />
@@ -880,7 +776,7 @@ export default function AdminAddUser() {
                 </div>
 
                 {/* Mobile Verified (mobile_verified) */}
-                <div style={{ gridColumn: 'span 2' }}>
+                <div className="col-span-2">
                   <label className="checkbox-label row align-center gap-1 small pointer">
                     <input
                       type="checkbox"
@@ -895,7 +791,7 @@ export default function AdminAddUser() {
                 </div>
 
                 {/* Rate Our Website (rate_our_website) */}
-                <div style={{ gridColumn: 'span 2' }}>
+                <div className="col-span-2">
                   <label className="form-label" htmlFor="acf-field_656576103136d">
                     Rate Our Website: <strong>{rateOurWebsite}</strong> / 5
                   </label>
@@ -909,7 +805,7 @@ export default function AdminAddUser() {
                       step="1"
                       value={rateOurWebsite}
                       onChange={(e) => setRateOurWebsite(Number(e.target.value))}
-                      style={{ flex: 1 }}
+                      className="flex-1"
                     />
                     <input
                       type="number"
@@ -919,8 +815,7 @@ export default function AdminAddUser() {
                       step="1"
                       value={rateOurWebsite}
                       onChange={(e) => setRateOurWebsite(Math.min(5, Math.max(0, Number(e.target.value))))}
-                      className="select-input"
-                      style={{ width: '60px', padding: '0.4rem', textAlign: 'center' }}
+                      className="select-input rating-number-input"
                     />
                     <div className="row align-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -936,7 +831,7 @@ export default function AdminAddUser() {
                 </div>
 
                 {/* Feedback Comment (feedback_comment) */}
-                <div style={{ gridColumn: 'span 2' }}>
+                <div className="col-span-2">
                   <label className="form-label" htmlFor="acf-field_656576d33136e">
                     Feedback Comment
                   </label>
@@ -944,8 +839,7 @@ export default function AdminAddUser() {
                     id="acf-field_656576d33136e"
                     name="acf[field_656576d33136e]"
                     rows={3}
-                    className="select-input"
-                    style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontFamily: 'inherit' }}
+                    className="select-input portal-textarea-custom"
                     placeholder="User feedback comment"
                     value={feedbackComment}
                     onChange={(e) => setFeedbackComment(e.target.value)}
@@ -953,7 +847,7 @@ export default function AdminAddUser() {
                 </div>
 
                 {/* Reason of Denial (denyreason) */}
-                <div style={{ gridColumn: 'span 2' }}>
+                <div className="col-span-2">
                   <label className="form-label" htmlFor="acf-field_5fd9e1fc632c5">
                     Reason of Denial
                   </label>
@@ -961,8 +855,7 @@ export default function AdminAddUser() {
                     id="acf-field_5fd9e1fc632c5"
                     name="acf[field_5fd9e1fc632c5]"
                     rows={8}
-                    className="select-input"
-                    style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontFamily: 'inherit' }}
+                    className="select-input portal-textarea-custom"
                     placeholder="Enter reason of denial if application/access is rejected"
                     value={denyReason}
                     onChange={(e) => setDenyReason(e.target.value)}
@@ -984,8 +877,8 @@ export default function AdminAddUser() {
                 <label className="form-label font-semibold" htmlFor="ure_select_other_roles">
                   Other Roles
                 </label>
-                <p className="micro muted" style={{ marginBottom: '0.65rem' }}>
-                  Hold <kbd style={{ padding: '1px 4px', background: '#e2e8f0', borderRadius: '3px' }}>Ctrl</kbd> (Windows) or <kbd style={{ padding: '1px 4px', background: '#e2e8f0', borderRadius: '3px' }}>Cmd</kbd> (Mac) to select/deselect multiple roles.
+                <p className="micro muted mb-sm">
+                  Hold <kbd className="kbd-shortcut">Ctrl</kbd> (Windows) or <kbd className="kbd-shortcut">Cmd</kbd> (Mac) to select/deselect multiple roles.
                 </p>
 
                 <select
@@ -997,16 +890,7 @@ export default function AdminAddUser() {
                     const selected = Array.from(e.target.selectedOptions, (option) => option.value);
                     setOtherRoles(selected.filter((r) => r !== role));
                   }}
-                  className="select-input"
-                  style={{
-                    width: '100%',
-                    height: '190px',
-                    padding: '0.5rem',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '0.9rem',
-                    lineHeight: '1.5'
-                  }}
+                  className="select-input multiselect-roles-box"
                 >
                   {WP_ROLES.map((r) => (
                     <option key={r.value} value={r.value} disabled={r.value === role}>
@@ -1015,18 +899,17 @@ export default function AdminAddUser() {
                   ))}
                 </select>
                 <input type="hidden" name="ure_other_roles" id="ure_other_roles" value={otherRoles.join(',')} />
-                <span id="ure_other_roles_list" style={{ display: 'none' }}>{otherRoles.join(', ')}</span>
+                <span id="ure_other_roles_list" className="d-none">{otherRoles.join(', ')}</span>
 
                 {/* Selected Roles Badges */}
-                <div style={{ marginTop: '0.85rem' }}>
-                  <div className="between" style={{ marginBottom: '0.35rem' }}>
+                <div className="mt-md">
+                  <div className="between mb-xs">
                     <span className="small font-semibold">Active Secondary Roles ({otherRoles.length}):</span>
                     {otherRoles.length > 0 && (
                       <button
                         type="button"
                         onClick={() => setOtherRoles([])}
-                        className="micro text-danger pointer"
-                        style={{ background: 'none', border: 0, padding: 0 }}
+                        className="micro text-danger pointer btn-plain"
                       >
                         Clear All Secondary Roles
                       </button>
@@ -1041,20 +924,13 @@ export default function AdminAddUser() {
                         return (
                           <span
                             key={rVal}
-                            className="badge row align-center gap-1"
-                            style={{
-                              background: '#e0f2fe',
-                              color: '#0369a1',
-                              padding: '0.4rem 0.75rem',
-                              borderRadius: '20px',
-                              fontSize: '0.82rem'
-                            }}
+                            className="badge row align-center gap-1 role-pill-badge"
                           >
                             <span>{rObj ? rObj.label : rVal}</span>
                             <button
                               type="button"
                               onClick={() => handleRemoveOtherRole(rVal)}
-                              style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: 0 }}
+                              className="btn-icon-close"
                               title="Remove role"
                             >
                               <X size={13} />
@@ -1072,12 +948,12 @@ export default function AdminAddUser() {
           {/* =========================================================
               SIDEBAR: SUBMISSION & AUDIT INFO
               ========================================================= */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'sticky', top: '80px' }}>
+          <div className="admin-sidebar-sticky">
             
             {/* Quick Action Box */}
-            <div className="form-section-card" style={{ background: '#f8fafc', borderColor: '#cbd5e1' }}>
-              <h4 style={{ margin: '0 0 0.85rem', fontSize: '1rem', color: '#0b1f3a' }}>Publish User</h4>
-              <p className="micro muted" style={{ marginBottom: '1rem' }}>
+            <div className="form-section-card bg-slate-subtle border-slate-300">
+              <h4 className="publish-card-title">Publish User</h4>
+              <p className="micro muted mb-md">
                 All user meta and audit records will be stored permanently in the master registry.
               </p>
               
@@ -1087,14 +963,14 @@ export default function AdminAddUser() {
                 name="createuser"
                 loading={loading}
                 icon={CheckCircle2}
-                style={{ width: '100%', marginBottom: '0.65rem' }}
+                className="w-full mb-sm"
               >
                 Add New User
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                style={{ width: '100%' }}
+                className="w-full"
                 onClick={() => navigate('/admin/users')}
                 disabled={loading}
               >
@@ -1104,19 +980,19 @@ export default function AdminAddUser() {
 
             {/* User Meta Summary */}
             <div className="form-section-card">
-              <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', color: '#0b1f3a' }}>Form Meta Checklist</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.82rem', color: '#475569' }}>
+              <h4 className="checklist-card-title">Form Meta Checklist</h4>
+              <div className="checklist-meta-list">
                 <div className="between">
                   <span>Username:</span>
                   <strong>{userLogin || '—'}</strong>
                 </div>
                 <div className="between">
                   <span>Email:</span>
-                  <span className="truncate" style={{ maxWidth: '160px' }}>{email || '—'}</span>
+                  <span className="truncate max-w-160">{email || '—'}</span>
                 </div>
                 <div className="between">
                   <span>Primary Role:</span>
-                  <span className="badge" style={{ background: '#f1f5f9', color: '#0b1f3a' }}>
+                  <span className="badge badge-primary-subtle">
                     {WP_ROLES.find((r) => r.value === role)?.label || role}
                   </span>
                 </div>
@@ -1126,7 +1002,7 @@ export default function AdminAddUser() {
                 </div>
                 <div className="between">
                   <span>Email Notification:</span>
-                  <span style={{ color: sendUserNotification ? '#16a34a' : '#64748b', fontWeight: 600 }}>
+                  <span className={`fw-semibold ${sendUserNotification ? 'text-success' : 'text-slate-500'}`}>
                     {sendUserNotification ? 'Yes' : 'No'}
                   </span>
                 </div>

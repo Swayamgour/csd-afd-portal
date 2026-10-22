@@ -146,26 +146,12 @@ export const AdminUsers = () => {
       accessor: 'name',
       render: (u) => (
         <div className="row align-center gap-1">
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: '#e2e8f0',
-              color: '#0f172a',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              flexShrink: 0
-            }}
-          >
+          <div className="user-avatar-circle-sm">
             {(u.name || u.username || 'U')[0].toUpperCase()}
           </div>
           <div>
-            <div style={{ fontWeight: 600, color: 'var(--ink)' }}>{u.name || u.username}</div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            <div className="fw-semibold color-ink">{u.name || u.username}</div>
+            <div className="portal-subtext-muted fs-xs">
               <code>{u.username}</code> · {u.email}
             </div>
           </div>
@@ -181,26 +167,12 @@ export const AdminUsers = () => {
         const otherCount = u.otherRoles?.length || 0;
         return (
           <div>
-            <span
-              className="badge"
-              style={{
-                background: '#f1f5f9',
-                color: '#0b1f3a',
-                fontWeight: 600,
-                border: '1px solid #cbd5e1'
-              }}
-            >
+            <span className="badge badge-role-boxed">
               {label}
             </span>
             {otherCount > 0 && (
               <span
-                className="badge"
-                style={{
-                  background: '#e0f2fe',
-                  color: '#0369a1',
-                  marginLeft: '0.35rem',
-                  fontSize: '0.7rem'
-                }}
+                className="badge badge-other-roles-tag"
                 title={`Other roles: ${u.otherRoles.join(', ')}`}
               >
                 +{otherCount} other{otherCount > 1 ? 's' : ''}
@@ -215,15 +187,15 @@ export const AdminUsers = () => {
       accessor: 'email',
       render: (u) => (
         <div>
-          <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>{u.email || 'N/A'}</div>
-          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{u.mobile || u.phone || 'No phone'}</div>
-          <div style={{ display: 'flex', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
+          <div className="fs-sm fw-medium">{u.email || 'N/A'}</div>
+          <div className="portal-subtext-muted fs-xs">{u.mobile || u.phone || 'No phone'}</div>
+          <div className="portal-flex-wrap-gap-xs mt-xs">
             {u.isEmailVerified ? (
-              <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', fontWeight: 600 }}>
+              <span className="badge badge-verified-xs">
                 ✓ Email Verified (OTP)
               </span>
             ) : (
-              <span className="badge" style={{ background: '#fef3c7', color: '#92400e', fontSize: '0.7rem' }}>
+              <span className="badge badge-unverified-xs">
                 Email Unverified
               </span>
             )}
@@ -243,17 +215,9 @@ export const AdminUsers = () => {
           <div>
             <StatusBadge status={u.status} />
             {u.role === 'BENEFICIARY' && (
-              <div style={{ marginTop: '4px' }}>
+              <div className="mt-xs">
                 <span
-                  className="badge"
-                  style={{
-                    fontSize: '0.68rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.02em',
-                    background: isApproved ? '#dcfce7' : isRejected ? '#fee2e2' : '#fef3c7',
-                    color: isApproved ? '#166534' : isRejected ? '#991b1b' : '#92400e',
-                    border: `1px solid ${isApproved ? '#bbf7d0' : isRejected ? '#fecaca' : '#fde68a'}`
-                  }}
+                  className={`badge ${isApproved ? 'badge-approval-approved' : isRejected ? 'badge-approval-rejected' : 'badge-approval-pending'}`}
                 >
                   {isApproved ? 'APPROVED' : isRejected ? 'REJECTED' : 'PENDING'}
                 </span>
@@ -267,7 +231,7 @@ export const AdminUsers = () => {
       header: 'Audit & Edits',
       accessor: 'userEditedCount',
       render: (u) => (
-        <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
+        <div className="portal-subtext-muted fs-xs">
           <div>Edits: <strong>{u.userEditedCount || 0}</strong></div>
           <div>Status Shifts: <strong>{u.statusChangeCount || 0}</strong></div>
         </div>
@@ -277,20 +241,11 @@ export const AdminUsers = () => {
       header: 'Actions',
       accessor: 'actions',
       render: (u) => (
-        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="flex-align-center-gap-xs flex-wrap">
           {/* Beneficiary status indicator (Admin view-only; Approvals exclusive to CS Director) */}
           {u.role === 'BENEFICIARY' && (u.status === 'Pending' || u.adminApproval === 'PENDING' || u.verificationStatus === 'PENDING') && (
             <span
-              className="badge"
-              style={{
-                fontSize: '0.68rem',
-                fontWeight: 600,
-                background: '#fef3c7',
-                color: '#92400e',
-                border: '1px solid #fde68a',
-                padding: '0.2rem 0.45rem',
-                borderRadius: '4px'
-              }}
+              className="badge badge-pending-director-pill"
               title="Awaiting review & approval by CS Director"
             >
               Pending CS Director
@@ -299,8 +254,7 @@ export const AdminUsers = () => {
 
           <button
             type="button"
-            className="header-icon-btn circle"
-            style={{ width: '30px', height: '30px', color: '#475569' }}
+            className="header-icon-btn circle btn-size-30 text-slate-600"
             title="Inspect Full User File"
             onClick={() => setSelectedUserForDetails(u)}
           >
@@ -309,8 +263,7 @@ export const AdminUsers = () => {
 
           <button
             type="button"
-            className="header-icon-btn circle"
-            style={{ width: '30px', height: '30px', color: '#1e4fd8' }}
+            className="header-icon-btn circle btn-size-30 text-brand"
             title="Edit User Profile"
             onClick={() => setSelectedUserForEdit(u)}
           >
@@ -319,8 +272,7 @@ export const AdminUsers = () => {
 
           <button
             type="button"
-            className="header-icon-btn circle"
-            style={{ width: '30px', height: '30px', color: '#d97706' }}
+            className="header-icon-btn circle btn-size-30 text-amber"
             title="Change Account Security Status"
             onClick={() => setSelectedUserForStatus(u)}
           >
@@ -329,12 +281,7 @@ export const AdminUsers = () => {
 
           <button
             type="button"
-            className="header-icon-btn circle"
-            style={{
-              width: '30px',
-              height: '30px',
-              color: u.status === 'Suspended' || u.status === 'Denied' ? '#16a34a' : '#dc2626'
-            }}
+            className={`header-icon-btn circle btn-size-30 ${u.status === 'Suspended' || u.status === 'Denied' ? 'text-success' : 'text-danger'}`}
             title={u.status === 'Suspended' || u.status === 'Denied' ? 'Unlock Account' : 'Quick Lock Account'}
             onClick={() => handleQuickToggleLock(u)}
           >
@@ -355,7 +302,7 @@ export const AdminUsers = () => {
           { label: 'User Management' }
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="flex-gap-sm">
             <ExportButton data={filteredUsers} filename="CSD_User_Registry" />
             <Button
               icon={Plus}
@@ -369,26 +316,14 @@ export const AdminUsers = () => {
 
       {/* Success Notification Alert */}
       {toastMessage && (
-        <div
-          className="alert alert-success row align-center gap-1"
-          style={{
-            marginBottom: '1.25rem',
-            background: '#ecfdf5',
-            border: '1px solid #a7f3d0',
-            color: '#065f46',
-            padding: '0.85rem 1.25rem',
-            borderRadius: '10px',
-            fontSize: '0.9rem',
-            fontWeight: 500
-          }}
-        >
+        <div className="alert alert-success row align-center gap-1 admin-toast-success">
           <CheckCircle2 size={18} className="text-success" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* KPI METRIC CARDS */}
-      <div className="stats-grid" style={{ marginBottom: '1.5rem' }}>
+      <div className="stats-grid mb-xl">
         <StatCard
           title="Total User Accounts"
           value={totalCount}

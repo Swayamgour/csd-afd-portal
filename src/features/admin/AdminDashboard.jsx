@@ -36,6 +36,8 @@ import {
   XCircle,
 } from 'lucide-react';
 
+const toPctClass = (pct, prefix = 'w-pct') => `${prefix}-${Math.min(100, Math.max(0, Math.round(Number(pct || 0) / 5) * 5))}`;
+
 export const AdminDashboard = () => {
   // Timeframe filter for analytics & charts
   const [timeframe, setTimeframe] = useState('30d');
@@ -170,27 +172,10 @@ export const AdminDashboard = () => {
   const isRefreshing = isSummaryFetching || isAnalyticsFetching;
 
   return (
-    <div className="admin-dashboard-page" style={{ paddingBottom: '3rem' }}>
+    <div className="admin-dashboard-page">
       {/* Toast Feedback */}
       {toastMessage && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '1.5rem',
-            right: '1.5rem',
-            background: '#065f46',
-            color: '#fff',
-            padding: '0.85rem 1.35rem',
-            borderRadius: '8px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.6rem',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-          }}
-        >
+        <div className="admin-toast-success">
           <CheckCircle2 size={18} />
           {toastMessage}
         </div>
@@ -202,7 +187,7 @@ export const AdminDashboard = () => {
         subtitle="Real-time operational intelligence, master catalog management, and supply chain telemetry"
         breadcrumbs={[{ label: 'System Admin', href: '/admin/dashboard' }, { label: 'Dashboard' }]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div className="flex-align-center-gap-sm">
             <Button
               variant="outline"
               size="sm"
@@ -211,21 +196,18 @@ export const AdminDashboard = () => {
             >
               <RefreshCw
                 size={14}
-                style={{
-                  marginRight: '0.35rem',
-                  animation: isRefreshing ? 'spin 1s linear infinite' : 'none',
-                }}
+                className={`mr-xs ${isRefreshing ? 'portal-spinner-icon' : ''}`}
               />
               {isRefreshing ? 'Syncing...' : 'Sync Data'}
             </Button>
             <Link to="/admin/demands">
               <Button variant="outline" size="sm">
-                <FileCheck size={14} style={{ marginRight: '0.35rem' }} /> All Demands
+                <FileCheck size={14} className="mr-xs" /> All Demands
               </Button>
             </Link>
             <Link to="/admin/users">
               <Button variant="primary" size="sm">
-                <Users size={14} style={{ marginRight: '0.35rem' }} /> User Directory
+                <Users size={14} className="mr-xs" /> User Directory
               </Button>
             </Link>
           </div>
@@ -233,172 +215,139 @@ export const AdminDashboard = () => {
       />
 
       {/* SECTION 1: 18 DYNAMIC SUMMARY CARDS (Grouped) */}
-      <div style={{ marginBottom: '2rem' }}>
+      <div className="mb-2xl">
         {/* GROUP A: DEMANDS & TRANSACTIONS */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <ShoppingBag size={18} style={{ color: '#1e40af' }} />
-            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>
+        <div className="mb-lg">
+          <div className="dashboard-group-header">
+            <ShoppingBag size={18} className="text-blue-dark" />
+            <h3 className="dashboard-group-title">
               Operational Demand & Fulfillment Lifecycle
             </h3>
           </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '0.85rem',
-            }}
-          >
+          <div className="dashboard-stats-grid-6">
             <SummaryStatCard
               title="Total Demands"
               count={totalDemands}
-              icon={<ShoppingBag size={20} color="#2563eb" />}
-              bgColor="#eff6ff"
-              borderColor="#bfdbfe"
+              icon={<ShoppingBag size={20} className="icon-blue" />}
+              variant="blue"
             />
             <SummaryStatCard
               title="Processing Demands"
               count={processingDemands}
-              icon={<Clock size={20} color="#d97706" />}
-              bgColor="#fffbeb"
-              borderColor="#fde68a"
+              icon={<Clock size={20} className="icon-amber" />}
+              variant="amber"
             />
             <SummaryStatCard
               title="Pending Payment"
               count={pendingPaymentDemands}
-              icon={<IndianRupee size={20} color="#ea580c" />}
-              bgColor="#fff7ed"
-              borderColor="#fed7aa"
+              icon={<IndianRupee size={20} className="icon-orange" />}
+              variant="orange"
             />
             <SummaryStatCard
               title="Approved Demands"
               count={approvedDemands}
-              icon={<CheckCircle2 size={20} color="#16a34a" />}
-              bgColor="#f0fdf4"
-              borderColor="#bbf7d0"
+              icon={<CheckCircle2 size={20} className="icon-green" />}
+              variant="green"
             />
             <SummaryStatCard
               title="Rejected Demands"
               count={rejectedDemands}
-              icon={<XCircle size={20} color="#dc2626" />}
-              bgColor="#fef2f2"
-              borderColor="#fecaca"
+              icon={<XCircle size={20} className="icon-red" />}
+              variant="red"
             />
             <SummaryStatCard
               title="Completed Orders"
               count={completedOrders}
-              icon={<Package size={20} color="#059669" />}
-              bgColor="#ecfdf5"
-              borderColor="#a7f3d0"
+              icon={<Package size={20} className="icon-emerald" />}
+              variant="emerald"
             />
           </div>
         </div>
 
         {/* GROUP B: MASTER DATA (OEM, DEALER, DEPOT, URC, PRODUCTS) */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <Layers size={18} style={{ color: '#0d9488' }} />
-            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>
+        <div className="mb-lg">
+          <div className="dashboard-group-header">
+            <Layers size={18} className="text-teal" />
+            <h3 className="dashboard-group-title">
               Catalog & Organizational Master Entities
             </h3>
           </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '0.85rem',
-            }}
-          >
+          <div className="dashboard-stats-grid-6">
             <SummaryStatCard
               title="Total Products"
               count={totalProducts}
               subtext={`${activeProducts} Active in Catalog`}
-              icon={<Package size={20} color="#0284c7" />}
-              bgColor="#f0f9ff"
-              borderColor="#bae6fd"
+              icon={<Package size={20} className="icon-sky" />}
+              variant="sky"
             />
             <SummaryStatCard
               title="Total OEMs"
               count={totalOems}
               subtext={`${activeOems} Active Manufacturers`}
-              icon={<Building2 size={20} color="#7c3aed" />}
-              bgColor="#f5f3ff"
-              borderColor="#ddd6fe"
+              icon={<Building2 size={20} className="icon-purple" />}
+              variant="purple"
             />
             <SummaryStatCard
               title="Total Dealers"
               count={totalDealers}
               subtext={`${activeDealers} Active Dealerships`}
-              icon={<Store size={20} color="#4f46e5" />}
-              bgColor="#eef2ff"
-              borderColor="#c7d2fe"
+              icon={<Store size={20} className="icon-indigo" />}
+              variant="indigo"
             />
             <SummaryStatCard
               title="Total Depots"
               count={totalDepots}
               subtext={`${activeDepots} Operational Depots`}
-              icon={<Warehouse size={20} color="#0d9488" />}
-              bgColor="#f0fdfa"
-              borderColor="#99f6e4"
+              icon={<Warehouse size={20} className="icon-teal" />}
+              variant="teal"
             />
             <SummaryStatCard
               title="Total URCs"
               count={totalUrcs}
               subtext={`${activeUrcs} Active Canteens`}
-              icon={<Shield size={20} color="#0284c7" />}
-              bgColor="#f0f9ff"
-              borderColor="#bae6fd"
+              icon={<Shield size={20} className="icon-sky" />}
+              variant="sky"
             />
           </div>
         </div>
 
         {/* GROUP C: BENEFICIARY DIRECTORY COUNTS */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <Users size={18} style={{ color: '#475569' }} />
-            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>
+          <div className="dashboard-group-header">
+            <Users size={18} className="text-slate-600" />
+            <h3 className="dashboard-group-title">
               Beneficiary Entitlement & Registrations
             </h3>
           </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '0.85rem',
-            }}
-          >
+          <div className="dashboard-stats-grid-4">
             <SummaryStatCard
               title="Total Beneficiaries"
               count={totalBeneficiaries}
               subtext="Armed forces personnel & ex-servicemen"
-              icon={<Users size={20} color="#334155" />}
-              bgColor="#f8fafc"
-              borderColor="#e2e8f0"
+              icon={<Users size={20} className="icon-slate" />}
+              variant="slate"
             />
             <SummaryStatCard
               title="Pending Beneficiary Verification"
               count={pendingBeneficiaryVerification}
               subtext="Under CS Director review"
-              icon={<Clock size={20} color="#d97706" />}
-              bgColor="#fffbeb"
-              borderColor="#fde68a"
+              icon={<Clock size={20} className="icon-amber" />}
+              variant="amber"
               highlight={pendingBeneficiaryVerification > 0}
             />
             <SummaryStatCard
               title="Verified / Approved Beneficiaries"
               count={verifiedBeneficiaries}
               subtext="Eligible for online booking"
-              icon={<UserCheck size={20} color="#16a34a" />}
-              bgColor="#f0fdf4"
-              borderColor="#bbf7d0"
+              icon={<UserCheck size={20} className="icon-green" />}
+              variant="green"
             />
             <SummaryStatCard
               title="Total Revenue Realized"
               count={`₹${Number(totalRevenue).toLocaleString('en-IN')}`}
               subtext="Aggregated successful payments"
-              icon={<IndianRupee size={20} color="#047857" />}
-              bgColor="#ecfdf5"
-              borderColor="#a7f3d0"
+              icon={<IndianRupee size={20} className="icon-emerald" />}
+              variant="emerald"
             />
           </div>
         </div>
@@ -407,11 +356,11 @@ export const AdminDashboard = () => {
       {/* SECTION 2: DYNAMIC ANALYTICS & CHARTS WITH TIMEFRAME FILTERS */}
       <Card
         title="Enterprise Analytics & Supply Chain Insights"
-        style={{ marginBottom: '2rem' }}
+        className="mb-2xl"
         actions={
-          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748b', marginRight: '0.25rem', fontWeight: 600 }}>
-              <Calendar size={13} style={{ display: 'inline', verticalAlign: '-2px', marginRight: '4px' }} />
+          <div className="portal-period-container">
+            <span className="portal-period-label">
+              <Calendar size={13} className="portal-calendar-icon" />
               Period:
             </span>
             {['today', '7d', '30d', 'month', 'prev_month', 'year'].map((tf) => (
@@ -419,18 +368,7 @@ export const AdminDashboard = () => {
                 key={tf}
                 type="button"
                 onClick={() => setTimeframe(tf)}
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  padding: '0.28rem 0.65rem',
-                  borderRadius: '6px',
-                  border: '1px solid',
-                  borderColor: timeframe === tf ? '#1e40af' : '#cbd5e1',
-                  background: timeframe === tf ? '#1e40af' : '#fff',
-                  color: timeframe === tf ? '#fff' : '#475569',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
+                className={`period-toggle-btn ${timeframe === tf ? 'active' : ''}`}
               >
                 {timeframeLabels[tf]}
               </button>
@@ -439,128 +377,65 @@ export const AdminDashboard = () => {
         }
       >
         {/* TAB TOGGLE: DEMANDS / DEPOTS / OEMS */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.5rem',
-            borderBottom: '1px solid #e2e8f0',
-            paddingBottom: '0.75rem',
-            marginBottom: '1.25rem',
-          }}
-        >
+        <div className="dashboard-chart-tabs">
           <button
             type="button"
             onClick={() => setActiveChartTab('demands')}
-            style={{
-              padding: '0.45rem 0.95rem',
-              borderRadius: '6px',
-              border: 'none',
-              fontWeight: 700,
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-              background: activeChartTab === 'demands' ? '#eff6ff' : 'transparent',
-              color: activeChartTab === 'demands' ? '#1d4ed8' : '#64748b',
-            }}
+            className={`chart-tab-btn ${activeChartTab === 'demands' ? 'active' : ''}`}
           >
             Demand Volume & Status
           </button>
           <button
             type="button"
             onClick={() => setActiveChartTab('depots')}
-            style={{
-              padding: '0.45rem 0.95rem',
-              borderRadius: '6px',
-              border: 'none',
-              fontWeight: 700,
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-              background: activeChartTab === 'depots' ? '#eff6ff' : 'transparent',
-              color: activeChartTab === 'depots' ? '#1d4ed8' : '#64748b',
-            }}
+            className={`chart-tab-btn ${activeChartTab === 'depots' ? 'active' : ''}`}
           >
             Depot Processing Load
           </button>
           <button
             type="button"
             onClick={() => setActiveChartTab('oems')}
-            style={{
-              padding: '0.45rem 0.95rem',
-              borderRadius: '6px',
-              border: 'none',
-              fontWeight: 700,
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-              background: activeChartTab === 'oems' ? '#eff6ff' : 'transparent',
-              color: activeChartTab === 'oems' ? '#1d4ed8' : '#64748b',
-            }}
+            className={`chart-tab-btn ${activeChartTab === 'oems' ? 'active' : ''}`}
           >
             OEM & Category Distribution
           </button>
         </div>
 
         {isAnalyticsLoading ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-            <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', marginBottom: '0.5rem' }} />
+          <div className="chart-loading-box">
+            <RefreshCw size={24} className="spin-icon" />
             <div>Loading live analytics aggregation from database...</div>
           </div>
         ) : (
           <div>
             {activeChartTab === 'demands' && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+              <div className="dashboard-charts-grid">
                 {/* Demand Trends Bar Chart */}
-                <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
-                    <strong style={{ fontSize: '0.9rem', color: '#1e293b' }}>
+                <div className="dashboard-chart-card">
+                  <div className="chart-card-header">
+                    <strong className="chart-card-title">
                       Daily Demand Generation ({timeframeLabels[timeframe]})
                     </strong>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                    <span className="chart-card-subtitle">
                       Total: {demandTrends.reduce((a, b) => a + b.count, 0)} demands
                     </span>
                   </div>
                   {demandTrends.length === 0 ? (
-                    <div style={{ padding: '2.5rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+                    <div className="dashboard-empty-msg">
                       No demand records found for the selected {timeframeLabels[timeframe]}.
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '170px', paddingTop: '20px' }}>
+                    <div className="bar-chart-track-container">
                       {demandTrends.map((d, i) => {
                         const heightPct = Math.round((d.count / maxTrendCount) * 100);
                         return (
-                          <div
-                            key={d.date || i}
-                            style={{
-                              flex: 1,
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              height: '100%',
-                              justifyContent: 'flex-end',
-                            }}
-                          >
-                            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#1e40af', marginBottom: '3px' }}>
-                              {d.count}
-                            </span>
+                          <div key={d.date || i} className="bar-col-item">
+                            <span className="bar-val-label">{d.count}</span>
                             <div
                               title={`${d.date}: ${d.count} demands (₹${(d.volume || 0).toLocaleString('en-IN')})`}
-                              style={{
-                                width: '100%',
-                                maxWidth: '32px',
-                                height: `${Math.max(heightPct, 6)}%`,
-                                background: 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)',
-                                borderRadius: '4px 4px 0 0',
-                                transition: 'height 0.3s ease',
-                              }}
+                              className={`bar-fill-gradient ${toPctClass(Math.max(heightPct, 6), 'h-pct')}`}
                             />
-                            <span
-                              style={{
-                                fontSize: '0.64rem',
-                                color: '#64748b',
-                                marginTop: '4px',
-                                writingMode: demandTrends.length > 10 ? 'vertical-lr' : 'horizontal-tb',
-                                transform: demandTrends.length > 10 ? 'rotate(180deg)' : 'none',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
+                            <span className={`bar-date-label ${demandTrends.length > 10 ? 'rotated' : ''}`}>
                               {(d.date || '').slice(5)}
                             </span>
                           </div>
@@ -571,32 +446,32 @@ export const AdminDashboard = () => {
                 </div>
 
                 {/* Status Breakdown */}
-                <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <strong style={{ fontSize: '0.9rem', color: '#1e293b', display: 'block', marginBottom: '1rem' }}>
+                <div className="dashboard-chart-card">
+                  <strong className="chart-card-title">
                     Demand Status Pipeline Distribution
                   </strong>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div className="status-pipeline-list">
                     {[
-                      { key: 'CREATED', label: 'Created / Initiated', color: '#64748b' },
-                      { key: 'PAYMENT_PENDING', label: 'Payment Pending', color: '#ea580c' },
-                      { key: 'PAID', label: 'Paid / Under Depot Review', color: '#d97706' },
-                      { key: 'PROCESSING', label: 'Depot Processing', color: '#2563eb' },
-                      { key: 'APPROVED', label: 'Depot Approved', color: '#16a34a' },
-                      { key: 'SUPPLY_ORDER_ISSUED', label: 'Supply Order Issued', color: '#0d9488' },
-                      { key: 'REJECTED', label: 'Rejected / Cancelled', color: '#dc2626' },
+                      { key: 'CREATED', label: 'Created / Initiated', fillClass: 'fill-status-created' },
+                      { key: 'PAYMENT_PENDING', label: 'Payment Pending', fillClass: 'fill-status-payment-pending' },
+                      { key: 'PAID', label: 'Paid / Under Depot Review', fillClass: 'fill-status-paid' },
+                      { key: 'PROCESSING', label: 'Depot Processing', fillClass: 'fill-status-processing' },
+                      { key: 'APPROVED', label: 'Depot Approved', fillClass: 'fill-status-approved' },
+                      { key: 'SUPPLY_ORDER_ISSUED', label: 'Supply Order Issued', fillClass: 'fill-status-supply-order' },
+                      { key: 'REJECTED', label: 'Rejected / Cancelled', fillClass: 'fill-status-rejected' },
                     ].map((item) => {
                       const count = statusWise[item.key] || 0;
                       const pct = totalDemands > 0 ? Math.round((count / totalDemands) * 100) : 0;
                       return (
                         <div key={item.key}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '3px' }}>
-                            <span style={{ color: '#334155', fontWeight: 600 }}>{item.label}</span>
-                            <span style={{ color: '#64748b' }}>
+                          <div className="status-row-header">
+                            <span className="status-label-text">{item.label}</span>
+                            <span className="status-val-text">
                               <strong>{count}</strong> ({pct}%)
                             </span>
                           </div>
-                          <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{ width: `${pct}%`, height: '100%', background: item.color, borderRadius: '4px' }} />
+                          <div className="status-bar-track">
+                            <div className={`status-bar-fill ${item.fillClass} ${toPctClass(pct, 'w-pct')}`} />
                           </div>
                         </div>
                       );
@@ -607,42 +482,25 @@ export const AdminDashboard = () => {
             )}
 
             {activeChartTab === 'depots' && (
-              <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <strong style={{ fontSize: '0.9rem', color: '#1e293b', display: 'block', marginBottom: '1rem' }}>
+              <div className="dashboard-chart-card">
+                <strong className="chart-card-title">
                   Depot-wise Demand Ingestion & Processing Load
                 </strong>
                 {depotWise.length === 0 ? (
-                  <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+                  <div className="empty-center-pad">
                     No depot demands recorded for the chosen timeframe.
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                  <div className="depot-load-grid">
                     {depotWise.map((d, i) => (
-                      <div
-                        key={d.depot || i}
-                        style={{
-                          background: '#fff',
-                          padding: '1rem',
-                          borderRadius: '6px',
-                          border: '1px solid #e2e8f0',
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                          <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0f172a' }}>{d.depot}</span>
-                          <span
-                            style={{
-                              background: '#eff6ff',
-                              color: '#1d4ed8',
-                              padding: '0.15rem 0.45rem',
-                              borderRadius: '4px',
-                              fontWeight: 700,
-                              fontSize: '0.75rem',
-                            }}
-                          >
+                      <div key={d.depot || i} className="depot-load-card">
+                        <div className="depot-load-header">
+                          <span className="depot-name-title">{d.depot}</span>
+                          <span className="badge-depot-demand-pill">
                             {d.count} Demands
                           </span>
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                        <div className="depot-volume-text">
                           Order Volume: ₹{Number(d.amount || 0).toLocaleString('en-IN')}
                         </div>
                       </div>
@@ -653,36 +511,29 @@ export const AdminDashboard = () => {
             )}
 
             {activeChartTab === 'oems' && (
-              <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <strong style={{ fontSize: '0.9rem', color: '#1e293b', display: 'block', marginBottom: '1rem' }}>
+              <div className="dashboard-chart-card">
+                <strong className="chart-card-title">
                   Top Manufacturers (OEMs) by Demand Volume
                 </strong>
                 {oemWise.length === 0 ? (
-                  <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+                  <div className="empty-center-pad">
                     No manufacturer demand records for this period.
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <div className="oem-list-container">
                     {oemWise.map((o, i) => {
                       const maxOemCount = Math.max(...oemWise.map((x) => x.count), 1);
                       const pct = Math.round((o.count / maxOemCount) * 100);
                       return (
                         <div key={o.oem || i}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '4px' }}>
-                            <span style={{ fontWeight: 700, color: '#1e293b' }}>{o.oem}</span>
-                            <span style={{ color: '#475569', fontSize: '0.78rem' }}>
+                          <div className="oem-item-header">
+                            <span className="oem-item-name">{o.oem}</span>
+                            <span className="oem-item-details">
                               <strong>{o.count} Demands</strong> (₹{Number(o.amount || 0).toLocaleString('en-IN')})
                             </span>
                           </div>
-                          <div style={{ width: '100%', height: '10px', background: '#e2e8f0', borderRadius: '5px', overflow: 'hidden' }}>
-                            <div
-                              style={{
-                                width: `${pct}%`,
-                                height: '100%',
-                                background: 'linear-gradient(90deg, #6366f1 0%, #4338ca 100%)',
-                                borderRadius: '5px',
-                              }}
-                            />
+                          <div className="oem-bar-track">
+                            <div className={`oem-bar-fill ${toPctClass(pct, 'w-pct')}`} />
                           </div>
                         </div>
                       );
@@ -696,81 +547,61 @@ export const AdminDashboard = () => {
       </Card>
 
       {/* SECTION 3: RECENT DEMANDS & AUDIT ACTIVITY STREAMS */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-          gap: '1.5rem',
-          marginBottom: '2rem',
-        }}
-      >
+      <div className="recent-activity-grid">
         {/* Recent Demands Card */}
         <Card
           title="Recent Inbound Demands"
           actions={
-            <Link to="/admin/demands" style={{ fontSize: '0.8rem', color: '#1d4ed8', fontWeight: 600 }}>
+            <Link to="/admin/demands" className="card-header-link">
               View All Demands →
             </Link>
           }
         >
           {isDemandsLoading ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading recent demands...</div>
+            <div className="loading-center-pad">Loading recent demands...</div>
           ) : recentDemands.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+            <div className="empty-center-pad">
               No recent demands created yet.
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+            <div className="overflow-x-auto">
+              <table className="admin-table-simple">
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
-                    <th style={{ padding: '0.5rem' }}>Demand No</th>
-                    <th style={{ padding: '0.5rem' }}>Beneficiary</th>
-                    <th style={{ padding: '0.5rem' }}>Amount</th>
-                    <th style={{ padding: '0.5rem' }}>Status</th>
+                  <tr className="table-header-row">
+                    <th className="table-th-pad">Demand No</th>
+                    <th className="table-th-pad">Beneficiary</th>
+                    <th className="table-th-pad">Amount</th>
+                    <th className="table-th-pad">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentDemands.slice(0, 6).map((dem) => (
-                    <tr key={dem._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '0.6rem 0.5rem', fontWeight: 700, color: '#1e40af' }}>
+                    <tr key={dem._id} className="table-body-row">
+                      <td className="table-cell-bold-blue">
                         {dem.demandNo}
                       </td>
-                      <td style={{ padding: '0.6rem 0.5rem' }}>
-                        <div style={{ fontWeight: 600, color: '#1e293b' }}>
+                      <td className="table-td-pad">
+                        <div className="table-cell-bold-dark">
                           {dem.beneficiaryId?.name || 'Beneficiary'}
                         </div>
-                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                        <div className="text-muted-xs">
                           {dem.beneficiaryId?.serviceNumber || dem.beneficiaryId?.rank || ''}
                         </div>
                       </td>
-                      <td style={{ padding: '0.6rem 0.5rem', fontWeight: 600 }}>
+                      <td className="table-td-pad fw-600">
                         ₹{Number(dem.totalAmount || 0).toLocaleString('en-IN')}
                       </td>
-                      <td style={{ padding: '0.6rem 0.5rem' }}>
+                      <td className="table-td-pad">
                         <span
-                          style={{
-                            fontSize: '0.7rem',
-                            padding: '0.2rem 0.45rem',
-                            borderRadius: '4px',
-                            fontWeight: 700,
-                            background:
-                              dem.status === 'APPROVED'
-                                ? '#dcfce7'
-                                : dem.status === 'REJECTED'
-                                ? '#fee2e2'
-                                : dem.status === 'PAYMENT_PENDING'
-                                ? '#ffedd5'
-                                : '#eff6ff',
-                            color:
-                              dem.status === 'APPROVED'
-                                ? '#166534'
-                                : dem.status === 'REJECTED'
-                                ? '#991b1b'
-                                : dem.status === 'PAYMENT_PENDING'
-                                ? '#9a3412'
-                                : '#1e40af',
-                          }}
+                          className={`badge ${
+                            dem.status === 'APPROVED'
+                              ? 'badge-demand-approved'
+                              : dem.status === 'REJECTED'
+                              ? 'badge-demand-rejected'
+                              : dem.status === 'PAYMENT_PENDING'
+                              ? 'badge-demand-payment'
+                              : 'badge-demand-default'
+                          }`}
                         >
                           {dem.status}
                         </span>
@@ -787,44 +618,32 @@ export const AdminDashboard = () => {
         <Card
           title="System Audit & Security Activity"
           actions={
-            <Link to="/admin/audit" style={{ fontSize: '0.8rem', color: '#1d4ed8', fontWeight: 600 }}>
+            <Link to="/admin/audit" className="card-header-link">
               Audit Report →
             </Link>
           }
         >
           {isActivityLoading ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading audit events...</div>
+            <div className="loading-center-pad">Loading audit events...</div>
           ) : activityLogs.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>
+            <div className="empty-center-pad">
               No audit logs recorded yet.
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            <div className="audit-log-list">
               {activityLogs.slice(0, 6).map((log) => (
-                <div
-                  key={log._id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '0.6rem',
-                    padding: '0.5rem 0.65rem',
-                    borderRadius: '6px',
-                    background: '#f8fafc',
-                    border: '1px solid #f1f5f9',
-                    fontSize: '0.8rem',
-                  }}
-                >
-                  <Activity size={15} style={{ color: '#0d9488', marginTop: '3px', flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 700, color: '#1e293b' }}>
-                        {log.action} <span style={{ color: '#64748b', fontWeight: 500 }}>on {log.entityType || log.entity}</span>
+                <div key={log._id} className="audit-log-item-box">
+                  <Activity size={15} className="audit-log-icon" />
+                  <div className="flex-1 min-w-0">
+                    <div className="audit-log-header">
+                      <span className="fw-700 color-slate-900">
+                        {log.action} <span className="color-slate-500 fw-500">on {log.entityType || log.entity}</span>
                       </span>
-                      <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                      <span className="audit-time-label">
                         {new Date(log.timestamp || log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>
+                    <div className="text-muted-xs mt-xxs">
                       By: {log.userEmail || log.userId || 'System'} | IP: {log.ip || 'Localhost'}
                     </div>
                   </div>
@@ -839,26 +658,15 @@ export const AdminDashboard = () => {
       <Card
         title="Beneficiary & System User Directory"
         actions={
-          <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
+          <span className="directory-header-meta">
             Showing <strong>{filteredUsers.length}</strong> of <strong>{users.length}</strong> accounts
           </span>
         }
       >
         {/* Controls */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-            paddingBottom: '1rem',
-            borderBottom: '1px solid #e2e8f0',
-            marginBottom: '1rem',
-          }}
-        >
+        <div className="directory-filter-bar">
           {/* Status Tabs */}
-          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+          <div className="directory-tabs-list">
             {[
               { id: 'ALL', label: 'All Users', count: users.length },
               { id: 'PENDING', label: 'Pending Verification', count: pendingBeneficiaryVerification },
@@ -870,31 +678,10 @@ export const AdminDashboard = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => setStatusTab(tab.id)}
-                  style={{
-                    padding: '0.4rem 0.8rem',
-                    borderRadius: '6px',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    border: '1px solid',
-                    borderColor: active ? '#1e40af' : '#cbd5e1',
-                    background: active ? '#1e40af' : '#fff',
-                    color: active ? '#fff' : '#475569',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                  }}
+                  className={`directory-tab-pill ${active ? 'active' : ''}`}
                 >
                   {tab.label}
-                  <span
-                    style={{
-                      background: active ? 'rgba(255,255,255,0.25)' : '#f1f5f9',
-                      color: active ? '#fff' : '#475569',
-                      padding: '0.1rem 0.4rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.7rem',
-                    }}
-                  >
+                  <span className="tab-count-pill">
                     {tab.count}
                   </span>
                 </button>
@@ -903,44 +690,38 @@ export const AdminDashboard = () => {
           </div>
 
           {/* Search Box */}
-          <div style={{ position: 'relative', minWidth: '240px' }}>
+          <div className="search-box-relative">
             <Search
               size={15}
-              style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}
+              className="search-input-icon"
             />
             <input
               type="text"
               placeholder="Search by name, email, service number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.4rem 0.75rem 0.4rem 2rem',
-                borderRadius: '6px',
-                border: '1px solid #cbd5e1',
-                fontSize: '0.82rem',
-              }}
+              className="portal-search-input"
             />
           </div>
         </div>
 
         {/* Directory Table */}
         {isUsersLoading ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading user directory...</div>
+          <div className="loading-center-pad">Loading user directory...</div>
         ) : filteredUsers.length === 0 ? (
-          <div style={{ padding: '2.5rem', textAlign: 'center', color: '#94a3b8' }}>
+          <div className="empty-center-pad">
             No accounts match your search or filter criteria.
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+          <div className="overflow-x-auto">
+            <table className="admin-table-simple">
               <thead>
-                <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
-                  <th style={{ padding: '0.6rem' }}>User Profile</th>
-                  <th style={{ padding: '0.6rem' }}>Role</th>
-                  <th style={{ padding: '0.6rem' }}>Contact</th>
-                  <th style={{ padding: '0.6rem' }}>Status</th>
-                  <th style={{ padding: '0.6rem' }}>Action</th>
+                <tr className="table-header-row">
+                  <th className="table-th-user">User Profile</th>
+                  <th className="table-th-user">Role</th>
+                  <th className="table-th-user">Contact</th>
+                  <th className="table-th-user">Status</th>
+                  <th className="table-th-user">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -951,94 +732,42 @@ export const AdminDashboard = () => {
                   const isApproved = u.verificationStatus === 'VERIFIED' || u.verificationStatus === 'APPROVED' || u.status === 'ACTIVE';
 
                   return (
-                    <tr key={u._id || u.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '0.65rem' }}>
-                        <div style={{ fontWeight: 700, color: '#1e293b' }}>{u.name || u.username}</div>
-                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                    <tr key={u._id || u.id} className="table-body-row">
+                      <td className="table-td-user">
+                        <div className="table-cell-bold-dark">{u.name || u.username}</div>
+                        <div className="text-muted-xs">
                           {u.cardId || u.serviceNumber ? `Card/ID: ${u.cardId || u.serviceNumber}` : u.username}
                         </div>
                       </td>
-                      <td style={{ padding: '0.65rem' }}>
-                        <span
-                          style={{
-                            fontSize: '0.7rem',
-                            padding: '0.15rem 0.45rem',
-                            borderRadius: '4px',
-                            fontWeight: 700,
-                            background: role === 'beneficiary' ? '#eff6ff' : '#f8fafc',
-                            color: role === 'beneficiary' ? '#1d4ed8' : '#334155',
-                            border: '1px solid #cbd5e1',
-                          }}
-                        >
+                      <td className="table-td-user">
+                        <span className={`badge-role-tag ${role === 'beneficiary' ? 'badge-role-beneficiary' : 'badge-role-other'}`}>
                           {roleLabel}
                         </span>
                       </td>
-                      <td style={{ padding: '0.65rem', color: '#475569' }}>
+                      <td className="table-td-user color-slate-600">
                         <div>{u.email}</div>
-                        <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{u.mobile || '—'}</div>
+                        <div className="color-slate-400 fs-xs">{u.mobile || '—'}</div>
                       </td>
-                      <td style={{ padding: '0.65rem' }}>
+                      <td className="table-td-user">
                         {isPending ? (
-                          <span
-                            style={{
-                              fontSize: '0.72rem',
-                              color: '#92400e',
-                              background: '#fef3c7',
-                              border: '1px solid #fde68a',
-                              padding: '0.2rem 0.5rem',
-                              borderRadius: '4px',
-                              fontWeight: 600,
-                            }}
-                          >
+                          <span className="badge-status-pending-pill">
                             Pending CS Director Approval
                           </span>
                         ) : isApproved ? (
-                          <span
-                            style={{
-                              fontSize: '0.72rem',
-                              color: '#166534',
-                              background: '#dcfce7',
-                              border: '1px solid #bbf7d0',
-                              padding: '0.2rem 0.5rem',
-                              borderRadius: '4px',
-                              fontWeight: 600,
-                            }}
-                          >
+                          <span className="badge-status-verified-pill">
                             Verified
                           </span>
                         ) : (
-                          <span
-                            style={{
-                              fontSize: '0.72rem',
-                              color: '#991b1b',
-                              background: '#fee2e2',
-                              border: '1px solid #fecaca',
-                              padding: '0.2rem 0.5rem',
-                              borderRadius: '4px',
-                              fontWeight: 600,
-                            }}
-                          >
+                          <span className="badge-status-rejected-pill">
                             Rejected
                           </span>
                         )}
                       </td>
-                      <td style={{ padding: '0.65rem' }}>
+                      <td className="table-td-user">
                         <button
                           type="button"
                           onClick={() => setSelectedUserForDetails(u)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            padding: '0.3rem 0.6rem',
-                            borderRadius: '5px',
-                            border: '1px solid #cbd5e1',
-                            background: '#fff',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            color: '#334155',
-                            cursor: 'pointer',
-                          }}
+                          className="btn-table-action-view"
                           title="View user credentials & documents"
                         >
                           <Eye size={13} /> View
@@ -1065,30 +794,19 @@ export const AdminDashboard = () => {
 };
 
 // Reusable Summary Stat Card Component
-const SummaryStatCard = ({ title, count, subtext, icon, bgColor = '#fff', borderColor = '#e2e8f0', highlight = false }) => {
+const SummaryStatCard = ({ title, count, subtext, icon, variant = 'slate', highlight = false }) => {
   return (
-    <div
-      style={{
-        background: bgColor,
-        border: `1px solid ${borderColor}`,
-        borderRadius: '8px',
-        padding: '1rem',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        boxShadow: highlight ? '0 0 0 2px #f59e0b' : '0 1px 3px rgba(0,0,0,0.05)',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569', lineHeight: 1.3 }}>{title}</span>
-        <div style={{ flexShrink: 0, marginLeft: '0.5rem' }}>{icon}</div>
+    <div className={`summary-stat-card variant-${variant} ${highlight ? 'highlight' : ''}`}>
+      <div className="stat-card-header">
+        <span className="stat-card-title">{title}</span>
+        <div className="stat-card-icon-box">{icon}</div>
       </div>
       <div>
-        <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+        <div className="stat-card-count">
           {count}
         </div>
         {subtext && (
-          <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div className="stat-card-subtext">
             {subtext}
           </div>
         )}

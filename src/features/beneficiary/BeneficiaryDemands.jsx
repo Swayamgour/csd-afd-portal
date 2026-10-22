@@ -122,7 +122,7 @@ export function BeneficiaryDemands() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div style={{ width: '180px' }}>
+          <div className="filter-w-180">
             <select
               className="fld fld-sm w-full"
               value={statusFilter}

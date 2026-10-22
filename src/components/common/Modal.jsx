@@ -35,8 +35,7 @@ export function Modal({
       aria-labelledby="modal-title"
     >
       <div
-        className="modal-container panel"
-        style={{ maxWidth }}
+        className="modal-container modal-container-default panel"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header between">

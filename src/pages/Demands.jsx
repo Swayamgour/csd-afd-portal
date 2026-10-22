@@ -74,48 +74,36 @@ export default function Demands() {
     const s = (status || '').toLowerCase();
     if (s === 'on hold') {
       return {
-        bg: '#fef3c7',
-        color: '#b45309',
-        border: '#fde68a',
+        className: 'status-badge-onhold',
         label: 'On hold'
       };
     }
     if (s === 'processing') {
       return {
-        bg: '#dcfce7',
-        color: '#15803d',
-        border: '#bbf7d0',
+        className: 'status-badge-processing',
         label: 'Processing'
       };
     }
     if (s === 'payment pending') {
       return {
-        bg: '#fee2e2',
-        color: '#b91c1c',
-        border: '#fecaca',
+        className: 'status-badge-pending',
         label: 'Payment Pending'
       };
     }
     if (s === 'supply order issued') {
       return {
-        bg: '#e0e7ff',
-        color: '#4338ca',
-        border: '#c7d2fe',
+        className: 'status-badge-issued',
         label: 'Supply Order Issued'
       };
     }
     if (s === 'delivery completed' || s === 'delivered') {
       return {
-        bg: '#d1fae5',
-        color: '#065f46',
-        border: '#a7f3d0',
+        className: 'status-badge-delivered',
         label: 'Delivery Completed'
       };
     }
     return {
-      bg: '#f1f5f9',
-      color: '#475569',
-      border: '#e2e8f0',
+      className: 'status-badge-default',
       label: status || 'Submitted'
     };
   };
@@ -126,15 +114,14 @@ export default function Demands() {
       <div className="demands-top-notice">
         <span>
           Please contact CSD Helpdesk Contact Number - <strong>022-79669455</strong> Helpdesk Email Id -{' '}
-          <a href="mailto:supdtafd@csdindia.gov.in" style={{ color: '#93c5fd', textDecoration: 'underline' }}>
+          <a href="mailto:supdtafd@csdindia.gov.in" className="demands-helpdesk-link">
             supdtafd@csdindia.gov.in
           </a>{' '}
           if you are not able to find dealer/depot/URC in the dropdown or price is not showing correctly on the portal.
         </span>
         <button
           onClick={() => refetch()}
-          className="btn-action-notes"
-          style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', color: '#fff' }}
+          className="btn-action-notes demands-refresh-btn"
           title="Refresh list"
         >
           <RefreshCw size={13} /> Refresh
@@ -142,14 +129,14 @@ export default function Demands() {
       </div>
 
       {/* Header bar */}
-      <div className="checkout-card-header" style={{ borderBottom: 'none', marginBottom: '1rem', paddingBottom: 0 }}>
+      <div className="checkout-card-header demands-header-clean">
         <div>
-          <h1 className="checkout-page-heading" style={{ fontSize: '1.65rem' }}>
+          <h1 className="checkout-page-heading demands-title-clean">
             Demand Management
           </h1>
           <div className="checkout-page-subheading">
             User: <strong>{user?.username || 'DEMO'}</strong> • Total demands:{' '}
-            <strong style={{ color: '#1e4fd8' }}>{demands.length}</strong>
+            <strong className="demands-count-highlight">{demands.length}</strong>
           </div>
         </div>
 
@@ -164,18 +151,17 @@ export default function Demands() {
 
       {/* Filter and Search Bar matching CSD Portal (Fig. 20 & 25) */}
       <div className="demands-filter-bar">
-        <div style={{ fontSize: '0.9rem', color: '#334155', fontWeight: 600 }}>
-          Number of demands: <span style={{ color: '#1e4fd8' }}>{demands.length}</span>
+        <div className="demands-count-summary">
+          Number of demands: <span className="demands-count-highlight">{demands.length}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.84rem', color: '#64748b' }}>Sort By:</span>
+        <div className="demands-filter-row">
+          <div className="demands-filter-group">
+            <span className="demands-filter-label">Sort By:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="csd-form-select"
-              style={{ padding: '4px 8px', width: 'auto' }}
+              className="csd-form-select demands-filter-select"
             >
               <option value="date-desc">Latest Date</option>
               <option value="date-asc">Oldest Date</option>
@@ -184,13 +170,12 @@ export default function Demands() {
             </select>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '0.84rem', color: '#64748b' }}>Search By:</span>
+          <div className="demands-filter-group">
+            <span className="demands-filter-label">Search By:</span>
             <select
               value={searchBy}
               onChange={(e) => setSearchBy(e.target.value)}
-              className="csd-form-select"
-              style={{ padding: '4px 8px', width: 'auto' }}
+              className="csd-form-select demands-filter-select"
             >
               <option value="all">All Fields</option>
               <option value="demand">Demand No.</option>
@@ -199,23 +184,22 @@ export default function Demands() {
             </select>
           </div>
 
-          <div style={{ position: 'relative' }}>
+          <div className="demands-search-box">
             <input
               type="text"
               placeholder="Search for..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="csd-form-input"
-              style={{ padding: '5px 8px 5px 28px', width: '180px' }}
+              className="csd-form-input demands-search-input"
             />
-            <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '8px', top: '8px' }} />
+            <Search size={14} color="#94a3b8" className="demands-search-icon" />
           </div>
         </div>
       </div>
 
       {/* Demands Table (Desktop View, Fig. 20 & 25) */}
       <div className="demands-table-wrapper">
-        <div style={{ overflowX: 'auto' }}>
+        <div className="demands-table-scroll">
           <table className="demands-table">
             <thead>
               <tr>
@@ -224,21 +208,21 @@ export default function Demands() {
                 <th>Status</th>
                 <th>Payment Details</th>
                 <th>Total</th>
-                <th style={{ textAlign: 'center' }}>Action</th>
+                <th className="demands-th-action">Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="6" style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-                    <RefreshCw size={24} style={{ margin: '0 auto 8px', display: 'block', animation: 'spin 1s linear infinite' }} />
+                  <td colSpan="6" className="demands-empty-cell">
+                    <RefreshCw size={24} className="demands-loading-spinner" />
                     Loading beneficiary demands...
                   </td>
                 </tr>
               ) : demands.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-                    <FileText size={32} color="#cbd5e1" style={{ margin: '0 auto 8px', display: 'block' }} />
+                  <td colSpan="6" className="demands-empty-cell">
+                    <FileText size={32} color="#cbd5e1" className="demands-empty-icon" />
                     No demands found. Click "New AFD Demand" to purchase a vehicle.
                   </td>
                 </tr>
@@ -253,57 +237,42 @@ export default function Demands() {
                       <td>
                         <Link
                           to={`/demands/${encodeURIComponent(d.id)}`}
-                          style={{
-                            color: '#b91c1c',
-                            fontWeight: 700,
-                            textDecoration: 'none',
-                            fontSize: '0.94rem',
-                            display: 'block'
-                          }}
+                          className="demand-id-link"
                         >
                           {d.id}
                         </Link>
                         <div className="csd-form-helper-text">
                           Username: <strong>{d.username || d.beneficiaryName || 'DEMO'}</strong>
                         </div>
-                        <div style={{ fontSize: '0.82rem', color: '#1e293b', marginTop: '4px', fontWeight: 600 }}>
+                        <div className="demand-product-subtext">
                           {d.productName}
                         </div>
                       </td>
 
                       {/* Date */}
-                      <td style={{ fontSize: '0.86rem', color: '#334155', whiteSpace: 'nowrap' }}>
+                      <td className="demand-date-cell">
                         {d.displayDate || (d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'December 7, 2020')}
                       </td>
 
                       {/* Status Badge */}
                       <td>
                         <span
-                          style={{
-                            display: 'inline-block',
-                            padding: '4px 10px',
-                            borderRadius: '6px',
-                            fontSize: '0.82rem',
-                            fontWeight: 700,
-                            background: badge.bg,
-                            color: badge.color,
-                            border: `1px solid ${badge.border}`
-                          }}
+                          className={`demand-status-badge ${badge.className}`}
                         >
                           {badge.label}
                         </span>
                         {d.statusMeaning && (
-                          <div className="csd-form-helper-text" style={{ maxWidth: '170px' }}>
+                          <div className="csd-form-helper-text demand-status-meaning-text">
                             {d.statusMeaning}
                           </div>
                         )}
                       </td>
 
                       {/* Payment Details */}
-                      <td style={{ fontSize: '0.84rem', color: '#475569' }}>
+                      <td className="demand-payment-cell">
                         <div>{d.paymentDetailsText || `Payment method ${d.paymentMethod || 'Direct bank transfer'}`}</div>
                         {d.razorpayId && (
-                          <div style={{ fontSize: '0.78rem', color: '#1e4fd8', marginTop: '2px', fontFamily: 'monospace' }}>
+                          <div className="demand-razorpay-id">
                             Razorpay ID: {d.razorpayId}
                           </div>
                         )}
@@ -315,12 +284,12 @@ export default function Demands() {
                       </td>
 
                       {/* Total */}
-                      <td style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap' }}>
+                      <td className="demand-total-cell">
                         {displayTotal}
                       </td>
 
                       {/* Actions buttons matching Fig. 20 & 25 */}
-                      <td style={{ minWidth: '180px' }}>
+                      <td className="demand-actions-cell">
                         <div className="demands-action-stack">
                           {/* View Button */}
                           <Link
@@ -343,8 +312,7 @@ export default function Demands() {
                             <>
                               <button
                                 onClick={() => handleOpenPaymentModal(d)}
-                                className="btn-action-view"
-                                style={{ background: '#2563eb' }}
+                                className="btn-action-view demand-action-upload-btn"
                               >
                                 Upload Payment Receipt
                               </button>
@@ -362,8 +330,7 @@ export default function Demands() {
                                 onClick={() => {
                                   alert(`Please upload payment details before submitting to CSD Depot.`);
                                 }}
-                                className="btn-action-view"
-                                style={{ background: '#881337' }}
+                                className="btn-action-view demand-action-submit-btn"
                               >
                                 Submit Demand To CSD
                               </button>
@@ -399,52 +366,46 @@ export default function Demands() {
       {/* Status Definitions Table (Fig. 25 of CSD Manual) */}
       <div className="checkout-card">
         <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            userSelect: 'none'
-          }}
+          className="demand-status-toggle"
           onClick={() => setShowStatusLegend(!showStatusLegend)}
         >
           <h2 className="checkout-card-title">
             <Info size={18} color="#1e4fd8" />
             <span>Meaning of the status are as follows (from CSD Beneficiary Manual):</span>
           </h2>
-          <span style={{ fontSize: '0.82rem', color: '#1e4fd8', fontWeight: 600 }}>
+          <span className="demand-status-toggle-link">
             {showStatusLegend ? 'Hide' : 'Show'}
           </span>
         </div>
 
         {showStatusLegend && (
-          <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
+          <div className="demand-status-legend-table-scroll">
             <table className="demand-detail-meta-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
-                  <th style={{ padding: '8px 12px', fontWeight: 700, color: '#334155', width: '220px' }}>Status</th>
-                  <th style={{ padding: '8px 12px', fontWeight: 700, color: '#334155' }}>Meaning</th>
+                <tr className="demand-legend-header-row">
+                  <th className="demand-legend-th-status">Status</th>
+                  <th className="demand-legend-th-meaning">Meaning</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td style={{ color: '#b45309' }}>On hold</td>
+                  <td className="demand-legend-status-hold">On hold</td>
                   <td>Payment Receipts needs to be uploaded</td>
                 </tr>
                 <tr>
-                  <td style={{ color: '#b91c1c' }}>Payment Pending</td>
+                  <td className="demand-legend-status-pending">Payment Pending</td>
                   <td>Payment pending</td>
                 </tr>
                 <tr>
-                  <td style={{ color: '#15803d' }}>Processing</td>
+                  <td className="demand-legend-status-processing">Processing</td>
                   <td>Pending on Depot</td>
                 </tr>
                 <tr>
-                  <td style={{ color: '#4338ca' }}>Supply Order Issued</td>
+                  <td className="demand-legend-status-issued">Supply Order Issued</td>
                   <td>Pending with URC</td>
                 </tr>
                 <tr>
-                  <td style={{ color: '#065f46' }}>Delivery completed</td>
+                  <td className="demand-legend-status-delivered">Delivery completed</td>
                   <td>Product has been delivered by the dealer</td>
                 </tr>
               </tbody>

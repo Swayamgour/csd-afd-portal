@@ -2887,6 +2887,17 @@ section.hero {
     color: #8fa2d3
 }
 
+.ftr-logo {
+    border-radius: var(--r-sm, 8px);
+}
+
+.ftr-visitors {
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--color-slate-400, #94a3b8);
+    padding: 0.5rem 0;
+}
+
 /* ---------- states / toast ---------- */
 .state {
     text-align: center;

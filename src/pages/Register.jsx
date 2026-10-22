@@ -24,7 +24,6 @@ import {
   useRegisterMutation,
   useSendOtpMutation,
 } from "../features/auth/authApi";
-import { sendOtpEmail, generateOtp } from "../services/emailJs.service.js";
 import EmailOtpModal from "../components/modals/EmailOtpModal.jsx";
 import { userService } from "../services/user.service.js";
 
@@ -78,9 +77,9 @@ function getPasswordStrength(pw) {
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
   if (score >= 4 && pw.length >= 8)
-    return { label: "Strong", color: "#166534", bg: "#dcfce7" };
-  if (score >= 3) return { label: "Medium", color: "#854d0e", bg: "#fef9c3" };
-  return { label: "Weak", color: "#991b1b", bg: "#fee2e2" };
+    return { label: "Strong", className: "pw-strength-strong" };
+  if (score >= 3) return { label: "Medium", className: "pw-strength-medium" };
+  return { label: "Weak", className: "pw-strength-weak" };
 }
 
 function Field({ id, label, req, hint, err, children }) {
@@ -89,7 +88,7 @@ function Field({ id, label, req, hint, err, children }) {
       <label htmlFor={id}>
         {label}
         {req && (
-          <span style={{ color: "#e8503a" }} aria-hidden>
+          <span className="req-star" aria-hidden>
             {" "}
             *
           </span>
@@ -124,7 +123,6 @@ export default function Register() {
     [cap, setCap] = useState(makeCaptcha),
     [capIn, setCapIn] = useState(""),
     [isOtpModalOpen, setIsOtpModalOpen] = useState(false),
-    [generatedOtp, setGeneratedOtp] = useState(""),
     [isDispatchingOtp, setIsDispatchingOtp] = useState(false),
     [registrationSuccess, setRegistrationSuccess] = useState(false),
     [registeredUser, setRegisteredUser] = useState(null),
@@ -307,36 +305,19 @@ export default function Register() {
       // Continue if duplicate check service fails
     }
 
-    // Step 2: Form is validated & unique -> Generate OTP and send via EmailJS
+    // Step 2: Form is validated & unique -> Request backend to create and dispatch OTP securely
     try {
-      const code = generateOtp();
-      setGeneratedOtp(code);
-
-      // Transmit OTP using EmailJS
-      await sendOtpEmail({
-        email: f.email.trim(),
-        name: f.name.trim(),
-        otp: code,
-        expiryMinutes: 5,
-      });
-
-      // Synchronize OTP with backend so MongoDB has it
-      try {
-        await sendOtpApi({
-          target: f.email.trim(),
-          purpose: "REGISTER_EMAIL",
-          otp: code,
-        }).unwrap();
-      } catch (apiErr) {
-        // Backend offline or mock fallback
-      }
+      await sendOtpApi({
+        target: f.email.trim(),
+        purpose: "REGISTER_EMAIL",
+      }).unwrap();
 
       setIsOtpModalOpen(true);
     } catch (err) {
-      console.error("EmailJS dispatch error:", err);
+      console.error("OTP dispatch error:", err);
       setErrs((prev) => ({
         ...prev,
-        submit: err.message || "Failed to dispatch verification email via EmailJS.",
+        submit: err?.data?.message || err?.message || "Failed to dispatch verification email.",
       }));
     } finally {
       setIsDispatchingOtp(false);
@@ -431,99 +412,55 @@ export default function Register() {
           text="Your email address has been verified. Your account is currently pending administrator verification."
         />
 
-        <div className="panel logincard authcard" style={{ maxWidth: 560, margin: "2rem auto", textAlign: "center", padding: "2.5rem 2rem" }}>
-          <div style={{
-            width: 72,
-            height: 72,
-            borderRadius: "50%",
-            background: "rgba(22, 163, 74, 0.12)",
-            color: "#16a34a",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 1.25rem auto",
-            border: "2px solid rgba(22, 163, 74, 0.3)"
-          }}>
+        <div className="panel logincard authcard reg-success-card">
+          <div className="reg-success-icon-wrap">
             <CheckCircle2 size={40} />
           </div>
 
-          <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "#0f172a", marginBottom: "0.5rem" }}>
+          <h1 className="reg-success-title">
             Registration Successful!
           </h1>
 
-          <div style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.35rem 0.85rem",
-            borderRadius: "9999px",
-            background: "#eff6ff",
-            color: "#1d4ed8",
-            fontSize: "0.82rem",
-            fontWeight: 600,
-            marginBottom: "1.5rem"
-          }}>
-            <ShieldCheck size={16} /> Email Verified via EmailJS OTP
+          <div className="reg-success-badge">
+            <ShieldCheck size={16} /> Email Verified via OTP
           </div>
 
           {/* Pending Status Alert Banner */}
-          <div style={{
-            background: "#fffbeb",
-            border: "1px solid #fde68a",
-            borderRadius: "12px",
-            padding: "1.25rem",
-            textAlign: "left",
-            marginBottom: "1.75rem"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
-              <Clock size={20} color="#d97706" />
-              <strong style={{ color: "#92400e", fontSize: "0.95rem" }}>
-                Account Status: PENDING ADMIN APPROVAL
+          <div className="reg-pending-alert">
+            <div className="row align-center gap-1 mb-1">
+              <Clock size={20} color="var(--color-warning)" />
+              <strong className="reg-pending-title">
+                Account Status: PENDING CS DIRECTOR APPROVAL
               </strong>
             </div>
-            <p style={{ margin: 0, color: "#78350f", fontSize: "0.88rem", lineHeight: 1.5 }}>
-              Your account has been registered and your email has been verified. You can log in to view products and search the catalog. However, <strong>Demand Generation</strong> will be available after your account is approved by the administrator.
+            <p className="reg-pending-desc">
+              Your account has been registered and your official email has been verified. You can log in to view products and search the catalog. However, <strong>Demand Generation</strong> will be available after your account is approved by the CS Director.
             </p>
           </div>
 
           {/* Beneficiary Details Summary Card */}
-          <div style={{
-            background: "#f8fafc",
-            borderRadius: "10px",
-            padding: "1rem 1.25rem",
-            marginBottom: "1.75rem",
-            textAlign: "left",
-            fontSize: "0.88rem",
-            border: "1px solid #e2e8f0"
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid #f1f5f9" }}>
-              <span style={{ color: "#64748b" }}>Beneficiary Name:</span>
-              <strong style={{ color: "#1e293b" }}>{registeredUser?.name || f.name}</strong>
+          <div className="reg-summary-card">
+            <div className="reg-summary-row">
+              <span className="reg-summary-label">Beneficiary Name:</span>
+              <strong className="reg-summary-val">{registeredUser?.name || f.name}</strong>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid #f1f5f9" }}>
-              <span style={{ color: "#64748b" }}>Username:</span>
-              <strong style={{ color: "#1e293b" }}>{registeredUser?.username || f.username}</strong>
+            <div className="reg-summary-row">
+              <span className="reg-summary-label">Username:</span>
+              <strong className="reg-summary-val">{registeredUser?.username || f.username}</strong>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid #f1f5f9" }}>
-              <span style={{ color: "#64748b" }}>Verified Email:</span>
-              <span style={{ color: "#16a34a", fontWeight: 600 }}>{f.email} ✓</span>
+            <div className="reg-summary-row">
+              <span className="reg-summary-label">Verified Email:</span>
+              <span className="text-green fw-bold">{f.email} ✓</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0" }}>
-              <span style={{ color: "#64748b" }}>Grocery Card ID:</span>
-              <strong style={{ color: "#1e293b" }}>{f.cardId}</strong>
+            <div className="reg-summary-row">
+              <span className="reg-summary-label">Grocery Card ID:</span>
+              <strong className="reg-summary-val">{f.cardId}</strong>
             </div>
           </div>
 
           <Link
             to="/login"
-            className="btn big wide"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              textDecoration: "none",
-              fontWeight: 600
-            }}
+            className="btn big wide row align-center justify-center text-center"
           >
             Proceed to Beneficiary Login
           </Link>
@@ -835,11 +772,7 @@ export default function Register() {
                   value={f.pw}
                   onChange={set("pw")}
                   aria-invalid={!!errs.pw}
-                  style={
-                    pwStrength?.label === "Strong"
-                      ? { borderColor: "#16a34a" }
-                      : undefined
-                  }
+                  className={pwStrength?.label === "Strong" ? "input-valid-strong" : ""}
                 />
                 <button
                   type="button"
@@ -851,18 +784,7 @@ export default function Register() {
                 </button>
               </div>
               {pwStrength && (
-                <div
-                  style={{
-                    marginTop: "6px",
-                    display: "inline-block",
-                    padding: "4px 14px",
-                    borderRadius: "6px",
-                    background: pwStrength.bg,
-                    color: pwStrength.color,
-                    fontSize: "0.85rem",
-                    fontWeight: 600,
-                  }}
-                >
+                <div className={`pw-strength-badge ${pwStrength.className}`}>
                   {pwStrength.label}
                 </div>
               )}
@@ -877,11 +799,7 @@ export default function Register() {
                   value={f.pwC}
                   onChange={set("pwC")}
                   aria-invalid={!!errs.pwC}
-                  style={
-                    f.pwC && f.pwC === f.pw
-                      ? { borderColor: "#16a34a" }
-                      : undefined
-                  }
+                  className={f.pwC && f.pwC === f.pw ? "input-valid-strong" : ""}
                 />
                 <button
                   type="button"
@@ -940,19 +858,8 @@ export default function Register() {
         </p>
 
         {errs.submit && (
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            background: "#fef2f2",
-            border: "1px solid #fecaca",
-            color: "#991b1b",
-            padding: "0.75rem 1rem",
-            borderRadius: "8px",
-            margin: "1rem 0",
-            fontSize: "0.9rem"
-          }}>
-            <AlertCircle size={18} />
+          <div className="alert-banner danger small mb-3 row align-center gap-1" role="alert">
+            <AlertCircle size={18} className="flex-shrink-0" />
             <span>{errs.submit}</span>
           </div>
         )}
@@ -961,7 +868,6 @@ export default function Register() {
           className="btn big wide"
           type="submit"
           disabled={isRegistering || isDispatchingOtp}
-          style={{ position: "relative" }}
         >
           {isDispatchingOtp
             ? "Sending Email OTP via EmailJS..."
@@ -976,25 +882,15 @@ export default function Register() {
         isOpen={isOtpModalOpen}
         onClose={() => setIsOtpModalOpen(false)}
         email={f.email}
-        expectedOtp={generatedOtp}
+        name={f.name}
         onVerified={handleOtpVerified}
         onResendOtp={async () => {
-          const newCode = generateOtp();
-          setGeneratedOtp(newCode);
-          await sendOtpEmail({
-            email: f.email.trim(),
-            name: f.name.trim(),
-            otp: newCode,
-            expiryMinutes: 5,
-          });
-          try {
-            await sendOtpApi({
-              target: f.email.trim(),
-              purpose: "REGISTER_EMAIL",
-              otp: newCode,
-            }).unwrap();
-          } catch (e) { }
+          await sendOtpApi({
+            target: f.email.trim(),
+            purpose: "REGISTER_EMAIL",
+          }).unwrap();
         }}
+        isSubmitting={isRegistering}
       />
     </div>
   );

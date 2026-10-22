@@ -79,7 +79,7 @@ export default function DealerCustomers() {
           loading={isLoading}
           emptyMessage={
             <div className="p-4 text-center">
-              <Users size={36} className="text-muted mb-1" style={{ margin: '0 auto' }} />
+              <Users size={36} className="text-muted mb-1 text-center-auto-m" />
               <h3 className="h4 font-bold">No Customers Assigned Yet</h3>
               <p className="text-muted small">
                 Customers who choose your dealership at checkout will automatically appear in this roster.

@@ -162,34 +162,20 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
       render: (u) => {
         const b = u.beneficiary || {};
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '50%',
-                background: '#e0e7ff',
-                color: '#3730a3',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: '0.9rem',
-                flexShrink: 0
-              }}
-            >
+          <div className="flex-align-center-gap-sm">
+            <div className="director-avatar-box">
               {(u.name || 'B').charAt(0).toUpperCase()}
             </div>
             <div>
-              <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem' }}>
+              <div className="portal-profile-name font-semibold">
                 {u.name || 'Unknown Beneficiary'}
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#64748b', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                <span style={{ fontWeight: 600, color: '#1e40af' }}>{b.rank || u.rank || 'Armed Forces'}</span>
+              <div className="portal-subtext-muted flex-align-center-gap-xs">
+                <span className="portal-text-brand font-semibold">{b.rank || u.rank || 'Armed Forces'}</span>
                 <span>•</span>
                 <span>{b.serviceNumber || u.serviceNumber || 'No Svc No'}</span>
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+              <div className="portal-subtext-muted fs-xs">
                 {b.organization || u.service || 'Indian Army'} ({b.category || 'SERVING'})
               </div>
             </div>
@@ -203,15 +189,15 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
       render: (u) => {
         const b = u.beneficiary || {};
         return (
-          <div style={{ fontSize: '0.82rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, color: '#334155' }}>
-              <CreditCard size={14} color="#0284c7" />
+          <div className="fs-sm">
+            <div className="portal-flex-align-center-gap-xs font-semibold portal-text-slate">
+              <CreditCard size={14} color="var(--color-primary)" />
               <span>Card: {b.cardId || u.cardId || 'Not Assigned'}</span>
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            <div className="portal-subtext-muted fs-xs">
               Chip: {b.chipNumber || u.chipNumber || 'N/A'}
             </div>
-            <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 600 }}>
+            <div className="portal-text-success font-semibold fs-xs">
               Entitlement: {b.entitlement || u.eligibility?.category || 'Standard'}
             </div>
           </div>
@@ -225,10 +211,10 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
         const b = u.beneficiary || {};
         const addr = b.address || u.address || {};
         return (
-          <div style={{ fontSize: '0.8rem', color: '#475569' }}>
+          <div className="fs-sm portal-text-slate">
             <div>{u.email || 'No email registered'}</div>
-            <div style={{ fontWeight: 600, color: '#0f172a' }}>{u.mobile || u.phone || 'No phone'}</div>
-            <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+            <div className="portal-profile-name font-semibold">{u.mobile || u.phone || 'No phone'}</div>
+            <div className="portal-subtext-muted fs-xs">
               {addr.city ? `${addr.city}, ${addr.state || ''}` : (b.unit || 'Station N/A')}
             </div>
           </div>
@@ -246,59 +232,20 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
         return (
           <div>
             {isPending ? (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  padding: '0.25rem 0.6rem',
-                  borderRadius: '999px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  background: '#fef3c7',
-                  color: '#92400e',
-                  border: '1px solid #fde68a'
-                }}
-              >
+              <span className="badge-status-awaiting">
                 <Clock size={12} /> Awaiting CS Director
               </span>
             ) : isApproved ? (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  padding: '0.25rem 0.6rem',
-                  borderRadius: '999px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  background: '#dcfce7',
-                  color: '#166534',
-                  border: '1px solid #bbf7d0'
-                }}
-              >
+              <span className="badge-status-approved">
                 <CheckCircle size={12} /> Approved / Verified
               </span>
             ) : (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  padding: '0.25rem 0.6rem',
-                  borderRadius: '999px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  background: '#fee2e2',
-                  color: '#991b1b',
-                  border: '1px solid #fecaca'
-                }}
-              >
+              <span className="badge-status-rejected">
                 <UserX size={12} /> Rejected
               </span>
             )}
             {u.remarks && (
-              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.25rem', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={u.remarks}>
+              <div className="portal-subtext-muted fs-xs mt-xs truncate-max-w-160" title={u.remarks}>
                 Note: {u.remarks}
               </div>
             )}
@@ -317,21 +264,12 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
         const isApproved = vStatus === 'VERIFIED' || vStatus === 'APPROVED' || u.status === 'Active';
 
         return (
-          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="portal-flex-wrap-gap-xs flex-align-center-gap-xs">
             {/* 1. APPROVE BUTTON */}
             {isPending && (
               <Button
                 size="sm"
-                style={{
-                  background: '#16a34a',
-                  color: '#fff',
-                  border: 'none',
-                  fontSize: '0.75rem',
-                  padding: '0.3rem 0.65rem',
-                  fontWeight: 700,
-                  borderRadius: '6px',
-                  boxShadow: '0 1px 2px rgba(22, 163, 74, 0.25)'
-                }}
+                className="btn-approve-success-pill"
                 disabled={isLoading}
                 onClick={() => handleApprove(u)}
                 title="Approve Beneficiary Registration and Authorize AFD Purchase"
@@ -345,14 +283,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
               <Button
                 size="sm"
                 variant="outline"
-                style={{
-                  color: '#dc2626',
-                  borderColor: '#fca5a5',
-                  fontSize: '0.75rem',
-                  padding: '0.3rem 0.6rem',
-                  fontWeight: 600,
-                  borderRadius: '6px'
-                }}
+                className="btn-deny-danger-pill"
                 disabled={isLoading}
                 onClick={() => setRejectModalUser(u)}
                 title="Reject with reasons"
@@ -365,15 +296,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
             {!isPending && !isApproved && (
               <Button
                 size="sm"
-                style={{
-                  background: '#16a34a',
-                  color: '#fff',
-                  border: 'none',
-                  fontSize: '0.75rem',
-                  padding: '0.25rem 0.55rem',
-                  fontWeight: 600,
-                  borderRadius: '6px'
-                }}
+                className="btn-approve-success-pill"
                 disabled={isLoading}
                 onClick={() => handleApprove(u)}
                 title="Re-evaluate & Approve"
@@ -385,19 +308,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
             {/* 3. EDIT PROFILE BUTTON (Exclusively for CS Director) */}
             <button
               type="button"
-              className="circle"
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '6px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '1px solid #bfdbfe',
-                background: '#eff6ff',
-                color: '#1d4ed8',
-                cursor: 'pointer'
-              }}
+              className="circle btn-icon-action-edit"
               title="Edit Beneficiary Details & Service Records"
               onClick={() => setSelectedUserForEdit(u)}
             >
@@ -407,19 +318,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
             {/* 4. INSPECT BUTTON */}
             <button
               type="button"
-              className="circle"
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '6px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '1px solid #e2e8f0',
-                background: '#f8fafc',
-                color: '#475569',
-                cursor: 'pointer'
-              }}
+              className="circle btn-icon-action-inspect"
               title="View Full Profile Details"
               onClick={() => setSelectedUserForDetails(u)}
             >
@@ -432,106 +331,50 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
   ];
 
   return (
-    <div className="director-approvals-page" style={{ paddingBottom: '2.5rem' }}>
+    <div className="director-approvals-page pb-3xl">
       {/* Toast Feedback */}
       {toastMessage && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '1.5rem',
-            right: '1.5rem',
-            background: '#15803d',
-            color: '#fff',
-            padding: '0.85rem 1.25rem',
-            borderRadius: '8px',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontWeight: 600,
-            fontSize: '0.88rem'
-          }}
-        >
+        <div className="director-toast">
           <CheckCircle size={18} />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Header */}
-      {/* <PageHeader
-        title="CS Director: Registration Approvals & User Records"
-        subtitle="Exclusive authority desk for vetting new beneficiary registrations, verifying armed forces credentials, and editing user profiles."
-        breadcrumbs={[
-          { label: 'CS Directorate', href: '/director/approvals' },
-          { label: 'Approvals & Record Management' }
-        ]}
-        actions={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Button variant="outline" size="sm"
-              //  onClick={fetchBeneficiaries}
-              disabled={loading}>
-              <RefreshCw size={14} style={{ marginRight: '0.35rem', animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-              {loading ? 'Refreshing...' : 'Refresh Queue'}
-            </Button>
-          </div>
-        }
-      /> */}
+
 
       {/* CS Director Official Authority Banner */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #0b1f3a 0%, #1e3a8a 100%)',
-          color: '#ffffff',
-          borderRadius: '10px',
-          padding: '1.25rem 1.5rem',
-          marginBottom: '1.5rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-        }}
-      >
+      <div className="director-authority-banner">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-            <ShieldCheck size={20} color="#60a5fa" />
-            <span style={{ fontWeight: 800, letterSpacing: '0.04em', fontSize: '1rem' }}>
+          <div className="portal-flex-align-center-gap-sm mb-xs">
+            <ShieldCheck size={20} color="var(--color-primary-light)" />
+            <span className="director-authority-title">
               CANTEEN STORES DEPARTMENT • DIRECTORATE DESK
             </span>
           </div>
-          <div style={{ fontSize: '0.85rem', color: '#cbd5e1', maxWidth: '750px', lineHeight: 1.4 }}>
+          <div className="director-authority-desc">
             Under revised CSD portal guidelines, <strong>all newly registered users require authorization exclusively by the CS Director</strong> before demand generation is enabled. System administrators possess view-only oversight.
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', background: 'rgba(255,255,255,0.1)', padding: '0.75rem 1.25rem', borderRadius: '8px' }}>
+        <div className="director-authority-metrics">
           <div>
-            <div style={{ fontSize: '0.75rem', color: '#93c5fd' }}>Pending Actions</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fef08a' }}>{metrics.pending}</div>
+            <div className="director-authority-metric-label">Pending Actions</div>
+            <div className="director-authority-metric-pending">{metrics.pending}</div>
           </div>
-          <div style={{ borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '1rem' }}>
-            <div style={{ fontSize: '0.75rem', color: '#93c5fd' }}>Total Verified</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#86efac' }}>{metrics.approved}</div>
+          <div className="director-metric-divider">
+            <div className="director-authority-metric-label">Total Verified</div>
+            <div className="director-authority-metric-approved">{metrics.approved}</div>
           </div>
         </div>
       </div>
 
       {/* Metric Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '1rem',
-          marginBottom: '1.5rem'
-        }}
-      >
+      <div className="csd-stats-grid">
         <StatCard
           title="Pending Approvals"
           value={String(metrics.pending)}
           subtitle={metrics.pending > 0 ? 'Requires CS Director Action' : 'All Clear'}
           isPositive={metrics.pending === 0}
-          style={{ borderColor: metrics.pending > 0 ? '#f59e0b' : undefined }}
+          className={metrics.pending > 0 ? 'director-card-pending-alert' : ''}
         />
         <StatCard
           title="Approved Beneficiaries"
@@ -556,26 +399,15 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
       <Card
         title="Beneficiary Verification & Record Editing Desk"
         actions={
-          <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
+          <div className="portal-subtext-muted fs-sm">
             Showing <strong>{filteredUsers.length}</strong> of <strong>{users.length}</strong> records
           </div>
         }
       >
         {/* Tabs and Filters */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-            paddingBottom: '1rem',
-            borderBottom: '1px solid #e2e8f0',
-            marginBottom: '1rem'
-          }}
-        >
+        <div className="director-table-filter-bar">
           {/* Status Tabs */}
-          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+          <div className="portal-flex-wrap-gap-xs">
             {[
               { id: 'PENDING', label: 'Pending Approvals', count: metrics.pending, alert: metrics.pending > 0 },
               { id: 'APPROVED', label: 'Approved & Active', count: metrics.approved },
@@ -588,32 +420,11 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
                   key={tab.id}
                   type="button"
                   onClick={() => setStatusTab(tab.id)}
-                  style={{
-                    padding: '0.45rem 0.85rem',
-                    borderRadius: '6px',
-                    border: '1px solid',
-                    borderColor: active ? '#0b1f3a' : '#cbd5e1',
-                    background: active ? '#0b1f3a' : '#fff',
-                    color: active ? '#fff' : '#475569',
-                    fontSize: '0.82rem',
-                    fontWeight: active ? 700 : 500,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    transition: 'all 0.15s ease'
-                  }}
+                  className={`director-tab-btn ${active ? 'active' : ''}`}
                 >
                   <span>{tab.label}</span>
                   <span
-                    style={{
-                      fontSize: '0.72rem',
-                      padding: '0.1rem 0.4rem',
-                      borderRadius: '999px',
-                      background: active ? 'rgba(255,255,255,0.25)' : (tab.alert ? '#fee2e2' : '#f1f5f9'),
-                      color: active ? '#fff' : (tab.alert ? '#dc2626' : '#64748b'),
-                      fontWeight: 700
-                    }}
+                    className={`director-tab-badge ${active ? 'active' : tab.alert ? 'alert' : ''}`}
                   >
                     {tab.count}
                   </span>
@@ -623,28 +434,21 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
           </div>
 
           {/* Search & Category Filter */}
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative', minWidth: '240px' }}>
-              <Search size={15} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+          <div className="portal-flex-align-center-gap-sm flex-wrap">
+            <div className="pos-relative-min-w-240">
+              <Search size={15} className="director-search-icon" />
               <input
                 type="text"
                 placeholder="Search name, svc no, card, email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  padding: '0.4rem 0.75rem 0.4rem 2rem',
-                  fontSize: '0.82rem',
-                  borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
-                  width: '100%',
-                  outline: 'none'
-                }}
+                className="director-search-input-field"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
+                  className="director-search-clear-btn"
                 >
                   <X size={14} />
                 </button>
@@ -654,15 +458,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              style={{
-                padding: '0.4rem 0.75rem',
-                fontSize: '0.82rem',
-                borderRadius: '6px',
-                border: '1px solid #cbd5e1',
-                background: '#fff',
-                outline: 'none',
-                cursor: 'pointer'
-              }}
+              className="director-select-filter"
             >
               <option value="ALL">All Categories</option>
               <option value="SERVING">Serving Personnel</option>
@@ -712,15 +508,15 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
           onClose={() => setRejectModalUser(null)}
           title={`Reject Application: ${rejectModalUser.name || rejectModalUser.username}`}
         >
-          <form onSubmit={handleConfirmReject}>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.35rem' }}>
+          <form onSubmit={handleConfirmReject} className="director-modal-form">
+            <div className="portal-form-group">
+              <label className="director-field-label">
                 Primary Reason for Rejection *
               </label>
               <select
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               >
                 <option value="Service records mismatch with Armed Forces database">Service records mismatch with Armed Forces database</option>
                 <option value="CSD smart canteen card invalid or expired">CSD smart canteen card invalid or expired</option>
@@ -731,8 +527,8 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
               </select>
             </div>
 
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.35rem' }}>
+            <div className="portal-form-group-spaced">
+              <label className="director-field-label">
                 Additional Remarks / Correction Instructions for Beneficiary
               </label>
               <textarea
@@ -740,18 +536,18 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
                 value={rejectCustomRemarks}
                 onChange={(e) => setRejectCustomRemarks(e.target.value)}
                 placeholder="Explain the required documents or correction so the user can rectify and re-apply..."
-                style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+            <div className="portal-flex-end gap-sm">
               <Button variant="outline" type="button" onClick={() => setRejectModalUser(null)}>
                 Cancel
               </Button>
               <Button
                 variant="primary"
                 type="submit"
-                style={{ background: '#dc2626', borderColor: '#dc2626', color: '#fff' }}
+                className="portal-btn-deny-danger"
               >
                 Confirm Rejection
               </Button>

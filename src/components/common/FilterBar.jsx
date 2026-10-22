@@ -14,13 +14,12 @@ export function FilterBar({
 }) {
   return (
     <div className={`filter-bar-container panel mb-2 ${className}`}>
-      <div className="filter-bar-fields row align-end gap-1 flex-wrap" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="filter-bar-fields row align-end gap-1 flex-wrap filter-bar-flex">
         {onSearchChange !== undefined && (
-          <div style={{ flex: 1, minWidth: '220px' }}>
+          <div className="filter-search-col">
             <input
               type="text"
-              className="form-control"
-              style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.88rem' }}
+              className="form-control filter-search-input"
               placeholder={searchPlaceholder}
               value={searchValue || ''}
               onChange={onSearchChange}
@@ -28,13 +27,12 @@ export function FilterBar({
           </div>
         )}
         {filters.map((f, idx) => (
-          <div key={idx} style={{ minWidth: '150px' }}>
-            {f.label && <span style={{ display: 'block', fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.2rem' }}>{f.label}</span>}
+          <div key={idx} className="filter-select-col">
+            {f.label && <span className="filter-select-label">{f.label}</span>}
             <select
               value={f.value}
               onChange={f.onChange}
-              className="select-input"
-              style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.88rem', background: '#fff' }}
+              className="select-input filter-select-input"
             >
               {(f.options || []).map((opt, oIdx) => (
                 <option key={oIdx} value={typeof opt === 'object' ? opt.value : opt}>

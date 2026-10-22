@@ -18,39 +18,39 @@ export const AdminProfile = () => {
         ]}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '1.25rem' }}>
+      <div className="admin-profile-layout">
         <Card title="Root Security Principal">
-          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#991b1b', color: '#fff', fontSize: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
+          <div className="text-center mb-xl">
+            <div className="admin-root-avatar">
               SA
             </div>
-            <h3 style={{ margin: '0 0 0.25rem 0' }}>{user?.name || 'System Administrator'}</h3>
-            <span className="badge" style={{ background: '#fee2e2', color: '#991b1b' }}>
+            <h3 className="m-0 mb-xs">{user?.name || 'System Administrator'}</h3>
+            <span className="badge-superuser-pill">
               Superuser / Full Authority
             </span>
           </div>
 
-          <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div className="admin-principal-details">
             <div>
-              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>OFFICIAL PRINCIPAL</span>
+              <span className="portal-subtext-muted d-block fs-xs">OFFICIAL PRINCIPAL</span>
               <strong>admin@csdindia.gov.in</strong>
             </div>
             <div>
-              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>GPG KEY ID</span>
-              <span style={{ fontFamily: 'monospace' }}>4A89 7DF1 92B0 CA14</span>
+              <span className="portal-subtext-muted d-block fs-xs">GPG KEY ID</span>
+              <span className="font-mono">4A89 7DF1 92B0 CA14</span>
             </div>
             <div>
-              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>SECURITY CLEARANCE</span>
+              <span className="portal-subtext-muted d-block fs-xs">SECURITY CLEARANCE</span>
               <span>Level 1 Secret (MoD IT Infrastructure)</span>
             </div>
           </div>
         </Card>
 
         <Card title="Root Privileges & Delegation">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ padding: '0.75rem', background: '#f8fafc', borderRadius: '6px' }}>
-              <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem' }}>Privileged Operations</h4>
-              <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#475569', lineHeight: 1.6 }}>
+          <div className="flex-col-gap-md">
+            <div className="privileged-operations-box">
+              <h4 className="m-0 mb-sm fs-md">Privileged Operations</h4>
+              <ul className="privileged-operations-list">
                 <li>Global tenant user provisioning, account termination, and lockout overrides</li>
                 <li>Emergency maintenance mode triggering and cyber treasury pause</li>
                 <li>Cryptographic log verification and immutable export</li>
@@ -58,7 +58,7 @@ export const AdminProfile = () => {
               </ul>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', gap: '0.5rem' }}>
+            <div className="flex-end-gap-sm mt-md">
               <Button variant="outline">Rotate SSH Keypair</Button>
               <Button variant="secondary">Regenerate 2FA Backup Codes</Button>
             </div>

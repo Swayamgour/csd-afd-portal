@@ -50,19 +50,19 @@ export function UserStatusModal({ isOpen, onClose, user, onStatusUpdated }) {
       subtitle={`User: ${user.name || user.username} (${user.id})`}
       maxWidth="540px"
     >
-      <form onSubmit={handleSubmit}>
-        <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1.25rem' }}>
+      <form onSubmit={handleSubmit} className="director-modal-form">
+        <div className="director-notice-box mb-md">
           <div className="between">
             <span className="small font-semibold">Current Status:</span>
             <StatusBadge status={user.status} />
           </div>
-          <div className="between" style={{ marginTop: '0.4rem', fontSize: '0.82rem', color: '#64748b' }}>
+          <div className="between mt-xs small text-muted">
             <span>Previous Status Changes:</span>
             <span><strong>{user.statusChangeCount || 0}</strong> times</span>
           </div>
         </div>
 
-        <div style={{ marginBottom: '1.25rem' }}>
+        <div className="mb-md">
           <label className="form-label font-semibold" htmlFor="new_status_select">
             New Account Status <span className="req-star">*</span>
           </label>
@@ -73,8 +73,7 @@ export function UserStatusModal({ isOpen, onClose, user, onStatusUpdated }) {
               setNewStatus(e.target.value);
               setError('');
             }}
-            className="select-input"
-            style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+            className="director-field-input"
           >
             <option value="Active">Active (Full access)</option>
             <option value="Pending">Pending (Awaiting document verification)</option>
@@ -84,7 +83,7 @@ export function UserStatusModal({ isOpen, onClose, user, onStatusUpdated }) {
           </select>
         </div>
 
-        <div style={{ marginBottom: '1.25rem' }}>
+        <div className="mb-md">
           <label className="form-label font-semibold" htmlFor="status_reason">
             Reason for Status Change <span className="req-star">*</span>
           </label>
@@ -92,23 +91,22 @@ export function UserStatusModal({ isOpen, onClose, user, onStatusUpdated }) {
             id="status_reason"
             rows={3}
             required
-            className="select-input"
-            style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: error ? '1px solid #ef4444' : '1px solid #cbd5e1', fontFamily: 'inherit' }}
+            className={`director-field-input ${error ? 'input-error' : ''}`}
             placeholder="e.g. Identity verified via service depot nodal certificate / Account suspended pending enquiry..."
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />
           {error && (
-            <p className="err" role="alert" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.3rem' }}>
+            <p className="err director-alert-error" role="alert">
               ⚠ {error}
             </p>
           )}
-          <span className="micro muted" style={{ display: 'block', marginTop: '0.25rem' }}>
+          <span className="micro muted d-block mt-xs">
             This reason will be stamped in the permanent audit timeline along with your administrator ID.
           </span>
         </div>
 
-        <div className="between" style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+        <div className="director-modal-actions mt-md pt-sm border-t">
           <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
             Cancel
           </Button>

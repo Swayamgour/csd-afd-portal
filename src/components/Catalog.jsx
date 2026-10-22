@@ -287,9 +287,7 @@ export default function Catalog({
               max={hi}
               step={cat === "white-goods" ? 500 : 0.5}
               value={lim}
-              style={{
-                "--pct": `${((lim - (cat === "white-goods" ? 1000 : 1)) / Math.max(hi - (cat === "white-goods" ? 1000 : 1), 1)) * 100}%`,
-              }}
+              className={`range-pct-${Math.min(100, Math.max(0, Math.round((((lim - (cat === "white-goods" ? 1000 : 1)) / Math.max(hi - (cat === "white-goods" ? 1000 : 1), 1)) * 100) / 5) * 5))}`}
               onChange={(e) => setPmax(+e.target.value)}
             />
             <div className="range-l">

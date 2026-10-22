@@ -144,67 +144,67 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
       title={`Edit Beneficiary Profile: ${user.name || user.username}`}
       size="lg"
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleSubmit} className="director-modal-form">
         {error && (
-          <div style={{ padding: '0.75rem', background: '#fee2e2', color: '#991b1b', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="director-alert-error">
             <AlertCircle size={16} /> {error}
           </div>
         )}
         {success && (
-          <div style={{ padding: '0.75rem', background: '#dcfce7', color: '#166534', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="director-alert-success">
             <CheckCircle2 size={16} /> {success}
           </div>
         )}
 
-        <div style={{ background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.82rem', color: '#475569' }}>
+        <div className="director-notice-box">
           <strong>CS Director Direct Override:</strong> Modifying details here directly updates the beneficiary's primary identity and military entitlement records.
         </div>
 
         {/* Section 1: Basic Identity */}
         <div>
-          <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.65rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.35rem' }}>
+          <h4 className="director-section-heading">
             Personal & Contact Information
           </h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+          <div className="director-form-grid">
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Full Name *</label>
+              <label className="director-field-label">Full Name *</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 required
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Mobile Number</label>
+              <label className="director-field-label">Mobile Number</label>
               <input
                 type="text"
                 name="mobile"
                 value={formData.mobile}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Email Address</label>
+              <label className="director-field-label">Email Address</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Date of Birth</label>
+              <label className="director-field-label">Date of Birth</label>
               <input
                 type="date"
                 name="dob"
                 value={formData.dob}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
           </div>
@@ -212,39 +212,39 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
 
         {/* Section 2: Defence Service Credentials */}
         <div>
-          <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.65rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.35rem' }}>
+          <h4 className="director-section-heading">
             Armed Forces Service Details
           </h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+          <div className="director-form-grid">
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Service Number</label>
+              <label className="director-field-label">Service Number</label>
               <input
                 type="text"
                 name="serviceNumber"
                 value={formData.serviceNumber}
                 onChange={handleChange}
                 placeholder="e.g. JC-765432X"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Rank</label>
+              <label className="director-field-label">Rank</label>
               <input
                 type="text"
                 name="rank"
                 value={formData.rank}
                 onChange={handleChange}
                 placeholder="e.g. Subedar Major, Havildar, Major"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Service Branch / Arm</label>
+              <label className="director-field-label">Service Branch / Arm</label>
               <select
                 name="organization"
                 value={formData.organization}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               >
                 <option value="Indian Army">Indian Army</option>
                 <option value="Indian Navy">Indian Navy</option>
@@ -255,23 +255,23 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
               </select>
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Regiment / Unit</label>
+              <label className="director-field-label">Regiment / Unit</label>
               <input
                 type="text"
                 name="unit"
                 value={formData.unit}
                 onChange={handleChange}
                 placeholder="e.g. Rajputana Rifles, 7 Wing AF"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Employment Status</label>
+              <label className="director-field-label">Employment Status</label>
               <select
                 name="employmentStatus"
                 value={formData.employmentStatus}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               >
                 <option value="SERVING">Serving Personnel</option>
                 <option value="RETIRED">Ex-Serviceman / ESM</option>
@@ -279,12 +279,12 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
               </select>
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Category</label>
+              <label className="director-field-label">Category</label>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               >
                 <option value="SERVING">Serving</option>
                 <option value="EX_SERVICEMAN">Ex-Serviceman</option>
@@ -295,25 +295,25 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
               </select>
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Pay Level</label>
+              <label className="director-field-label">Pay Level</label>
               <input
                 type="text"
                 name="payLevel"
                 value={formData.payLevel}
                 onChange={handleChange}
                 placeholder="e.g. Level 7, Level 10, Level 14"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Entitlement Category</label>
+              <label className="director-field-label">Entitlement Category</label>
               <input
                 type="text"
                 name="entitlement"
                 value={formData.entitlement}
                 onChange={handleChange}
                 placeholder="e.g. Officer, JCO, OR"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
           </div>
@@ -321,52 +321,52 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
 
         {/* Section 3: CSD Cards & Tax Records */}
         <div>
-          <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.65rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.35rem' }}>
+          <h4 className="director-section-heading">
             CSD Canteen Card & Document Details
           </h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+          <div className="director-form-grid">
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>CSD Grocery/Smart Card ID</label>
+              <label className="director-field-label">CSD Grocery/Smart Card ID</label>
               <input
                 type="text"
                 name="cardId"
                 value={formData.cardId}
                 onChange={handleChange}
                 placeholder="e.g. GC12345678"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Card Chip Number</label>
+              <label className="director-field-label">Card Chip Number</label>
               <input
                 type="text"
                 name="chipNumber"
                 value={formData.chipNumber}
                 onChange={handleChange}
                 placeholder="e.g. CHIP-987654"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>PAN Number</label>
+              <label className="director-field-label">PAN Number</label>
               <input
                 type="text"
                 name="pan"
                 value={formData.pan}
                 onChange={handleChange}
                 placeholder="e.g. ABCDE1234F"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>PPO Number (For ESM)</label>
+              <label className="director-field-label">PPO Number (For ESM)</label>
               <input
                 type="text"
                 name="ppo"
                 value={formData.ppo}
                 onChange={handleChange}
                 placeholder="Pension Payment Order No."
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
           </div>
@@ -374,68 +374,68 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
 
         {/* Section 4: Address */}
         <div>
-          <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.65rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.35rem' }}>
+          <h4 className="director-section-heading">
             Address & Postal Code
           </h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Street / House Address</label>
+          <div className="director-form-grid">
+            <div className="director-grid-span-2">
+              <label className="director-field-label">Street / House Address</label>
               <input
                 type="text"
                 name="addressLine1"
                 value={formData.addressLine1}
                 onChange={handleChange}
                 placeholder="House No., Quarter, Street, Area"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>City / Station</label>
+              <label className="director-field-label">City / Station</label>
               <input
                 type="text"
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>State</label>
+              <label className="director-field-label">State</label>
               <input
                 type="text"
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>Pincode (6 digits)</label>
+              <label className="director-field-label">Pincode (6 digits)</label>
               <input
                 type="text"
                 name="pincode"
                 value={formData.pincode}
                 onChange={handleChange}
                 maxLength={6}
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '0.25rem' }}>CS Director Remarks / Note</label>
+              <label className="director-field-label">CS Director Remarks / Note</label>
               <input
                 type="text"
                 name="remarks"
                 value={formData.remarks}
                 onChange={handleChange}
                 placeholder="Reason for change / verification comments"
-                style={{ width: '100%', padding: '0.45rem 0.65rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                className="director-field-input"
               />
             </div>
           </div>
         </div>
 
         {/* Modal Actions */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+        <div className="director-modal-actions">
           <Button variant="outline" type="button" onClick={onClose} disabled={loading}>
             Cancel
           </Button>

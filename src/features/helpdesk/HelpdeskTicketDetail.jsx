@@ -155,7 +155,7 @@ export const HelpdeskTicketDetail = () => {
           { label: ticketId },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div className="portal-flex-align-center-gap-sm">
             <StatusBadge status={ticket.status} />
             <Link to="/helpdesk/tickets">
               <Button variant="outline" size="sm">Back to Queue</Button>
@@ -165,42 +165,42 @@ export const HelpdeskTicketDetail = () => {
       />
 
       {actionSuccess && (
-        <div className="alert alert-success" style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between' }}>
+        <div className="alert alert-success alert-dismissible-flex">
           <span>✓ {actionSuccess}</span>
-          <button style={{ border: 'none', background: 'none', cursor: 'pointer' }} onClick={() => setActionSuccess('')}>✕</button>
+          <button className="portal-btn-dismiss" onClick={() => setActionSuccess('')}>✕</button>
         </div>
       )}
 
       {/* 3-COLUMN HELPDESK WORKSPACE */}
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr 340px', gap: '1.25rem', alignItems: 'start' }}>
+      <div className="helpdesk-ticket-grid-3">
         
         {/* COLUMN 1: LEFT - TICKET & CITIZEN INFORMATION */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="portal-flex-col-gap-md">
           <Card title="Ticket Information">
-            <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div className="portal-flex-col-gap-sm-text">
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>TICKET ID</span>
+                <span className="helpdesk-label-muted">TICKET ID</span>
                 <strong>{ticketId}</strong>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>CATEGORY</span>
-                <span className="badge" style={{ background: '#f1f5f9', color: '#1e293b' }}>{ticket.category || 'General'}</span>
+                <span className="helpdesk-label-muted">CATEGORY</span>
+                <span className="badge badge-subtle-slate">{ticket.category || 'General'}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>SEVERITY</span>
-                <span className="badge" style={{ background: '#fee2e2', color: '#b91c1c' }}>{ticket.severity || 'NORMAL'}</span>
+                <span className="helpdesk-label-muted">SEVERITY</span>
+                <span className="badge badge-subtle-danger">{ticket.severity || 'NORMAL'}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>INTAKE SOURCE</span>
+                <span className="helpdesk-label-muted">INTAKE SOURCE</span>
                 <span>{ticket.source || 'PORTAL'}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>CREATED DATE & TIME</span>
+                <span className="helpdesk-label-muted">CREATED DATE & TIME</span>
                 <span>{ticket.createdAt ? new Date(ticket.createdAt).toLocaleString('en-IN') : '-'}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>SLA RESOLUTION DUE</span>
-                <strong style={{ color: '#b91c1c' }}>
+                <span className="helpdesk-label-muted">SLA RESOLUTION DUE</span>
+                <strong className="helpdesk-val-danger">
                   {ticket.sla?.resolutionDue ? new Date(ticket.sla.resolutionDue).toLocaleString('en-IN') : 'Standard SLA Active'}
                 </strong>
               </div>
@@ -208,17 +208,17 @@ export const HelpdeskTicketDetail = () => {
           </Card>
 
           <Card title="Beneficiary Dossier">
-            <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div className="portal-flex-col-gap-sm-text">
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>CITIZEN / VETERAN</span>
+                <span className="helpdesk-label-muted">CITIZEN / VETERAN</span>
                 <strong>{complainantName}</strong>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>MOBILE NUMBER</span>
+                <span className="helpdesk-label-muted">MOBILE NUMBER</span>
                 <span>{ticket.requester?.mobile || '+91 Verified Mobile'}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.75rem' }}>EMAIL</span>
+                <span className="helpdesk-label-muted">EMAIL</span>
                 <span>{ticket.requester?.email || 'N/A'}</span>
               </div>
             </div>
@@ -226,11 +226,11 @@ export const HelpdeskTicketDetail = () => {
         </div>
 
         {/* COLUMN 2: CENTER - CONVERSATION & TIMELINE */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="portal-flex-col-gap-md">
           <Card title="Citizen Query & Description">
-            <div style={{ padding: '0.75rem', background: '#f8fafc', borderRadius: '6px', borderLeft: '4px solid var(--navy)', marginBottom: '1rem' }}>
-              <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem' }}>{ticket.subject}</h4>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: '#334155', lineHeight: 1.6 }}>{ticket.description}</p>
+            <div className="helpdesk-query-card">
+              <h4 className="helpdesk-query-title">{ticket.subject}</h4>
+              <p className="helpdesk-query-desc">{ticket.description}</p>
             </div>
           </Card>
 
@@ -245,17 +245,16 @@ export const HelpdeskTicketDetail = () => {
 
           {/* Citizen Reply Box */}
           <Card title="Respond to Beneficiary">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div className="portal-flex-col-gap-sm">
               <textarea
                 rows={4}
-                className="form-control"
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                className="helpdesk-textarea-reply"
                 placeholder="Compose official resolution update or clarification to citizen..."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <div className="portal-flex-between-center">
+                <span className="portal-subtext-muted">
                   This message will be dispatched via SMS & Email notification to beneficiary.
                 </span>
                 <Button size="sm" onClick={handleSendReply} loading={isSendingReply} disabled={!replyText.trim()}>
@@ -267,16 +266,15 @@ export const HelpdeskTicketDetail = () => {
 
           {/* Internal Staff Confidential Note */}
           <Card title="Internal Confidential Note (Restricted to Officials)">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div className="portal-flex-col-gap-sm">
               <textarea
                 rows={2}
-                className="form-control"
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #fed7aa', background: '#fffbeb', fontSize: '0.85rem' }}
+                className="helpdesk-textarea-confidential"
                 placeholder="Log internal finding, payment trace UTR, or escalation reason (hidden from citizen)..."
                 value={internalNote}
                 onChange={(e) => setInternalNote(e.target.value)}
               />
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div className="portal-flex-end">
                 <Button variant="secondary" size="sm" onClick={handleAddInternalNote} disabled={!internalNote.trim()}>
                   Pin Confidential Note
                 </Button>
@@ -286,11 +284,11 @@ export const HelpdeskTicketDetail = () => {
         </div>
 
         {/* COLUMN 3: RIGHT - 4-LEVEL ESCALATION, SLA, ACTIONS, KB SUGGESTIONS */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="portal-flex-col-gap-md">
           
           {/* Action Hub */}
           <Card title="Ticket Governance Actions">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            <div className="portal-flex-col-gap-xs">
               <Button variant="outline" size="sm" fullWidth onClick={() => setShowAssignModal(true)}>
                 Assign / Reassign Officer
               </Button>
@@ -308,13 +306,13 @@ export const HelpdeskTicketDetail = () => {
             {suggestedKb.length === 0 ? (
               <p className="muted small">No articles tagged for this category.</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="portal-flex-col-gap-sm">
                 {suggestedKb.map((art) => (
-                  <div key={art._id || art.id} style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
-                    <Link to={`/helpdesk/knowledge-base/${art._id || art.id}`} style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--navy)' }}>
+                  <div key={art._id || art.id} className="helpdesk-kb-item">
+                    <Link to={`/helpdesk/knowledge-base/${art._id || art.id}`} className="helpdesk-kb-link">
                       {art.title}
                     </Link>
-                    <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: '#64748b' }}>
+                    <p className="helpdesk-kb-snippet">
                       {art.content ? art.content.slice(0, 80) + '...' : ''}
                     </p>
                   </div>
@@ -334,7 +332,7 @@ export const HelpdeskTicketDetail = () => {
             value={assignAgent}
             onChange={(e) => setAssignAgent(e.target.value)}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+          <div className="director-modal-actions">
             <Button variant="outline" onClick={() => setShowAssignModal(false)}>Cancel</Button>
             <Button loading={isAssigning} onClick={handleAssign}>Assign</Button>
           </div>
@@ -353,18 +351,17 @@ export const HelpdeskTicketDetail = () => {
               { value: 'Level 4 - CSD HQ Escalation', label: 'Level 4: CSD Head Office Directorate' },
             ]}
           />
-          <div style={{ marginTop: '0.75rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Reason for Escalation</label>
+          <div className="portal-form-group-spaced">
+            <label className="director-field-label">Reason for Escalation</label>
             <textarea
               rows={3}
-              className="form-control"
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+              className="director-field-input"
               placeholder="Explain why this requires senior intervention..."
               value={escalateReason}
               onChange={(e) => setEscalateReason(e.target.value)}
             />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+          <div className="director-modal-actions">
             <Button variant="outline" onClick={() => setShowEscalateModal(false)}>Cancel</Button>
             <Button loading={isUpdatingStatus} onClick={handleEscalate}>Confirm Escalation</Button>
           </div>
@@ -373,18 +370,17 @@ export const HelpdeskTicketDetail = () => {
 
       {showResolveModal && (
         <Modal isOpen={showResolveModal} onClose={() => setShowResolveModal(false)} title="Mark Incident as Resolved">
-          <div>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Resolution Summary to Citizen</label>
+          <div className="portal-form-group">
+            <label className="director-field-label">Resolution Summary to Citizen</label>
             <textarea
               rows={4}
-              className="form-control"
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+              className="director-field-input"
               placeholder="State the resolution steps taken and advice to beneficiary..."
               value={resolutionSummary}
               onChange={(e) => setResolutionSummary(e.target.value)}
             />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+          <div className="director-modal-actions">
             <Button variant="outline" onClick={() => setShowResolveModal(false)}>Cancel</Button>
             <Button loading={isUpdatingStatus} onClick={handleResolve}>Submit Resolution</Button>
           </div>

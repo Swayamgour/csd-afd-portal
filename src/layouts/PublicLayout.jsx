@@ -11,7 +11,7 @@ export function PublicLayout({ children }) {
       <main id="main" tabIndex={-1}>
         <Suspense
           fallback={
-            <div className="portal-content-loader-container" style={{ minHeight: '60vh' }}>
+            <div className="portal-content-loader-container">
               <LoadingState text="Loading page..." />
             </div>
           }

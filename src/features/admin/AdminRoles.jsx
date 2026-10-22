@@ -24,9 +24,9 @@ export const AdminRoles = () => {
     {
       header: 'Granted Permissions',
       accessor: 'permissionsCount',
-      render: (r) => <span className="badge" style={{ background: '#f1f5f9', color: 'var(--navy)' }}>{r.permissionsCount} permissions</span>
+      render: (r) => <span className="badge-perm-count">{r.permissionsCount} permissions</span>
     },
-    { header: 'Permission Samples', accessor: 'samplePermissions', render: (r) => <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{r.samplePermissions}</span> }
+    { header: 'Permission Samples', accessor: 'samplePermissions', render: (r) => <span className="portal-subtext-muted fs-xs">{r.samplePermissions}</span> }
   ];
 
   return (

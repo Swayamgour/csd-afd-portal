@@ -247,20 +247,7 @@ export function BeneficiaryProfile() {
         <div className="between align-center flex-wrap gap-2">
           <div className="row align-center gap-2">
             <div className="profile-hero-avatar-wrap">
-              <div
-                style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '50%',
-                  background: '#1e3a8a',
-                  color: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1.5rem',
-                  fontWeight: 700,
-                }}
-              >
+              <div className="beneficiary-avatar-lg">
                 {(beneficiary.name || 'B').charAt(0).toUpperCase()}
               </div>
               <span className="profile-verified-badge" title={isVerified ? 'CSD Verified' : 'Verification Pending'}>
@@ -291,11 +278,7 @@ export function BeneficiaryProfile() {
             </div>
             <div className="progress-bar-track">
               <div
-                className="progress-bar-fill"
-                style={{
-                  width: isVerified ? '100%' : '65%',
-                  background: isVerified ? 'var(--green)' : '#f59e0b',
-                }}
+                className={`progress-bar-fill ${isVerified ? 'verified' : 'pending'}`}
               />
             </div>
             <span className="micro muted mt-1 block">

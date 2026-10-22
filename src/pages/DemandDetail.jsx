@@ -47,20 +47,20 @@ export default function DemandDetail() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: '1100px', margin: '4rem auto', textAlign: 'center', padding: '2rem' }}>
-        <Clock size={36} className="spin" color="#1e4fd8" style={{ margin: '0 auto 12px', display: 'block', animation: 'spin 1s linear infinite' }} />
-        <h2 style={{ fontSize: '1.25rem', color: '#0f172a' }}>Loading demand details...</h2>
+      <div className="demand-loading-box">
+        <Clock size={36} className="spin portal-spinner-icon" />
+        <h2 className="portal-loading-title">Loading demand details...</h2>
       </div>
     );
   }
 
   if (error || !demand) {
     return (
-      <div style={{ maxWidth: '600px', margin: '4rem auto', textAlign: 'center', padding: '2rem', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-        <AlertCircle size={48} color="#ef4444" style={{ margin: '0 auto 12px', display: 'block' }} />
-        <h2 style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: '8px' }}>Demand Not Found</h2>
-        <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>The requested demand #{id} could not be located in the CSD database.</p>
-        <Link to="/demands" className="btn btn-primary" style={{ display: 'inline-block', padding: '0.65rem 1.25rem', textDecoration: 'none' }}>
+      <div className="portal-card-state-error">
+        <AlertCircle size={48} className="portal-error-icon" />
+        <h2 className="portal-error-title">Demand Not Found</h2>
+        <p className="portal-error-desc">The requested demand #{id} could not be located in the CSD database.</p>
+        <Link to="/demands" className="btn btn-primary portal-btn-inline">
           Back to Demands
         </Link>
       </div>
@@ -110,28 +110,27 @@ export default function DemandDetail() {
       {/* Top Header Card */}
       <div className="demand-detail-header-card">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="flex-align-center-gap-sm">
             <Link to="/demands" className="checkout-breadcrumb-link" title="Back to demands">
               <ArrowLeft size={18} />
             </Link>
-            <h1 className="checkout-page-heading" style={{ fontSize: '1.65rem', margin: 0 }}>
+            <h1 className="checkout-page-heading m-0">
               Demand {demand.id}
             </h1>
             <span className={`checkout-spec-pill ${currentStatusLower === 'processing' ? 'status-processing' : 'status-onhold'}`}>
               {demand.status}
             </span>
           </div>
-          <div className="csd-form-helper-text" style={{ marginTop: '6px' }}>
+          <div className="csd-form-helper-text mt-xs">
             Date of Booking: <strong>{demand.displayDate || (demand.createdAt ? new Date(demand.createdAt).toLocaleDateString() : 'Dec 7, 2020')}</strong> • Username: <strong>{demand.username || demand.beneficiaryName || 'DEMO'}</strong>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div className="portal-flex-wrap-gap-xs">
           {demand.status?.toLowerCase() === 'on hold' && (
             <button
               onClick={() => setPaymentModalOpen(true)}
-              className="btn-action-upload-details"
-              style={{ padding: '0.65rem 1.25rem', fontSize: '0.86rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+              className="btn-action-upload-details flex-align-center-gap-xs"
             >
               <CreditCard size={16} />
               Upload Payment Details
@@ -140,8 +139,7 @@ export default function DemandDetail() {
 
           <button
             onClick={() => window.print()}
-            className="btn-secondary-action"
-            style={{ padding: '0.65rem 1.15rem', fontSize: '0.86rem' }}
+            className="btn-secondary-action flex-align-center-gap-xs"
           >
             <Printer size={16} />
             Print Receipt
@@ -151,8 +149,8 @@ export default function DemandDetail() {
 
       {/* 8. Demand Status Timeline (Section 17) */}
       <div className="checkout-card">
-        <h2 className="checkout-card-title" style={{ marginBottom: '1.25rem' }}>
-          <Clock size={18} color="#1e4fd8" />
+        <h2 className="checkout-card-title mb-md">
+          <Clock size={18} color="var(--brand)" />
           <span>Demand Status Timeline</span>
         </h2>
 
@@ -166,18 +164,17 @@ export default function DemandDetail() {
                 key={st.key}
                 className={`timeline-step-card ${isCurrent ? 'is-current' : isCompleted ? 'is-completed' : ''}`}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <div className="timeline-step-header">
                   <div
-                    className={`checkout-step-badge ${isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming'}`}
-                    style={{ width: '24px', height: '24px', fontSize: '0.78rem' }}
+                    className={`checkout-step-badge checkout-step-badge-sm ${isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming'}`}
                   >
                     {isCompleted ? <CheckCircle2 size={15} /> : idx + 1}
                   </div>
-                  <div style={{ fontWeight: 700, fontSize: '0.86rem', color: isCurrent ? '#1e4fd8' : isCompleted ? '#166534' : '#64748b' }}>
+                  <div className={`timeline-step-title ${isCurrent ? 'is-current' : isCompleted ? 'is-completed' : 'is-upcoming'}`}>
                     {st.label}
                   </div>
                 </div>
-                <div className="csd-form-helper-text" style={{ paddingLeft: '32px' }}>
+                <div className="csd-form-helper-text timeline-step-desc">
                   {st.sub}
                 </div>
               </div>
@@ -311,14 +308,14 @@ export default function DemandDetail() {
                   <td>₹ {Number(demand.productSnapshot.basicPrice).toLocaleString('en-IN')}</td>
                 </tr>
                 {(demand.productSnapshot.csdDiscountAmount > 0 || demand.productSnapshot.marketScheme > 0) && (
-                  <tr style={{ color: '#059669' }}>
+                  <tr className="row-discount-positive">
                     <td>CSD Discount & Market Scheme</td>
                     <td>- ₹ {(Number(demand.productSnapshot.csdDiscountAmount || 0) + Number(demand.productSnapshot.marketScheme || 0)).toLocaleString('en-IN')}</td>
                   </tr>
                 )}
                 <tr>
                   <td>CSD Basic with Discount</td>
-                  <td style={{ fontWeight: 600 }}>₹ {Number(demand.productSnapshot.csdBasicWithDiscount || demand.productSnapshot.basicPrice).toLocaleString('en-IN')}</td>
+                  <td className="font-semibold">₹ {Number(demand.productSnapshot.csdBasicWithDiscount || demand.productSnapshot.basicPrice).toLocaleString('en-IN')}</td>
                 </tr>
                 <tr>
                   <td>GST (SGST + CGST with Concession)</td>
@@ -369,7 +366,7 @@ export default function DemandDetail() {
             </table>
           )}
 
-          <div className="beneficiary-field-box" style={{ marginTop: '10px' }}>
+          <div className="beneficiary-field-box mt-sm">
             <div>Method: <strong>{demand.paymentMethod || 'Direct bank transfer'}</strong></div>
             {demand.razorpayId && <div>Razorpay Gateway ID: <code>{demand.razorpayId}</code></div>}
             {demand.paymentData?.utrNumber && <div>Bank Transfer UTR: <code>{demand.paymentData.utrNumber}</code></div>}
@@ -379,10 +376,10 @@ export default function DemandDetail() {
         {/* 7. Documents */}
         <div className="demand-detail-section">
           <h3 className="demand-detail-section-title">
-            <FileText size={17} color="#1e4fd8" />
+            <FileText size={17} color="var(--brand)" />
             <span>7. Attached Documents</span>
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="portal-flex-col-gap-sm">
             {(demand.documents || [
               { name: 'Canteen Card.pdf', size: '1.2 MB', status: 'Uploaded' },
               { name: 'PAN Copy.pdf', size: '640 KB', status: 'Uploaded' },
@@ -401,7 +398,7 @@ export default function DemandDetail() {
                     <span className="doc-upload-meta-status">{doc.size || '1.1 MB'}</span>
                   </div>
                 </div>
-                <span className="checkout-spec-pill" style={{ background: '#dcfce7', color: '#166534' }}>
+                <span className="checkout-spec-pill badge-verified-pill">
                   {doc.status || 'Verified'}
                 </span>
               </div>

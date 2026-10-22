@@ -25,7 +25,7 @@ export const HelpdeskReports = () => {
     {
       header: 'SLA Compliance Rate',
       accessor: 'slaCompliance',
-      render: (r) => <span style={{ color: '#16a34a', fontWeight: 600 }}>{r.slaCompliance}</span>
+      render: (r) => <span className="sla-compliant-text">{r.slaCompliance}</span>
     }
   ];
 
@@ -41,7 +41,7 @@ export const HelpdeskReports = () => {
         actions={<ExportButton data={reportData} filename="Helpdesk_SLA_Performance" />}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="csd-stats-grid mb-md">
         <StatCard title="Overall SLA Compliance" value="94.8%" change="+1.2%" isPositive={true} subtitle="Target: >=92%" />
         <StatCard title="Total Tickets Handled" value="1,863" subtitle="This Quarter" />
         <StatCard title="First Contact Resolution" value="63.8%" subtitle="L1 Frontline Closure" />

@@ -44,7 +44,7 @@ export const HelpdeskTickets = ({ filterPreset = 'all' }) => {
       header: 'Ticket ID',
       accessor: 'ticketNo',
       render: (t) => (
-        <Link to={`/helpdesk/tickets/${t._id || t.id}`} style={{ fontWeight: 600, color: 'var(--brand)' }}>
+        <Link to={`/helpdesk/tickets/${t._id || t.id}`} className="helpdesk-ticket-link">
           {t.ticketNo || t._id}
         </Link>
       ),
@@ -54,8 +54,8 @@ export const HelpdeskTickets = ({ filterPreset = 'all' }) => {
       accessor: 'requester',
       render: (t) => (
         <div>
-          <div style={{ fontWeight: 600 }}>{t.requester?.name || t.userName || 'Beneficiary'}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t.requester?.mobile || t.serviceNumber || 'Applicant'}</div>
+          <div className="helpdesk-user-name">{t.requester?.name || t.userName || 'Beneficiary'}</div>
+          <div className="helpdesk-user-subtext">{t.requester?.mobile || t.serviceNumber || 'Applicant'}</div>
         </div>
       ),
     },
@@ -64,8 +64,8 @@ export const HelpdeskTickets = ({ filterPreset = 'all' }) => {
       accessor: 'subject',
       render: (t) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{t.subject}</div>
-          <span className="badge" style={{ fontSize: '0.7rem', background: '#f1f5f9', color: '#475569' }}>
+          <div className="helpdesk-subject-title">{t.subject}</div>
+          <span className="badge helpdesk-category-badge">
             {t.category}
           </span>
         </div>
@@ -115,7 +115,7 @@ export const HelpdeskTickets = ({ filterPreset = 'all' }) => {
           { label: 'Tickets' },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="portal-flex-gap-sm">
             <Button
               variant="outline"
               size="sm"

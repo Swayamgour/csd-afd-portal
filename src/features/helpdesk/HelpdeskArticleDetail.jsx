@@ -36,23 +36,23 @@ export const HelpdeskArticleDetail = () => {
         }
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '1.5rem', marginTop: '1.5rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="helpdesk-article-detail-grid">
+        <div className="portal-flex-col-gap-md">
           <Card>
-            <div style={{ lineHeight: 1.7, fontSize: '0.95rem', color: '#1e293b', whiteSpace: 'pre-wrap' }}>
+            <div className="helpdesk-article-full-content">
               {article.content}
             </div>
           </Card>
 
           <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="portal-flex-between-center">
               <div>
-                <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '0.95rem' }}>Was this SOP or guidance helpful?</h4>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <h4 className="helpdesk-feedback-title">Was this SOP or guidance helpful?</h4>
+                <p className="portal-subtext-muted">
                   Your feedback helps maintain accurate resolution templates.
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className="portal-flex-gap-sm">
                 <Button
                   variant={voted ? 'success' : 'outline'}
                   size="sm"
@@ -66,10 +66,10 @@ export const HelpdeskArticleDetail = () => {
           </Card>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="portal-flex-col-gap-md">
           <Card>
-            <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: 'var(--navy)' }}>Article Information</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem' }}>
+            <h4 className="helpdesk-sidebar-heading">Article Information</h4>
+            <div className="portal-flex-col-gap-xs small">
               <div><b>Type:</b> {article.type || 'FAQ'}</div>
               <div><b>Category:</b> {article.category || 'General'}</div>
               <div><b>Version:</b> v{article.version || 1}</div>

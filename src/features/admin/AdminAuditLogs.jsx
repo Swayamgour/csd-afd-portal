@@ -41,22 +41,15 @@ export const AdminAuditLogs = () => {
     {
       header: 'System Module',
       accessor: 'module',
-      render: (l) => <span className="badge" style={{ background: '#f1f5f9', color: 'var(--navy)' }}>{l.module}</span>
+      render: (l) => <span className="badge badge-slate-subtle-sm">{l.module}</span>
     },
     { header: 'Entity Reference', accessor: 'entity', render: (l) => l.entity || 'N/A' },
-    { header: 'IP Address', accessor: 'ip', render: (l) => <span style={{ fontFamily: 'monospace' }}>{l.ip}</span> },
+    { header: 'IP Address', accessor: 'ip', render: (l) => <span className="font-mono">{l.ip}</span> },
     {
       header: 'Execution Status',
       accessor: 'status',
       render: (l) => (
-        <span style={{
-          padding: '2px 8px',
-          borderRadius: '4px',
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          background: l.status === 'SUCCESS' ? '#f0fdf4' : '#fef2f2',
-          color: l.status === 'SUCCESS' ? '#15803d' : '#b91c1c'
-        }}>
+        <span className={l.status === 'SUCCESS' ? 'badge-success-subtle-sm' : 'badge-danger-subtle-sm'}>
           {l.status}
         </span>
       )

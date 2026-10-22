@@ -318,17 +318,17 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
                 helperText="Required. Used for authentication across all portal sub-systems."
               />
               {checkingUsername && (
-                <span className="micro muted" style={{ display: 'block', marginTop: '-0.3rem' }}>
+                <span className="micro muted d-block mt-neg-xs">
                   Checking username availability...
                 </span>
               )}
               {usernameAvailable === true && (
-                <span className="micro text-success" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '-0.3rem' }}>
+                <span className="micro text-success flex-align-center-gap-xs mt-neg-xs">
                   <Check size={12} /> Username is available
                 </span>
               )}
               {usernameAvailable === false && (
-                <span className="micro text-danger" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '-0.3rem' }}>
+                <span className="micro text-danger flex-align-center-gap-xs mt-neg-xs">
                   <AlertCircle size={12} /> Username already exists
                 </span>
               )}
@@ -347,17 +347,17 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
                 helperText="Required. Official credentials and alerts will be dispatched here."
               />
               {checkingEmail && (
-                <span className="micro muted" style={{ display: 'block', marginTop: '-0.3rem' }}>
+                <span className="micro muted d-block mt-neg-xs">
                   Checking email uniqueness...
                 </span>
               )}
               {emailAvailable === true && (
-                <span className="micro text-success" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '-0.3rem' }}>
+                <span className="micro text-success flex-align-center-gap-xs mt-neg-xs">
                   <Check size={12} /> Email is available
                 </span>
               )}
               {emailAvailable === false && (
-                <span className="micro text-danger" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '-0.3rem' }}>
+                <span className="micro text-danger flex-align-center-gap-xs mt-neg-xs">
                   <AlertCircle size={12} /> Email already exists
                 </span>
               )}
@@ -418,8 +418,8 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
             </Button>
           </div>
 
-          <div className="password-input-row" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-            <div style={{ flex: 1 }}>
+          <div className="password-input-row portal-flex-align-start-gap-sm">
+            <div className="flex-1">
               <Input
                 id="user_password"
                 type={showPassword ? 'text' : 'password'}
@@ -431,7 +431,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
                 error={errors.password}
               />
             </div>
-            <div style={{ marginTop: '1.9rem', display: 'flex', gap: '0.4rem' }}>
+            <div className="portal-password-tools">
               <Button
                 type="button"
                 variant="outline"
@@ -456,44 +456,39 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
 
           {/* Password Strength Indicator */}
           {password && (
-            <div className="password-meter-box" style={{ marginTop: '0.75rem', background: '#f8fafc', padding: '0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <div className="between" style={{ marginBottom: '0.4rem' }}>
+            <div className="password-meter-box director-notice-box mt-sm">
+              <div className="between mb-xs">
                 <span className="small font-semibold">Password Strength:</span>
-                <span className="small font-bold" style={{ color: currentStrength.color }}>
+                <span className={`small font-bold ${currentStrength.score >= 4 ? 'portal-text-success' : currentStrength.score >= 2 ? 'portal-text-warning' : 'portal-text-danger'}`}>
                   {currentStrength.label}
                 </span>
               </div>
-              <div style={{ height: '6px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+              <div className="strength-bar-bg">
                 <div
-                  style={{
-                    height: '100%',
-                    width: currentStrength.width,
-                    backgroundColor: currentStrength.color,
-                    transition: 'width 0.3s ease'
-                  }}
+                  className={`strength-bar-fill ${currentStrength.score >= 4 ? 'bg-success' : currentStrength.score >= 2 ? 'bg-warning' : 'bg-danger'}`}
                 />
               </div>
-              <div className="row wrap gap-2" style={{ marginTop: '0.6rem', fontSize: '0.75rem', color: '#64748b' }}>
-                <span style={{ color: password.length >= 8 ? '#10b981' : '#94a3b8' }}>
+              <div className="row wrap gap-2 strength-rules-row">
+                <span className={password.length >= 8 ? 'rule-met' : 'rule-unmet'}>
                   ✓ Min 8 chars
                 </span>
-                <span style={{ color: /[A-Z]/.test(password) ? '#10b981' : '#94a3b8' }}>
+                <span className={/[A-Z]/.test(password) ? 'rule-met' : 'rule-unmet'}>
                   ✓ Uppercase
                 </span>
-                <span style={{ color: /[a-z]/.test(password) ? '#10b981' : '#94a3b8' }}>
+                <span className={/[a-z]/.test(password) ? 'rule-met' : 'rule-unmet'}>
                   ✓ Lowercase
                 </span>
-                <span style={{ color: /[0-9]/.test(password) ? '#10b981' : '#94a3b8' }}>
+                <span className={/[0-9]/.test(password) ? 'rule-met' : 'rule-unmet'}>
                   ✓ Number
                 </span>
-                <span style={{ color: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) ? '#10b981' : '#94a3b8' }}>
+                <span className={/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) ? 'rule-met' : 'rule-unmet'}>
                   ✓ Special Symbol
                 </span>
               </div>
             </div>
           )}
 
-          <div style={{ marginTop: '0.85rem' }}>
+          <div className="mt-sm">
             <label className="checkbox-label row align-center gap-1 small pointer">
               <input
                 type="checkbox"
@@ -508,22 +503,22 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
         </div>
 
         {/* SECTION C: USER NOTIFICATION */}
-        <div className="form-section-card" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+        <div className="form-section-card portal-notify-card">
           <div className="form-section-header">
             <Bell size={18} className="text-success" />
-            <h3 className="form-section-title" style={{ color: '#166534' }}>3. User Notification</h3>
+            <h3 className="form-section-title portal-notify-title">3. User Notification</h3>
           </div>
-          <label className="checkbox-label row align-center gap-1 pointer" style={{ marginTop: '0.35rem' }}>
+          <label className="checkbox-label row align-center gap-1 pointer mt-xs">
             <input
               type="checkbox"
               checked={sendNotification}
               onChange={(e) => setSendNotification(e.target.checked)}
             />
-            <span style={{ color: '#166534', fontWeight: 600 }}>
+            <span className="portal-notify-text">
               Send the new user an email about their account.
             </span>
           </label>
-          <p className="micro muted" style={{ marginTop: '0.35rem', color: '#15803d' }}>
+          <p className="micro muted portal-notify-subtext">
             When checked, an official email will be generated containing portal login instructions and account security credentials.
           </p>
         </div>
@@ -543,8 +538,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
                 id="primary_role_select"
                 value={role}
                 onChange={(e) => handlePrimaryRoleChange(e.target.value)}
-                className="select-input"
-                style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="director-field-input"
               >
                 {Object.entries(groupedRoles).map(([category, items]) => (
                   <optgroup key={category} label={category}>
@@ -556,7 +550,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
                   </optgroup>
                 ))}
               </select>
-              <p className="micro muted" style={{ marginTop: '0.35rem' }}>
+              <p className="micro muted mt-xs">
                 Defines primary dashboard routing and root permission boundary.
               </p>
             </div>
@@ -568,8 +562,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="select-input"
-                style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="director-field-input"
               >
                 <option value="Active">Active (Full access)</option>
                 <option value="Pending">Pending (Awaiting document verification)</option>
@@ -577,27 +570,26 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
                 <option value="Denied">Denied (Application / Access rejected)</option>
                 <option value="Inactive">Inactive (Decommissioned)</option>
               </select>
-              <p className="micro muted" style={{ marginTop: '0.35rem' }}>
+              <p className="micro muted mt-xs">
                 All status changes are permanently logged in audit history.
               </p>
             </div>
           </div>
 
           {/* Other Roles (Multi-select dropdown) */}
-          <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
+          <div className="mt-md pt-sm border-t">
             <label className="form-label font-semibold">
               Other Roles (Multiple Secondary Roles)
             </label>
-            <p className="micro muted" style={{ marginBottom: '0.5rem' }}>
+            <p className="micro muted mb-xs">
               Assign secondary administrative roles to the same user without duplicating the Primary Role.
             </p>
 
-            <div className="row align-center gap-1" style={{ marginBottom: '0.75rem' }}>
+            <div className="row align-center gap-1 mb-sm">
               <select
                 value={selectedOtherRoleToAdd}
                 onChange={(e) => setSelectedOtherRoleToAdd(e.target.value)}
-                className="select-input"
-                style={{ flex: 1, padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="director-field-input flex-1"
               >
                 <option value="">-- Choose additional role to add --</option>
                 {availableOtherRoles.map((r) => (
@@ -628,20 +620,13 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
                   return (
                     <span
                       key={rCode}
-                      className="badge row align-center gap-1"
-                      style={{
-                        background: '#e0f2fe',
-                        color: '#0369a1',
-                        padding: '0.35rem 0.65rem',
-                        borderRadius: '20px',
-                        fontSize: '0.8rem'
-                      }}
+                      className="badge badge-role-tag row align-center gap-1"
                     >
                       <span>{rObj ? rObj.label : rCode}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveOtherRole(rCode)}
-                        style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: 0 }}
+                        className="portal-btn-icon-plain"
                         title="Remove role"
                       >
                         <X size={13} />
@@ -669,8 +654,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
               <input
                 id="lastDemand4W"
                 type="date"
-                className="select-input"
-                style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="director-field-input"
                 value={lastDemand4Wheeler}
                 onChange={(e) => setLastDemand4Wheeler(e.target.value)}
               />
@@ -684,8 +668,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
               <input
                 id="lastDemand2W"
                 type="date"
-                className="select-input"
-                style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="director-field-input"
                 value={lastDemand2Wheeler}
                 onChange={(e) => setLastDemand2Wheeler(e.target.value)}
               />
@@ -693,7 +676,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
             </div>
           </div>
 
-          <div style={{ marginTop: '1rem' }}>
+          <div className="mt-md">
             <label className="checkbox-label row align-center gap-1 small pointer">
               <input
                 type="checkbox"
@@ -706,30 +689,24 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
             </label>
           </div>
 
-          <div className="form-grid-2" style={{ marginTop: '1rem' }}>
+          <div className="form-grid-2 mt-md">
             <div>
               <label className="form-label">
                 Rate Our Website (1 to 5 Stars)
               </label>
-              <div className="row align-center gap-1" style={{ marginTop: '0.25rem' }}>
+              <div className="row align-center gap-1 mt-xs">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     type="button"
                     onClick={() => setWebsiteRating(star)}
-                    style={{
-                      background: 'transparent',
-                      border: 0,
-                      cursor: 'pointer',
-                      color: star <= websiteRating ? '#f59e0b' : '#cbd5e1',
-                      padding: '4px'
-                    }}
+                    className={`star-rating-btn ${star <= websiteRating ? 'is-active' : ''}`}
                     title={`Rate ${star} star`}
                   >
                     <Star size={24} fill={star <= websiteRating ? '#f59e0b' : 'none'} />
                   </button>
                 ))}
-                <span className="small font-semibold muted" style={{ marginLeft: '0.5rem' }}>
+                <span className="small font-semibold muted ml-sm">
                   ({websiteRating} / 5 Stars)
                 </span>
               </div>
@@ -742,8 +719,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
               <textarea
                 id="feedbackComment"
                 rows={2}
-                className="select-input"
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontFamily: 'inherit' }}
+                className="director-field-input"
                 placeholder="Beneficiary feedback or onboarding remarks..."
                 value={feedbackComment}
                 onChange={(e) => setFeedbackComment(e.target.value)}
@@ -752,27 +728,20 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
           </div>
 
           {/* Reason of Denial (Especially for Denied status) */}
-          <div style={{ marginTop: '1rem' }}>
+          <div className="mt-md">
             <label className="form-label" htmlFor="reasonOfDenial">
               Reason of Denial {status === 'Denied' && <span className="req-star">*</span>}
             </label>
             <textarea
               id="reasonOfDenial"
               rows={2}
-              className="select-input"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                borderRadius: '8px',
-                border: errors.reasonOfDenial ? '1px solid #ef4444' : '1px solid #cbd5e1',
-                fontFamily: 'inherit'
-              }}
+              className={`director-field-input ${errors.reasonOfDenial ? 'input-error' : ''}`}
               placeholder="Mandatory reason if account or application is rejected/denied..."
               value={reasonOfDenial}
               onChange={(e) => setReasonOfDenial(e.target.value)}
             />
             {errors.reasonOfDenial && (
-              <p className="err" role="alert" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.2rem' }}>
+              <p className="err director-alert-error" role="alert">
                 ⚠ {errors.reasonOfDenial}
               </p>
             )}
@@ -780,15 +749,15 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
         </div>
 
         {/* SECTION F: ADMIN & AUDIT INFORMATION */}
-        <div className="form-section-card" style={{ background: '#f8fafc' }}>
+        <div className="form-section-card director-notice-box">
           <div className="form-section-header">
             <Calendar size={18} className="text-brand" />
             <h3 className="form-section-title">6. Audit & System Creation Metadata</h3>
           </div>
-          <div className="row wrap gap-3" style={{ fontSize: '0.82rem', color: '#475569' }}>
+          <div className="row wrap gap-3 small text-muted">
             <div>
               <strong>Created By Admin:</strong>{' '}
-              <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontWeight: 600 }}>
+              <span className="badge badge-success-subtle-sm font-semibold">
                 Yes (Automatically Stamped)
               </span>
             </div>
@@ -808,7 +777,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
         </div>
 
         {/* FORM ACTION FOOTER */}
-        <div className="between" style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+        <div className="director-modal-actions mt-md pt-sm border-t">
           <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
             Cancel
           </Button>

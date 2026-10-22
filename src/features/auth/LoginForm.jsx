@@ -6,7 +6,6 @@ import {
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath, normalizeRole, isPathAllowedForRole } from '../../permissions/roles.js';
 import { authService } from '../../services/auth.service.js';
-import { generateOtp, sendOtpEmail } from '../../services/emailJs.service.js';
 
 function Field({ id, label, req, hint, err, children }) {
   return (
@@ -56,69 +55,45 @@ export default function LoginForm({ onNeedOtp }) {
 
     setLoading(true);
     try {
-      // 1. Verify user credentials (strictly verifies username & password against database/local registry)
-      let targetUser = null;
+      // 1. Verify user credentials and trigger backend OTP generation
+      let credResult;
       try {
-        const credResult = await authService.verifyCredentials({ username: cleanUsername, password });
-        targetUser = credResult.user;
-      } catch (verifyErr) {
-        // Fallback: If verify-credentials route fails or is not available, try direct login
-        const loginRes = await authService.login({ username: cleanUsername, password });
-        targetUser = loginRes.data?.user;
-      }
-
-      // 2. Identify the user's registered email
-      const registeredEmail = targetUser?.email || (cleanUsername.includes('@') ? cleanUsername : null) || 'dealer@suprememobileshisar.com';
-      const recipientName = targetUser?.name || targetUser?.username || 'Authorized User';
-
-      // 3. Generate secure 6-digit OTP
-      const otpCode = generateOtp();
-      const expiryMinutes = 5;
-
-      // 4. Send OTP directly to the registered email using EmailJS
-      const emailResult = await sendOtpEmail({
-        email: registeredEmail,
-        name: recipientName,
-        otp: otpCode,
-        expiryMinutes,
-        purpose: 'login',
-      });
-
-      // 5. Notify backend /auth/send-otp if reachable
-      try {
-        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/send-otp`, {
+        const credRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/verify-credentials`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ target: registeredEmail, purpose: 'LOGIN', otp: otpCode }),
-        }).catch(() => { });
-      } catch { }
+          body: JSON.stringify({ username: cleanUsername, password }),
+        });
+        credResult = await credRes.json();
+        if (!credRes.ok) {
+          throw new Error(credResult?.message || 'Invalid username or password.');
+        }
+      } catch (err) {
+        throw new Error(err.message || 'Invalid username or password. Please verify your credentials.');
+      }
 
-      // 6. Transition to OTP Verification step ONLY when credentials are correct
+      const registeredEmail = credResult.maskedEmail || credResult.data?.maskedEmail || 'registered email';
+      const userRole = credResult.role || credResult.data?.role || 'beneficiary';
+
+      // 2. Transition to OTP Verification step (Backend generated & dispatched OTP securely)
       if (onNeedOtp) {
         onNeedOtp({
           username: cleanUsername,
-          role: targetUser?.role || 'beneficiary',
           password,
-          email: registeredEmail,
-          name: recipientName,
-          expectedOtp: otpCode,
-          expiresAt: Date.now() + expiryMinutes * 60 * 1000,
-          user: targetUser,
-          isDevMock: emailResult?.isDevMock || emailResult?.isDevFallback,
+          maskedEmail: registeredEmail,
+          role: userRole,
         });
       } else {
-        const loggedInUser = await login({ username: cleanUsername, password, role: targetUser?.role });
-        const userRole = loggedInUser?.role || targetUser?.role;
-        const defaultDest = getRoleNavigatePath(userRole);
+        const loggedInUser = await login({ username: cleanUsername, password });
+        const finalRole = loggedInUser?.role || userRole;
+        const defaultDest = getRoleNavigatePath(finalRole);
         const params = new URLSearchParams(window.location.search);
         const redirectUrl = params.get('redirect');
-        const dest = (redirectUrl && !redirectUrl.startsWith('//') && isPathAllowedForRole(userRole, redirectUrl))
+        const dest = (redirectUrl && !redirectUrl.startsWith('//') && isPathAllowedForRole(finalRole, redirectUrl))
           ? redirectUrl
           : defaultDest;
         navigate(dest, { replace: true });
       }
     } catch (err) {
-      // Credentials invalid -> show error on screen and remain on login page (no transition to OTP)
       setErrors({ form: err.message || 'Invalid username or password. Please verify your credentials.' });
     } finally {
       setLoading(false);
@@ -144,30 +119,15 @@ export default function LoginForm({ onNeedOtp }) {
       </p>
 
       {reason === 'session-expired' && (
-        <div className="alert-banner warning small" role="alert" style={{ marginBottom: '1rem' }}>
+        <div className="alert-banner warning small mb-3" role="alert">
           <ShieldAlert size={16} />
           <span>Your previous secure session expired due to inactivity. Please log in again.</span>
         </div>
       )}
 
       {reason === 'auth-required' && (
-        <div
-          className="alert-banner warning small"
-          role="alert"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.65rem',
-            marginBottom: '1.25rem',
-            background: '#fffbeb',
-            color: '#92400e',
-            border: '1px solid #fde68a',
-            padding: '0.85rem 1rem',
-            borderRadius: '8px',
-            fontSize: '0.85rem'
-          }}
-        >
-          <ShieldAlert size={18} className="flex-shrink-0" style={{ color: '#d97706' }} />
+        <div className="alert-banner warning small mb-3 row align-center gap-1" role="alert">
+          <ShieldAlert size={18} className="flex-shrink-0" />
           <span>
             <strong>Login Required:</strong> Please log in with your credentials to access this protected area.
           </span>
@@ -175,23 +135,8 @@ export default function LoginForm({ onNeedOtp }) {
       )}
 
       {reason === 'role-unauthorized' && (
-        <div
-          className="alert-banner danger small"
-          role="alert"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.65rem',
-            marginBottom: '1.25rem',
-            background: '#fef2f2',
-            color: '#991b1b',
-            border: '1px solid #fecaca',
-            padding: '0.85rem 1rem',
-            borderRadius: '8px',
-            fontSize: '0.85rem'
-          }}
-        >
-          <ShieldAlert size={18} className="flex-shrink-0" style={{ color: '#dc2626' }} />
+        <div className="alert-banner danger small mb-3 row align-center gap-1" role="alert">
+          <ShieldAlert size={18} className="flex-shrink-0" />
           <span>
             <strong>Access Denied:</strong> This section requires authorized role credentials. Please log in with an Administrator or authorized account.
           </span>
@@ -199,21 +144,7 @@ export default function LoginForm({ onNeedOtp }) {
       )}
 
       {errors.form && (
-        <div
-          className="alert-banner danger small"
-          role="alert"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '1rem',
-            background: '#fef2f2',
-            color: '#b91c1c',
-            border: '1px solid #fecaca',
-            padding: '0.75rem',
-            borderRadius: '6px'
-          }}
-        >
+        <div className="alert-banner danger small mb-3 row align-center gap-1" role="alert">
           <ShieldAlert size={18} className="flex-shrink-0" />
           <span>{errors.form}</span>
         </div>
@@ -267,8 +198,8 @@ export default function LoginForm({ onNeedOtp }) {
         </div>
       </Field>
 
-      <div className="between" style={{ marginTop: '0.25rem', marginBottom: '1.25rem' }}>
-        <label className="inline agree" style={{ fontSize: '0.85rem', cursor: loading ? 'not-allowed' : 'pointer' }}>
+      <div className="between mb-3">
+        <label className="inline agree pointer">
           <input
             type="checkbox"
             checked={rememberMe}
@@ -277,38 +208,28 @@ export default function LoginForm({ onNeedOtp }) {
           />{' '}
           Remember credentials
         </label>
-        <Link to="/forgot-password" className="vli" style={{ fontSize: '0.85rem' }}>
+        <Link to="/forgot-password" className="vli">
           Forgot Password?
         </Link>
       </div>
 
-      {/* SUBMIT BUTTON - DISABLED WHILE LOADING OR EMPTY */}
+      {/* SUBMIT BUTTON */}
       <button
-        className="btn big wide"
+        className="btn big wide row align-center justify-center gap-1"
         type="submit"
         disabled={isSubmitDisabled}
-        style={{
-          opacity: isSubmitDisabled ? 0.65 : 1,
-          cursor: isSubmitDisabled ? 'not-allowed' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.5rem',
-          transition: 'all 0.15s ease'
-        }}
       >
-        {loading && <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />}
+        {loading && <Loader2 size={18} className="spin" />}
         <span>{loading ? 'Verifying Credentials...' : 'Sign In with OTP Verification'}</span>
       </button>
 
       {/* Quick Role Fill for Development & Testing */}
-      <div style={{ marginTop: '1.25rem', paddingTop: '0.85rem', borderTop: '1px solid #e2e8f0', fontSize: '0.8rem', color: '#64748b' }}>
-        <span style={{ fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>Quick Fill Test Accounts:</span>
-        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+      <div className="login-quick-fill-box">
+        <span className="login-quick-fill-label">Quick Fill Test Accounts:</span>
+        <div className="login-quick-fill-btns">
           <button
             type="button"
-            className="btn xs out"
-            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            className="btn xs out login-quick-btn"
             onClick={() => {
               setUsername('depot_delhi');
               setPassword('Dealer@123456');
@@ -318,8 +239,7 @@ export default function LoginForm({ onNeedOtp }) {
           </button>
           <button
             type="button"
-            className="btn xs out"
-            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            className="btn xs out login-quick-btn"
             onClick={() => {
               setUsername('cs_director');
               setPassword('Director@123456');
@@ -329,8 +249,7 @@ export default function LoginForm({ onNeedOtp }) {
           </button>
           <button
             type="button"
-            className="btn xs out"
-            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            className="btn xs out login-quick-btn"
             onClick={() => {
               setUsername('systemadmin');
               setPassword('Admin@123456');
@@ -340,8 +259,7 @@ export default function LoginForm({ onNeedOtp }) {
           </button>
           <button
             type="button"
-            className="btn xs out"
-            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            className="btn xs out login-quick-btn"
             onClick={() => {
               setUsername('aman');
               setPassword('Pa$$w0rd!');

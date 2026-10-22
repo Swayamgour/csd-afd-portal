@@ -177,25 +177,25 @@ export default function DepotDemands() {
       )}
 
       {/* Dynamic Depot KPI Summary Bar */}
-      <div className="depot-kpi-banner-grid mb-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
-        <div className="panel p-2 shadow-sm" style={{ borderLeft: '4px solid #1e3a8a', background: '#fff' }}>
+      <div className="depot-kpi-banner-grid mb-2 depot-kpi-grid">
+        <div className="panel p-2 shadow-sm depot-kpi-card depot-kpi-blue">
           <span className="small muted font-semibold block">Total Received Demands</span>
-          <strong className="text-brand font-bold" style={{ fontSize: '1.6rem' }}>{totalCount}</strong>
+          <strong className="text-brand font-bold depot-kpi-val">{totalCount}</strong>
           <span className="micro muted block mt-05">All registered indents</span>
         </div>
-        <div className="panel p-2 shadow-sm" style={{ borderLeft: '4px solid #d97706', background: '#fff' }}>
+        <div className="panel p-2 shadow-sm depot-kpi-card depot-kpi-amber">
           <span className="small muted font-semibold block">Action Required (Pending)</span>
-          <strong className="text-warning font-bold" style={{ fontSize: '1.6rem', color: '#b45309' }}>{pendingCount}</strong>
+          <strong className="text-warning font-bold depot-kpi-val-amber">{pendingCount}</strong>
           <span className="micro muted block mt-05">Awaiting Step 4 verification</span>
         </div>
-        <div className="panel p-2 shadow-sm" style={{ borderLeft: '4px solid #16a34a', background: '#fff' }}>
+        <div className="panel p-2 shadow-sm depot-kpi-card depot-kpi-green">
           <span className="small muted font-semibold block">Supply Orders Issued</span>
-          <strong className="text-green font-bold" style={{ fontSize: '1.6rem', color: '#15803d' }}>{approvedCount}</strong>
+          <strong className="text-green font-bold depot-kpi-val-green">{approvedCount}</strong>
           <span className="micro muted block mt-05">Handed over to URC & Dealers</span>
         </div>
-        <div className="panel p-2 shadow-sm" style={{ borderLeft: '4px solid #4f46e5', background: '#fff' }}>
+        <div className="panel p-2 shadow-sm depot-kpi-card depot-kpi-purple">
           <span className="small muted font-semibold block">Total Indent Realization</span>
-          <strong className="text-brand font-bold" style={{ fontSize: '1.6rem', color: '#4338ca' }}>{totalSanctionValueFormatted}</strong>
+          <strong className="text-brand font-bold depot-kpi-val-purple">{totalSanctionValueFormatted}</strong>
           <span className="micro muted block mt-05">Matched with CSD Treasury</span>
         </div>
       </div>
@@ -258,68 +258,32 @@ export default function DepotDemands() {
       </div>
 
       {/* Quick Status Tabs Filter */}
-      <div className="depot-status-tabs-row row gap-05 mb-1" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+      <div className="depot-status-tabs-row row gap-05 mb-1 depot-tabs-wrap">
         <button
           type="button"
           onClick={() => setStatusTab('all')}
-          style={{
-            padding: '0.4rem 0.9rem',
-            borderRadius: '20px',
-            border: '1px solid #cbd5e1',
-            background: statusTab === 'all' ? '#1e3a8a' : '#ffffff',
-            color: statusTab === 'all' ? '#ffffff' : '#334155',
-            fontWeight: 600,
-            fontSize: '0.85rem',
-            cursor: 'pointer'
-          }}
+          className={`depot-tab-btn ${statusTab === 'all' ? 'active-all' : ''}`}
         >
           All Demands ({totalCount})
         </button>
         <button
           type="button"
           onClick={() => setStatusTab('pending')}
-          style={{
-            padding: '0.4rem 0.9rem',
-            borderRadius: '20px',
-            border: '1px solid #cbd5e1',
-            background: statusTab === 'pending' ? '#d97706' : '#ffffff',
-            color: statusTab === 'pending' ? '#ffffff' : '#334155',
-            fontWeight: 600,
-            fontSize: '0.85rem',
-            cursor: 'pointer'
-          }}
+          className={`depot-tab-btn ${statusTab === 'pending' ? 'active-pending' : ''}`}
         >
           ⏳ Pending Scrutiny ({pendingCount})
         </button>
         <button
           type="button"
           onClick={() => setStatusTab('approved')}
-          style={{
-            padding: '0.4rem 0.9rem',
-            borderRadius: '20px',
-            border: '1px solid #cbd5e1',
-            background: statusTab === 'approved' ? '#16a34a' : '#ffffff',
-            color: statusTab === 'approved' ? '#ffffff' : '#334155',
-            fontWeight: 600,
-            fontSize: '0.85rem',
-            cursor: 'pointer'
-          }}
+          className={`depot-tab-btn ${statusTab === 'approved' ? 'active-approved' : ''}`}
         >
           ✓ Supply Orders Issued ({approvedCount})
         </button>
         <button
           type="button"
           onClick={() => setStatusTab('rejected')}
-          style={{
-            padding: '0.4rem 0.9rem',
-            borderRadius: '20px',
-            border: '1px solid #cbd5e1',
-            background: statusTab === 'rejected' ? '#dc2626' : '#ffffff',
-            color: statusTab === 'rejected' ? '#ffffff' : '#334155',
-            fontWeight: 600,
-            fontSize: '0.85rem',
-            cursor: 'pointer'
-          }}
+          className={`depot-tab-btn ${statusTab === 'rejected' ? 'active-rejected' : ''}`}
         >
           ✗ Rejected ({rejectedCount})
         </button>
@@ -548,15 +512,15 @@ export default function DepotDemands() {
                     <td className="td-demand-status">
                       <div className="depot-status-col-wrap">
                         {isProcessed ? (
-                          <span className="depot-status-pill status-supply-issued" style={{ background: '#dcfce7', color: '#166534', fontWeight: 600, padding: '0.25rem 0.6rem', borderRadius: '4px' }}>
+                          <span className="depot-status-pill status-supply-issued depot-pill-issued">
                             Supply Order Issued
                           </span>
                         ) : isRejected ? (
-                          <span className="depot-status-pill status-rejected" style={{ background: '#fee2e2', color: '#991b1b', fontWeight: 600, padding: '0.25rem 0.6rem', borderRadius: '4px' }}>
+                          <span className="depot-status-pill status-rejected depot-pill-rejected">
                             Rejected
                           </span>
                         ) : (
-                          <span className="depot-status-pill status-processing" style={{ background: '#fef3c7', color: '#92400e', fontWeight: 600, padding: '0.25rem 0.6rem', borderRadius: '4px' }}>
+                          <span className="depot-status-pill status-processing depot-pill-processing">
                             {demand.status === 'CREATED' ? 'Payment Pending' : 'Processing'}
                           </span>
                         )}

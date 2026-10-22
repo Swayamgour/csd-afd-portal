@@ -271,8 +271,8 @@ export default function DealerDashboard() {
       render: (r) => {
         const p = r.productSnapshot || r.productId || {};
         return (
-          <div style={{ maxWidth: '280px' }}>
-            <span className="font-medium small block" style={{ lineHeight: 1.3 }}>
+          <div className="dealer-product-cell">
+            <span className="font-medium small block text-line-height-tight">
               {p.name || 'Vehicle'}
             </span>
             <div className="row gap-0-5 align-center mt-0-25">
@@ -618,7 +618,7 @@ export default function DealerDashboard() {
               </div>
 
               {/* Search */}
-              <div className="search-wrap" style={{ minWidth: '220px' }}>
+              <div className="search-wrap search-wrap-min">
                 <input
                   type="text"
                   placeholder="Search Demand or Officer..."
@@ -636,7 +636,7 @@ export default function DealerDashboard() {
             loading={loadingDemands}
             emptyMessage={
               <div className="p-4 text-center">
-                <CheckCircle2 size={40} className="text-success mb-1" style={{ margin: '0 auto' }} />
+                <CheckCircle2 size={40} className="text-success mb-1 text-center-auto-m" />
                 <h3 className="h4 font-bold">No Demands in This Category</h3>
                 <p className="text-muted small">
                   When a defence beneficiary selects your dealership at checkout, their demand and availability certificate will appear here for verification.
@@ -659,7 +659,7 @@ export default function DealerDashboard() {
             loading={loadingOrders}
             emptyMessage={
               <div className="p-4 text-center">
-                <Truck size={40} className="text-muted mb-1" style={{ margin: '0 auto' }} />
+                <Truck size={40} className="text-muted mb-1 text-center-auto-m" />
                 <h3 className="h4 font-bold">No Active Handover Orders</h3>
                 <p className="text-muted small">
                   Once beneficiary completes payment for a verified demand, official CSD supply orders will populate here for physical vehicle release.
@@ -759,7 +759,7 @@ export default function DealerDashboard() {
             </div>
 
             {/* Availability Certificate Inspection Box */}
-            <div className="panel p-2 mb-3 border rounded" style={{ background: '#f8fafc' }}>
+            <div className="panel p-2 mb-3 border rounded panel-muted-bg">
               <span className="micro muted uppercase font-bold block mb-1">
                 3. Uploaded Availability Certificate
               </span>
@@ -769,7 +769,7 @@ export default function DealerDashboard() {
                 if (!cert) {
                   return (
                     <div className="p-2 text-center text-muted small">
-                      <AlertTriangle size={18} className="text-warning mb-0-5" style={{ margin: '0 auto' }} />
+                      <AlertTriangle size={18} className="text-warning mb-0-5 panel-warning-icon" />
                       No Availability Certificate attached with this demand. You may request customer to provide hardcopy or proceed if in stock.
                     </div>
                   );

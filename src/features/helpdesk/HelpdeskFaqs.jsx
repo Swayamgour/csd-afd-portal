@@ -46,7 +46,7 @@ export const HelpdeskFaqs = () => {
         ]}
       />
 
-      <Card style={{ marginBottom: '1.25rem' }}>
+      <Card className="mb-md">
         <SearchInput
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -54,33 +54,20 @@ export const HelpdeskFaqs = () => {
         />
       </Card>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <div className="portal-flex-col-gap-sm">
         {filteredFaqs.map((faq, idx) => {
           const isOpen = openIndex === idx;
           return (
-            <Card key={idx} style={{ padding: 0, overflow: 'hidden' }}>
+            <Card key={idx} className="faq-card-wrapper">
               <button
                 onClick={() => setOpenIndex(isOpen ? null : idx)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '1.2rem',
-                  background: isOpen ? '#f8fafc' : '#ffffff',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  color: isOpen ? 'var(--brand)' : 'var(--navy)'
-                }}
+                className={`faq-accordion-btn ${isOpen ? 'is-open' : ''}`}
               >
                 <span>{faq.q}</span>
-                <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>{isOpen ? '−' : '+'}</span>
+                <span className="faq-accordion-icon">{isOpen ? '−' : '+'}</span>
               </button>
               {isOpen && (
-                <div style={{ padding: '0 1.2rem 1.2rem 1.2rem', fontSize: '0.88rem', color: '#475569', lineHeight: 1.7, borderTop: '1px solid #f1f5f9' }}>
+                <div className="faq-accordion-body">
                   {faq.a}
                 </div>
               )}

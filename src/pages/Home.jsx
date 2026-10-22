@@ -91,13 +91,10 @@ export default function Home() {
                 key={slide._id || slide.id || idx}
                 src={slide.imageUrl}
                 alt={slide.name || `Hero Banner ${idx + 1}`}
-                style={
+                className={
                   isSingle
-                    ? { opacity: 1, animation: 'none' }
-                    : {
-                      animationDuration: `${duration}s`,
-                      animationDelay: `${delay}s`,
-                    }
+                    ? "hero-single-slide"
+                    : `hero-slide-duration-${Math.min(30, Math.max(10, Math.round(duration / 5) * 5))} hero-slide-delay-${Math.min(5, idx)}`
                 }
                 onError={(e) => {
                   e.currentTarget.src = "/assets/home_page.png";

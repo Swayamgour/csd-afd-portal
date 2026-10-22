@@ -34,14 +34,14 @@ export const AdminSystemSettings = () => {
       />
 
       {savedMsg && (
-        <div className="alert alert-success" style={{ marginBottom: '1.25rem' }}>✓ {savedMsg}</div>
+        <div className="alert alert-success mb-lg">✓ {savedMsg}</div>
       )}
 
       <form onSubmit={handleSave}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem' }}>
+        <div className="admin-settings-grid">
           
           <Card title="Session & Authentication Policy">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="flex-col-gap-md">
               <Select
                 label="Idle Session Timeout"
                 value={settings.sessionTimeout}
@@ -74,7 +74,7 @@ export const AdminSystemSettings = () => {
           </Card>
 
           <Card title="Data Retention & Maintenance">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="flex-col-gap-md">
               <Input
                 label="Immutable Audit Log Retention (Days)"
                 type="number"
@@ -86,11 +86,11 @@ export const AdminSystemSettings = () => {
                 value={settings.cyberBackupCron}
                 readOnly
               />
-              <div style={{ padding: '0.75rem', background: '#fef2f2', borderRadius: '6px', border: '1px solid #fecaca' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="admin-maintenance-box">
+                <div className="flex-between-center">
                   <div>
-                    <strong style={{ color: '#991b1b', fontSize: '0.9rem' }}>Maintenance Mode</strong>
-                    <div style={{ fontSize: '0.75rem', color: '#b91c1c' }}>
+                    <strong className="admin-maintenance-title">Maintenance Mode</strong>
+                    <div className="admin-maintenance-desc">
                       Redirects public visitors and beneficiaries to maintenance page during ledger upgrades.
                     </div>
                   </div>
@@ -98,7 +98,7 @@ export const AdminSystemSettings = () => {
                     type="checkbox"
                     checked={settings.maintenanceMode}
                     onChange={(e) => setSettings({ ...settings, maintenanceMode: e.target.checked })}
-                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    className="checkbox-lg"
                   />
                 </div>
               </div>
@@ -107,7 +107,7 @@ export const AdminSystemSettings = () => {
 
         </div>
 
-        <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+        <div className="flex-end-gap-sm mt-xl">
           <Button variant="outline" type="button" onClick={() => window.location.reload()}>Discard Changes</Button>
           <Button type="submit">Save System Configuration</Button>
         </div>

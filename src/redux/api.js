@@ -8,6 +8,7 @@ const rawBaseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
   credentials: "include",
 
+
   prepareHeaders: (headers, { getState }) => {
     const stateToken = getState()?.auth?.token;
     const token =

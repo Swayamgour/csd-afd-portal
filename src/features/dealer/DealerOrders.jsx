@@ -113,7 +113,7 @@ export default function DealerOrders() {
           loading={isLoading}
           emptyMessage={
             <div className="p-4 text-center">
-              <Truck size={40} className="text-muted mb-1" style={{ margin: '0 auto' }} />
+              <Truck size={40} className="text-muted mb-1 text-center-auto-m" />
               <h3 className="h4 font-bold">No Active Supply Orders</h3>
               <p className="text-muted small">
                 Once customer completes payment for a verified demand, official CSD supply orders will populate here for vehicle release.

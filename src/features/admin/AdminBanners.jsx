@@ -146,24 +146,11 @@ export default function AdminBanners() {
       header: 'Preview',
       accessor: 'imageUrl',
       render: (row) => (
-        <div
-          style={{
-            width: '64px',
-            height: '42px',
-            borderRadius: '6px',
-            background: '#0b1f3a',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            border: '1px solid #cbd5e1',
-          }}
-        >
+        <div className="banner-thumb-container">
           <img
             src={row.imageUrl}
             alt={row.name}
-            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            className="banner-thumb-img"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}
@@ -176,14 +163,14 @@ export default function AdminBanners() {
       accessor: 'name',
       render: (row) => (
         <div>
-          <strong style={{ color: '#0f172a', fontSize: '0.92rem' }}>{row.name}</strong>
+          <strong className="portal-profile-name">{row.name}</strong>
           {row.linkUrl && (
-            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.15rem' }}>
+            <div className="portal-subtext-muted fs-xs mt-xs">
               <a
                 href={row.linkUrl}
                 target="_blank"
                 rel="noreferrer"
-                style={{ color: '#1e4fd8', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                className="portal-link-brand flex-align-center-gap-xs"
               >
                 <span>Link Target</span> <ExternalLink size={11} />
               </a>
@@ -199,22 +186,8 @@ export default function AdminBanners() {
         const isHeader = row.position === 'forces_header';
         const isHero = row.position === 'home_hero';
         const label = isHeader ? 'Top Header Forces' : isHero ? 'Home Hero Slider' : row.position;
-        const bg = isHeader ? '#eff6ff' : isHero ? '#f0fdf4' : '#f1f5f9';
-        const color = isHeader ? '#1d4ed8' : isHero ? '#15803d' : '#475569';
-        const border = isHeader ? '#bfdbfe' : isHero ? '#bbf7d0' : '#cbd5e1';
         return (
-          <span
-            style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              padding: '0.2rem 0.6rem',
-              borderRadius: '9999px',
-              background: bg,
-              color: color,
-              border: `1px solid ${border}`,
-              textTransform: 'uppercase',
-            }}
-          >
+          <span className={`badge-pill badge-sm ${isHeader ? 'badge-info-subtle' : isHero ? 'badge-success-subtle-sm' : 'badge-slate-subtle-sm'}`}>
             {label}
           </span>
         );
@@ -224,7 +197,7 @@ export default function AdminBanners() {
       header: 'Display Order',
       accessor: 'order',
       render: (row) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
+        <div className="flex-align-center-gap-xs font-semibold">
           <ArrowUpDown size={13} className="text-muted" />
           <span>#{row.order || 0}</span>
         </div>
@@ -235,37 +208,11 @@ export default function AdminBanners() {
       accessor: 'isActive',
       render: (row) =>
         row.isActive ? (
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.3rem',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: '#15803d',
-              background: '#dcfce7',
-              padding: '0.15rem 0.55rem',
-              borderRadius: '9999px',
-              border: '1px solid #bbf7d0',
-            }}
-          >
+          <span className="badge-active-pill">
             <CheckCircle2 size={12} /> Active
           </span>
         ) : (
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.3rem',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: '#991b1b',
-              background: '#fee2e2',
-              padding: '0.15rem 0.55rem',
-              borderRadius: '9999px',
-              border: '1px solid #fecaca',
-            }}
-          >
+          <span className="badge-inactive-pill">
             <XCircle size={12} /> Inactive
           </span>
         ),
@@ -274,16 +221,11 @@ export default function AdminBanners() {
       header: 'Actions',
       accessor: 'actions',
       render: (row) => (
-        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+        <div className="portal-flex-wrap-gap-xs flex-align-center-gap-xs">
           <Button
             size="sm"
             variant="outline"
-            style={{
-              fontSize: '0.75rem',
-              padding: '0.25rem 0.55rem',
-              color: row.isActive ? '#d97706' : '#16a34a',
-              borderColor: row.isActive ? '#fde68a' : '#bbf7d0',
-            }}
+            className={row.isActive ? 'btn-toggle-inactive' : 'btn-toggle-active'}
             onClick={() => handleToggle(row)}
             title="Toggle active display"
           >
@@ -292,16 +234,16 @@ export default function AdminBanners() {
           <Button
             size="sm"
             variant="outline"
-            style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem' }}
+            className="btn-action-edit-pill"
             onClick={() => openEditModal(row)}
             title="Edit Banner Details"
           >
-            <Edit size={13} style={{ marginRight: '0.25rem' }} /> Edit
+            <Edit size={13} className="mr-xs" /> Edit
           </Button>
           <Button
             size="sm"
             variant="outline"
-            style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem', color: '#dc2626', borderColor: '#fca5a5' }}
+            className="btn-action-delete-pill"
             onClick={() => setDeleteModalBanner(row)}
             title="Delete Banner"
           >
@@ -313,25 +255,9 @@ export default function AdminBanners() {
   ];
 
   return (
-    <div className="admin-banners-page" style={{ paddingBottom: '3rem' }}>
+    <div className="admin-banners-page pb-3xl">
       {toast && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '1.5rem',
-            right: '1.5rem',
-            background: '#15803d',
-            color: '#fff',
-            padding: '0.85rem 1.25rem',
-            borderRadius: '8px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontWeight: 600,
-          }}
-        >
+        <div className="director-toast">
           <CheckCircle2 size={18} />
           {toast}
         </div>
@@ -345,29 +271,23 @@ export default function AdminBanners() {
           { label: 'Banners' },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div className="portal-flex-align-center-gap-sm">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
               <RefreshCw
                 size={14}
-                style={{
-                  marginRight: '0.35rem',
-                  animation: isFetching ? 'spin 1s linear infinite' : 'none',
-                }}
+                className={`mr-xs ${isFetching ? 'spin' : ''}`}
               />
               {isFetching ? 'Refreshing...' : 'Refresh'}
             </Button>
             <Button variant="primary" size="sm" onClick={openCreateModal}>
-              <Plus size={14} style={{ marginRight: '0.35rem' }} /> Add Banner
+              <Plus size={14} className="mr-xs" /> Add Banner
             </Button>
           </div>
         }
       />
 
       {/* METRICS */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      <div className="csd-stats-grid">
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
@@ -402,7 +322,7 @@ export default function AdminBanners() {
       <Card
         title="Portal Banners & Placement Directory"
         actions={
-          <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+          <span className="portal-subtext-muted fs-sm">
             {banners.length} banners configured
           </span>
         }
@@ -424,10 +344,10 @@ export default function AdminBanners() {
           subtitle="Enter image URL/path and placement settings for dynamic portal display"
           maxWidth="560px"
         >
-          <form onSubmit={handleFormSubmit}>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>
-                Banner Name: <span style={{ color: '#ef4444' }}>*</span>
+          <form onSubmit={handleFormSubmit} className="director-modal-form">
+            <div className="portal-form-group">
+              <label className="director-field-label">
+                Banner Name: <span className="doc-upload-required-star">*</span>
               </label>
               <input
                 type="text"
@@ -435,19 +355,13 @@ export default function AdminBanners() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                style={{
-                  width: '100%',
-                  padding: '0.5rem 0.75rem',
-                  fontSize: '0.85rem',
-                  borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
-                }}
+                className="director-field-input"
               />
             </div>
 
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>
-                Image URL or Path (e.g. /assets/home_page.png or https://...): <span style={{ color: '#ef4444' }}>*</span>
+            <div className="portal-form-group">
+              <label className="director-field-label">
+                Image URL or Path (e.g. /assets/home_page.png or https://...): <span className="doc-upload-required-star">*</span>
               </label>
               <input
                 type="text"
@@ -455,35 +369,20 @@ export default function AdminBanners() {
                 value={formData.imageUrl}
                 onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                 required
-                style={{
-                  width: '100%',
-                  padding: '0.5rem 0.75rem',
-                  fontSize: '0.85rem',
-                  borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
-                }}
+                className="director-field-input"
               />
             </div>
 
             {/* LIVE PREVIEW BOX */}
             {formData.imageUrl && (
-              <div
-                style={{
-                  marginBottom: '1rem',
-                  padding: '0.75rem',
-                  borderRadius: '8px',
-                  background: '#0b1f3a',
-                  border: '1px solid #334155',
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+              <div className="banner-preview-box mb-sm">
+                <div className="portal-subtext-muted fs-xs mb-xs">
                   Live Image Preview
                 </div>
                 <img
                   src={formData.imageUrl}
                   alt="Preview"
-                  style={{ maxHeight: '80px', maxWidth: '100%', objectFit: 'contain' }}
+                  className="banner-preview-img"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
@@ -491,22 +390,15 @@ export default function AdminBanners() {
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div className="checkout-form-row-2 mb-sm">
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>
+                <label className="director-field-label">
                   Position / Slot:
                 </label>
                 <select
                   value={formData.position}
                   onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    fontSize: '0.85rem',
-                    borderRadius: '6px',
-                    border: '1px solid #cbd5e1',
-                    background: '#fff',
-                  }}
+                  className="director-field-input"
                 >
                   <option value="forces_header">Top Header Forces Logo</option>
                   <option value="home_hero">Home Hero Slider</option>
@@ -516,7 +408,7 @@ export default function AdminBanners() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>
+                <label className="director-field-label">
                   Display Order:
                 </label>
                 <input
@@ -525,19 +417,13 @@ export default function AdminBanners() {
                   max="99"
                   value={formData.order}
                   onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value, 10) || 0 })}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem 0.75rem',
-                    fontSize: '0.85rem',
-                    borderRadius: '6px',
-                    border: '1px solid #cbd5e1',
-                  }}
+                  className="director-field-input"
                 />
               </div>
             </div>
 
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>
+            <div className="portal-form-group">
+              <label className="director-field-label">
                 Destination Link URL (Optional):
               </label>
               <input
@@ -545,30 +431,24 @@ export default function AdminBanners() {
                 placeholder="e.g. /products?cat=car or https://..."
                 value={formData.linkUrl}
                 onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '0.5rem 0.75rem',
-                  fontSize: '0.85rem',
-                  borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
-                }}
+                className="director-field-input"
               />
             </div>
 
-            <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="flex-align-center-gap-sm mb-md">
               <input
                 type="checkbox"
                 id="isActiveCheckbox"
                 checked={formData.isActive}
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                className="checkbox-sm"
               />
-              <label htmlFor="isActiveCheckbox" style={{ fontSize: '0.85rem', color: '#1e293b', cursor: 'pointer' }}>
+              <label htmlFor="isActiveCheckbox" className="label-checkbox">
                 Enable banner on public storefront immediately
               </label>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+            <div className="portal-flex-end gap-sm">
               <Button type="button" variant="outline" size="sm" onClick={() => setModalOpen(false)}>
                 Cancel
               </Button>
@@ -593,24 +473,24 @@ export default function AdminBanners() {
           title="Delete Banner"
           maxWidth="460px"
         >
-          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem' }}>
+          <div className="flex-align-center-gap-sm mb-md">
             <AlertTriangle size={24} className="text-danger flex-shrink-0" />
             <div>
-              <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: '#1e293b' }}>
+              <p className="portal-profile-name mb-xs">
                 Are you sure you want to delete banner <strong>"{deleteModalBanner.name}"</strong>?
               </p>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
+              <p className="portal-subtext-muted fs-xs m-0">
                 This graphic will immediately stop appearing on the portal.
               </p>
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+          <div className="portal-flex-end gap-sm">
             <Button variant="outline" size="sm" onClick={() => setDeleteModalBanner(null)}>
               Cancel
             </Button>
             <Button
               size="sm"
-              style={{ background: '#dc2626', color: '#fff', border: 'none', fontWeight: 600 }}
+              className="portal-btn-deny-danger"
               disabled={isDeleting}
               onClick={handleDelete}
             >
