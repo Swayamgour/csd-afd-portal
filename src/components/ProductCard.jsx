@@ -72,7 +72,7 @@ export default function ProductCard({ p, list }) {
           </button>
         </div>
       </div>
-      <div className="card-body">
+      <div className="">
         <p className="brand-l">
           {p.brand} · {p.type}
         </p>
@@ -90,7 +90,7 @@ export default function ProductCard({ p, list }) {
           </p>
         )}
         <div className="card-foot">
-          <p className="price">
+          {/* <p className="price">
             <strong>{priceText(p)}</strong>
             {p.mrp && p.mrp > (p.price || 0) && (
               <>
@@ -98,7 +98,7 @@ export default function ProductCard({ p, list }) {
               </>
             )}
             {!appl && <small>CSD Ex-showroom*</small>}
-          </p>
+          </p> */}
         </div>
         <div className="row">
           <Link className="btn out" to={`/products/${p.id}`}>

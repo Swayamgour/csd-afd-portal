@@ -12,6 +12,11 @@ export function StatusBadge({ status }) {
 
   switch (normalized) {
     case 'approved':
+      variant = 'success';
+      Icon = CheckCircle2;
+      label = 'Approved (Payment Enabled)';
+      break;
+
     case 'completed':
     case 'verified':
     case 'delivered':
@@ -20,6 +25,12 @@ export function StatusBadge({ status }) {
     case 'within_sla':
       variant = 'success';
       Icon = CheckCircle2;
+      break;
+
+    case 'created':
+      variant = 'warning';
+      Icon = Clock;
+      label = 'Pending Depot Approval';
       break;
 
     case 'submitted':
@@ -35,6 +46,11 @@ export function StatusBadge({ status }) {
       break;
 
     case 'payment_pending':
+      variant = 'warning';
+      Icon = Clock;
+      label = 'Payment Verification Pending';
+      break;
+
     case 'pending':
     case 'draft':
     case 'review':
@@ -48,6 +64,7 @@ export function StatusBadge({ status }) {
     case 'supply_order_issued':
       variant = 'primary';
       Icon = Truck;
+      label = 'Supply Order Issued';
       break;
 
     case 'rejected':

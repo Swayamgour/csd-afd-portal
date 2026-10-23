@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Search, RefreshCw, Filter } from 'lucide-react';
+import { RefreshCw, Filter } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
+import CatalogToolbar from '../../components/common/CatalogToolbar.jsx';
+import { ProductCell, CategoryBadge, PriceCell } from '../../components/common/ProductGrid.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useGetProductsQuery, useGetCategoriesQuery } from '../catalog/productApi.js';
 
@@ -34,27 +36,7 @@ export default function UrcProducts() {
     {
       header: 'Product Item',
       accessor: 'name',
-      render: (r) => {
-        const img = r.images?.[0] || r.image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=200';
-        return (
-          <div className="flex items-center gap-3">
-            <img
-              src={img}
-              alt=""
-              className="product-table-thumb"
-              onError={(e) => {
-                e.target.src = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=200';
-              }}
-            />
-            <div>
-              <span className="font-semibold text-xs text-ink block">{r.name}</span>
-              <span className="text-[11px] font-mono text-muted">
-                Index: {r.indexNo || r.sku || 'N/A'} {r.variant ? `· ${r.variant}` : ''}
-              </span>
-            </div>
-          </div>
-        );
-      },
+      render: (r) => <ProductCell product={r} />,
     },
     {
       header: 'Brand / OEM',
@@ -68,26 +50,12 @@ export default function UrcProducts() {
     {
       header: 'Category',
       accessor: 'category',
-      render: (r) => {
-        const catName = r.categoryId?.name || r.category || 'CAR';
-        return (
-          <span className="badge-pill badge-primary badge-sm text-[10px] font-semibold uppercase">
-            {catName}
-          </span>
-        );
-      },
+      render: (r) => <CategoryBadge product={r} />,
     },
     {
       header: 'CSD Concessional Rate',
       accessor: 'priceToCustomer',
-      render: (r) => {
-        const raw = Number(r.priceToCustomer || r.price || (r.lo && r.lo < 1000 ? r.lo * 100000 : r.lo) || 0);
-        return (
-          <span className="font-bold text-xs font-mono text-brand">
-            {formatCurrency(raw)}
-          </span>
-        );
-      },
+      render: (r) => <PriceCell product={r} />,
     },
     {
       header: 'Availability',
@@ -123,32 +91,18 @@ export default function UrcProducts() {
       />
 
       <Card>
-        <div className="catalogue-filter-bar">
-          <div className="catalogue-search-wrapper">
-            <Search className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search by vehicle model, brand, or CSD index..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <div className="catalogue-category-filter">
-            <Filter className="filter-icon" />
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-            >
-              <option value="">All AFD Categories</option>
-              {categories.map((c) => (
-                <option key={c._id || c.code} value={c._id || c.code}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <CatalogToolbar
+          search={searchTerm}
+          onSearchChange={(e) => setSearchTerm(e.target.value)}
+          searchPlaceholder="Search by vehicle model, brand, or CSD index..."
+          category={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+          categories={categories}
+          allLabel="All AFD Categories"
+          onRefresh={() => refetch()}
+          refreshing={isFetching}
+          filterIcon={Filter}
+        />
 
         <DataTable
           columns={columns}

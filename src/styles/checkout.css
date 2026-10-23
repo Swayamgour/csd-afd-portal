@@ -4955,6 +4955,227 @@
   margin-right: 0.35rem;
 }
 
+/* CSD Product Catalogue Directory Styles */
+.csd-products-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.85rem 1.15rem;
+  background-color: var(--color-slate-50);
+  border-bottom: 1px solid var(--color-slate-200);
+  flex-wrap: wrap;
+}
+
+.csd-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.csd-filter-select {
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-slate-300);
+  font-size: 0.8125rem;
+  background: var(--color-white);
+  color: var(--color-slate-700);
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 140px;
+}
+
+.csd-filter-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(30, 79, 216, 0.15);
+}
+
+.csd-btn-reset-filters {
+  background: transparent;
+  border: 1px dashed var(--color-slate-300);
+  color: var(--color-slate-600);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.csd-btn-reset-filters:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.csd-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.csd-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.csd-product-title {
+  color: var(--color-slate-900);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+.csd-product-subtitle {
+  font-size: 0.72rem;
+  color: var(--color-slate-500);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.csd-price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.csd-price-val {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--color-slate-900);
+  white-space: nowrap;
+}
+
+.csd-price-hint {
+  font-size: 0.68rem;
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.csd-mrp-val {
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: var(--color-slate-400);
+  text-decoration: line-through;
+  white-space: nowrap;
+}
+
+.csd-specs-val {
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: var(--color-slate-700);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.csd-fuel-val {
+  font-size: 0.8rem;
+  color: var(--color-slate-700);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.csd-module-page > * + * {
+  margin-top: 1.5rem;
+}
+
+.csd-cat-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 9999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-border);
+}
+
+.csd-count-pill {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-primary-border);
+  display: inline-block;
+}
+
+.csd-btn-action-activate {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  color: #059669;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.csd-btn-action-activate:hover {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.director-field-mono {
+  font-family: monospace;
+  font-size: 0.82rem;
+}
+
+.director-field-price {
+  font-family: monospace;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.director-field-help {
+  font-size: 0.72rem;
+  color: var(--color-slate-500);
+  margin-top: 0.3rem;
+  display: block;
+}
+
+.table-loader-msg {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-slate-600);
+  margin-top: 0.5rem;
+}
+
+.table-empty-title {
+  margin: 0.5rem 0 0.25rem;
+  color: var(--color-slate-700);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+
+
 /* -------------------------------------------------------------
    7. Helpdesk Grievance & SLA Module Enterprise Styles
    ------------------------------------------------------------- */
@@ -8848,4 +9069,130 @@
 
 .stage.zoom .main-img {
   transform-origin: var(--zx, 50%) var(--zy, 50%);
+}
+
+/* ==========================================================================
+   CSD Post-Approval Demand Generation & Payment Unlocking Workflow Styles
+   ========================================================================== */
+.checkout-workflow-notice {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid #1e4fd8;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.checkout-workflow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.checkout-workflow-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkout-workflow-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #dbeafe;
+  color: #1e40af;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.checkout-workflow-desc {
+  font-size: 0.86rem;
+  color: #334155;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+}
+
+.checkout-workflow-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.checkout-workflow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.checkout-workflow-step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #cbd5e1;
+}
+
+.checkout-workflow-step.active .checkout-workflow-step-num {
+  background: #1e4fd8;
+  color: #ffffff;
+  border-color: #1e4fd8;
+}
+
+.checkout-workflow-step.completed .checkout-workflow-step-num {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+}
+
+.checkout-workflow-step-info {
+  flex: 1;
+}
+
+.checkout-workflow-step-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.15rem 0;
+}
+
+.checkout-workflow-step-sub {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.checkout-no-payment-callout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 0.65rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
 }

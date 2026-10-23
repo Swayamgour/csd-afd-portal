@@ -20,7 +20,10 @@ import {
   Plus
 } from 'lucide-react';
 import { useGetDemandsQuery, useCancelDemandMutation } from '../features/demand/demandApi.js';
+import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import { useAuth } from '../context/AuthContext.jsx';
+
+import PaymentDetailsModal from '../components/modals/PaymentDetailsModal.jsx';
 
 export default function Demands() {
   const { user } = useAuth();
@@ -37,6 +40,7 @@ export default function Demands() {
   } = useGetDemandsQuery({ q: searchTerm || undefined });
 
   const [cancelDemand] = useCancelDemandMutation();
+  const [submitDirectTransfer] = useSubmitDirectTransferMutation();
 
   const demands = demandsData?.items || [];
 
@@ -52,10 +56,29 @@ export default function Demands() {
     setPaymentModalOpen(true);
   };
 
-  const handlePaymentSubmitSuccess = async () => {
-    setPaymentModalOpen(false);
-    setSelectedDemandForPayment(null);
-    refetch();
+  const handlePaymentSubmitSuccess = async (paymentPayload) => {
+    try {
+      if (paymentPayload && (paymentPayload.selfAccount?.utr || paymentPayload.utrNumber)) {
+        const targetDemandId = selectedDemandForPayment?._id || selectedDemandForPayment?.id;
+        const utr = paymentPayload.selfAccount?.utr || paymentPayload.utrNumber;
+        const bank = paymentPayload.selfAccount?.bank || paymentPayload.bankName || 'State Bank of India';
+        const date = paymentPayload.selfAccount?.date || paymentPayload.depositDate || new Date().toISOString();
+        const remarks = `Bank Transfer UTR: ${utr} (${bank}). Amount: ₹${paymentPayload.totalPaid || selectedDemandForPayment?.totalAmount}`;
+
+        await submitDirectTransfer({
+          demandId: targetDemandId,
+          utrNumber: utr,
+          bankName: bank,
+          depositDate: date,
+          remarks,
+        }).unwrap();
+      }
+      setPaymentModalOpen(false);
+      setSelectedDemandForPayment(null);
+      refetch();
+    } catch (e) {
+      alert(e?.data?.message || e.message || 'Error submitting payment details');
+    }
   };
 
   const handleCancelDemand = async (demandId) => {
@@ -76,7 +99,7 @@ export default function Demands() {
       case 'COMPLETED':
         return { className: 'status-badge-delivered', label: 'Completed' };
       case 'APPROVED':
-        return { className: 'status-badge-issued', label: 'Approved' };
+        return { className: 'status-badge-issued', label: 'Approved (Payment Enabled)' };
       case 'SUPPLY_ORDER_ISSUED':
         return { className: 'status-badge-issued', label: 'Supply Order Issued' };
       case 'DEPOT_PROCESSING':
@@ -88,9 +111,9 @@ export default function Demands() {
       case 'PAID':
         return { className: 'status-badge-issued', label: 'Paid' };
       case 'PAYMENT_PENDING':
-        return { className: 'status-badge-pending', label: 'Payment Pending' };
+        return { className: 'status-badge-pending', label: 'Payment Verification' };
       case 'CREATED':
-        return { className: 'status-badge-default', label: 'Created' };
+        return { className: 'status-badge-onhold', label: 'Pending Depot Approval' };
       case 'REJECTED':
       case 'CANCELLED':
       case 'EXPIRED':
@@ -285,7 +308,7 @@ export default function Demands() {
                         <div className="demands-action-stack">
                           {/* View Button */}
                           <Link
-                            to={`/demands/${encodeURIComponent(d.id)}`}
+                            to={`/demands/${encodeURIComponent(d._id || d.id)}`}
                             className="btn-action-view"
                           >
                             View
@@ -293,45 +316,37 @@ export default function Demands() {
 
                           {/* Summary Sheet Button */}
                           <button
-                            onClick={() => alert(`Summary Sheet for demand ${d.id} is being generated.`)}
+                            onClick={() => alert(`Summary Sheet for demand ${d.demandNo || d._id || d.id} is being generated.`)}
                             className="btn-action-summary"
                           >
                             Summary Sheet
                           </button>
 
-                          {/* Upload Payment Receipt Button (Only for On hold / Direct Transfer) */}
-                          {d.status?.toLowerCase() === 'on hold' && (
-                            <>
-                              <button
-                                onClick={() => handleOpenPaymentModal(d)}
-                                className="btn-action-view demand-action-upload-btn"
-                              >
-                                Upload Payment Receipt
-                              </button>
+                          {/* Payment / UTR upload (enabled once Depot approves) */}
+                          {(['APPROVED', 'PAYMENT_PENDING', 'ON HOLD'].includes((d.status || '').toUpperCase()) && d.paymentStatus !== 'PAID') && (
+                            <button
+                              onClick={() => handleOpenPaymentModal(d)}
+                              className="btn-action-upload-details"
+                              style={{ fontWeight: 700, background: '#16a34a', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #15803d' }}
+                            >
+                              <CreditCard size={13} /> Pay Now / Upload UTR
+                            </button>
+                          )}
 
-                              {/* Upload Payment Details (Yellow-Green button as in Fig. 20) */}
-                              <button
-                                onClick={() => handleOpenPaymentModal(d)}
-                                className="btn-action-upload-details"
-                              >
-                                Upload Payment Details
-                              </button>
-
-                              {/* Submit Demand To CSD */}
-                              <button
-                                onClick={() => {
-                                  alert(`Please upload payment details before submitting to CSD Depot.`);
-                                }}
-                                className="btn-action-view demand-action-submit-btn"
-                              >
-                                Submit Demand To CSD
-                              </button>
-                            </>
+                          {/* Pre-payment waiting indicator */}
+                          {(d.status || '').toUpperCase() === 'CREATED' && (
+                            <span
+                              className="checkout-spec-pill"
+                              style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+                              title="Payment link opens once Depot approves this demand"
+                            >
+                              <Clock size={12} /> Awaiting Depot Sanction
+                            </span>
                           )}
 
                           {/* Cancel Demand */}
                           <button
-                            onClick={() => handleCancelDemand(d.id)}
+                            onClick={() => handleCancelDemand(d._id || d.id)}
                             className="btn-action-cancel"
                           >
                             Cancel Demand

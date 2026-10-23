@@ -791,7 +791,7 @@ export default function AdminAddUser() {
                 </div>
 
                 {/* Rate Our Website (rate_our_website) */}
-                <div className="col-span-2">
+                {/* <div className="col-span-2">
                   <label className="form-label" htmlFor="acf-field_656576103136d">
                     Rate Our Website: <strong>{rateOurWebsite}</strong> / 5
                   </label>
@@ -828,7 +828,7 @@ export default function AdminAddUser() {
                       ))}
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Feedback Comment (feedback_comment) */}
                 <div className="col-span-2">

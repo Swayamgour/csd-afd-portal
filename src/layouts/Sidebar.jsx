@@ -33,15 +33,17 @@ export default function Sidebar({
         {/* Brand / Logo Area */}
         <div className="sidebar-brand between">
           <Link to="/" className="sidebar-brand-link row align-center gap-1">
-            <span className="sidebar-emblem" aria-hidden="true">
+            <img src='/assets/logo.png' width='200' alt="CSD AFD Logo" style={{ borderRadius: '5px' }} />
+
+            {/* <span className="sidebar-emblem" aria-hidden="true">
               <ShieldCheck size={20} />
-            </span>
-            {!collapsed && (
+            </span> */}
+            {/* {!collapsed && (
               <div className="sidebar-brand-text">
                 <span className="sidebar-brand-main font-bold block">CSD AFD</span>
                 <span className="sidebar-brand-sub muted small block">Enterprise Portal</span>
               </div>
-            )}
+            )} */}
           </Link>
 
           {/* Mobile close button */}

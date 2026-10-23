@@ -28,7 +28,7 @@ export function Modal({
 
   return createPortal(
     <div
-      className="modal-backdrop"
+      className="modal-backdrop admin-portal"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

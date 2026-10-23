@@ -95,8 +95,13 @@ export default function DepotDemands() {
     if (!activeDemand) return;
     try {
       const targetId = activeDemand._id || activeDemand.id;
-      await approveDemand({ id: targetId, remarks: note }).unwrap();
-      showToast(`Demand ${activeDemand.demandNo || activeDemand.id} Approved! Status changed to “Supply Order Issued.” Handed over to URC.`);
+      const isPrePayment = (activeDemand.status || '').toUpperCase() === 'CREATED' || (!activeDemand.paymentStatus || activeDemand.paymentStatus === 'UNPAID');
+      await approveDemand({ id: targetId, note, remarks: note }).unwrap();
+      if (isPrePayment) {
+        showToast(`Demand ${activeDemand.demandNo || activeDemand.id} Approved! Payment link has been enabled for the beneficiary.`);
+      } else {
+        showToast(`Payment Verified! Local Supply Order issued for ${activeDemand.demandNo || activeDemand.id} and handed over to URC.`);
+      }
       closeModal();
     } catch (e) {
       alert(e?.data?.message || e.message || 'Error approving demand');
@@ -356,7 +361,7 @@ export default function DepotDemands() {
                   dateOfPayment: iDate
                 };
 
-                const isProcessed = ['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued', 'APPROVED', 'Approved'].includes(demand.status);
+                const isProcessed = ['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued'].includes(demand.status);
                 const isRejected = ['REJECTED', 'Rejected'].includes(demand.status);
 
                 return (
@@ -478,48 +483,54 @@ export default function DepotDemands() {
                     <td className="td-pay-beneficiary">
                       <div className="depot-beneficiary-payment-box">
                         <p className="depot-pay-method-header">
-                          Payment method: <span className="font-semibold">{demand.paymentMethod || (demand.loan?.isLoan ? 'Bank Loan' : 'Direct bank transfer')}</span>
+                          Payment status: <span className="font-semibold">{demand.paymentStatus || 'UNPAID'}</span>
                         </p>
 
-                        <div className="depot-beneficiary-card">
-                          <div className="depot-pay-card-title">Payment from Beneficiary</div>
-                          <div className="depot-pay-row">
-                            <span>Bank</span>
-                            <span>{benPay.bank}</span>
+                        {(demand.status === 'CREATED' && (!demand.paymentStatus || demand.paymentStatus === 'UNPAID')) ? (
+                          <div className="depot-beneficiary-card" style={{ background: '#f8fafc', borderColor: '#e2e8f0', textAlign: 'center', padding: '12px 8px' }}>
+                            <span className="checkout-spec-pill" style={{ background: '#fef3c7', color: '#92400e', marginBottom: '6px', display: 'inline-block' }}>
+                              Pre-Payment Approval Stage
+                            </span>
+                            <div className="micro muted" style={{ lineHeight: 1.4 }}>
+                              Demand lodged without upfront payment.<br />
+                              Click <strong>Approve Demand</strong> to grant sanction and enable payment for beneficiary.
+                            </div>
                           </div>
-                          <div className="depot-pay-row">
-                            <span>First Account Holder</span>
-                            <span>{benPay.firstAccountHolder}</span>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>Account Number</span>
-                            <span>{benPay.accountNumber}</span>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>IFSC</span>
-                            <span>{benPay.ifsc}</span>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>UTR</span>
-                            <span className="text-brand font-semibold">{benPay.utr}</span>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>Amount Paid</span>
-                            <span className="font-bold">₹{Number(benPay.amountPaid || 0).toLocaleString('en-IN')}</span>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>Date of Payment</span>
-                            <span>{benPay.dateOfPayment}</span>
-                          </div>
-                        </div>
+                        ) : (
+                          <>
+                            <div className="depot-beneficiary-card">
+                              <div className="depot-pay-card-title">Payment from Beneficiary</div>
+                              <div className="depot-pay-row">
+                                <span>Bank</span>
+                                <span>{benPay.bank}</span>
+                              </div>
+                              <div className="depot-pay-row">
+                                <span>Account Holder</span>
+                                <span>{benPay.firstAccountHolder}</span>
+                              </div>
+                              <div className="depot-pay-row">
+                                <span>UTR</span>
+                                <strong className="text-brand">{benPay.utr}</strong>
+                              </div>
+                              <div className="depot-pay-row">
+                                <span>Amount Paid</span>
+                                <span className="font-bold">₹{Number(benPay.amountPaid || 0).toLocaleString('en-IN')}</span>
+                              </div>
+                              <div className="depot-pay-row">
+                                <span>Date of Payment</span>
+                                <span>{benPay.dateOfPayment}</span>
+                              </div>
+                            </div>
 
-                        <button
-                          type="button"
-                          className="btn-depot-payment-receipt"
-                          onClick={() => openModal(demand, 'receipt')}
-                        >
-                          Payment Receipt
-                        </button>
+                            <button
+                              type="button"
+                              className="btn-depot-payment-receipt"
+                              onClick={() => openModal(demand, 'receipt')}
+                            >
+                              Payment Receipt
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
 
@@ -557,10 +568,14 @@ export default function DepotDemands() {
                         </div>
                       ) : (
                         <div className="depot-csd-payment-empty">
-                          <span className="small muted">Payment details not recorded by CSD yet.</span>
-                          <span className="micro muted block mt-05">
-                            Click <strong>"Payment Received By CSD"</strong> under Action to fill.
+                          <span className="small muted">
+                            {demand.status === 'CREATED' ? 'Awaiting initial demand approval.' : 'Payment details not recorded by CSD yet.'}
                           </span>
+                          {demand.status !== 'CREATED' && (
+                            <span className="micro muted block mt-05">
+                              Click <strong>"Payment Received By CSD"</strong> under Action to fill.
+                            </span>
+                          )}
                         </div>
                       )}
                     </td>
@@ -576,9 +591,17 @@ export default function DepotDemands() {
                           <span className="depot-status-pill status-rejected depot-pill-rejected">
                             Rejected
                           </span>
+                        ) : demand.status === 'CREATED' ? (
+                          <span className="depot-status-pill status-onhold depot-pill-processing" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}>
+                            Pending Scrutiny
+                          </span>
+                        ) : demand.status === 'APPROVED' ? (
+                          <span className="depot-status-pill badge-verified-pill depot-pill-processing" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}>
+                            Approved (Awaiting Payment)
+                          </span>
                         ) : (
                           <span className="depot-status-pill status-processing depot-pill-processing">
-                            {demand.status === 'CREATED' ? 'Payment Pending' : 'Processing'}
+                            {demand.status === 'PAYMENT_PENDING' ? 'Payment Verification' : demand.status}
                           </span>
                         )}
 
@@ -592,39 +615,74 @@ export default function DepotDemands() {
                       </div>
                     </td>
 
-                    {/* 6. Action Column (Exact 6 buttons from Fig. 3 & Fig. 4) */}
+                    {/* 6. Action Column */}
                     <td className="td-action">
                       <div className="depot-action-btn-stack">
-                        {/* 1. Payment Received By CSD (Fig. 5) */}
-                        <button
-                          type="button"
-                          className="btn-depot-action btn-action-payment-received"
-                          onClick={() => openModal(demand, 'payment')}
-                          title="Enter Payment details, received by CSD (Fig. 5)"
-                        >
-                          Payment Received By CSD
-                        </button>
+                        {demand.status === 'CREATED' ? (
+                          <button
+                            type="button"
+                            className="btn-depot-action btn-action-approve"
+                            style={{ background: '#16a34a', color: '#fff', fontWeight: 700 }}
+                            onClick={() => openModal(demand, 'approve')}
+                            title="Scrutinize documents and approve demand to enable payment option for beneficiary"
+                          >
+                            ✓ Approve Demand (Grant Sanction)
+                          </button>
+                        ) : demand.status === 'APPROVED' ? (
+                          <>
+                            <div
+                              className="checkout-spec-pill"
+                              style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '6px 8px', fontSize: '11px', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}
+                            >
+                              ✓ Sanction Granted<br />
+                              <span style={{ fontSize: '10px', color: '#059669', fontWeight: 500 }}>Awaiting Beneficiary Payment / UTR</span>
+                            </div>
 
-                        {/* 2. Upload Local Supply Order (Fig. 6) */}
-                        <button
-                          type="button"
-                          className="btn-depot-action btn-action-upload-supply"
-                          onClick={() => openModal(demand, 'upload')}
-                          title="Upload Official Receipt, Supply Order, and Authority Letter (Fig. 6)"
-                        >
-                          Upload Local Supply Order
-                        </button>
+                            <button
+                              type="button"
+                              className="btn-depot-action btn-action-payment-received"
+                              onClick={() => openModal(demand, 'payment')}
+                              title="Enter Payment details received directly by CSD (Fig. 5)"
+                              style={{ marginTop: '4px' }}
+                            >
+                              Record Payment Received By CSD
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            {/* 1. Payment Received By CSD (Fig. 5) */}
+                            <button
+                              type="button"
+                              className="btn-depot-action btn-action-payment-received"
+                              onClick={() => openModal(demand, 'payment')}
+                              title="Enter Payment details, received by CSD (Fig. 5)"
+                            >
+                              Payment Received By CSD
+                            </button>
 
-                        {/* 3. Approve */}
-                        <button
-                          type="button"
-                          className="btn-depot-action btn-action-approve"
-                          onClick={() => openModal(demand, 'approve')}
-                          disabled={isProcessed}
-                          title="Approve order after Step 4 offline checks"
-                        >
-                          Approve
-                        </button>
+                            {/* 2. Upload Local Supply Order (Fig. 6) */}
+                            <button
+                              type="button"
+                              className="btn-depot-action btn-action-upload-supply"
+                              onClick={() => openModal(demand, 'upload')}
+                              title="Upload Official Receipt, Supply Order, and Authority Letter (Fig. 6)"
+                            >
+                              Upload Local Supply Order
+                            </button>
+
+                            {/* 3. Approve & Issue Supply Order */}
+                            <button
+                              type="button"
+                              className="btn-depot-action btn-action-approve"
+                              onClick={() => openModal(demand, 'approve')}
+                              disabled={isProcessed}
+                              style={!isProcessed ? { background: '#2563eb', color: '#fff', fontWeight: 700 } : {}}
+                              title="Issue Local Supply Order after verifying payment"
+                            >
+                              {isProcessed ? 'Supply Order Issued' : '✓ Verify Payment & Issue Supply Order'}
+                            </button>
+                          </>
+                        )}
 
                         {/* 4. Reject */}
                         <button

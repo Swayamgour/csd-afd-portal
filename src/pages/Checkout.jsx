@@ -22,13 +22,7 @@ import {
 import { useAuth } from '../context/AuthContext.jsx';
 import { DocumentUpload } from '../components/common/DocumentUpload.jsx';
 import { DemandConfirmationModal } from '../components/modals/DemandConfirmationModal.jsx';
-import { OnlinePaymentModal } from '../components/modals/OnlinePaymentModal.jsx';
 import { useCreateDemandMutation } from '../features/demand/demandApi.js';
-import {
-  useCreatePaymentMutation,
-  useVerifyPaymentMutation,
-  useSubmitDirectTransferMutation,
-} from '../features/payment/paymentApi.js';
 import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
 import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery } from '../features/org/orgApi.js';
 import { INDIAN_STATES, PAY_LEVELS } from '../data/mock/locations.mock.js';
@@ -40,9 +34,6 @@ export default function Checkout() {
 
   const { data: profileData } = useGetMyProfileQuery();
   const [createDemandMutation, { isLoading: isCreatingDemand }] = useCreateDemandMutation();
-  const [createPaymentMutation, { isLoading: isCreatingPayment }] = useCreatePaymentMutation();
-  const [verifyPaymentMutation, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
-  const [submitDirectTransferMutation, { isLoading: isSubmittingDirectTransfer }] = useSubmitDirectTransferMutation();
   const [uploadFileMutation] = useUploadFileMutation();
 
   const { data: priceZonesList = [] } = useGetPriceZonesQuery();
@@ -127,19 +118,10 @@ export default function Checkout() {
   const [loanAmount, setLoanAmount] = useState('');
   const [loanSanctionFile, setLoanSanctionFile] = useState(null);
 
-  // Payment Details State
-  const [paymentMode, setPaymentMode] = useState('Direct Bank Transfer'); // Direct Bank Transfer / Online Payment
-  const [utrNumber, setUtrNumber] = useState('');
-  const [bankName, setBankName] = useState('State Bank of India');
-  const [depositDate, setDepositDate] = useState(() => new Date().toISOString().split('T')[0]);
+  // Remarks & Submission states
   const [remarks, setRemarks] = useState('');
-  const [pendingDemand, setPendingDemand] = useState(null);
-  const [gatewayOrderId, setGatewayOrderId] = useState('');
-
-  // Modals & Validation states
   const [formErrors, setFormErrors] = useState({});
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
-  const [onlineModalOpen, setOnlineModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // If no product in state or session, show clean empty state
@@ -211,13 +193,6 @@ export default function Checkout() {
       errs.dealerPrice = 'Dealer Price and Net Price to be Paid must be the same.';
     }
 
-    // Direct Bank Transfer validation
-    if (paymentMode === 'Direct Bank Transfer') {
-      if (!utrNumber.trim()) {
-        errs.utrNumber = 'Bank UTR / Transaction Reference Number is required for Direct Bank Transfer.';
-      }
-    }
-
     // Loan Validation
     if (hasLoan === 'Yes') {
       const lAmt = Number(loanAmount) || 0;
@@ -234,12 +209,6 @@ export default function Checkout() {
     e.preventDefault();
     if (!validateCheckoutForm()) {
       window.scrollTo({ top: 400, behavior: 'smooth' });
-      return;
-    }
-
-    // Direct Bank Transfer or Online Payment
-    if (paymentMode === 'Online Payment' && hasLoan === 'Yes') {
-      alert('Online payment method can only be used if loan is not availed. Please select Direct Bank Transfer.');
       return;
     }
 
@@ -320,7 +289,7 @@ export default function Checkout() {
           pinCode: pincode || '110010',
           mobile: userAccount.mobile || user?.mobile || '',
         },
-        paymentMethod: paymentMode || 'Direct Bank Transfer',
+        paymentMethod: 'Pending Depot Approval',
         documents: uploadedDocs,
         loan: {
           isLoan: hasLoan === 'Yes',
@@ -328,34 +297,11 @@ export default function Checkout() {
           bankName: hasLoan === 'Yes' ? 'Nationalized / Armed Forces Bank' : '',
           sanctionLetterUrl,
         },
-        remarks: remarks || 'AFD Demand generated via Online Portal',
+        remarks: remarks || 'AFD Demand generated via Online Portal (Pending Depot Approval)',
       };
 
       const result = await createDemandMutation(demandPayload).unwrap();
       const createdDemand = result?.data || result;
-
-      if (paymentMode === 'Online Payment') {
-        // Initiate real payment on backend
-        const payRes = await createPaymentMutation({
-          demandId: createdDemand._id,
-        }).unwrap();
-        const payData = payRes?.data || payRes;
-
-        setPendingDemand(createdDemand);
-        setGatewayOrderId(payData.gatewayOrderId || '');
-        setSubmitting(false);
-        setOnlineModalOpen(true);
-        return;
-      }
-
-      // Direct Bank Transfer path: record transfer details strictly on server
-      await submitDirectTransferMutation({
-        demandId: createdDemand._id,
-        utrNumber: utrNumber.trim(),
-        bankName: bankName || 'State Bank of India',
-        depositDate: depositDate || new Date().toISOString(),
-        remarks: remarks || 'Direct bank transfer reference submitted at checkout',
-      }).unwrap();
 
       setSubmitting(false);
 
@@ -371,9 +317,9 @@ export default function Checkout() {
         productName: product.productName,
         dealerName: dealerInfo.name,
         dealerAddress: dealerInfo.address,
-        paymentMethod: 'Direct Bank Transfer',
-        status: 'PAYMENT_PENDING',
-        paymentStatus: 'PENDING_VERIFICATION',
+        paymentMethod: 'Pending Depot Approval',
+        status: 'CREATED',
+        paymentStatus: 'UNPAID',
       };
 
       sessionStorage.setItem('csd_last_created_demand', JSON.stringify(finalDemandData));
@@ -381,45 +327,6 @@ export default function Checkout() {
     } catch (err) {
       setSubmitting(false);
       alert(err?.data?.message || err?.message || 'Failed to submit demand.');
-    }
-  };
-
-  const handleOnlinePaymentSuccess = async (paymentDetails) => {
-    setOnlineModalOpen(false);
-    setSubmitting(true);
-    try {
-      if (!pendingDemand?._id) throw new Error('Missing demand ID for payment verification');
-
-      await verifyPaymentMutation({
-        demandId: pendingDemand._id,
-        gatewayOrderId: paymentDetails.gatewayOrderId || gatewayOrderId,
-        gatewayPaymentId: paymentDetails.gatewayPaymentId,
-        gatewaySignature: paymentDetails.gatewaySignature,
-      }).unwrap();
-
-      const finalDemandData = {
-        ...pendingDemand,
-        id: pendingDemand.demandNo || pendingDemand._id,
-        demandNo: pendingDemand.demandNo || pendingDemand._id?.slice(-8).toUpperCase(),
-        csdPrice: pendingDemand.totalPrice || netPrice,
-        subtotal,
-        additionalCost,
-        cess,
-        incidentalCharges,
-        productName: product.productName,
-        dealerName: dealerInfo.name,
-        dealerAddress: dealerInfo.address,
-        paymentMethod: 'Online Payment (Razorpay)',
-        status: 'PAID',
-        paymentStatus: 'PAID',
-      };
-
-      sessionStorage.setItem('csd_last_created_demand', JSON.stringify(finalDemandData));
-      navigate('/checkout/success', { state: { demand: finalDemandData } });
-    } catch (err) {
-      alert(err?.data?.message || err?.message || 'Payment verification failed on server.');
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -442,9 +349,9 @@ export default function Checkout() {
           {[
             { step: 1, label: 'Product Selection', state: 'completed' },
             { step: 2, label: 'Eligibility Verified', state: 'completed' },
-            { step: 3, label: 'Checkout Details', state: 'current' },
-            { step: 4, label: 'Payment Execution', state: 'upcoming' },
-            { step: 5, label: 'Confirmation / Supply Order', state: 'upcoming' }
+            { step: 3, label: 'Demand Lodgement', state: 'current' },
+            { step: 4, label: 'Depot Approval', state: 'upcoming' },
+            { step: 5, label: 'Payment & Supply Order', state: 'upcoming' }
           ].map((s, idx) => (
             <div key={s.step} className="checkout-step-item">
               <div className={`checkout-step-badge ${s.state}`}>
@@ -988,112 +895,69 @@ export default function Checkout() {
                   )}
                 </div>
 
-                {/* Mode of Payment (Fig. 15) */}
-                <div className="csd-form-group">
-                  <label className="csd-form-label">
-                    Mode of Payment <span className="doc-upload-required-star">*</span>
-                  </label>
-                  <div className="checkout-form-row-2">
-                    {/* Direct Bank Transfer */}
-                    <div
-                      onClick={() => setPaymentMode('Direct Bank Transfer')}
-                      className={`checkout-radio-card ${paymentMode === 'Direct Bank Transfer' ? 'active' : ''}`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMode"
-                        checked={paymentMode === 'Direct Bank Transfer'}
-                        onChange={() => setPaymentMode('Direct Bank Transfer')}
-                      />
-                      <div>
-                        <div className="checkout-radio-card-title">Direct Bank Transfer</div>
-                        <div className="csd-form-helper-text">Deposit via NEFT/RTGS to CSD Public Fund Account</div>
+                {/* 4. Demand Processing & Depot Sanction Workflow */}
+                <div className="checkout-workflow-notice">
+                  <div className="checkout-workflow-header">
+                    <h4>
+                      <ShieldCheck size={18} color="#1e4fd8" />
+                      4. Depot Scrutiny & Post-Approval Payment Workflow
+                    </h4>
+                    <span className="checkout-workflow-badge">
+                      No Upfront Payment Required
+                    </span>
+                  </div>
+
+                  <p className="checkout-workflow-desc">
+                    Under statutory CSD guidelines, <strong>no payment is collected at checkout</strong>. Your demand will first be submitted to the Sanctioning Depot for document and entitlement scrutiny. Once approved by Depot Officials, the payment option will be enabled on your demand dashboard.
+                  </p>
+
+                  <div className="checkout-workflow-timeline">
+                    <div className="checkout-workflow-step active">
+                      <div className="checkout-workflow-step-num">1</div>
+                      <div className="checkout-workflow-step-info">
+                        <div className="checkout-workflow-step-title">Demand Generation (Current Step)</div>
+                        <div className="checkout-workflow-step-sub">Lodging demand with availability certificate & KYC documents.</div>
                       </div>
                     </div>
 
-                    {/* Online Payment */}
-                    <div
-                      onClick={() => {
-                        if (hasLoan === 'Yes') {
-                          alert('Online payment method can only be used if loan is not availed.');
-                          return;
-                        }
-                        setPaymentMode('Online Payment');
-                      }}
-                      className={`checkout-radio-card ${paymentMode === 'Online Payment' ? 'active' : ''} ${hasLoan === 'Yes' ? 'disabled-faded' : ''}`}
-                    >
-                      <input
-                        type="radio"
-                        name="paymentMode"
-                        checked={paymentMode === 'Online Payment'}
-                        disabled={hasLoan === 'Yes'}
-                        onChange={() => setPaymentMode('Online Payment')}
-                      />
-                      <div>
-                        <div className="checkout-radio-card-title">Online Payment</div>
-                        <div className="csd-form-helper-text">
-                          Instant checkout via Razorpay (Not available with loan)
-                        </div>
+                    <div className="checkout-workflow-step">
+                      <div className="checkout-workflow-step-num">2</div>
+                      <div className="checkout-workflow-step-info">
+                        <div className="checkout-workflow-step-title">Depot Review & Approval</div>
+                        <div className="checkout-workflow-step-sub">Depot Officer scrutinizes application and grants sanction.</div>
                       </div>
                     </div>
+
+                    <div className="checkout-workflow-step">
+                      <div className="checkout-workflow-step-num">3</div>
+                      <div className="checkout-workflow-step-info">
+                        <div className="checkout-workflow-step-title">Payment Unlocked & UTR Upload</div>
+                        <div className="checkout-workflow-step-sub">Payment button activates. Pay online or deposit via NEFT/RTGS and upload UTR.</div>
+                      </div>
+                    </div>
+
+                    <div className="checkout-workflow-step">
+                      <div className="checkout-workflow-step-num">4</div>
+                      <div className="checkout-workflow-step-info">
+                        <div className="checkout-workflow-step-title">Depot Payment Verification</div>
+                        <div className="checkout-workflow-step-sub">Depot verifies payment and generates Official CSD Receipt.</div>
+                      </div>
+                    </div>
+
+                    <div className="checkout-workflow-step">
+                      <div className="checkout-workflow-step-num">5</div>
+                      <div className="checkout-workflow-step-info">
+                        <div className="checkout-workflow-step-title">Local Supply Order Issued</div>
+                        <div className="checkout-workflow-step-sub">Supply Order dispatched to parent URC for vehicle/item delivery.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="checkout-no-payment-callout">
+                    <CheckCircle2 size={16} />
+                    <span>You will receive an SMS & Email notification once the Depot approves your demand to initiate payment.</span>
                   </div>
                 </div>
-
-                {/* Direct Bank Transfer Details (UTR, Bank Name, Deposit Date) */}
-                {paymentMode === 'Direct Bank Transfer' && (
-                  <div className="previous-purchase-date-box mb-3">
-                    <div className="csd-alert-banner info mb-3">
-                      <Landmark size={18} className="alert-banner-icon" />
-                      <div>
-                        <strong>Bank Transfer Particulars</strong>
-                        <p className="mb-0 text-xs">Beneficiaries must transfer funds to the CSD Public Fund Account and enter their transaction reference (UTR) below for depot verification.</p>
-                      </div>
-                    </div>
-                    <div className="checkout-form-row-2">
-                      <div className="csd-form-group">
-                        <label className="csd-form-label">
-                          Depositing Bank <span className="doc-upload-required-star">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          className="csd-form-input"
-                          value={bankName}
-                          onChange={(e) => setBankName(e.target.value)}
-                          placeholder="e.g. State Bank of India"
-                        />
-                      </div>
-                      <div className="csd-form-group">
-                        <label className="csd-form-label">
-                          Date of Transfer / Deposit <span className="doc-upload-required-star">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          className="csd-form-input"
-                          value={depositDate}
-                          onChange={(e) => setDepositDate(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div className="csd-form-group mt-2">
-                      <label className="csd-form-label">
-                        Bank UTR / Transaction Reference Number <span className="doc-upload-required-star">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        className={`csd-form-input ${formErrors.utrNumber ? 'has-error' : ''}`}
-                        value={utrNumber}
-                        onChange={(e) => setUtrNumber(e.target.value)}
-                        placeholder="Enter 16-22 character UTR / NEFT / RTGS Reference Number"
-                        required
-                      />
-                      {formErrors.utrNumber && (
-                        <span className="csd-form-error-text">
-                          <AlertCircle size={14} /> {formErrors.utrNumber}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 {/* Additional Remarks (Fig. 15) */}
                 <div className="csd-form-group">
@@ -1238,8 +1102,14 @@ export default function Checkout() {
                 className={`btn-submit-demand ${isPendingApproval ? 'btn-disabled-login' : ''}`}
                 title={isPendingApproval ? 'Your account is pending approval. Demand generation is unavailable until approval.' : undefined}
               >
-                {submitting ? 'Processing Demand...' : isPendingApproval ? 'ACCOUNT APPROVAL PENDING' : 'Submit Demand'}
+                {submitting ? 'Generating Demand...' : isPendingApproval ? 'ACCOUNT APPROVAL PENDING' : 'Submit Demand for Depot Approval'}
               </button>
+
+              <div className="text-center mt-2">
+                <span className="checkout-spec-pill badge-green-pill" style={{ display: 'inline-flex', padding: '4px 10px', fontSize: '11px', fontWeight: 600 }}>
+                  ✓ No Payment Required at Checkout
+                </span>
+              </div>
 
               {isPendingApproval && (
                 <p className="csd-form-error-text error-text-center mt-2">
@@ -1280,20 +1150,9 @@ export default function Checkout() {
           urc: product.selectedUrc,
           priceZone: product.selectedZone,
           netPrice,
-          paymentMethod: paymentMode
+          paymentMethod: 'Post Depot Approval'
         }}
         loading={submitting}
-      />
-
-      {/* Real Online Payment Gateway Modal */}
-      <OnlinePaymentModal
-        isOpen={onlineModalOpen}
-        onClose={() => setOnlineModalOpen(false)}
-        onSuccess={handleOnlinePaymentSuccess}
-        amount={pendingDemand?.totalAmount || netPrice}
-        demandNo={pendingDemand?.demandNo || ''}
-        productName={product?.productName || ''}
-        gatewayOrderId={gatewayOrderId}
       />
     </div>
   );

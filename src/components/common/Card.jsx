@@ -20,7 +20,7 @@ export function Card({
           {actions && <div className="card-actions">{actions}</div>}
         </div>
       )}
-      <div className={`card-body ${bodyClassName}`}>{children}</div>
+      <div className={` ${bodyClassName}`}>{children}</div>
     </div>
   );
 }

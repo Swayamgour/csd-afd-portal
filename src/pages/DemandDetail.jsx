@@ -22,9 +22,11 @@ import {
   Check,
   XCircle,
   Landmark,
-  BadgeCheck
+  BadgeCheck,
+  Lock
 } from 'lucide-react';
 import { useGetDemandByIdQuery } from '../features/demand/demandApi.js';
+import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal.jsx';
 import DocumentPreviewModal from '../components/common/DocumentPreviewModal.jsx';
 
@@ -40,15 +42,35 @@ export default function DemandDetail() {
     refetch: fetchDemand,
   } = useGetDemandByIdQuery(id);
 
+  const [submitDirectTransfer] = useSubmitDirectTransferMutation();
   const demand = demandData?.data || demandData;
 
   // Payment upload modal
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [previewDoc, setPreviewDoc] = useState(null);
 
-  const handlePaymentSubmitSuccess = async () => {
-    setPaymentModalOpen(false);
-    fetchDemand();
+  const handlePaymentSubmitSuccess = async (paymentPayload) => {
+    try {
+      if (paymentPayload && (paymentPayload.selfAccount?.utr || paymentPayload.utrNumber)) {
+        const targetDemandId = demand._id || demand.id;
+        const utr = paymentPayload.selfAccount?.utr || paymentPayload.utrNumber;
+        const bank = paymentPayload.selfAccount?.bank || paymentPayload.bankName || 'State Bank of India';
+        const date = paymentPayload.selfAccount?.date || paymentPayload.depositDate || new Date().toISOString();
+        const remarks = `Bank Transfer UTR: ${utr} (${bank}). Amount: ₹${paymentPayload.totalPaid || demand.totalAmount}`;
+
+        await submitDirectTransfer({
+          demandId: targetDemandId,
+          utrNumber: utr,
+          bankName: bank,
+          depositDate: date,
+          remarks,
+        }).unwrap();
+      }
+      setPaymentModalOpen(false);
+      fetchDemand();
+    } catch (e) {
+      alert(e?.data?.message || e.message || 'Error submitting payment details');
+    }
   };
 
   if (loading) {
@@ -84,24 +106,20 @@ export default function DemandDetail() {
   const netAmount = demand.totalAmount || demand.unitPrice || 0;
   const paymentsList = demand.payments || [];
 
-  // Canonical lifecycle steps
+  // Canonical lifecycle steps matching Depot Approval before Payment
   const canonicalTimeline = [
-    { key: 'CREATED', label: 'Demand Created', sub: 'Beneficiary demand registered' },
-    { key: 'PAYMENT_PENDING', label: 'Payment Pending', sub: 'Awaiting payment verification' },
-    { key: 'PAID', label: 'Payment Verified', sub: 'Funds confirmed in CSD Fund' },
-    { key: 'DEALER_VERIFICATION', label: 'Dealer Verification', sub: 'Chassis & vehicle allocation' },
-    { key: 'DEPOT_PROCESSING', label: 'Depot Processing', sub: 'Regional Depot officer review' },
-    { key: 'APPROVED', label: 'Approved', sub: 'Supply Order sanctioned' },
-    { key: 'COMPLETED', label: 'Delivered', sub: 'Vehicle delivered to beneficiary' },
+    { key: 'CREATED', label: '1. Demand Lodged', sub: 'Demand lodged without upfront payment' },
+    { key: 'APPROVED', label: '2. Depot Approval', sub: 'Eligibility & documents sanctioned by Depot' },
+    { key: 'PAYMENT_PENDING', label: '3. Payment & UTR', sub: 'Beneficiary payment submitted for verification' },
+    { key: 'SUPPLY_ORDER_ISSUED', label: '4. Supply Order Issued', sub: 'Supply Order dispatched to parent URC' },
+    { key: 'COMPLETED', label: '5. Delivered', sub: 'Vehicle delivered to beneficiary' },
   ];
 
   const statusOrder = [
     'CREATED',
+    'APPROVED',
     'PAYMENT_PENDING',
     'PAID',
-    'DEALER_VERIFICATION',
-    'DEPOT_PROCESSING',
-    'APPROVED',
     'SUPPLY_ORDER_ISSUED',
     'PROCESSING',
     'COMPLETED'
@@ -110,6 +128,13 @@ export default function DemandDetail() {
   const currentStatus = (demand.status || 'CREATED').toUpperCase();
   const currentStepIndex = Math.max(0, statusOrder.indexOf(currentStatus));
   const isTerminated = currentStatus === 'CANCELLED' || currentStatus === 'REJECTED' || currentStatus === 'EXPIRED';
+
+  const normStatus = (demand.status || '').toUpperCase();
+  // Payment is unlocked ONLY after Depot has approved (status APPROVED, PAYMENT_PENDING, or ON HOLD)
+  const canMakePayment =
+    !isTerminated &&
+    demand.paymentStatus !== 'PAID' &&
+    ['APPROVED', 'PAYMENT_PENDING', 'ON HOLD'].includes(normStatus);
 
   return (
     <div className="demand-detail-container">
@@ -139,9 +164,11 @@ export default function DemandDetail() {
                 ? 'badge-verified-pill'
                 : isTerminated
                 ? 'status-onhold text-danger'
+                : currentStatus === 'CREATED'
+                ? 'status-onhold'
                 : 'status-processing'
             }`}>
-              {currentStatus}
+              {currentStatus === 'CREATED' ? 'PENDING DEPOT APPROVAL' : currentStatus}
             </span>
           </div>
           <div className="csd-form-helper-text mt-xs">
@@ -150,14 +177,25 @@ export default function DemandDetail() {
         </div>
 
         <div className="portal-flex-wrap-gap-xs">
-          {demand.status === 'PAYMENT_PENDING' && (
+          {canMakePayment && (
             <button
               onClick={() => setPaymentModalOpen(true)}
               className="btn-action-upload-details flex-align-center-gap-xs"
+              style={{ fontWeight: 700, background: '#16a34a', color: '#fff', border: '1px solid #15803d', padding: '0.6rem 1.2rem', cursor: 'pointer' }}
             >
               <CreditCard size={16} />
-              Update Bank Transfer UTR
+              {demand.paymentStatus === 'PENDING_VERIFICATION' ? 'Update Payment UTR' : 'Pay Now / Submit Bank Transfer (UTR)'}
             </button>
+          )}
+
+          {currentStatus === 'CREATED' && (
+            <span
+              className="checkout-spec-pill"
+              style={{ background: '#f1f5f9', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              title="Payment link opens once Depot approves this demand"
+            >
+              <Lock size={12} /> Payment Unlocks Post-Depot Approval
+            </span>
           )}
 
           <button
@@ -169,6 +207,51 @@ export default function DemandDetail() {
           </button>
         </div>
       </div>
+
+      {/* Workflow Phase Notification Banners */}
+      {currentStatus === 'CREATED' && (
+        <div className="csd-alert-banner info mb-4">
+          <Clock size={20} className="alert-banner-icon" color="#1e4fd8" />
+          <div>
+            <strong>Demand Under Scrutiny by Sanctioning Depot (Pre-Payment Stage)</strong>
+            <p className="mb-0 text-xs">
+              This demand was lodged directly without upfront payment. Depot Officials are currently verifying your availability certificate, canteen card, and rank entitlement. Once the Depot grants approval, the payment button will be unlocked right here to allow online payment or UTR upload.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {canMakePayment && demand.paymentStatus !== 'PENDING_VERIFICATION' && (
+        <div className="csd-alert-banner warning mb-4" style={{ background: '#ecfdf5', borderColor: '#86efac' }}>
+          <CheckCircle2 size={20} className="alert-banner-icon" color="#15803d" />
+          <div style={{ flex: 1 }}>
+            <strong style={{ color: '#15803d' }}>✓ Demand Approved by Depot! Payment Unlocked</strong>
+            <p className="mb-0 text-xs" style={{ color: '#166534', marginTop: '2px' }}>
+              Your demand has been approved by the Depot. Please complete payment via Direct Bank Transfer (NEFT/RTGS) and enter your UTR reference, or pay online to proceed to Supply Order issuance.
+            </p>
+          </div>
+          <button
+            onClick={() => setPaymentModalOpen(true)}
+            className="btn-primary-action flex-align-center-gap-xs"
+            style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}
+          >
+            <CreditCard size={15} />
+            Pay Now / Submit UTR
+          </button>
+        </div>
+      )}
+
+      {demand.paymentStatus === 'PENDING_VERIFICATION' && (
+        <div className="csd-alert-banner info mb-4">
+          <Clock size={20} className="alert-banner-icon" color="#1e4fd8" />
+          <div>
+            <strong>Payment Reference (UTR) Submitted — Awaiting Depot Finance Verification</strong>
+            <p className="mb-0 text-xs">
+              Your transaction details have been received and submitted for Official CSD Receipt verification. Once the Depot Finance Officer confirms the funds, your Local Supply Order will be issued and handed over to URC for delivery.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Termination Notice if Cancelled / Rejected */}
       {isTerminated && (

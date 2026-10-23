@@ -34,8 +34,8 @@ export const ROLE_SIDEBAR_NAV = {
   ],
 
   [ROLES.BENEFICIARY]: [
-    { title: 'Overview', to: '/beneficiary/dashboard', icon: LayoutDashboard },
-    { title: 'Eligibility Check', to: '/beneficiary/eligibility', icon: ShieldCheck },
+    // { title: 'Overview', to: '/beneficiary/dashboard', icon: LayoutDashboard },
+    // { title: 'Eligibility Check', to: '/beneficiary/eligibility', icon: ShieldCheck },
     { title: 'My Demands', to: '/beneficiary/demands', icon: FileText },
     { title: 'Supply Orders', to: '/beneficiary/orders', icon: Truck },
     { title: 'Payments', to: '/beneficiary/payments', icon: CreditCard },
@@ -43,8 +43,8 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'Profile & Records', to: '/beneficiary/profile', icon: User },
     { title: 'Documents', to: '/beneficiary/documents', icon: FileCheck },
     { title: 'Support Tickets', to: '/beneficiary/tickets', icon: HelpCircle },
-    { title: 'Notifications', to: '/beneficiary/notifications', icon: Bell },
-    { title: 'Settings', to: '/beneficiary/settings', icon: Settings }
+    // { title: 'Notifications', to: '/beneficiary/notifications', icon: Bell },
+    // { title: 'Settings', to: '/beneficiary/settings', icon: Settings }
   ],
 
   [ROLES.CSD]: [
@@ -96,10 +96,10 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'Catalog Lineup', to: '/oem/products', icon: Package },
     { title: 'Supply Orders', to: '/oem/orders', icon: Truck },
     { title: 'Demand Allocation', to: '/oem/demands', icon: FileText },
-    { title: 'Compliance Docs', to: '/oem/documents', icon: FileCheck },
-    { title: 'Performance Reports', to: '/oem/reports', icon: FileSpreadsheet },
-    { title: 'Notifications', to: '/oem/notifications', icon: Bell },
-    { title: 'Support Desk', to: '/oem/support', icon: HelpCircle },
+    // { title: 'Compliance Docs', to: '/oem/documents', icon: FileCheck },
+    // { title: 'Performance Reports', to: '/oem/reports', icon: FileSpreadsheet },
+    // { title: 'Notifications', to: '/oem/notifications', icon: Bell },
+    // { title: 'Support Desk', to: '/oem/support', icon: HelpCircle },
     { title: 'OEM Profile', to: '/oem/profile', icon: Building2 }
   ],
 

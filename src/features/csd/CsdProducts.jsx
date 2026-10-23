@@ -16,7 +16,9 @@ import {
   X,
   AlertCircle,
   Eye,
-  IndianRupee
+  IndianRupee,
+  ShieldCheck,
+  Sparkles
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
@@ -96,7 +98,7 @@ export default function CsdProducts() {
 
   const showToast = (msg) => {
     setToast(msg);
-    setTimeout(() => setToast(''), 5000);
+    setTimeout(() => setToast(''), 4000);
   };
 
   // Helper to ensure clean Rupees format even if legacy data had Lakhs (e.g. 4.7 -> 470000)
@@ -128,10 +130,34 @@ export default function CsdProducts() {
     ).length;
 
     return [
-      { title: 'Total AFD Products', value: total, subtitle: 'Catalogued Models' },
-      { title: 'Active in Catalogue', value: active, subtitle: `${total > 0 ? Math.round((active / total) * 100) : 0}% Active Rate` },
-      { title: 'Four-Wheelers (Cars)', value: fourWheelers, subtitle: 'AFD-I Quota' },
-      { title: 'Two-Wheelers & Others', value: twoWheelers || total - fourWheelers, subtitle: 'Entitled Products' },
+      {
+        title: 'Total AFD Products',
+        value: total,
+        subtitle: 'Catalogued Models',
+        icon: Package,
+        variant: 'primary',
+      },
+      {
+        title: 'Active in Catalogue',
+        value: active,
+        subtitle: `${total > 0 ? Math.round((active / total) * 100) : 0}% Active Rate`,
+        icon: CheckCircle2,
+        variant: 'success',
+      },
+      {
+        title: 'Four-Wheelers (Cars)',
+        value: fourWheelers,
+        subtitle: 'AFD-I Quota',
+        icon: Car,
+        variant: 'warning',
+      },
+      {
+        title: 'Two-Wheelers & Others',
+        value: twoWheelers || total - fourWheelers,
+        subtitle: 'Entitled Products',
+        icon: Bike,
+        variant: 'default',
+      },
     ];
   }, [productsList]);
 
@@ -187,7 +213,7 @@ export default function CsdProducts() {
         id: product._id || product.id,
         status: nextStatus,
       }).unwrap();
-      showToast(`Product ${product.name} marked as ${nextStatus}.`);
+      showToast(`Product "${product.name}" marked as ${nextStatus}.`);
     } catch (err) {
       alert(err?.data?.message || 'Failed to update status');
     }
@@ -237,26 +263,30 @@ export default function CsdProducts() {
 
   const columns = [
     {
-      header: 'Product Name',
+      header: 'Product Details',
       accessor: 'name',
+      width: '280px',
       render: (row) => {
         const img = row.images?.[0] || row.image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=200';
         const brandName = row.oemId?.name || row.brandId?.name || row.brand || 'Authorized OEM';
         const variantText = row.variant || row.type || '';
         return (
-          <div className="flex items-center gap-3">
+          <div className="csd-product-cell">
             <img
               src={img}
-              alt=""
-              className="w-14 h-11 object-cover rounded-md border border-slate-200 bg-slate-50 flex-shrink-0"
+              alt={row.name || 'Product'}
+              className="product-table-thumb"
               onError={(e) => {
                 e.target.src = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=200';
               }}
             />
-            <div>
-              <span className="font-semibold text-xs text-ink block line-clamp-1">{row.name}</span>
-              <span className="text-[11px] text-muted font-medium">
-                {brandName} {variantText ? `· ${variantText}` : ''}
+            <div className="csd-product-info">
+              <strong className="csd-product-title" title={row.name}>
+                {row.name}
+              </strong>
+              <span className="csd-product-subtitle">
+                <span>{brandName}</span>
+                {variantText && <span>· {variantText}</span>}
               </span>
             </div>
           </div>
@@ -266,8 +296,9 @@ export default function CsdProducts() {
     {
       header: 'Index / SKU',
       accessor: 'sku',
+      width: '120px',
       render: (row) => (
-        <span className="font-mono font-bold text-xs text-brand">
+        <span className="csd-code-badge" title="AFD Item Index Code">
           {row.indexNo || row.sku || 'N/A'}
         </span>
       ),
@@ -275,11 +306,12 @@ export default function CsdProducts() {
     {
       header: 'Category',
       accessor: 'categoryId',
+      width: '110px',
       render: (row) => {
         const catName = row.categoryId?.name || row.category || 'CAR';
         const catCode = row.categoryId?.code || '';
         return (
-          <span className="badge-pill badge-primary badge-sm font-semibold uppercase text-[10px]">
+          <span className="csd-cat-badge">
             {catCode || catName}
           </span>
         );
@@ -288,23 +320,28 @@ export default function CsdProducts() {
     {
       header: 'CSD Concessional Price',
       accessor: 'price',
+      width: '150px',
       render: (row) => {
         const finalVal = getDisplayPrice(row.priceToCustomer || row.price || row.lo);
         return (
-          <span className="font-bold font-mono text-xs text-ink">
-            {formatCurrency(finalVal)}
-          </span>
+          <div className="csd-price-block">
+            <span className="csd-price-val">
+              {formatCurrency(finalVal)}
+            </span>
+            <span className="csd-price-hint">Concessional Net</span>
+          </div>
         );
       },
     },
     {
       header: 'Civil MRP',
       accessor: 'mrp',
+      width: '110px',
       render: (row) => {
         const mrpVal = getDisplayPrice(row.mrp || row.hi);
         return (
-          <span className="text-xs text-slate-500 line-through font-mono">
-            {mrpVal ? formatCurrency(mrpVal) : 'N/A'}
+          <span className="csd-mrp-val">
+            {mrpVal ? formatCurrency(mrpVal) : '—'}
           </span>
         );
       },
@@ -312,58 +349,60 @@ export default function CsdProducts() {
     {
       header: 'Engine / Specs',
       accessor: 'engineCapacity',
+      width: '110px',
       render: (row) => (
-        <span className="text-xs font-mono text-slate-700">
-          {row.engineCapacity ? `${row.engineCapacity} cc` : row.attributes?.engine || row.engine || '-'}
+        <span className="csd-specs-val">
+          {row.engineCapacity ? `${row.engineCapacity} cc` : row.attributes?.engine || row.engine || '—'}
         </span>
       ),
     },
     {
       header: 'Fuel Type',
       accessor: 'fuelType',
+      width: '95px',
       render: (row) => {
-        const f = row.fuelType || (Array.isArray(row.fuel) ? row.fuel.join(', ') : row.fuel || '-');
-        return <span className="text-xs text-slate-700">{f}</span>;
+        const f = row.fuelType || (Array.isArray(row.fuel) ? row.fuel.join(', ') : row.fuel || '—');
+        return <span className="csd-fuel-val">{f}</span>;
       },
     },
     {
       header: 'Status',
       accessor: 'status',
+      width: '100px',
       render: (row) => {
         const isActive = row.status === 'ACTIVE' || !row.status;
         return (
-          <Badge variant={isActive ? 'success' : 'neutral'}>
+          <span className={isActive ? 'csd-badge-active' : 'csd-badge-inactive'}>
             {isActive ? 'ACTIVE' : 'INACTIVE'}
-          </Badge>
+          </span>
         );
       },
     },
     {
       header: 'Actions',
       accessor: '_id',
+      width: '150px',
       render: (row) => {
         const isActive = row.status === 'ACTIVE' || !row.status;
         return (
-          <div className="flex items-center gap-1.5">
+          <div className="csd-action-row">
             <button
               type="button"
-              className="px-2.5 py-1 text-xs font-semibold border border-slate-300 text-slate-700 rounded hover:bg-slate-50 transition flex items-center gap-1"
+              className="csd-btn-action-edit"
               onClick={() => openEditModal(row)}
+              title="Edit Product Details"
             >
-              <Edit3 className="w-3.5 h-3.5" />
+              <Edit3 size={13} />
               <span>Edit</span>
             </button>
             <button
               type="button"
               onClick={() => handleToggleStatus(row)}
-              className={`p-1 rounded text-xs transition ${
-                isActive
-                  ? 'text-rose-600 hover:bg-rose-50'
-                  : 'text-emerald-600 hover:bg-emerald-50'
-              }`}
+              className={isActive ? 'csd-btn-action-delete' : 'csd-btn-action-activate'}
               title={isActive ? 'Deactivate Product' : 'Activate Product'}
             >
-              {isActive ? <X className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+              {isActive ? <X size={13} /> : <Check size={13} />}
+              <span>{isActive ? 'Deactivate' : 'Activate'}</span>
             </button>
           </div>
         );
@@ -372,7 +411,14 @@ export default function CsdProducts() {
   ];
 
   return (
-    <div className="csd-products-page space-y-6">
+    <div className="csd-module-page">
+      {toast && (
+        <div className="portal-toast-fixed">
+          <CheckCircle2 size={18} />
+          <span>{toast}</span>
+        </div>
+      )}
+
       <PageHeader
         title="CSD AFD Product Catalogue Management"
         subtitle="Maintain approved manufacturer vehicle models, sanctioned concessional prices, and AFD quota categories."
@@ -393,13 +439,6 @@ export default function CsdProducts() {
         }
       />
 
-      {toast && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-          <span>{toast}</span>
-        </div>
-      )}
-
       {/* KPI Cards */}
       <div className="kpi-grid">
         {kpiStats.map((kpi, idx) => (
@@ -408,35 +447,49 @@ export default function CsdProducts() {
             title={kpi.title}
             value={kpi.value}
             subtitle={kpi.subtitle}
+            icon={kpi.icon}
+            variant={kpi.variant}
           />
         ))}
       </div>
 
-      {/* Filter and Search Bar */}
-      <Card>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+      {/* Main Table Card with Integrated Search & Filter Bar */}
+      <Card
+        title="Approved AFD Product Directory"
+        subtitle={`Showing ${productsList.length} items actively retrieved from server database`}
+        actions={
+          <div className="csd-toolbar-actions">
+            <span className="csd-count-pill">
+              {productsList.length} Models Catalogued
+            </span>
+          </div>
+        }
+      >
+        {/* Search & Filter Toolbar */}
+        <div className="csd-products-toolbar">
+          <div className="csd-search-wrap">
+            <Search size={14} className="csd-search-icon-pos" />
             <input
               type="text"
-              placeholder="Search by model, SKU, brand, or body type..."
+              placeholder="Search by model, SKU, brand, body type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand focus:outline-none"
+              className="csd-search-field-input director-field-input"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="csd-filter-group">
             {/* Category Filter */}
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+              className="csd-filter-select"
+              aria-label="Filter by Category"
             >
               <option value="all">All Categories</option>
               {categories.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
+                <option key={c._id || c.code} value={c._id || c.code}>
+                  {c.name} ({c.code})
                 </option>
               ))}
             </select>
@@ -445,11 +498,12 @@ export default function CsdProducts() {
             <select
               value={oemFilter}
               onChange={(e) => setOemFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+              className="csd-filter-select"
+              aria-label="Filter by OEM"
             >
-              <option value="all">All OEMs</option>
+              <option value="all">All OEMs / Brands</option>
               {oems.map((o) => (
-                <option key={o._id} value={o._id}>
+                <option key={o._id || o.code} value={o._id || o.code}>
                   {o.name}
                 </option>
               ))}
@@ -459,7 +513,8 @@ export default function CsdProducts() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+              className="csd-filter-select"
+              aria-label="Filter by Status"
             >
               <option value="">All Statuses</option>
               <option value="ACTIVE">Active in Catalogue</option>
@@ -468,36 +523,36 @@ export default function CsdProducts() {
 
             {(categoryFilter !== 'all' || oemFilter !== 'all' || statusFilter || searchTerm) && (
               <button
+                type="button"
                 onClick={() => {
                   setCategoryFilter('all');
                   setOemFilter('all');
                   setStatusFilter('');
                   setSearchTerm('');
                 }}
-                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded"
+                className="csd-btn-reset-filters"
+                title="Reset all filters"
               >
                 Reset Filters
               </button>
             )}
           </div>
         </div>
-      </Card>
 
-      {/* Main Table */}
-      <Card
-        title="Approved AFD Product Directory"
-        subtitle={`Showing ${productsList.length} items actively retrieved from server database`}
-      >
         {loadingProducts ? (
-          <div className="p-12 text-center text-slate-500">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand mb-3" />
-            <p className="font-semibold text-sm">Synchronizing catalogue from database...</p>
+          <div className="table-state-cell">
+            <div className="table-loader">
+              <RefreshCw size={24} className="spin text-brand" />
+              <p className="table-loader-msg">Synchronizing catalogue from database...</p>
+            </div>
           </div>
         ) : productsList.length === 0 ? (
-          <div className="p-12 text-center text-slate-400">
-            <Package className="w-12 h-12 mx-auto mb-2 text-slate-300" />
-            <p className="font-semibold text-sm text-slate-600">No products match filter</p>
-            <p className="text-xs text-slate-400 mt-1">Try adjusting your category or search term</p>
+          <div className="table-state-cell">
+            <div className="table-empty">
+              <Package size={36} className="text-muted" />
+              <h4 className="table-empty-title">No products match filter</h4>
+              <p className="muted small">Try adjusting your category, OEM or search criteria</p>
+            </div>
           </div>
         ) : (
           <DataTable columns={columns} data={productsList} />
@@ -510,43 +565,44 @@ export default function CsdProducts() {
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
           title={editingProduct ? `Edit Product: ${editingProduct.name}` : 'Catalogue New AFD Product'}
-          size="lg"
+          subtitle="Manage product specifications, CSD concessional ceiling, and OEM mapping"
+          maxWidth="760px"
         >
-          <form onSubmit={handleSave} className="space-y-4 text-xs">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <form onSubmit={handleSave}>
+            <div className="csd-form-grid-2">
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Product Model Name *</label>
+                <label className="director-field-label">Product Model Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Mahindra Scorpio N Z2 D MT 2WD 7 STR"
                   value={formState.name}
                   onChange={(e) => setFormState({ ...formState, name: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand focus:outline-none"
+                  className="director-field-input"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Index No. / SKU Code *</label>
+                <label className="director-field-label">Index No. / SKU Code *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. 67681-T"
                   value={formState.sku}
                   onChange={(e) => setFormState({ ...formState, sku: e.target.value, indexNo: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg font-mono focus:ring-2 focus:ring-brand focus:outline-none"
+                  className="director-field-input director-field-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Product Category *</label>
+                <label className="director-field-label">Product Category *</label>
                 <select
                   value={formState.categoryId}
                   onChange={(e) => setFormState({ ...formState, categoryId: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg bg-white"
+                  className="director-field-input"
                 >
                   {categories.map((c) => (
-                    <option key={c._id} value={c._id}>
+                    <option key={c._id || c.code} value={c._id || c.code}>
                       {c.name} ({c.code})
                     </option>
                   ))}
@@ -554,14 +610,14 @@ export default function CsdProducts() {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">OEM / Manufacturer *</label>
+                <label className="director-field-label">OEM / Manufacturer *</label>
                 <select
                   value={formState.oemId}
                   onChange={(e) => setFormState({ ...formState, oemId: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg bg-white"
+                  className="director-field-input"
                 >
                   {oems.map((o) => (
-                    <option key={o._id} value={o._id}>
+                    <option key={o._id || o.code} value={o._id || o.code}>
                       {o.name} ({o.code})
                     </option>
                   ))}
@@ -569,7 +625,7 @@ export default function CsdProducts() {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">CSD Concessional Price (₹) *</label>
+                <label className="director-field-label">CSD Concessional Price (₹) *</label>
                 <input
                   type="number"
                   required
@@ -577,40 +633,42 @@ export default function CsdProducts() {
                   placeholder="e.g. 1216296"
                   value={formState.price}
                   onChange={(e) => setFormState({ ...formState, price: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg font-mono font-bold focus:ring-2 focus:ring-brand focus:outline-none"
+                  className="director-field-input director-field-price"
                 />
-                <span className="text-[10px] text-muted">Final customer payable amount after CSD concessions</span>
+                <span className="director-field-help">
+                  Final customer payable amount after CSD concessions
+                </span>
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Civil Market MRP (₹)</label>
+                <label className="director-field-label">Civil Market MRP (₹)</label>
                 <input
                   type="number"
                   min="1000"
                   placeholder="e.g. 1420000"
                   value={formState.mrp}
                   onChange={(e) => setFormState({ ...formState, mrp: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg font-mono focus:ring-2 focus:ring-brand focus:outline-none"
+                  className="director-field-input director-field-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Engine Capacity (cc)</label>
+                <label className="director-field-label">Engine Capacity (cc)</label>
                 <input
                   type="number"
                   placeholder="e.g. 2198"
                   value={formState.engineCapacity}
                   onChange={(e) => setFormState({ ...formState, engineCapacity: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg font-mono"
+                  className="director-field-input director-field-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Fuel Type</label>
+                <label className="director-field-label">Fuel Type</label>
                 <select
                   value={formState.fuelType}
                   onChange={(e) => setFormState({ ...formState, fuelType: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg bg-white"
+                  className="director-field-input"
                 >
                   <option value="Petrol">Petrol</option>
                   <option value="Diesel">Diesel</option>
@@ -621,48 +679,48 @@ export default function CsdProducts() {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Variant / Body Type</label>
+                <label className="director-field-label">Variant / Body Type</label>
                 <input
                   type="text"
                   placeholder="e.g. Compact SUV / 7-Seater"
                   value={formState.variant}
                   onChange={(e) => setFormState({ ...formState, variant: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg"
+                  className="director-field-input"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Catalogue Status</label>
+                <label className="director-field-label">Catalogue Status</label>
                 <select
                   value={formState.status}
                   onChange={(e) => setFormState({ ...formState, status: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg bg-white font-medium"
+                  className="director-field-input"
                 >
                   <option value="ACTIVE">ACTIVE (Available for Indenting)</option>
                   <option value="INACTIVE">INACTIVE (Hidden from Beneficiaries)</option>
                 </select>
               </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-slate-700 font-semibold mb-1">Cover Image URL</label>
+              <div className="director-grid-span-2">
+                <label className="director-field-label">Cover Image URL</label>
                 <input
                   type="url"
                   placeholder="https://..."
                   value={formState.imageUrl}
                   onChange={(e) => setFormState({ ...formState, imageUrl: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg font-mono text-xs"
+                  className="director-field-input director-field-mono"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
-              <button
+            <div className="director-modal-actions">
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setModalOpen(false)}
-                className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition"
               >
                 Cancel
-              </button>
+              </Button>
               <Button
                 type="submit"
                 variant="primary"

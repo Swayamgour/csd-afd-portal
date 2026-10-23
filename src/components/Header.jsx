@@ -100,7 +100,7 @@ export default function Header() {
         </button>
         <Link to="/">
           <img
-            src="https://afd.csdindia.gov.in/wp-content/uploads/media/2023/01/header.png"
+            src="./assets/logo.png"
             // width="300"
             className="csd-logo"
           />

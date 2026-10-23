@@ -288,10 +288,8 @@ export default function AdminBanners() {
 
       {/* METRICS */}
       <div className="csd-kpi-grid">
-          gap: '1rem',
-          marginBottom: '1.5rem',
-        }}
-      >
+       
+    
         <StatCard
           title="Total Banners"
           value={String(metrics.total)}

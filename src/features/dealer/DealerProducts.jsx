@@ -267,9 +267,9 @@ export default function DealerProducts() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="data-table">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase font-semibold">
+                  <tr>
                     <th className="p-3 w-12 text-center">Auth</th>
                     <th className="p-3">Vehicle Model</th>
                     <th className="p-3">SKU / Index</th>

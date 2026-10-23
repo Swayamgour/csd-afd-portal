@@ -491,11 +491,11 @@ export default function ProductDetails() {
           </div>
 
           <h1 id="pn" className="pdp-title-heading">{p.name}</h1>
-          <div className="rate-row">
+          {/* <div className="rate-row">
             <Stars v={p.rating} />
             <span className="muted small">{p.reviews?.toLocaleString("en-IN") || 0} reviews</span>
             <span className="pill ok"><Check size={13} aria-hidden /> Available on CSD</span>
-          </div>
+          </div> */}
 
           {/* CSD Beneficiary Procurement Selection Form matching Fig. 6 */}
           <div className="pdp-spec-box">

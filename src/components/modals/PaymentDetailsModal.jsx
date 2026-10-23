@@ -10,8 +10,8 @@ export function PaymentDetailsModal({
   demand,
   loading = false
 }) {
-  const isLoan = Boolean(demand?.hasLoan);
-  const totalAmount = Number(demand?.csdPrice || demand?.total || demand?.netPrice || 721826);
+  const isLoan = Boolean(demand?.hasLoan || demand?.loan?.isLoan);
+  const totalAmount = Number(demand?.totalAmount || demand?.totalPrice || demand?.csdPrice || demand?.total || demand?.netPrice || demand?.unitPrice || 0);
 
   // Beneficiary Self Account
   const [selfBank, setSelfBank] = useState('');
@@ -65,7 +65,7 @@ export function PaymentDetailsModal({
     const callback = onSubmitSuccess || onSubmitPayment;
     if (callback) {
       callback({
-      demandId: demand.id,
+      demandId: demand._id || demand.id,
       selfAccount: {
         bank: selfBank,
         holder: selfHolder,

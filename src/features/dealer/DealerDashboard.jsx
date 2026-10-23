@@ -252,11 +252,11 @@ export default function DealerDashboard() {
             <span className="font-semibold block text-navy">
               {b.fullName || u.name || 'CSD Beneficiary'}
             </span>
-            <div className="row gap-0-5 align-center mt-0-25">
+            <div className="row gap-0-5 align-center mt-0-25 flex-nowrap">
               {b.serviceNumber && (
-                <span className="badge micro neutral font-mono">{b.serviceNumber}</span>
+                <span className="badge micro neutral font-mono whitespace-nowrap">{b.serviceNumber}</span>
               )}
-              {b.rank && <span className="micro muted">{b.rank}</span>}
+              {b.rank && <span className="micro muted whitespace-nowrap">{b.rank}</span>}
             </div>
             {(b.mobile || u.mobile) && (
               <span className="micro text-brand block mt-0-25">
@@ -277,10 +277,10 @@ export default function DealerDashboard() {
             <span className="font-medium small block text-line-height-tight">
               {p.name || 'Vehicle'}
             </span>
-            <div className="row gap-0-5 align-center mt-0-25">
-              <span className="micro muted font-mono">SKU: {p.sku || 'CSD-SKU'}</span>
+            <div className="row gap-0-5 align-center mt-0-25 flex-nowrap">
+              <span className="micro muted font-mono whitespace-nowrap">SKU: {p.sku || 'CSD-SKU'}</span>
               {r.selectedColor && (
-                <span className="badge micro info">🎨 {r.selectedColor}</span>
+                <span className="badge micro info whitespace-nowrap">🎨 {r.selectedColor}</span>
               )}
             </div>
           </div>
@@ -317,7 +317,7 @@ export default function DealerDashboard() {
           <button
             type="button"
             onClick={() => setPreviewDoc(cert)}
-            className="btn xs out row align-center gap-0-25 text-brand cursor-pointer"
+            className="btn xs out text-brand cursor-pointer"
             title="Inspect uploaded Availability Certificate in portal"
           >
             <FileText size={13} />
@@ -335,8 +335,9 @@ export default function DealerDashboard() {
         if (v === 'VERIFIED') {
           return (
             <div>
-              <span className="badge sm success font-semibold row align-center gap-0-25">
-                <CheckCircle2 size={13} /> Verified
+              <span className="badge sm success font-semibold">
+                <CheckCircle2 size={13} />
+                <span>Verified</span>
               </span>
               {r.dealerVerification?.chassisNo && (
                 <span className="micro muted font-mono block mt-0-25">
@@ -348,14 +349,16 @@ export default function DealerDashboard() {
         }
         if (v === 'REJECTED') {
           return (
-            <span className="badge sm danger font-semibold row align-center gap-0-25">
-              <X size={13} /> Rejected
+            <span className="badge sm danger font-semibold">
+              <X size={13} />
+              <span>Rejected</span>
             </span>
           );
         }
         return (
-          <span className="badge sm warning font-semibold row align-center gap-0-25">
-            <Clock size={13} /> Pending Verification
+          <span className="badge sm warning font-semibold">
+            <Clock size={13} />
+            <span>Pending Verification</span>
           </span>
         );
       }
@@ -471,7 +474,7 @@ export default function DealerDashboard() {
           <div className="dealer-header-actions row gap-1 align-center">
             <button
               type="button"
-              className="btn sm out row align-center gap-0-5"
+              className="btn sm out"
               onClick={() => {
                 refetchDemands();
                 refetchOrders();
@@ -782,7 +785,7 @@ export default function DealerDashboard() {
                     <button
                       type="button"
                       onClick={() => setPreviewDoc(cert)}
-                      className="btn sm primary row align-center gap-0-5 cursor-pointer"
+                      className="btn sm primary cursor-pointer"
                     >
                       <Eye size={14} />
                       <span>Open Certificate</span>

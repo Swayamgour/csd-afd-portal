@@ -23,6 +23,8 @@ import DocumentViewer from '../../components/common/DocumentViewer.jsx';
 import ConfirmDialog from '../../components/common/ConfirmDialog.jsx';
 import { LoadingState, EmptyState } from '../../components/common/States.jsx';
 import { useGetDemandByIdQuery, useCancelDemandMutation } from '../demand/demandApi.js';
+import { useSubmitDirectTransferMutation } from '../payment/paymentApi.js';
+import { PaymentDetailsModal } from '../../components/modals/PaymentDetailsModal.jsx';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 export default function BeneficiaryDemandDetail() {
@@ -31,6 +33,7 @@ export default function BeneficiaryDemandDetail() {
 
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('Beneficiary request');
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [toast, setToast] = useState({ type: '', message: '' });
 
   const {
@@ -42,8 +45,34 @@ export default function BeneficiaryDemandDetail() {
   } = useGetDemandByIdQuery(id);
 
   const [cancelDemandMutation, { isLoading: isCancelling }] = useCancelDemandMutation();
+  const [submitDirectTransfer] = useSubmitDirectTransferMutation();
 
   const demand = demandData?.data || demandData;
+
+  const handlePaymentSubmitSuccess = async (paymentPayload) => {
+    try {
+      if (paymentPayload && (paymentPayload.selfAccount?.utr || paymentPayload.utrNumber)) {
+        const targetDemandId = demand._id || demand.id;
+        const utr = paymentPayload.selfAccount?.utr || paymentPayload.utrNumber;
+        const bank = paymentPayload.selfAccount?.bank || paymentPayload.bankName || 'State Bank of India';
+        const date = paymentPayload.selfAccount?.date || paymentPayload.depositDate || new Date().toISOString();
+        const remarks = `Bank Transfer UTR: ${utr} (${bank}). Amount: ₹${paymentPayload.totalPaid || demand.totalAmount}`;
+
+        await submitDirectTransfer({
+          demandId: targetDemandId,
+          utrNumber: utr,
+          bankName: bank,
+          depositDate: date,
+          remarks,
+        }).unwrap();
+      }
+      setPaymentModalOpen(false);
+      showToast('success', 'Payment details / UTR submitted successfully! Awaiting depot verification.');
+      refetch();
+    } catch (e) {
+      showToast('error', e?.data?.message || e.message || 'Error submitting payment details');
+    }
+  };
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -77,11 +106,11 @@ export default function BeneficiaryDemandDetail() {
     );
   }
 
-  const isPaymentPending =
-    demand.status === 'CREATED' ||
-    demand.status === 'PAYMENT_PENDING' ||
-    demand.paymentStatus === 'PENDING' ||
-    demand.paymentStatus === 'Pending';
+  const normStatus = (demand.status || '').toUpperCase();
+  const isApprovedAndPayable =
+    ['APPROVED', 'PAYMENT_PENDING', 'ON HOLD'].includes(normStatus) &&
+    demand.paymentStatus !== 'PAID';
+  const isAwaitingDepotApproval = normStatus === 'CREATED';
 
   const product = demand.productId || {};
   const depot = demand.depotId || {};
@@ -137,18 +166,28 @@ export default function BeneficiaryDemandDetail() {
         subtitle={`Submitted on ${new Date(demand.createdAt).toLocaleDateString('en-IN')}`}
         badge={<StatusBadge status={demand.status} />}
         actions={
-          <div className="row gap-1">
+          <div className="row gap-1 align-center">
             <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh">
               <RefreshCw size={14} />
             </Button>
-            {isPaymentPending && (
+            {isApprovedAndPayable && (
               <Button
                 variant="primary"
                 icon={CreditCard}
-                onClick={() => navigate('/beneficiary/payments')}
+                onClick={() => setPaymentModalOpen(true)}
+                style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff', fontWeight: 700 }}
               >
-                Proceed to Payment
+                {demand.paymentStatus === 'PENDING_VERIFICATION' ? 'Update Payment UTR' : 'Pay Now / Submit Bank UTR'}
               </Button>
+            )}
+            {isAwaitingDepotApproval && (
+              <span
+                className="checkout-spec-pill"
+                style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', fontSize: '11px', padding: '6px 10px', borderRadius: '4px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                title="Payment link opens once Depot approves this demand"
+              >
+                <Clock size={12} /> Under Scrutiny (Payment Unlocks Post-Sanction)
+              </span>
             )}
             {demand.status !== 'CANCELLED' && demand.status !== 'DELIVERED' && demand.status !== 'REJECTED' && (
               <Button
@@ -171,6 +210,52 @@ export default function BeneficiaryDemandDetail() {
         >
           {toast.type === 'error' ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
           <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Stage Alert Banners */}
+      {isAwaitingDepotApproval && (
+        <div className="alert-banner info mb-3" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e3a8a', padding: '12px 16px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Clock size={20} color="#2563eb" className="flex-shrink-0" />
+          <div style={{ flex: 1 }}>
+            <strong style={{ display: 'block', fontSize: '13px' }}>Demand Under Scrutiny by Sanctioning Depot (Pre-Payment Stage)</strong>
+            <span style={{ fontSize: '12px', color: '#3b82f6', marginTop: '2px', display: 'block' }}>
+              This demand was lodged directly without upfront payment. Depot Officials are verifying your documents and quota limits. Once approved, the payment button will be unlocked right here to allow online payment or UTR upload.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {isApprovedAndPayable && demand.paymentStatus !== 'PENDING_VERIFICATION' && (
+        <div className="alert-banner success mb-3" style={{ background: '#ecfdf5', border: '1px solid #86efac', color: '#065f46', padding: '12px 16px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <CheckCircle2 size={20} color="#16a34a" className="flex-shrink-0" />
+          <div style={{ flex: 1 }}>
+            <strong style={{ display: 'block', fontSize: '13px', color: '#15803d' }}>✓ Demand Approved by Depot! Payment Unlocked</strong>
+            <span style={{ fontSize: '12px', color: '#166534', marginTop: '2px', display: 'block' }}>
+              Your demand has received Depot Sanction. Please complete payment via Direct Bank Transfer (NEFT/RTGS) and submit your UTR reference number.
+            </span>
+          </div>
+          <Button
+            variant="primary"
+            icon={CreditCard}
+            size="sm"
+            onClick={() => setPaymentModalOpen(true)}
+            style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff', fontWeight: 700, flexShrink: 0 }}
+          >
+            Pay Now / Submit UTR
+          </Button>
+        </div>
+      )}
+
+      {demand.paymentStatus === 'PENDING_VERIFICATION' && (
+        <div className="alert-banner info mb-3" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e3a8a', padding: '12px 16px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Clock size={20} color="#2563eb" className="flex-shrink-0" />
+          <div style={{ flex: 1 }}>
+            <strong style={{ display: 'block', fontSize: '13px' }}>Payment Reference (UTR) Submitted — Awaiting Depot Finance Verification</strong>
+            <span style={{ fontSize: '12px', color: '#3b82f6', marginTop: '2px', display: 'block' }}>
+              Your transaction details have been received. Once the Depot Finance Officer confirms the funds, your Local Supply Order will be issued and handed over to URC for delivery.
+            </span>
+          </div>
         </div>
       )}
 
@@ -292,6 +377,16 @@ export default function BeneficiaryDemandDetail() {
         onConfirm={handleCancel}
         onCancel={() => setCancelModalOpen(false)}
       />
+
+      {/* Payment Details / UTR Modal */}
+      {paymentModalOpen && (
+        <PaymentDetailsModal
+          isOpen={paymentModalOpen}
+          onClose={() => setPaymentModalOpen(false)}
+          demand={demand}
+          onSubmitSuccess={handlePaymentSubmitSuccess}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,2379 @@
+/* =====================================================================
+   CSD AFD – ADMIN PANEL DESIGN SYSTEM  (admin.css)
+   ---------------------------------------------------------------------
+   SCOPE RULE: every selector in this file starts with
+       .app-shell-root      (the authenticated portal shell), or
+       .admin-portal        (modals/drawers portalled to <body> from inside the shell)
+   Nothing here can reach the public storefront. Do NOT add un-scoped rules.
+   Loaded from layouts/AppShell.jsx, after index.css, so it wins on specificity.
+   ===================================================================== */
+
+/* ---------- 0. Tokens (only defined inside admin scope) ---------- */
+.app-shell-root,
+.admin-portal {
+  --adm-navy: #0b1f3a;
+  --adm-navy-2: #11294d;
+  --adm-brand: #1e4fd8;
+  --adm-brand-d: #173fb0;
+  --adm-brand-soft: #eaf0ff;
+  --adm-accent: #f59e0b;
+  --adm-bg: #f4f6fb;
+  --adm-surface: #ffffff;
+  --adm-line: #e4e9f2;
+  --adm-line-strong: #cfd7e6;
+  --adm-ink: #0f1b33;
+  --adm-text: #334155;
+  --adm-muted: #64748b;
+  --adm-success: #15803d;
+  --adm-success-bg: #e8f8ee;
+  --adm-warning: #b45309;
+  --adm-warning-bg: #fff4dc;
+  --adm-danger: #c62828;
+  --adm-danger-bg: #fdecec;
+  --adm-info: #0369a1;
+  --adm-info-bg: #e3f3fc;
+  --adm-radius: 12px;
+  --adm-radius-sm: 8px;
+  --adm-shadow-sm: 0 1px 2px rgba(15, 27, 51, .05);
+  --adm-shadow: 0 1px 2px rgba(15, 27, 51, .05), 0 6px 18px rgba(15, 27, 51, .06);
+  --adm-shadow-lg: 0 20px 50px rgba(15, 27, 51, .22);
+  --adm-focus: 0 0 0 3px rgba(30, 79, 216, .22);
+  --adm-sidebar-w: 264px;
+  --adm-sidebar-w-collapsed: 76px;
+  --adm-header-h: 64px;
+}
+
+/* ---------- 1. Shell layout ---------- */
+.app-shell-root {
+  display: flex;
+  min-height: 100vh;
+  background: var(--adm-bg);
+  color: var(--adm-text);
+}
+
+.app-shell-root .app-main-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--adm-bg);
+}
+
+.app-shell-root .app-content-body {
+  flex: 1;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.5rem 1.75rem 2.5rem;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* ---------- 2. Sidebar ---------- */
+.app-shell-root .app-sidebar {
+  width: var(--adm-sidebar-w);
+  background: linear-gradient(180deg, var(--adm-navy) 0%, #08172c 100%);
+  color: #e2e8f0;
+  border-right: 1px solid rgba(255, 255, 255, .06);
+  box-shadow: 4px 0 24px rgba(8, 23, 44, .12);
+  transition: width .25s cubic-bezier(.4, 0, .2, 1), transform .25s cubic-bezier(.4, 0, .2, 1);
+}
+
+.app-shell-root .app-sidebar.collapsed {
+  width: var(--adm-sidebar-w-collapsed);
+}
+
+.app-shell-root .sidebar-brand {
+  padding: 1rem 1rem;
+  min-height: var(--adm-header-h);
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+.app-shell-root .sidebar-brand-link {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.app-shell-root .sidebar-brand-link img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 44px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.app-shell-root .app-sidebar.collapsed .sidebar-brand {
+  justify-content: center;
+  padding-inline: .5rem;
+}
+
+.app-shell-root .app-sidebar.collapsed .sidebar-brand-link img {
+  width: 44px;
+  max-width: 44px;
+  object-fit: cover;
+}
+
+.app-shell-root .sidebar-role-badge-box {
+  margin: .9rem .85rem .25rem;
+  padding: .7rem .9rem;
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: var(--adm-radius-sm);
+}
+
+.app-shell-root .sidebar-role-title {
+  font-size: .66rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.app-shell-root .sidebar-role-name {
+  color: var(--adm-accent);
+  font-weight: 600;
+  margin-top: .15rem;
+}
+
+.app-shell-root .sidebar-depot-tag {
+  color: #cbd5e1;
+}
+
+.app-shell-root .sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: .75rem .7rem;
+}
+
+.app-shell-root .sidebar-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-shell-root .sidebar-nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .62rem .8rem;
+  border-radius: var(--adm-radius-sm);
+  color: #cbd5e1;
+  font-size: .875rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s ease, color .15s ease;
+}
+
+.app-shell-root .sidebar-nav-link:hover {
+  background: rgba(255, 255, 255, .08);
+  color: #fff;
+  text-decoration: none;
+}
+
+.app-shell-root .sidebar-nav-link:focus-visible {
+  outline: 2px solid var(--adm-accent);
+  outline-offset: 2px;
+}
+
+.app-shell-root .sidebar-nav-link.active {
+  background: rgba(30, 79, 216, .95) !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(30, 79, 216, .35);
+}
+
+.app-shell-root .sidebar-nav-link.active::before {
+  content: "";
+  position: absolute;
+  left: -.7rem;
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--adm-accent);
+}
+
+.app-shell-root .app-sidebar.collapsed .sidebar-nav-link {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.app-shell-root .sidebar-nav-icon {
+  flex-shrink: 0;
+  opacity: .9;
+}
+
+.app-shell-root .sidebar-nav-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-shell-root .sidebar-footer {
+  padding: .8rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+.app-shell-root .app-sidebar.collapsed .sidebar-footer {
+  flex-direction: column;
+}
+
+.app-shell-root .sidebar-public-link {
+  color: #94a3b8;
+  font-size: .8rem;
+  text-decoration: none;
+}
+
+.app-shell-root .sidebar-public-link:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.app-shell-root .sidebar-collapse-toggle {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: rgba(255, 255, 255, .08);
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-shell-root .sidebar-collapse-toggle:hover {
+  background: rgba(255, 255, 255, .18);
+}
+
+/* ---------- 3. Header bar & breadcrumbs ---------- */
+.app-shell-root .app-header-bar {
+  height: var(--adm-header-h);
+  background: linear-gradient(90deg, var(--adm-navy) 0%, var(--adm-navy-2) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 2px 10px rgba(8, 23, 44, .12);
+  padding: 0 1.5rem;
+}
+
+.app-shell-root .header-branding-badge {
+  color: #e2e8f0;
+  letter-spacing: .01em;
+}
+
+.app-shell-root .header-icon-btn,
+.app-shell-root .header-menu-btn {
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .14);
+  color: #fff;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s ease, transform .15s ease;
+}
+
+.app-shell-root .header-icon-btn:hover,
+.app-shell-root .header-menu-btn:hover {
+  background: rgba(255, 255, 255, .2);
+  transform: translateY(-1px);
+}
+
+.app-shell-root .header-icon-btn:focus-visible,
+.app-shell-root .header-menu-btn:focus-visible {
+  outline: 2px solid var(--adm-accent);
+  outline-offset: 2px;
+}
+
+.app-shell-root .app-breadcrumb-bar {
+  background: var(--adm-surface);
+  border-bottom: 1px solid var(--adm-line);
+  padding: .6rem 1.75rem;
+}
+
+.app-shell-root .app-breadcrumb-bar:empty {
+  display: none;
+}
+
+.app-shell-root .enterprise-bc ol {
+  gap: .35rem;
+  font-size: .8rem;
+  color: var(--adm-muted);
+  flex-wrap: wrap;
+}
+
+.app-shell-root .bc-home {
+  color: var(--adm-muted);
+  text-decoration: none;
+}
+
+.app-shell-root .bc-home:hover,
+.app-shell-root .bc-link:hover {
+  color: var(--adm-brand);
+}
+
+.app-shell-root .bc-link {
+  color: var(--adm-brand);
+  text-decoration: none;
+}
+
+.app-shell-root .bc-current {
+  color: var(--adm-ink);
+  font-weight: 600;
+}
+
+.app-shell-root .bc-separator {
+  color: #b6c0d3;
+}
+
+/* ---------- 4. Page header ---------- */
+.app-shell-root .page-header-box {
+  margin-bottom: 1.25rem !important;
+}
+
+.app-shell-root .page-header-main {
+  gap: 1rem;
+}
+
+.app-shell-root .page-header-title {
+  margin: 0;
+  font-family: var(--f, system-ui, sans-serif);
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -.01em;
+  color: var(--adm-ink);
+}
+
+.app-shell-root .page-header-subtitle {
+  margin-top: .3rem;
+  color: var(--adm-muted);
+  font-size: .88rem;
+  max-width: 70ch;
+}
+
+.app-shell-root .page-header-actions {
+  gap: .6rem;
+}
+
+.app-shell-root .page-header-bc-list {
+  display: flex;
+  gap: .35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: .8rem;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .page-header-bc-link {
+  color: var(--adm-brand);
+  text-decoration: none;
+}
+
+.app-shell-root .page-header-bc-link:hover {
+  text-decoration: underline;
+}
+
+/* ---------- 5. Cards, panels, KPI ---------- */
+.app-shell-root .panel,
+.app-shell-root .enterprise-card {
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius);
+  box-shadow: var(--adm-shadow-sm);
+}
+
+.app-shell-root .enterprise-card .card-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--adm-line);
+  gap: 1rem;
+}
+
+.app-shell-root .enterprise-card .card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--adm-ink);
+}
+
+.app-shell-root .enterprise-card .card-subtitle {
+  margin: .15rem 0 0;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .enterprise-card .card-body {
+  padding: 1.25rem;
+}
+
+.app-shell-root .stat-card {
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--adm-radius);
+  transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+}
+
+.app-shell-root .stat-card.cursor-pointer:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--adm-shadow);
+  border-color: var(--adm-line-strong);
+}
+
+.app-shell-root .stat-title {
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .stat-icon-wrap {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--adm-brand-soft);
+  color: var(--adm-brand);
+}
+
+.app-shell-root .stat-value {
+  margin-top: .5rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--adm-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.app-shell-root .stat-footer {
+  margin-top: .5rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.app-shell-root .stat-trend-up {
+  color: var(--adm-success);
+}
+
+.app-shell-root .stat-trend-down {
+  color: var(--adm-danger);
+}
+
+.app-shell-root .stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-weight: 600;
+}
+
+.app-shell-root .stat-success .stat-icon-wrap {
+  background: var(--adm-success-bg);
+  color: var(--adm-success);
+}
+
+.app-shell-root .stat-warning .stat-icon-wrap {
+  background: var(--adm-warning-bg);
+  color: var(--adm-warning);
+}
+
+.app-shell-root .stat-danger .stat-icon-wrap {
+  background: var(--adm-danger-bg);
+  color: var(--adm-danger);
+}
+
+.app-shell-root .stat-info .stat-icon-wrap {
+  background: var(--adm-info-bg);
+  color: var(--adm-info);
+}
+
+.app-shell-root .welcome-banner {
+  border-radius: 16px;
+  background: linear-gradient(120deg, var(--adm-navy) 0%, var(--adm-brand-d) 100%);
+  box-shadow: 0 12px 28px rgba(11, 31, 58, .2);
+}
+
+/* ---------- 6. Buttons ---------- */
+.app-shell-root .btn,
+.admin-portal .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  min-height: 38px;
+  padding: .5rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-brand);
+  color: #fff;
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(30, 79, 216, .25);
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+}
+
+.app-shell-root .btn:hover:not(:disabled),
+.admin-portal .btn:hover:not(:disabled) {
+  background: var(--adm-brand-d);
+  text-decoration: none;
+  color: #fff;
+}
+
+.app-shell-root .btn:active:not(:disabled),
+.admin-portal .btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.app-shell-root .btn:focus-visible,
+.admin-portal .btn:focus-visible {
+  outline: none;
+  box-shadow: var(--adm-focus);
+}
+
+.app-shell-root .btn:disabled,
+.admin-portal .btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.app-shell-root .btn.sm,
+.admin-portal .btn.sm {
+  min-height: 32px;
+  padding: .3rem .7rem;
+  font-size: .8rem;
+}
+
+.app-shell-root .btn.big,
+.admin-portal .btn.big {
+  min-height: 46px;
+  padding: .7rem 1.4rem;
+  font-size: .95rem;
+}
+
+.app-shell-root .btn.out,
+.admin-portal .btn.out {
+  background: var(--adm-surface);
+  color: var(--adm-ink);
+  border-color: var(--adm-line-strong);
+  box-shadow: var(--adm-shadow-sm);
+}
+
+.app-shell-root .btn.out:hover:not(:disabled),
+.admin-portal .btn.out:hover:not(:disabled) {
+  background: var(--adm-bg);
+  border-color: #b9c4d9;
+  color: var(--adm-ink);
+}
+
+.app-shell-root .btn.ghost,
+.admin-portal .btn.ghost {
+  background: transparent;
+  color: var(--adm-brand);
+  box-shadow: none;
+}
+
+.app-shell-root .btn.ghost:hover:not(:disabled),
+.admin-portal .btn.ghost:hover:not(:disabled) {
+  background: var(--adm-brand-soft);
+  color: var(--adm-brand-d);
+}
+
+.app-shell-root .btn.danger,
+.admin-portal .btn.danger {
+  background: var(--adm-danger);
+  box-shadow: 0 1px 2px rgba(198, 40, 40, .3);
+}
+
+.app-shell-root .btn.danger:hover:not(:disabled),
+.admin-portal .btn.danger:hover:not(:disabled) {
+  background: #a91f1f;
+}
+
+.app-shell-root .spinner-sm,
+.admin-portal .spinner-sm {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: adm-spin .7s linear infinite;
+}
+
+/* Button content: Button.jsx wraps children in a <span>, so <Icon/><span>Label</span>
+   passed as children ends up nested. Make that wrapper a flex row so every button
+   gets the same icon-to-label gap, however the icon was supplied. */
+.app-shell-root .btn>span,
+.admin-portal .btn>span {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+}
+
+.app-shell-root .btn svg,
+.admin-portal .btn svg,
+.btn svg {
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.app-shell-root .btn.sm>span,
+.admin-portal .btn.sm>span,
+.btn.sm>span {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+@keyframes adm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- 7. Forms ---------- */
+.app-shell-root .form-field,
+.admin-portal .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+
+.app-shell-root .form-label,
+.admin-portal .form-label,
+.app-shell-root .director-field-label,
+.admin-portal .director-field-label,
+.app-shell-root .depot-form-label,
+.admin-portal .depot-form-label {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+  letter-spacing: .01em;
+}
+
+.app-shell-root .req-star,
+.admin-portal .req-star {
+  color: var(--adm-danger);
+}
+
+.app-shell-root .fld input,
+.admin-portal .fld input,
+.app-shell-root .fld textarea,
+.admin-portal .fld textarea,
+.app-shell-root .select-input,
+.admin-portal .select-input,
+.app-shell-root .form-control,
+.admin-portal .form-control,
+.app-shell-root .director-field-input,
+.admin-portal .director-field-input,
+.app-shell-root .depot-form-input,
+.admin-portal .depot-form-input,
+.app-shell-root .search-input,
+.admin-portal .search-input {
+  width: 100%;
+  min-height: 40px;
+  padding: .5rem .8rem;
+  box-sizing: border-box;
+  background: var(--adm-surface);
+  color: var(--adm-ink);
+  border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-radius-sm);
+  font: inherit;
+  font-size: .9rem;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.app-shell-root .fld input::placeholder,
+.app-shell-root .form-control::placeholder,
+.app-shell-root .search-input::placeholder,
+.admin-portal .fld input::placeholder,
+.admin-portal .form-control::placeholder {
+  color: #94a3b8;
+}
+
+.app-shell-root .fld input:hover,
+.app-shell-root .select-input:hover,
+.app-shell-root .form-control:hover,
+.admin-portal .fld input:hover,
+.admin-portal .select-input:hover,
+.admin-portal .form-control:hover {
+  border-color: #a9b6cf;
+}
+
+.app-shell-root .fld input:focus,
+.app-shell-root .fld textarea:focus,
+.app-shell-root .select-input:focus,
+.app-shell-root .form-control:focus,
+.app-shell-root .director-field-input:focus,
+.app-shell-root .depot-form-input:focus,
+.app-shell-root .search-input:focus,
+.admin-portal .fld input:focus,
+.admin-portal .fld textarea:focus,
+.admin-portal .select-input:focus,
+.admin-portal .form-control:focus,
+.admin-portal .director-field-input:focus,
+.admin-portal .depot-form-input:focus {
+  outline: none;
+  border-color: var(--adm-brand);
+  box-shadow: var(--adm-focus);
+}
+
+.app-shell-root .fld input:disabled,
+.app-shell-root .select-input:disabled,
+.app-shell-root .form-control:disabled,
+.admin-portal .fld input:disabled,
+.admin-portal .select-input:disabled,
+.admin-portal .form-control:disabled {
+  background: #f1f4f9;
+  color: var(--adm-muted);
+  cursor: not-allowed;
+}
+
+.app-shell-root .fld.has-error input,
+.app-shell-root .fld.has-error .select-input,
+.admin-portal .fld.has-error input,
+.admin-portal .fld.has-error .select-input {
+  border-color: var(--adm-danger);
+}
+
+.app-shell-root .fld.has-error input:focus,
+.admin-portal .fld.has-error input:focus {
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, .18);
+}
+
+.app-shell-root .err,
+.admin-portal .err {
+  margin: 0;
+  font-size: .78rem;
+  color: var(--adm-danger);
+}
+
+.app-shell-root .form-helper,
+.admin-portal .form-helper {
+  margin: 0;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .fld {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.app-shell-root .fld .fld-icon {
+  position: absolute;
+  left: .75rem;
+  pointer-events: none;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .fld .fld-icon+input {
+  padding-left: 2.4rem;
+}
+
+.app-shell-root .search-fld input.search-input {
+  padding-left: 2.4rem;
+  padding-right: 2.2rem;
+}
+
+.app-shell-root .search-clear-btn {
+  position: absolute;
+  right: .5rem;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--adm-muted);
+  cursor: pointer;
+}
+
+.app-shell-root .search-clear-btn:hover {
+  background: var(--adm-bg);
+  color: var(--adm-ink);
+}
+
+/* ---------- 8. Filter bar ---------- */
+.app-shell-root .filter-bar-container {
+  padding: .9rem 1.1rem;
+  margin-bottom: 1.1rem !important;
+  border-radius: var(--adm-radius);
+}
+
+.app-shell-root .filter-bar-flex {
+  align-items: flex-end;
+  gap: .75rem;
+}
+
+.app-shell-root .filter-search-col {
+  flex: 1 1 260px;
+  min-width: 200px;
+}
+
+.app-shell-root .filter-select-col {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  min-width: 160px;
+}
+
+.app-shell-root .filter-select-label {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+}
+
+/* ---------- 9. Tables & pagination ---------- */
+.app-shell-root .data-table-container {
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius);
+  box-shadow: var(--adm-shadow-sm);
+  overflow: hidden;
+}
+
+.app-shell-root .data-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-shell-root .data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .875rem;
+}
+
+.app-shell-root .data-table th {
+  position: sticky;
+  top: 0;
+  padding: .75rem 1rem;
+  background: #f7f9fd;
+  border-bottom: 1px solid var(--adm-line);
+  text-align: left;
+  white-space: nowrap;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .data-table td {
+  padding: .8rem 1rem;
+  border-bottom: 1px solid #edf0f6;
+  color: var(--adm-text);
+  vertical-align: middle;
+}
+
+.app-shell-root .data-table tbody tr {
+  transition: background .12s ease;
+}
+
+.app-shell-root .data-table tbody tr:hover {
+  background: #f7f9ff;
+}
+
+.app-shell-root .data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.app-shell-root .data-table .clickable-row {
+  cursor: pointer;
+}
+
+.app-shell-root .table-state-cell {
+  padding: 0 !important;
+}
+
+.app-shell-root .table-loader,
+.app-shell-root .table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .table-empty h4 {
+  margin: 0;
+  color: var(--adm-ink);
+  font-size: 1rem;
+}
+
+.app-shell-root .table-empty p {
+  margin: 0;
+}
+
+.app-shell-root .table-pagination-footer {
+  padding: .75rem 1rem;
+  border-top: 1px solid var(--adm-line);
+  background: #fbfcfe;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.app-shell-root .pagination-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.app-shell-root .pagination-pages {
+  display: inline-flex;
+  gap: .25rem;
+}
+
+.app-shell-root .pagination-btn,
+.app-shell-root .pagination-page {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 .5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--adm-surface);
+  color: var(--adm-text);
+  border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-radius-sm);
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.app-shell-root .pagination-btn:hover:not(:disabled),
+.app-shell-root .pagination-page:hover {
+  background: var(--adm-bg);
+}
+
+.app-shell-root .pagination-page.active {
+  background: var(--adm-brand);
+  border-color: var(--adm-brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+.app-shell-root .pagination-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.app-shell-root .pagination-dots {
+  padding: 0 .25rem;
+  color: var(--adm-muted);
+}
+
+/* ---------- 10. Badges ---------- */
+.app-shell-root .badge-pill,
+.app-shell-root .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .22rem .65rem;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.app-shell-root .badge-pill.badge-sm {
+  padding: .12rem .5rem;
+  font-size: .68rem;
+}
+
+.app-shell-root .badge-success,
+.app-shell-root .status-success {
+  background: var(--adm-success-bg);
+  color: var(--adm-success);
+  border-color: #c4ebd1;
+}
+
+.app-shell-root .badge-warning,
+.app-shell-root .status-warning {
+  background: var(--adm-warning-bg);
+  color: var(--adm-warning);
+  border-color: #f6dfa4;
+}
+
+.app-shell-root .badge-danger,
+.app-shell-root .status-danger {
+  background: var(--adm-danger-bg);
+  color: var(--adm-danger);
+  border-color: #f6c8c8;
+}
+
+.app-shell-root .badge-info,
+.app-shell-root .status-info {
+  background: var(--adm-info-bg);
+  color: var(--adm-info);
+  border-color: #bfe1f5;
+}
+
+.app-shell-root .badge-primary,
+.app-shell-root .status-primary {
+  background: var(--adm-brand-soft);
+  color: var(--adm-brand-d);
+  border-color: #c9d8fb;
+}
+
+.app-shell-root .badge-neutral,
+.app-shell-root .badge-default,
+.app-shell-root .status-neutral,
+.app-shell-root .status-default {
+  background: #eef1f6;
+  color: #475569;
+  border-color: #dde3ee;
+}
+
+/* ---------- 11. Tabs ---------- */
+.app-shell-root .tabbar-wrapper {
+  margin-bottom: 1.1rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.app-shell-root .tabbar-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.app-shell-root .tabbar {
+  display: flex;
+  gap: .25rem;
+  border-bottom: 1px solid var(--adm-line);
+  min-width: max-content;
+}
+
+.app-shell-root .tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .7rem 1rem;
+  margin-bottom: -1px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--adm-muted);
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+
+.app-shell-root .tab-btn:hover {
+  color: var(--adm-ink);
+  background: rgba(30, 79, 216, .04);
+}
+
+.app-shell-root .tab-btn.active {
+  color: var(--adm-brand);
+  border-bottom-color: var(--adm-brand);
+}
+
+.app-shell-root .tab-btn:focus-visible {
+  outline: none;
+  box-shadow: inset var(--adm-focus);
+}
+
+.app-shell-root .tab-badge {
+  min-width: 20px;
+  padding: 0 .4rem;
+  border-radius: 999px;
+  background: #e9edf5;
+  color: var(--adm-text);
+  font-size: .7rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.app-shell-root .tab-badge-active {
+  background: var(--adm-brand);
+  color: #fff;
+}
+
+/* ---------- 12. Modals, drawers, popups ---------- */
+.app-shell-root .modal-backdrop,
+.admin-portal.modal-backdrop,
+.app-shell-root .csd-modal-overlay,
+.admin-portal.drawer-overlay,
+.app-shell-root .drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(8, 23, 44, .55);
+  backdrop-filter: blur(3px);
+  animation: adm-fade .18s ease;
+}
+
+.admin-portal.drawer-overlay,
+.app-shell-root .drawer-overlay {
+  justify-content: flex-end;
+  align-items: stretch;
+  padding: 0;
+}
+
+@keyframes adm-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes adm-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes adm-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+.admin-portal .modal-container,
+.app-shell-root .csd-modal-container {
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-line);
+  border-radius: 16px;
+  box-shadow: var(--adm-shadow-lg);
+  overflow: hidden;
+  animation: adm-pop .2s ease;
+}
+
+.admin-portal .modal-header {
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--adm-line);
+  gap: 1rem;
+}
+
+.admin-portal .modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--adm-ink);
+}
+
+.admin-portal .modal-subtitle {
+  margin: .2rem 0 0;
+  color: var(--adm-muted);
+}
+
+.admin-portal .modal-body {
+  padding: 1.25rem 1.4rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.admin-portal .modal-footer {
+  padding: .9rem 1.4rem;
+  border-top: 1px solid var(--adm-line);
+  background: #fbfcfe;
+}
+
+.admin-portal .modal-footer-btns,
+.app-shell-root .modal-footer-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.admin-portal .modal-close-btn,
+.admin-portal .drawer-close {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--adm-muted);
+  cursor: pointer;
+}
+
+.admin-portal .modal-close-btn:hover,
+.admin-portal .drawer-close:hover {
+  background: var(--adm-bg);
+  color: var(--adm-ink);
+}
+
+.admin-portal .confirm-body {
+  gap: .9rem;
+  align-items: flex-start;
+}
+
+.admin-portal .confirm-icon {
+  flex-shrink: 0;
+}
+
+.admin-portal .confirm-text {
+  margin: 0;
+  color: var(--adm-text);
+  line-height: 1.55;
+}
+
+.admin-portal .drawer-panel {
+  width: min(var(--drawer-w, 420px), 100vw);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--adm-surface);
+  box-shadow: var(--adm-shadow-lg);
+  animation: adm-slide-in .24s cubic-bezier(.4, 0, .2, 1);
+}
+
+.admin-portal .drawer-header {
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--adm-line);
+  gap: 1rem;
+}
+
+.admin-portal .drawer-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--adm-ink);
+}
+
+.admin-portal .drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.4rem;
+}
+
+.admin-portal .drawer-footer {
+  padding: .9rem 1.4rem;
+  border-top: 1px solid var(--adm-line);
+  background: #fbfcfe;
+}
+
+/* ---------- 13. Toasts, alerts ---------- */
+.app-shell-root .toast,
+.admin-portal .toast {
+  border-radius: var(--adm-radius-sm);
+  box-shadow: var(--adm-shadow-lg);
+  border: 1px solid var(--adm-line);
+}
+
+.app-shell-root .alert-banner,
+.app-shell-root .alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  padding: .8rem 1rem;
+  border-radius: var(--adm-radius-sm);
+  border: 1px solid var(--adm-line);
+  background: var(--adm-info-bg);
+  color: var(--adm-info);
+  font-size: .875rem;
+}
+
+.app-shell-root .alert.success,
+.app-shell-root .alert-banner.success {
+  background: var(--adm-success-bg);
+  color: var(--adm-success);
+  border-color: #c4ebd1;
+}
+
+.app-shell-root .alert.warning,
+.app-shell-root .alert-banner.warning {
+  background: var(--adm-warning-bg);
+  color: var(--adm-warning);
+  border-color: #f6dfa4;
+}
+
+.app-shell-root .alert.danger,
+.app-shell-root .alert-banner.danger {
+  background: var(--adm-danger-bg);
+  color: var(--adm-danger);
+  border-color: #f6c8c8;
+}
+
+/* ---------- 14. Loading & empty states ---------- */
+.app-shell-root .state-box {
+  max-width: 460px;
+  padding: 2.5rem 2rem;
+  gap: .9rem;
+  border-radius: 16px;
+  border: 1px dashed var(--adm-line-strong);
+  background: var(--adm-surface);
+  box-shadow: none;
+}
+
+.app-shell-root .state-box.state-error {
+  border-style: solid;
+  border-color: #f6c8c8;
+  background: #fffafa;
+}
+
+.app-shell-root .state-title {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--adm-ink);
+}
+
+.app-shell-root .state-message {
+  color: var(--adm-muted);
+}
+
+.app-shell-root .state-spinner-wrap {
+  background: var(--adm-brand-soft);
+}
+
+/* ---------- 15. Detail lists / key-value / form sections ---------- */
+.app-shell-root .form-section-card {
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius);
+  padding: 1.25rem;
+}
+
+.app-shell-root .form-section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--adm-ink);
+}
+
+.app-shell-root .kv-row {
+  padding: .55rem 0;
+  border-bottom: 1px dashed var(--adm-line);
+}
+
+.app-shell-root .kv-row:last-child {
+  border-bottom: 0;
+}
+
+.app-shell-root .detail-label,
+.app-shell-root .csd-preview-field-label {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .csd-preview-field-value {
+  color: var(--adm-ink);
+  font-weight: 500;
+}
+
+/* ---------- 16. Accessibility & motion ---------- */
+.app-shell-root a:focus-visible,
+.app-shell-root button:focus-visible,
+.admin-portal a:focus-visible,
+.admin-portal button:focus-visible {
+  outline: 2px solid var(--adm-brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .app-shell-root *,
+  .admin-portal,
+  .admin-portal * {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ---------- 17. Responsive ---------- */
+@media (max-width: 1280px) {
+  .app-shell-root .app-content-body {
+    padding: 1.25rem 1.25rem 2rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .app-shell-root .app-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: min(var(--adm-sidebar-w), 86vw);
+    transform: translateX(-105%);
+    z-index: 1000;
+  }
+
+  .app-shell-root .app-sidebar.collapsed {
+    width: min(var(--adm-sidebar-w), 86vw);
+  }
+
+  .app-shell-root .app-sidebar.open-mobile {
+    transform: none;
+  }
+
+  .app-shell-root .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(8, 23, 44, .6);
+    backdrop-filter: blur(3px);
+  }
+
+  .app-shell-root .app-breadcrumb-bar {
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell-root .app-content-body {
+    padding: 1rem .9rem 1.75rem;
+  }
+
+  .app-shell-root .app-breadcrumb-bar {
+    padding: .5rem .9rem;
+  }
+
+  .app-shell-root .page-header-main {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .app-shell-root .page-header-actions {
+    width: 100%;
+  }
+
+  .app-shell-root .filter-search-col,
+  .app-shell-root .filter-select-col {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .app-shell-root .data-table th,
+  .app-shell-root .data-table td {
+    padding: .65rem .75rem;
+  }
+
+  .app-shell-root .table-pagination-footer {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .admin-portal.modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .admin-portal .modal-container {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-shell-root .app-header-bar {
+    padding: 0 .75rem;
+  }
+
+  .app-shell-root .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .admin-portal .modal-footer-btns .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* =====================================================================
+   18. UNIFICATION LAYER  – one look for every button / input / table / badge
+   Page-specific variants (depot-*, csd-*, director-*, portal-*) are mapped onto
+   the same tokens, sizes and radius as the shared components above.
+   ===================================================================== */
+
+/* ---- 18.1 Action buttons (all families share size, radius, weight) ---- */
+.app-shell-root :is(.btn-depot-action, .btn-depot-action-approve, .btn-depot-manual-close, .btn-depot-manual-submit,
+  .btn-depot-choose-file, .btn-depot-view-customer, .btn-depot-payment-receipt, .btn-depot-status-view,
+  .csd-btn-action-view, .csd-btn-action-edit, .portal-btn-deny-danger, .wp-generate-pw-btn, .btn-sm, .btn-outline),
+.admin-portal :is(.btn-depot-action, .btn-depot-action-approve, .btn-depot-manual-close, .btn-depot-manual-submit,
+  .btn-depot-choose-file, .btn-depot-view-customer, .btn-depot-payment-receipt, .btn-depot-status-view,
+  .csd-btn-action-view, .csd-btn-action-edit, .portal-btn-deny-danger, .wp-generate-pw-btn, .btn-sm, .btn-outline) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 34px;
+  padding: .35rem .85rem;
+  border: 1px solid #c9d8fb;
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-brand-soft);
+  color: var(--adm-brand-d);
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.app-shell-root :is(.btn-depot-action, .btn-depot-action-approve, .btn-depot-manual-close, .btn-depot-manual-submit,
+  .btn-depot-choose-file, .btn-depot-view-customer, .btn-depot-payment-receipt, .btn-depot-status-view,
+  .csd-btn-action-view, .csd-btn-action-edit, .wp-generate-pw-btn):hover:not(:disabled),
+.admin-portal :is(.btn-depot-action, .btn-depot-action-approve, .btn-depot-manual-close, .btn-depot-manual-submit,
+  .btn-depot-choose-file, .btn-depot-view-customer, .btn-depot-payment-receipt, .btn-depot-status-view,
+  .csd-btn-action-view, .csd-btn-action-edit, .wp-generate-pw-btn):hover:not(:disabled) {
+  background: var(--adm-brand);
+  border-color: var(--adm-brand);
+  color: #fff;
+}
+
+.app-shell-root :is(.btn-depot-action, .btn-depot-manual-close, .btn-depot-manual-submit):focus-visible {
+  outline: none;
+  box-shadow: var(--adm-focus);
+}
+
+.app-shell-root :is(.btn-depot-action, .btn-depot-manual-close, .btn-depot-manual-submit):disabled,
+.admin-portal :is(.btn-depot-action, .btn-depot-manual-close, .btn-depot-manual-submit):disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.app-shell-root .btn-depot-action {
+  width: 100%;
+}
+
+/* solid success */
+.app-shell-root :is(.btn-action-approve, .btn-action-payment-received, .btn-depot-action-approve, .btn-depot-manual-submit),
+.admin-portal :is(.btn-action-approve, .btn-action-payment-received, .btn-depot-action-approve, .btn-depot-manual-submit) {
+  background: var(--adm-success);
+  border-color: var(--adm-success);
+  color: #fff;
+}
+
+.app-shell-root :is(.btn-action-approve, .btn-action-payment-received, .btn-depot-action-approve, .btn-depot-manual-submit):hover:not(:disabled),
+.admin-portal :is(.btn-action-approve, .btn-action-payment-received, .btn-depot-action-approve, .btn-depot-manual-submit):hover:not(:disabled) {
+  background: #116a33;
+  border-color: #116a33;
+}
+
+/* solid primary */
+.app-shell-root .btn-action-upload-supply {
+  background: var(--adm-brand);
+  border-color: var(--adm-brand);
+  color: #fff;
+}
+
+.app-shell-root .btn-action-upload-supply:hover:not(:disabled) {
+  background: var(--adm-brand-d);
+  border-color: var(--adm-brand-d);
+}
+
+/* danger (outline-soft) */
+.app-shell-root :is(.btn-action-reject, .portal-btn-deny-danger),
+.admin-portal :is(.btn-action-reject, .portal-btn-deny-danger) {
+  background: var(--adm-danger-bg);
+  border-color: #f6c8c8 !important;
+  color: var(--adm-danger) !important;
+}
+
+.app-shell-root :is(.btn-action-reject, .portal-btn-deny-danger):hover:not(:disabled),
+.admin-portal :is(.btn-action-reject, .portal-btn-deny-danger):hover:not(:disabled) {
+  background: var(--adm-danger);
+  border-color: var(--adm-danger) !important;
+  color: #fff !important;
+}
+
+/* neutral */
+.app-shell-root :is(.btn-depot-manual-close, .btn-depot-choose-file, .btn-outline),
+.admin-portal :is(.btn-depot-manual-close, .btn-depot-choose-file, .btn-outline) {
+  background: var(--adm-surface);
+  border-color: var(--adm-line-strong);
+  color: var(--adm-ink);
+}
+
+.app-shell-root :is(.btn-depot-manual-close, .btn-depot-choose-file, .btn-outline):hover:not(:disabled),
+.admin-portal :is(.btn-depot-manual-close, .btn-depot-choose-file, .btn-outline):hover:not(:disabled) {
+  background: var(--adm-bg);
+  border-color: #b9c4d9;
+  color: var(--adm-ink);
+}
+
+.app-shell-root .btn.btn-sm,
+.admin-portal .btn.btn-sm {
+  min-height: 32px;
+  padding: .3rem .7rem;
+  font-size: .8rem;
+}
+
+/* icon-only / plain buttons */
+.app-shell-root :is(.portal-btn-icon-plain, .btn-icon-close, .btn-plain, .pw-icon-btn, .depot-search-btn),
+.admin-portal :is(.portal-btn-icon-plain, .btn-icon-close, .btn-plain, .pw-icon-btn, .depot-search-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: var(--adm-muted);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+
+.app-shell-root :is(.portal-btn-icon-plain, .btn-icon-close, .pw-icon-btn):hover,
+.admin-portal :is(.portal-btn-icon-plain, .btn-icon-close, .pw-icon-btn):hover {
+  background: var(--adm-bg);
+  color: var(--adm-ink);
+}
+
+/* filter chips / period toggles / chart tabs share the pill style */
+.app-shell-root :is(.fchip, .period-toggle-btn, .chart-tab-btn, .depot-tab-btn, .portal-tab-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .4rem .9rem;
+  border-radius: 999px;
+  border: 1px solid var(--adm-line-strong);
+  background: var(--adm-surface);
+  color: var(--adm-text);
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.app-shell-root :is(.fchip, .period-toggle-btn, .chart-tab-btn, .depot-tab-btn, .portal-tab-btn):hover {
+  background: var(--adm-bg);
+}
+
+.app-shell-root :is(.fchip, .period-toggle-btn, .chart-tab-btn, .depot-tab-btn, .portal-tab-btn).active,
+.app-shell-root .fchip.on {
+  background: var(--adm-brand);
+  border-color: var(--adm-brand);
+  color: #fff;
+}
+
+/* ---- 18.2 Inputs, selects, textareas (all pages) ---- */
+.app-shell-root :is(.depot-filter-select, .csd-filter-select, .depot-search-input, .csd-search-field-input,
+  .portal-date-input, .inp, .fld-input-sm, .portal-textarea, .portal-textarea-custom,
+  .helpdesk-textarea-reply, .helpdesk-textarea-confidential, .director-field-input, .depot-form-input),
+.admin-portal :is(.depot-filter-select, .csd-filter-select, .depot-search-input, .csd-search-field-input,
+  .portal-date-input, .inp, .fld-input-sm, .portal-textarea, .portal-textarea-custom,
+  .helpdesk-textarea-reply, .helpdesk-textarea-confidential, .director-field-input, .depot-form-input) {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: .5rem .8rem;
+  background-color: var(--adm-surface);
+  color: var(--adm-ink);
+  border: 1px solid var(--adm-line-strong);
+  border-radius: var(--adm-radius-sm);
+  font: inherit;
+  font-size: .9rem;
+  line-height: 1.4;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.app-shell-root :is(.depot-filter-select, .csd-filter-select, .csd-search-field-input, .portal-date-input,
+  .inp, .fld-input-sm, .portal-textarea, .portal-textarea-custom, .helpdesk-textarea-reply,
+  .helpdesk-textarea-confidential, .director-field-input, .depot-form-input, .depot-search-input):focus,
+.admin-portal :is(.depot-filter-select, .csd-filter-select, .csd-search-field-input, .portal-date-input,
+  .inp, .fld-input-sm, .portal-textarea, .portal-textarea-custom, .helpdesk-textarea-reply,
+  .helpdesk-textarea-confidential, .director-field-input, .depot-form-input):focus {
+  outline: none;
+  border-color: var(--adm-brand);
+  box-shadow: var(--adm-focus);
+}
+
+.app-shell-root :is(.depot-filter-select, .csd-filter-select),
+.admin-portal :is(.depot-filter-select, .csd-filter-select) {
+  width: auto;
+  min-width: 150px;
+}
+
+.app-shell-root :is(.fld-sm .search-input, .fld-input-sm, .fld-sm input),
+.admin-portal :is(.fld-input-sm, .fld-sm input) {
+  min-height: 34px;
+  padding: .3rem .65rem;
+  font-size: .84rem;
+}
+
+.app-shell-root textarea,
+.admin-portal textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.app-shell-root :is(.portal-textarea, .portal-textarea-custom, .helpdesk-textarea-reply, .helpdesk-textarea-confidential, textarea.director-field-input, textarea.form-control, .fld textarea),
+.admin-portal :is(.portal-textarea, .portal-textarea-custom, textarea.director-field-input, textarea.form-control, .fld textarea) {
+  min-height: 88px;
+  line-height: 1.5;
+}
+
+.app-shell-root .depot-search-input {
+  padding-right: 2.2rem;
+}
+
+/* one chevron for every <select> */
+.app-shell-root select,
+.admin-portal select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .7rem center;
+  background-size: 16px;
+  padding-right: 2.2rem !important;
+  cursor: pointer;
+}
+
+.app-shell-root input[type="checkbox"],
+.app-shell-root input[type="radio"],
+.admin-portal input[type="checkbox"],
+.admin-portal input[type="radio"] {
+  width: 16px;
+  min-height: 0;
+  height: 16px;
+  accent-color: var(--adm-brand);
+  cursor: pointer;
+}
+
+.app-shell-root input[type="file"],
+.admin-portal input[type="file"] {
+  min-height: 0;
+  padding: .4rem;
+}
+
+/* ---- 18.3 Tables: every table in the panel looks like .data-table ---- */
+.app-shell-root :is(.admin-table-simple, .depot-received-table) {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .875rem;
+  text-align: left;
+}
+
+.app-shell-root :is(.admin-table-simple, .depot-received-table) th {
+  padding: .75rem 1rem;
+  background: #f7f9fd;
+  border-bottom: 1px solid var(--adm-line);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+  white-space: nowrap;
+}
+
+.app-shell-root :is(.admin-table-simple, .depot-received-table) td {
+  padding: .8rem 1rem;
+  border-bottom: 1px solid #edf0f6;
+  color: var(--adm-text);
+  vertical-align: middle;
+}
+
+.app-shell-root :is(.admin-table-simple, .depot-received-table) tbody tr:hover {
+  background: #f7f9ff;
+}
+
+.app-shell-root :is(.admin-table-simple, .depot-received-table) tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.app-shell-root .data-table .text-right,
+.app-shell-root .data-table th.text-right {
+  text-align: right;
+}
+
+.app-shell-root .data-table .text-center {
+  text-align: center;
+}
+
+.app-shell-root .table-th-user,
+.app-shell-root .table-td-user,
+.app-shell-root .table-th-pad,
+.app-shell-root .table-td-pad {
+  padding: .75rem 1rem;
+}
+
+/* compact key-value meta tables inside modals */
+.admin-portal .depot-summary-meta-table,
+.app-shell-root .depot-summary-meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .84rem;
+}
+
+.admin-portal .depot-summary-meta-table td,
+.app-shell-root .depot-summary-meta-table td {
+  padding: .5rem .6rem;
+  border-bottom: 1px dashed var(--adm-line);
+  color: var(--adm-text);
+}
+
+.admin-portal .depot-summary-meta-table tr:last-child td,
+.app-shell-root .depot-summary-meta-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-portal .depot-summary-meta-table td:first-child,
+.app-shell-root .depot-summary-meta-table td:first-child {
+  color: var(--adm-muted);
+  font-weight: 600;
+  width: 40%;
+}
+
+/* ---- 18.4 Badges & pills ---- */
+.app-shell-root :is(.badge, .badge-role-tag, .badge-perm-count, .depot-status-pill, .notif-type-tag, .csd-code-badge, .badge-outline),
+.admin-portal :is(.badge, .badge-role-tag, .badge-perm-count, .depot-status-pill, .notif-type-tag, .csd-code-badge, .badge-outline),
+.badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: .35rem;
+  padding: .22rem .65rem;
+  border-radius: 999px;
+  border: 1px solid #dde3ee;
+  background: #eef1f6;
+  color: #475569;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap !important;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.app-shell-root :is(.badge, .badge-role-tag, .badge-perm-count, .depot-status-pill, .notif-type-tag, .csd-code-badge, .badge-outline, .status-badge) svg,
+.admin-portal :is(.badge, .badge-role-tag, .badge-perm-count, .depot-status-pill, .notif-type-tag, .csd-code-badge, .badge-outline, .status-badge) svg,
+.badge svg,
+.status-badge svg {
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.app-shell-root .badge.sm,
+.badge.sm {
+  padding: .15rem .55rem;
+  font-size: .72rem;
+}
+
+.app-shell-root .badge.micro,
+.badge.micro {
+  padding: .1rem .45rem;
+  font-size: .66rem;
+}
+
+.app-shell-root .btn.xs,
+.admin-portal .btn.xs,
+.btn.xs {
+  min-height: 26px;
+  padding: .2rem .55rem;
+  font-size: .75rem;
+  gap: .3rem;
+}
+
+.app-shell-root :is(.badge.info, .badge-info-subtle, .badge-role-tag, .notif-type-info) {
+  background: var(--adm-info-bg);
+  color: var(--adm-info);
+  border-color: #bfe1f5;
+}
+
+.app-shell-root :is(.badge.primary, .badge-perm-count, .csd-code-badge) {
+  background: var(--adm-brand-soft);
+  color: var(--adm-brand-d);
+  border-color: #c9d8fb;
+}
+
+.app-shell-root :is(.badge.success, .badge-success-subtle-sm) {
+  background: var(--adm-success-bg);
+  color: var(--adm-success);
+  border-color: #c4ebd1;
+}
+
+.app-shell-root :is(.badge.warning) {
+  background: var(--adm-warning-bg);
+  color: var(--adm-warning);
+  border-color: #f6dfa4;
+}
+
+.app-shell-root :is(.badge.danger) {
+  background: var(--adm-danger-bg);
+  color: var(--adm-danger);
+  border-color: #f6c8c8;
+}
+
+.app-shell-root :is(.badge.neutral, .badge-subtle-slate, .badge-slate-subtle-sm) {
+  background: #eef1f6;
+  color: #475569;
+  border-color: #dde3ee;
+}
+
+.app-shell-root .badge-outline {
+  background: transparent;
+}
+
+.app-shell-root .csd-code-badge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  border-radius: 6px;
+}
+
+/* ---- 18.5 CSD modal parts (inline modals) ---- */
+.app-shell-root .csd-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--adm-line);
+}
+
+.app-shell-root .csd-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--adm-ink);
+}
+
+.app-shell-root .csd-modal-body {
+  padding: 1.25rem 1.4rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.app-shell-root .csd-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: .6rem;
+  flex-wrap: wrap;
+  padding: .9rem 1.4rem;
+  border-top: 1px solid var(--adm-line);
+  background: #fbfcfe;
+}
+
+.app-shell-root .csd-modal-close-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--adm-muted);
+  cursor: pointer;
+}
+
+.app-shell-root .csd-modal-close-btn:hover {
+  background: var(--adm-bg);
+  color: var(--adm-ink);
+}
+
+/* ---- 18.6 Alerts ---- */
+.app-shell-root .alert-success {
+  background: var(--adm-success-bg);
+  color: var(--adm-success);
+  border-color: #c4ebd1;
+}
+
+.app-shell-root .alert-danger {
+  background: var(--adm-danger-bg);
+  color: var(--adm-danger);
+  border-color: #f6c8c8;
+}
+
+.app-shell-root :is(.alert-success, .alert-danger) {
+  display: flex;
+  gap: .6rem;
+  padding: .8rem 1rem;
+  border: 1px solid;
+  border-radius: var(--adm-radius-sm);
+  font-size: .875rem;
+}
+
+/* =====================================================================
+   19. PRODUCT CATALOGUE (shared by Beneficiary / URC / Depot / OEM)
+   CatalogToolbar + ProductGrid + shared table cells
+   ===================================================================== */
+.app-shell-root .catalog-card-shell .card-body {
+  padding: 0;
+}
+
+.app-shell-root .catalog-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--adm-line);
+  background: #fbfcfe;
+}
+
+.app-shell-root .catalog-toolbar-search {
+  flex: 1 1 280px;
+  min-width: 220px;
+  max-width: 560px;
+}
+
+.app-shell-root .catalog-toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.app-shell-root .catalog-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+}
+
+.app-shell-root .catalog-select .catalog-select-icon {
+  position: absolute;
+  left: .75rem;
+  color: var(--adm-muted);
+  pointer-events: none;
+}
+
+.app-shell-root .catalog-select select {
+  min-width: 190px;
+  padding-left: 2.3rem;
+}
+
+.app-shell-root .btn.icon-only {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+}
+
+.app-shell-root .catalog-view-toggle {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background: #eef1f7;
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius-sm);
+}
+
+.app-shell-root .catalog-view-toggle button {
+  width: 34px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--adm-muted);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+
+.app-shell-root .catalog-view-toggle button:hover {
+  color: var(--adm-ink);
+}
+
+.app-shell-root .catalog-view-toggle button.active {
+  background: var(--adm-surface);
+  color: var(--adm-brand);
+  box-shadow: var(--adm-shadow-sm);
+}
+
+/* table cells */
+.app-shell-root .catalog-card-shell .data-table-container {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.app-shell-root .catalog-product-cell {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  min-width: 240px;
+}
+
+.app-shell-root .catalog-product-meta {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  min-width: 0;
+}
+
+.app-shell-root .catalog-product-name {
+  font-weight: 600;
+  font-size: .875rem;
+  color: var(--adm-ink);
+  line-height: 1.3;
+}
+
+.app-shell-root .catalog-product-sub {
+  font-size: .72rem;
+  color: var(--adm-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.app-shell-root .catalog-brand {
+  font-size: .85rem;
+  font-weight: 500;
+  color: var(--adm-text);
+}
+
+.app-shell-root .catalog-price {
+  font-weight: 700;
+  font-size: .9rem;
+  color: var(--adm-brand-d);
+  font-variant-numeric: tabular-nums;
+}
+
+.app-shell-root .catalog-price-lg {
+  display: block;
+  font-size: 1.25rem;
+}
+
+.app-shell-root .catalog-price-stack {
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+}
+
+.app-shell-root .catalog-save {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--adm-success);
+}
+
+.app-shell-root .catalog-row-actions {
+  display: inline-flex;
+  gap: .5rem;
+  justify-content: flex-end;
+}
+
+.app-shell-root .product-table-thumb {
+  width: 56px;
+  height: 44px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--adm-line);
+  background: #f1f4f9;
+}
+
+/* card (grid) view */
+.app-shell-root .catalog-grid {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+}
+
+.app-shell-root .catalog-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius);
+  transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+}
+
+.app-shell-root .catalog-card:hover {
+  box-shadow: var(--adm-shadow);
+  transform: translateY(-2px);
+  border-color: var(--adm-line-strong);
+}
+
+.app-shell-root .catalog-card-media {
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f4f9;
+  border-bottom: 1px solid var(--adm-line);
+}
+
+.app-shell-root .catalog-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.app-shell-root .catalog-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  padding: 1rem 1.1rem 1.1rem;
+  flex: 1;
+}
+
+.app-shell-root .catalog-card-tags {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+  margin-bottom: .2rem;
+}
+
+.app-shell-root .catalog-card-brand {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .catalog-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.35;
+  color: var(--adm-ink);
+}
+
+.app-shell-root .catalog-card-price {
+  margin-top: auto;
+  padding-top: .8rem;
+  border-top: 1px solid var(--adm-line);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+.app-shell-root .catalog-card-price-label {
+  display: block;
+  font-size: .7rem;
+  color: var(--adm-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.app-shell-root .catalog-card-save {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: .72rem;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .catalog-card-save b {
+  color: var(--adm-success);
+  font-weight: 700;
+}
+
+.app-shell-root .catalog-card-actions {
+  display: flex;
+  gap: .5rem;
+  margin-top: .8rem;
+}
+
+.app-shell-root .catalog-card-actions>.btn {
+  flex: 1;
+}
+
+.app-shell-root .catalog-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--adm-muted);
+}
+
+.app-shell-root .catalog-empty h4 {
+  margin: 0;
+  color: var(--adm-ink);
+}
+
+@media (max-width: 768px) {
+  .app-shell-root .catalog-toolbar {
+    padding: .85rem;
+  }
+
+  .app-shell-root .catalog-toolbar-search {
+    max-width: none;
+    flex-basis: 100%;
+  }
+
+  .app-shell-root .catalog-toolbar-filters {
+    width: 100%;
+  }
+
+  .app-shell-root .catalog-select {
+    flex: 1;
+  }
+
+  .app-shell-root .catalog-select select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .app-shell-root .catalog-grid {
+    grid-template-columns: 1fr;
+    padding: .9rem;
+  }
+}

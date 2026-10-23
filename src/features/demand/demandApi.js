@@ -109,10 +109,10 @@ export const demandApi = api.injectEndpoints({
     }),
 
     approveDemand: builder.mutation({
-      query: ({ id, remarks }) => ({
+      query: ({ id, remarks, note, supplyOrderNo }) => ({
         url: `/demands/${id}/approve`,
         method: 'PATCH',
-        body: { remarks },
+        body: { note: note || remarks, remarks: remarks || note, supplyOrderNo },
       }),
       transformResponse: (response) => response?.data || response,
       invalidatesTags: ['Demand', 'Dashboard', 'Order'],

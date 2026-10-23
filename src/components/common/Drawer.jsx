@@ -27,9 +27,10 @@ export default function Drawer({
   if (!isOpen) return null;
 
   return (
-    <div className="drawer-overlay" onClick={onClose} role="dialog" aria-modal="true">
+    <div className="drawer-overlay admin-portal" onClick={onClose} role="dialog" aria-modal="true">
       <div
         className={`drawer-panel drawer-${position}`}
+        style={{ '--drawer-w': width }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="drawer-header between">
