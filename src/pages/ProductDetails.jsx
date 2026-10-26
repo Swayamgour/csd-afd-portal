@@ -434,11 +434,9 @@ export default function ProductDetails() {
 
   const imgs = useGallery(p);
 
-  const similar = useMemo(
-    () =>
-      p && all.length
-        ? all.filter((x) => (x._id || x.id) !== p.id).slice(0, 4)
-        : [],
+  const similar = useMemo(() => p && all.length
+    ? all.filter((x) => (x._id || x.id) !== p.id).slice(0, 4)
+    : [],
     [all, p],
   );
 
@@ -457,8 +455,8 @@ export default function ProductDetails() {
       />
     );
 
-  const skuNumber = p?.sku || "64224";
-  const mfgCode = p?.mfgCode || "7116";
+  const skuNumber = p?.sku || p?.indexNo || "64224";
+  const mfgCode = p?.mfrCode || p?.mfgCode || p?.firmCode || "CSD-MFR-01";
 
   const car = p.category === "car",
     bike = p.category === "bike",
@@ -505,6 +503,8 @@ export default function ProductDetails() {
       [
         "General",
         [
+          ["CSD Index / SKU", skuNumber],
+          ["Manufacturer Code", mfgCode],
           ["Brand", p.brand],
           ["Body type", p.type],
           ["Transmission", p.trans],
@@ -533,6 +533,8 @@ export default function ProductDetails() {
         [
           "General",
           [
+            ["CSD Index / SKU", skuNumber],
+            ["Manufacturer Code", mfgCode],
             ["Brand", p.brand],
             ["Type", p.type],
             ["Fuel type", val(p.fuel)],
@@ -553,6 +555,8 @@ export default function ProductDetails() {
         [
           "General",
           [
+            ["CSD Index / SKU", skuNumber],
+            ["Manufacturer Code", mfgCode],
             ["Brand", p.brand],
             ["Type", p.type],
           ],
@@ -782,7 +786,7 @@ export default function ProductDetails() {
               ))}
             </ul>
           )}
-         
+
         </div>
 
         {/* ---------- buy box (Step 6, Fig. 6) ---------- */}
@@ -1183,7 +1187,7 @@ export default function ProductDetails() {
                 )}
               </button>
 
-             
+
             </div>
           </div>
 
@@ -1383,6 +1387,7 @@ export default function ProductDetails() {
             </Link>
           </div>
           <div className="pgrid">
+            {/* {} */}
             {similar.map((x) => (
               <ProductCard key={x.id} p={x} />
             ))}

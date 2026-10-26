@@ -15,15 +15,29 @@ export const priceFrom = p => (p.category === 'white-goods' ? inr(p.lo) : `₹${
 /** Price in plain rupees, so cars, bikes and appliances can be sorted together. */
 export const rupees = p => (p.category === 'white-goods' ? p.lo : Math.round(p.lo * 100000))
 
-/** Words a product can be found by (used by search + suggestions). */
-export const haystack = p =>
-  `${p.name} ${p.brand} ${p.type} ${(p.fuel || []).join(' ')} ${CAT_LABEL[p.category]} ${p.category === 'white-goods' ? 'home appliance white goods' : ''}`.toLowerCase()
+/** Words a product can be found by (used by search + suggestions). Includes SKU, Mfr Code, Index No, Brand, Name, Variant, Type. */
+export const haystack = p => {
+  const sku = p.sku || p.indexNo || ''
+  const mfr = p.mfrCode || p.mfr || p.firmCode || p.attributes?.mfrCode || ''
+  const cleanSku = String(sku).replace(/[^a-z0-9]/gi, '')
+  const cleanMfr = String(mfr).replace(/[^a-z0-9]/gi, '')
+  return `${p.name || ''} ${p.brand || ''} ${p.type || ''} ${sku} ${cleanSku} ${mfr} ${cleanMfr} ${p.indexNo || ''} ${p.firmCode || ''} ${p.variant || ''} ${p.nomenclature || ''} ${(p.fuel || []).join(' ')} ${CAT_LABEL[p.category] || ''} ${p.category === 'white-goods' ? 'home appliance white goods' : ''}`.toLowerCase()
+}
 
 export const matches = (p, q) => {
-  const words = q.toLowerCase().split(/\s+/).filter(Boolean)
-  if (!words.length) return true
+  if (!q) return true
+  const rawQ = String(q).trim().toLowerCase()
+  if (!rawQ) return true
   const h = haystack(p)
-  return words.every(w => h.includes(w))
+  if (h.includes(rawQ)) return true
+  const cleanQ = rawQ.replace(/[^a-z0-9]/gi, '')
+  if (cleanQ && cleanQ.length >= 3 && h.includes(cleanQ)) return true
+  const words = rawQ.split(/\s+/).filter(Boolean)
+  return words.every(w => {
+    if (h.includes(w)) return true
+    const cw = w.replace(/[^a-z0-9]/gi, '')
+    return cw && cw.length >= 3 && h.includes(cw)
+  })
 }
 
 export const onImgError = (e, label) => {

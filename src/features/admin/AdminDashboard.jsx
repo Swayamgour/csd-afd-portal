@@ -183,7 +183,7 @@ export const AdminDashboard = () => {
 
       {/* HEADER */}
       <PageHeader
-        title="CSD-HO & Enterprise Administration Dashboard"
+        title="CSD HO Admin Dashboard"
         subtitle="Real-time operational intelligence, master catalog management, and supply chain telemetry"
         breadcrumbs={[{ label: 'System Admin', href: '/admin/dashboard' }, { label: 'Dashboard' }]}
         actions={
@@ -363,7 +363,7 @@ export const AdminDashboard = () => {
               <Calendar size={13} className="portal-calendar-icon" />
               Period:
             </span>
-            {['today', '7d', '30d', 'month', 'prev_month', 'year'].map((tf) => (
+            {['today', '7d', '15d', 'month', 'prev_month', 'year'].map((tf) => (
               <button
                 key={tf}
                 type="button"

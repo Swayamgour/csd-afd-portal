@@ -5,8 +5,8 @@ import { products as fallbackProducts } from '../data/products.js'
 import { fetchProducts } from '../data/api.js'
 import { CAT_LABEL, matches, priceFrom, onImgError } from '../data/utils.js'
 
-const MIN = 3
-const POPULAR = ['Nexon', 'Swift', 'Royal Enfield', 'Refrigerator', 'Mahindra', 'Washing Machine', 'Scorpio', 'Thar', 'Curvv', 'Brezza']
+const MIN = 2
+const POPULAR = ['Nexon', 'Swift', 'Dzire', '68720', 'Royal Enfield', 'Mahindra', '64224', 'Thar', 'Curvv', 'Brezza']
 
 const Mark = ({ text, q }) => {
   const words = q.split(/\s+/).filter(Boolean).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
@@ -20,10 +20,23 @@ export function buildSuggestions(q, productList = fallbackProducts) {
   if (s.length < MIN) return []
   const score = p => {
     const n = (p.name || '').toLowerCase()
-    return n.startsWith(s) ? 0 : n.split(' ').some(w => w.startsWith(s)) ? 1 : n.includes(s) ? 2 : 3
+    const sku = String(p.sku || p.indexNo || '').toLowerCase()
+    const mfr = String(p.mfrCode || p.mfr || p.firmCode || '').toLowerCase()
+    if (sku.startsWith(s) || mfr.startsWith(s)) return 0
+    if (n.startsWith(s)) return 1
+    if (sku.includes(s) || mfr.includes(s)) return 2
+    if (n.split(' ').some(w => w.startsWith(s))) return 3
+    if (n.includes(s)) return 4
+    return 5
   }
   const prods = (productList || []).filter(p => matches(p, s)).sort((a, b) => score(a) - score(b)).slice(0, 6)
-  const out = prods.map(p => ({ kind: 'product', key: p.id || p._id, label: p.name, p }))
+  const out = prods.map(p => ({
+    kind: 'product',
+    key: p.id || p._id,
+    label: p.name,
+    sub: `${p.sku ? `SKU: ${p.sku} ` : ''}${p.mfrCode ? `· Mfr: ${p.mfrCode} ` : ''}· ${CAT_LABEL[p.category] || 'Vehicle'} · ${p.brand} · ${priceFrom(p)}`,
+    p
+  }))
   const brands = [...new Set((productList || []).filter(p => (p.brand || '').toLowerCase().includes(s)).map(p => p.brand))].slice(0, 2)
   brands.forEach(b => out.push({ kind: 'brand', key: 'b-' + b, label: b, sub: `${(productList || []).filter(p => p.brand === b).length} products` }))
   const types = [...new Set((productList || []).filter(p => (p.type || '').toLowerCase().includes(s)).map(p => p.type))].slice(0, 2)
@@ -31,7 +44,7 @@ export function buildSuggestions(q, productList = fallbackProducts) {
   return out
 }
 
-export default function SearchBox({ variant = 'header', placeholder = 'Search cars, bikes, appliances…' }) {
+export default function SearchBox({ variant = 'header', placeholder = 'Search cars, bikes, SKU, Mfr code…' }) {
   const loc = useLocation(), go = useNavigate()
   const fromUrl = loc.pathname === '/search' ? new URLSearchParams(loc.search).get('q') || '' : ''
   const [q, setQ] = useState(fromUrl), [open, setOpen] = useState(false), [active, setActive] = useState(-1)
@@ -112,7 +125,7 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
                 : <span className="sbox-ico">{icon(it)}</span>}
               <span className="sbox-txt">
                 <strong><Mark text={it.label} q={q.trim()} /></strong>
-                <small>{it.kind === 'product' ? `${CAT_LABEL[it.p.category]} · ${it.p.brand} · ${priceFrom(it.p)}` : it.sub}</small>
+                <small><Mark text={it.sub} q={q.trim()} /></small>
               </span>
               <ArrowUpRight size={16} aria-hidden className="sbox-arrow" />
             </button>

@@ -36,25 +36,52 @@ const toggle = (set, v) =>
   set((x) => (x.includes(v) ? x.filter((i) => i !== v) : [...x, v]));
 const lakh = (v) => `₹${+v.toFixed(1)} L`;
 
+const CAR_BRANDS = [
+  "Maruti",
+  "Tata",
+  "Mahindra",
+  "Hyundai",
+  "Toyota",
+  "Honda",
+  "Renault",
+  "Kia",
+  "Skoda",
+  "Volkswagen",
+];
+const BIKE_BRANDS = [
+  "Royal Enfield",
+  "Hero",
+  "Honda",
+  "TVS",
+  "Bajaj",
+  "Yamaha",
+  "Suzuki",
+  "KTM",
+];
+const APPL_BRANDS = ["LG", "Samsung", "Whirlpool", "Haier", "Panasonic"];
+
 function Group({ title, items, sel, set, counts }) {
   if (!items.length) return null;
+  const isLong = items.length > 6;
   return (
     <fieldset className="fgroup">
       <legend>{title}</legend>
-      {items.map((b) => (
-        <label key={b} className="chk">
-          <input
-            type="checkbox"
-            checked={sel.includes(b)}
-            onChange={() => toggle(set, b)}
-          />
-          <span className="box">
-            <Check size={12} aria-hidden />
-          </span>
-          <span className="lbl">{b}</span>
-          {counts && <em>{counts[b] ?? 0}</em>}
-        </label>
-      ))}
+      <div className={isLong ? "fgroup-scroll" : ""}>
+        {items.map((b) => (
+          <label key={b} className="chk">
+            <input
+              type="checkbox"
+              checked={sel.includes(b)}
+              onChange={() => toggle(set, b)}
+            />
+            <span className="box">
+              <Check size={12} aria-hidden />
+            </span>
+            <span className="lbl">{b}</span>
+            {counts && <em>{counts[b] ?? 0}</em>}
+          </label>
+        ))}
+      </div>
     </fieldset>
   );
 }
@@ -78,7 +105,7 @@ export default function Catalog({
   const [sort, setSort] = useState("rec"),
     [view, setView] = useState("grid"),
     [drawer, setDrawer] = useState(false);
-  const [brand, setBrand] = useState(""),
+  const [brands, setBrands] = useState([]),
     [types, setTypes] = useState([]),
     [fuels, setFuels] = useState([]);
   const [trans, setTrans] = useState([]),
@@ -95,7 +122,7 @@ export default function Catalog({
   useEffect(load, []);
 
   const reset = () => {
-    setBrand("");
+    setBrands([]);
     setTypes([]);
     setFuels([]);
     setTrans([]);
@@ -134,7 +161,7 @@ export default function Catalog({
     cat === "white-goods" ? `₹${Number(v).toLocaleString("en-IN")}` : lakh(v);
 
   const passes = (p, skipBrand) =>
-    (skipBrand || !brand || p.brand === brand) &&
+    (skipBrand || !brands.length || brands.includes(p.brand)) &&
     (!types.length || types.includes(p.type)) &&
     (!fuels.length || (p.fuel || []).some((f) => fuels.includes(f))) &&
     (!trans.length ||
@@ -151,8 +178,28 @@ export default function Catalog({
       });
     return m;
   }, [scope, types, fuels, trans, minRating, lim]); // eslint-disable-line
-  const brandTabs = Object.keys(brandCounts).sort(
-    (a, b) => brandCounts[b] - brandCounts[a] || a.localeCompare(b),
+
+  const categoryKnownBrands = useMemo(() => {
+    if (cat === "car") return CAR_BRANDS;
+    if (cat === "bike") return BIKE_BRANDS;
+    if (cat === "white-goods") return APPL_BRANDS;
+    return [...CAR_BRANDS, ...BIKE_BRANDS, ...APPL_BRANDS];
+  }, [cat]);
+
+  const brandList = useMemo(() => {
+    const presentInScope = scope.map((p) => p.brand).filter(Boolean);
+    const combined = [...new Set([...presentInScope, ...categoryKnownBrands])];
+    return combined.sort((a, b) => {
+      const ca = brandCounts[a] || 0;
+      const cb = brandCounts[b] || 0;
+      if (cb !== ca) return cb - ca; // Put brands with products first
+      return a.localeCompare(b);
+    });
+  }, [scope, categoryKnownBrands, brandCounts]);
+
+  const brandTabs = useMemo(
+    () => brandList.filter((b) => (brandCounts[b] || 0) > 0),
+    [brandList, brandCounts],
   );
   const brandAllCount = Object.values(brandCounts).reduce((a, b) => a + b, 0);
 
@@ -166,7 +213,7 @@ export default function Catalog({
       az: (a, b) => a.name.localeCompare(b.name),
     }[sort];
     return by ? [...l].sort(by) : l;
-  }, [scope, brand, types, fuels, trans, minRating, lim, sort]); // eslint-disable-line
+  }, [scope, brands, types, fuels, trans, minRating, lim, sort]); // eslint-disable-line
 
   const uniq = (f) => [...new Set(scope.flatMap(f))].sort();
   const count = (f) => {
@@ -178,7 +225,19 @@ export default function Catalog({
     );
     return m;
   };
-  const typeList = uniq((p) => [p.type]);
+
+  const carBodyTypes = ["Hatchback", "Sedan", "SUV"];
+  const bikeBodyTypes = ["Commuter", "Cruiser", "Roadster", "Sports", "Scooter"];
+  const baseTypes =
+    single
+      ? cat === "car"
+        ? carBodyTypes
+        : cat === "bike"
+          ? bikeBodyTypes
+          : []
+      : [];
+  const typeList = [...new Set([...baseTypes, ...uniq((p) => [p.type])])].filter(Boolean).sort();
+
   const fuelList = uniq((p) => p.fuel || []);
   const transList =
     single && cat === "car"
@@ -186,7 +245,7 @@ export default function Catalog({
       : [];
 
   const chips = [
-    ...(brand ? [[brand, () => setBrand("")]] : []),
+    ...brands.map((b) => [b, () => toggle(setBrands, b)]),
     ...types.map((t) => [t, () => toggle(setTypes, t)]),
     ...fuels.map((t) => [t, () => toggle(setFuels, t)]),
     ...trans.map((t) => [t, () => toggle(setTrans, t)]),
@@ -299,6 +358,23 @@ export default function Catalog({
         </fieldset>
       )}
 
+      {/* COMPANY / BRAND FILTER (LAST IN FILTERS SIDEBAR) */}
+      <Group
+        title={
+          single
+            ? cat === "car"
+              ? "Car Company"
+              : cat === "bike"
+                ? "Bike Company"
+                : "Appliance Brand"
+            : "Company / Brand"
+        }
+        items={brandList}
+        sel={brands}
+        set={setBrands}
+        counts={brandCounts}
+      />
+
       {/* <fieldset className="fgroup">
         <legend>Customer rating</legend>
         {RATINGS.map((r) => (
@@ -348,9 +424,9 @@ export default function Catalog({
             <div className="btabs" role="tablist" aria-label="Brand">
               <button
                 role="tab"
-                aria-selected={!brand}
-                className={!brand ? "on" : ""}
-                onClick={() => setBrand("")}
+                aria-selected={!brands.length}
+                className={!brands.length ? "on" : ""}
+                onClick={() => setBrands([])}
               >
                 All <em>{brandAllCount}</em>
               </button>
@@ -358,11 +434,11 @@ export default function Catalog({
                 <button
                   key={b}
                   role="tab"
-                  aria-selected={brand === b}
-                  className={brand === b ? "on" : ""}
-                  onClick={() => setBrand(brand === b ? "" : b)}
+                  aria-selected={brands.includes(b)}
+                  className={brands.includes(b) ? "on" : ""}
+                  onClick={() => toggle(setBrands, b)}
                 >
-                  {b} <em>{brandCounts[b]}</em>
+                  {b} <em>{brandCounts[b] ?? 0}</em>
                 </button>
               ))}
             </div>

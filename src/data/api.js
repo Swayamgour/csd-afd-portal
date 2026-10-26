@@ -27,12 +27,39 @@ export function mapBackendProduct(p) {
 
   // 2. Brand extraction (handles populated brandId object or flat brand)
   const brandObj = p.brandId || p.brand;
-  const brandName =
+  let rawBrandName =
     brandObj?.name ||
     brandObj?.code ||
     (typeof brandObj === 'string' ? brandObj : '') ||
     p.oemId?.name ||
     'CSD AFD';
+
+  // Normalize brand names for clean category filtering
+  let brandName = rawBrandName;
+  const bLower = rawBrandName.toLowerCase();
+  if (bLower.includes('maruti')) brandName = 'Maruti';
+  else if (bLower.includes('tata')) brandName = 'Tata';
+  else if (bLower.includes('mahindra')) brandName = 'Mahindra';
+  else if (bLower.includes('hyundai')) brandName = 'Hyundai';
+  else if (bLower.includes('toyota')) brandName = 'Toyota';
+  else if (bLower.includes('renault')) brandName = 'Renault';
+  else if (bLower.includes('royal enfield')) brandName = 'Royal Enfield';
+  else if (bLower.includes('hero')) brandName = 'Hero';
+  else if (bLower.includes('honda')) brandName = 'Honda';
+  else if (bLower.includes('tvs')) brandName = 'TVS';
+  else if (bLower.includes('bajaj')) brandName = 'Bajaj';
+  else if (bLower.includes('yamaha')) brandName = 'Yamaha';
+  else if (bLower.includes('suzuki')) brandName = 'Suzuki';
+  else if (bLower.includes('kia')) brandName = 'Kia';
+  else if (bLower.includes('skoda')) brandName = 'Skoda';
+  else if (bLower.includes('volkswagen')) brandName = 'Volkswagen';
+  else if (bLower.includes('ktm')) brandName = 'KTM';
+  else if (bLower.includes('jawa')) brandName = 'Jawa';
+  else if (bLower.includes('lg')) brandName = 'LG';
+  else if (bLower.includes('samsung')) brandName = 'Samsung';
+  else if (bLower.includes('whirlpool')) brandName = 'Whirlpool';
+  else if (bLower.includes('haier')) brandName = 'Haier';
+  else if (bLower.includes('panasonic')) brandName = 'Panasonic';
 
   // 3. Pricing
   const rawPrice = Number(p.priceToCustomer || p.price || p.csdFinalPriceWithConcession || p.basicPrice || 0);
@@ -76,24 +103,38 @@ export function mapBackendProduct(p) {
   if (!typeVal) {
     const searchContext = `${p.name} ${p.description || ''} ${p.variant || ''}`.toLowerCase();
     if (normCat === 'car') {
-      if (searchContext.includes('hatchback') || searchContext.includes('swift') || searchContext.includes('alto')) {
+      if (searchContext.includes('hatchback') || searchContext.includes('swift') || searchContext.includes('alto') || searchContext.includes('kwid') || searchContext.includes('baleno') || searchContext.includes('i20') || searchContext.includes('tiago')) {
         typeVal = 'Hatchback';
-      } else if (searchContext.includes('sedan') || searchContext.includes('dzire')) {
+      } else if (searchContext.includes('sedan') || searchContext.includes('dzire') || searchContext.includes('verna') || searchContext.includes('city') || searchContext.includes('aura') || searchContext.includes('tigor') || searchContext.includes('slavia') || searchContext.includes('virtus') || searchContext.includes('ciaz') || searchContext.includes('amaze')) {
         typeVal = 'Sedan';
       } else {
         typeVal = 'SUV';
       }
     } else if (normCat === 'bike') {
-      if (searchContext.includes('cruiser') || searchContext.includes('classic') || searchContext.includes('bullet')) {
+      if (searchContext.includes('cruiser') || searchContext.includes('classic') || searchContext.includes('bullet') || searchContext.includes('meteor') || searchContext.includes('cb350')) {
         typeVal = 'Cruiser';
       } else if (searchContext.includes('roadster') || searchContext.includes('hunter')) {
         typeVal = 'Roadster';
+      } else if (searchContext.includes('sport') || searchContext.includes('pulsar') || searchContext.includes('apache') || searchContext.includes('r15') || searchContext.includes('duke') || searchContext.includes('gixxer') || searchContext.includes('xpulse')) {
+        typeVal = 'Sports';
+      } else if (searchContext.includes('scooter') || searchContext.includes('activa') || searchContext.includes('access') || searchContext.includes('jupiter') || searchContext.includes('chetak')) {
+        typeVal = 'Scooter';
       } else {
         typeVal = 'Commuter';
       }
     } else {
       typeVal = p.attributes?.type || 'Double Door';
     }
+  } else {
+    const tLower = String(typeVal).toLowerCase();
+    if (tLower.includes('sedan')) typeVal = 'Sedan';
+    else if (tLower.includes('hatch')) typeVal = 'Hatchback';
+    else if (tLower.includes('suv')) typeVal = 'SUV';
+    else if (tLower.includes('cruiser')) typeVal = 'Cruiser';
+    else if (tLower.includes('roadster')) typeVal = 'Roadster';
+    else if (tLower.includes('sport')) typeVal = 'Sports';
+    else if (tLower.includes('scooter')) typeVal = 'Scooter';
+    else if (tLower.includes('commuter')) typeVal = 'Commuter';
   }
 
   // 7. Images
@@ -105,8 +146,11 @@ export function mapBackendProduct(p) {
 
   return {
     id: String(p._id || p.id),
-    sku: p.indexNo || p.sku || '',
+    sku: p.sku || p.indexNo || '',
     indexNo: p.indexNo || p.sku || '',
+    mfrCode: p.mfrCode || p.mfr || p.manufacturerCode || p.firmCode || p.attributes?.mfrCode || p.specifications?.mfrCode || '',
+    firmCode: p.firmCode || p.oemId?.code || '',
+    nomenclature: p.nomenclature || '',
     name: p.name,
     brand: brandName,
     category: normCat,

@@ -252,7 +252,7 @@ export default function LoginForm({ onNeedOtp }) {
           <input
             id="username"
             autoComplete="username"
-            placeholder="Enter username, email or service number"
+            placeholder="Enter username"
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);

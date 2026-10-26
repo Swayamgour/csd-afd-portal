@@ -155,52 +155,89 @@ export default function CsdDealers() {
       accessor: 'name',
       render: (row) => (
         <div>
-          <strong className="csd-row-title">{row.name}</strong>
-          <span className="csd-subtext-muted">
-            <Building2 size={12} color="#6366f1" />
-            OEM: <strong>{row.oemId?.name || 'Assigned OEM'}</strong>
-          </span>
+          <strong className="csd-row-title">
+            {row.name || '—'}
+          </strong>
         </div>
       ),
     },
+
     {
       header: 'Dealer Code',
       accessor: 'code',
       render: (row) => (
         <span className="csd-code-badge">
-          {row.code}
+          {row.code || '—'}
         </span>
       ),
     },
+
+    {
+      header: 'OEM',
+      accessor: 'oemId',
+      render: (row) => (
+        <div>
+          <span className="csd-loc-primary">
+            {row.oemId?.name || '—'}
+          </span>
+
+          {row.oemId?.code && (
+            <span className="csd-loc-secondary">
+              {row.oemId.code}
+            </span>
+          )}
+        </div>
+      ),
+    },
+
     {
       header: 'Jurisdiction & City',
       accessor: 'city',
       render: (row) => (
         <div>
-          <span className="csd-loc-primary">{row.city || '—'}</span>
-          <span className="csd-loc-secondary">{row.state || ''}</span>
+          <span className="csd-loc-primary">
+            {row.city || '—'}
+          </span>
+
+          <span className="csd-loc-secondary">
+            {row.state || '—'}
+          </span>
         </div>
       ),
     },
+
     {
       header: 'Contact Person',
       accessor: 'person',
       render: (row) => (
         <div>
-          <span className="csd-contact-name">{row.person || 'Nodal Officer'}</span>
-          <span className="csd-contact-phone">{row.phone || ''}</span>
+          <span className="csd-contact-name">
+            {row.person || 'Nodal Officer'}
+          </span>
+
+          <span className="csd-contact-phone">
+            {row.phone || '—'}
+          </span>
         </div>
       ),
     },
+
     {
       header: 'Status',
       accessor: 'active',
       render: (row) => (
-        <span className={row.active ? 'csd-badge-active' : 'csd-badge-inactive'}>
+        <span
+          className={
+            row.active
+              ? 'csd-badge-active'
+              : 'csd-badge-inactive'
+          }
+        >
           {row.active ? 'ACTIVE' : 'INACTIVE'}
         </span>
       ),
     },
+
     {
       header: 'Actions',
       accessor: '_id',
@@ -211,30 +248,44 @@ export default function CsdDealers() {
             onClick={() => navigate('/csd/dealer-products')}
             className="csd-btn-action-view"
             title="Authorize Products (DealerProduct Matrix)"
-            style={{ color: '#047857', borderColor: '#a7f3d0', background: '#ecfdf5' }}
+            style={{
+              color: '#047857',
+              borderColor: '#a7f3d0',
+              background: '#ecfdf5',
+            }}
           >
-            <ShieldCheck size={13} /> Products
+            <ShieldCheck size={13} />
+            Products
           </button>
+
           <button
             type="button"
             onClick={() => setSelectedDealerForView(row)}
             className="csd-btn-action-view"
             title="Inspect Dealership"
           >
-            <Eye size={13} /> View
+            <Eye size={13} />
+            View
           </button>
+
           <button
             type="button"
             onClick={() => handleOpenEdit(row)}
             className="csd-btn-action-edit"
             title="Edit Details"
           >
-            <Edit2 size={13} /> Edit
+            <Edit2 size={13} />
+            Edit
           </button>
+
           <button
             type="button"
             onClick={() => handleToggleStatus(row)}
-            className={row.active ? 'csd-btn-action-delete' : 'csd-btn-action-view'}
+            className={
+              row.active
+                ? 'csd-btn-action-delete'
+                : 'csd-btn-action-view'
+            }
           >
             {row.active ? 'Deactivate' : 'Activate'}
           </button>

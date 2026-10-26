@@ -143,7 +143,7 @@ export const ROLE_SIDEBAR_NAV = {
   ],
 
   [ROLES.ADMIN]: [
-    { title: 'HQ Dashboard', to: '/admin/dashboard', icon: LayoutDashboard },
+    { title: 'HO Dashboard', to: '/admin/dashboard', icon: LayoutDashboard },
     { title: 'User Management', to: '/admin/users', icon: Users },
     { title: 'Product Catalog', to: '/csd/products', icon: Package },
     { title: 'Categories', to: '/csd/categories', icon: Layers },

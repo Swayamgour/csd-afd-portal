@@ -74,7 +74,7 @@ export default function ProductCard({ p, list }) {
       </div>
       <div className="card-body">
         <p className="brand-l">
-          {p.brand} · {p.type}
+          {p.brand} · {p.type} {p.sku && <span>· SKU: {p.sku}</span>}
         </p>
         <h3>
           <Link to={`/products/${p.id}`}>{p.name}</Link>

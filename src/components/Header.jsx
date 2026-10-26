@@ -114,7 +114,7 @@ export default function Header() {
           <span className="brand-txt"><strong>AFD Online</strong><small>Canteen Stores Department</small></span>
         </Link> */}
         {loc.pathname !== "/login" && loc.pathname !== "/register" && (
-          <SearchBox variant="header" />
+          <SearchBox variant="header" placeholder="Search cars, bikes, SKU, Mfr code..." />
         )}
         <div className="actions">
           {loc.pathname !== "/login" && loc.pathname !== "/register" && isAuthenticated && (

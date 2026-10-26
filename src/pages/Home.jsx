@@ -18,12 +18,12 @@ import {
   CircleCheck,
   Phone,
 } from "lucide-react";
-import ProductCard from "../components/ProductCard.jsx";
-import SearchBox from "../components/SearchBox.jsx";
+// import ProductCard from "../components/ProductCard.jsx";
+// import SearchBox from "../components/SearchBox.jsx";
 import Catalog from "../components/Catalog.jsx";
 import { products } from "../data/products.js";
 import { fetchProducts } from "../data/api.js";
-import { onImgError } from "../data/utils.js";
+// import { onImgError } from "../data/utils.js";
 import { useGetBannersQuery } from "../features/admin/adminApi.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeRole } from "../permissions/roles.js";
@@ -381,10 +381,7 @@ export default function Home() {
                     <CircleCheck size={18} aria-hidden />
                     <span>Never share your password or OTP with anyone.</span>
                   </li>
-                  {/* <li>
-                    <CircleCheck size={18} aria-hidden />
-                    <span></span>
-                  </li> */}
+                 
                 </ul>
               </article>
             </div>

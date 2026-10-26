@@ -4,7 +4,7 @@ import { ShieldCheck, BadgePercent, Truck } from "lucide-react";
 export default function AuthArt({ title, text }) {
     return (
         <aside className="auth-art">
-            <span className="eyebrow light">CSD AFD Online</span>
+            {/* <span className="eyebrow light">CSD AFD Online</span> */}
             <h2>{title}</h2>
             <p className="auth-art-txt">{text}</p>
             <div className="auth-art-img">
