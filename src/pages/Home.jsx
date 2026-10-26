@@ -1,6 +1,23 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowUpRight, ArrowRight, Headset, Info, ShieldAlert, BadgePercent, BadgeCheck, Truck, Wallet, Car, Bike, Refrigerator, BookOpen, FileCheck2, CircleCheck, Phone } from "lucide-react";
+import {
+  ArrowUpRight,
+  ArrowRight,
+  Headset,
+  Info,
+  ShieldAlert,
+  BadgePercent,
+  BadgeCheck,
+  Truck,
+  Wallet,
+  Car,
+  Bike,
+  Refrigerator,
+  BookOpen,
+  FileCheck2,
+  CircleCheck,
+  Phone,
+} from "lucide-react";
 import ProductCard from "../components/ProductCard.jsx";
 import SearchBox from "../components/SearchBox.jsx";
 import Catalog from "../components/Catalog.jsx";
@@ -11,19 +28,49 @@ import { useGetBannersQuery } from "../features/admin/adminApi.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeRole } from "../permissions/roles.js";
 
-const perks = [
-  [BadgePercent, "Concessional prices", "Special CSD rates for the Armed Forces family"],
-  [BadgeCheck, "100% free service", "No agent or registration fee, ever"],
-  [Wallet, "Easy online payment", "Pay securely against your supply order"],
-  [Truck, "Supply order delivery", "Track and verify your order online"],
-];
+// const perks = [
+//   [BadgePercent, "Concessional prices", "Special CSD rates for the Armed Forces family"],
+//   [BadgeCheck, "100% free service", "No agent or registration fee, ever"],
+//   [Wallet, "Easy online payment", "Pay securely against your supply order"],
+//   [Truck, "Supply order delivery", "Track and verify your order online"],
+// ];
 
-const featured = { to: "/products", tag: "Latest", title: "Browse the full range of cars, bikes and home appliances", text: "Compare models side by side and check price and availability before you order." };
+const featured = {
+  to: "/products",
+  tag: "Latest",
+  title: "Browse the full range of cars, bikes and home appliances",
+  text: "Compare models side by side and check price and availability before you order.",
+};
 const notices = [
-  { to: "/info/buying-process", icon: BookOpen, tag: "Guide", title: "How to buy: the step-by-step process", text: "From registration to supply order and delivery, see every step in one place." },
-  { to: "/info/verify-supply-order", icon: FileCheck2, tag: "Update", title: "Verify your supply order online", text: "Keep your supply order number ready to check its details and status." },
-  { to: "/info/payments", icon: Wallet, tag: "Guide", title: "How to make online payments", text: "Read the payment steps before you place your order to avoid delays." },
-  { to: "/info/contact", icon: ShieldAlert, tag: "Advisory", alert: true, title: "Be vigilant: services on this portal are free", text: "If anyone asks for money for registration or supply order release, report it immediately." },
+  {
+    to: "/info/buying-process",
+    icon: BookOpen,
+    tag: "Guide",
+    title: "How to buy: the step-by-step process",
+    text: "From registration to supply order and delivery, see every step in one place.",
+  },
+  {
+    to: "/info/verify-supply-order",
+    icon: FileCheck2,
+    tag: "Update",
+    title: "Verify your supply order online",
+    text: "Keep your supply order number ready to check its details and status.",
+  },
+  {
+    to: "/info/payments",
+    icon: Wallet,
+    tag: "Guide",
+    title: "How to make online payments",
+    text: "Read the payment steps before you place your order to avoid delays.",
+  },
+  {
+    to: "/info/contact",
+    icon: ShieldAlert,
+    tag: "Advisory",
+    alert: true,
+    title: "Be vigilant: services on this portal are free",
+    text: "If anyone asks for money for registration or supply order release, report it immediately.",
+  },
 ];
 
 const DEFAULT_HERO_BANNERS = [
@@ -33,7 +80,12 @@ const DEFAULT_HERO_BANNERS = [
 ];
 
 export const Shop = ({ to = "/products", children = "Shop now" }) => (
-  <Link to={to} className="shop">{children}<span><ArrowUpRight size={18} aria-hidden /></span></Link>
+  <Link to={to} className="shop">
+    {children}
+    <span>
+      <ArrowUpRight size={18} aria-hidden />
+    </span>
+  </Link>
 );
 
 export default function Home() {
@@ -42,96 +94,139 @@ export default function Home() {
   const { isAuthenticated, role, roleHome, user } = useAuth();
   const navigate = useNavigate();
 
+  // const { isAuthenticated, user, roleHome, role } = useAuth();
+
   // If a departmental officer (Depot, Dealer, CSD HO, URC, Admin) visits the home page, redirect to their operations dashboard
   useEffect(() => {
     if (isAuthenticated) {
       const canonicalRole = normalizeRole(role || user?.role);
-      if (canonicalRole && canonicalRole !== 'beneficiary') {
-        navigate(roleHome || '/depot/dashboard', { replace: true });
+      if (canonicalRole && canonicalRole !== "beneficiary") {
+        navigate(roleHome || "/depot/dashboard", { replace: true });
       }
     }
   }, [isAuthenticated, role, roleHome, user, navigate]);
 
   useEffect(() => {
-    fetchProducts().then((res) => {
-      if (Array.isArray(res) && res.length) setAllProducts(res);
-    }).catch(() => { });
+    fetchProducts()
+      .then((res) => {
+        if (Array.isArray(res) && res.length) setAllProducts(res);
+      })
+      .catch(() => { });
   }, []);
 
-  const cats = useMemo(() => [
-    ["Automobiles", "Cars", "/products?cat=car", "car", "c5", '/assets/maruti1.png', Car, allProducts.filter((p) => p.category === "car").length],
-    ["Automobiles", "Bikes", "/products?cat=bike", "bike", "b4", '/assets/bullet1.png', Bike, allProducts.filter((p) => p.category === "bike").length],
-    ["Home & Living", "Appliances", "/products?cat=white-goods", "app", "w6", '/assets/white_goods1.png', Refrigerator, allProducts.filter((p) => p.category === "white-goods").length],
-  ], [allProducts]);
+  const cats = useMemo(
+    () => [
+      [
+        "Automobiles",
+        "Cars",
+        "/products?cat=car",
+        "car",
+        "c5",
+        "/assets/maruti1.png",
+        Car,
+        allProducts.filter((p) => p.category === "car").length,
+      ],
+      [
+        "Automobiles",
+        "Bikes",
+        "/products?cat=bike",
+        "bike",
+        "b4",
+        "/assets/bullet1.png",
+        Bike,
+        allProducts.filter((p) => p.category === "bike").length,
+      ],
+      [
+        "Home & Living",
+        "Appliances",
+        "/products?cat=white-goods",
+        "app",
+        "w6",
+        "/assets/white_goods1.png",
+        Refrigerator,
+        allProducts.filter((p) => p.category === "white-goods").length,
+      ],
+    ],
+    [allProducts],
+  );
 
   const topBrands = useMemo(() => {
-    return Object.entries(allProducts.reduce((m, p) => {
-      if (p.brand) m[p.brand] = (m[p.brand] || 0) + 1;
-      return m;
-    }, {})).sort((a, b) => b[1] - a[1]).slice(0, 12);
+    return Object.entries(
+      allProducts.reduce((m, p) => {
+        if (p.brand) m[p.brand] = (m[p.brand] || 0) + 1;
+        return m;
+      }, {}),
+    )
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12);
   }, [allProducts]);
 
-  const { data: dynamicHeroBanners } = useGetBannersQuery({ position: 'home_hero' });
-  const heroBanners = (dynamicHeroBanners && dynamicHeroBanners.length > 0)
-    ? dynamicHeroBanners
-    : DEFAULT_HERO_BANNERS;
+  const { data: dynamicHeroBanners } = useGetBannersQuery({
+    position: "home_hero",
+  });
+  const heroBanners =
+    dynamicHeroBanners && dynamicHeroBanners.length > 0
+      ? dynamicHeroBanners
+      : DEFAULT_HERO_BANNERS;
+
+
 
   return (
     <div className="home">
+      {!isAuthenticated &&
+        (<section className="hero" aria-labelledby="h1">
+          {/* Background Image Slider */}
+          <div className="hero-slider">
+            {heroBanners.map((slide, idx) => {
+              const isSingle = heroBanners.length === 1;
+              const duration = Math.max(heroBanners.length * 5, 10);
+              const delay = idx * 5;
+              return (
+                <img
+                  key={slide._id || slide.id || idx}
+                  src={slide.imageUrl}
+                  alt={slide.name || `Hero Banner ${idx + 1}`}
+                  className={
+                    isSingle
+                      ? "hero-single-slide"
+                      : `hero-slide-duration-${Math.min(30, Math.max(10, Math.round(duration / 5) * 5))} hero-slide-delay-${Math.min(5, idx)}`
+                  }
+                  onError={(e) => {
+                    e.currentTarget.src = "/assets/home_page.png";
+                  }}
+                />
+              );
+            })}
+          </div>
 
-      <section className="hero" aria-labelledby="h1">
-        {/* Background Image Slider */}
-        <div className="hero-slider">
-          {heroBanners.map((slide, idx) => {
-            const isSingle = heroBanners.length === 1;
-            const duration = Math.max(heroBanners.length * 5, 10);
-            const delay = idx * 5;
-            return (
-              <img
-                key={slide._id || slide.id || idx}
-                src={slide.imageUrl}
-                alt={slide.name || `Hero Banner ${idx + 1}`}
-                className={
-                  isSingle
-                    ? "hero-single-slide"
-                    : `hero-slide-duration-${Math.min(30, Math.max(10, Math.round(duration / 5) * 5))} hero-slide-delay-${Math.min(5, idx)}`
-                }
-                onError={(e) => {
-                  e.currentTarget.src = "/assets/home_page.png";
-                }}
-              />
-            );
-          })}
-        </div>
+          {/* Dark overlay */}
+          <div className="hero-overlay"></div>
 
-        {/* Dark overlay */}
-        <div className="hero-overlay"></div>
+          {/* Content above slider */}
+          <div className="hero-content">
+            <h1 id="h1">
+              CSD AFD
+              <br />
+              ONLINE
+            </h1>
 
-        {/* Content above slider */}
-        <div className="hero-content">
-          <h1 id="h1">
-            CSD AFD
-            <br />
-            ONLINE
-          </h1>
+            <Shop to="/products?cat=car" />
 
-          <Shop to="/products?cat=car" />
-
-          {/* <p className="ticker" role="note">
+            {/* <p className="ticker" role="note">
                   <strong>IMPORTANT:</strong> [Official notice to be provided]
                 </p> */}
-        </div>
-      </section>
-
-
+          </div>
+        </section>)}
 
       <div className="wrap">
-        <ul className="perks">
-          {perks.map(([Ic, t, s]) => (<li key={t}><span><Ic size={22} aria-hidden /></span><div><strong>{t}</strong><small>{s}</small></div></li>))}
-        </ul>
+        {/* <ul className="perks">
+          {perks.map(([Ic, t, s]) =>    (<li key={t}><span><Ic size={22} aria-hidden /></span><div><strong>{t}</strong><small>{s}</small></div></li>))}
+        </ul> */}
 
         <section aria-labelledby="cats">
-          <div className="sec-h"><h2 id="cats">Shop by category</h2></div>
+          <div className="sec-h">
+            <h2 id="cats">Available Products</h2>
+          </div>
 
           <ul className="grid3 cats">
             {cats.map(([s, t, to, k, im, img], i) => (
@@ -139,7 +234,9 @@ export default function Home() {
                 <Link className={`cat ${k}`} to={to}>
                   <small>{s}</small>
                   <strong>{t}</strong>
-                  <span className="cta">Explore <ArrowUpRight size={15} aria-hidden /></span>
+                  <span className="cta">
+                    Explore <ArrowUpRight size={15} aria-hidden />
+                  </span>
                   <img src={img} alt="" loading="lazy" />
                 </Link>
               </li>
@@ -148,8 +245,22 @@ export default function Home() {
         </section>
 
         <section id="shop" aria-labelledby="shop-h" className="shop-sec">
-          <div className="sec-h"><h2 id="shop-h">Explore the range</h2><Link to={`/products?cat=${cat}`} className="more">View all <ArrowRight size={15} aria-hidden /></Link></div>
-          <Catalog cat={cat} onCat={setCat} embedded title={{ car: "Cars", bike: "Bikes", "white-goods": "Home appliances" }[cat]} />
+          <div className="sec-h">
+            <h2 id="shop-h">Explore the range</h2>
+            <Link to={`/products?cat=${cat}`} className="more">
+              View all <ArrowRight size={15} aria-hidden />
+            </Link>
+          </div>
+          <Catalog
+            cat={cat}
+            onCat={setCat}
+            embedded
+            title={
+              { car: "Cars", bike: "Bikes", "white-goods": "Home appliances" }[
+              cat
+              ]
+            }
+          />
         </section>
 
         {/* <section aria-labelledby="deals">
@@ -157,26 +268,46 @@ export default function Home() {
           <div className="pgrid five">{deals.map((p) => <ProductCard key={p.id} p={p} />)}</div>
         </section> */}
 
-        <section aria-labelledby="brands">
-          <div className="sec-h"><h2 id="brands">Popular brands</h2></div>
+        {/* <section aria-labelledby="brands">
+          <div className="sec-h">
+            <h2 id="brands">Popular brands</h2>
+          </div>
           <ul className="brands">
-            {topBrands.map(([b, n]) => (<li key={b}><Link to={`/search?q=${encodeURIComponent(b)}`}><strong>{b}</strong><small>{n} product{n > 1 ? "s" : ""}</small></Link></li>))}
+            {topBrands.map(([b, n]) => (
+              <li key={b}>
+                <Link to={`/search?q=${encodeURIComponent(b)}`}>
+                  <strong>{b}</strong>
+                  <small>
+                    {n} product{n > 1 ? "s" : ""}
+                  </small>
+                </Link>
+              </li>
+            ))}
           </ul>
-        </section>
+        </section> */}
 
         {/* ===================== NEWS & NOTICES ===================== */}
         <section aria-labelledby="news" className="news">
-          <div className="sec-h"><h2 id="news">News &amp; notices</h2></div>
+          <div className="sec-h">
+            <h2 id="news">News &amp; notices</h2>
+          </div>
 
           <div className="news-grid">
             {/* Featured story */}
             <Link to={featured.to} className="news-feature">
-              <img className="news-feature-img" src="/assets/news.jpg" alt="" loading="lazy" />
+              {/* <img
+                className="news-feature-img"
+                src="/assets/news.jpg"
+                alt=""
+                loading="lazy"
+              /> */}
               <div className="news-feature-body">
                 <span className="news-chip light">{featured.tag}</span>
                 <h3>{featured.title}</h3>
                 <p>{featured.text}</p>
-                <span className="news-more">Read more <ArrowRight size={16} aria-hidden /></span>
+                <span className="news-more">
+                  Read more <ArrowRight size={16} aria-hidden />
+                </span>
               </div>
             </Link>
 
@@ -184,10 +315,17 @@ export default function Home() {
             <ul className="news-list">
               {notices.map(({ icon: Ic, ...n }) => (
                 <li key={n.to}>
-                  <Link to={n.to} className={`news-item ${n.alert ? "alert" : ""}`}>
-                    <span className="news-ic" aria-hidden><Ic size={20} /></span>
+                  <Link
+                    to={n.to}
+                    className={`news-item ${n.alert ? "alert" : ""}`}
+                  >
+                    <span className="news-ic" aria-hidden>
+                      <Ic size={20} />
+                    </span>
                     <span className="news-txt">
-                      <span className={`news-chip ${n.alert ? "alert" : ""}`}>{n.tag}</span>
+                      <span className={`news-chip ${n.alert ? "alert" : ""}`}>
+                        {n.tag}
+                      </span>
                       <strong>{n.title}</strong>
                       <span className="news-sub">{n.text}</span>
                     </span>
@@ -200,26 +338,56 @@ export default function Home() {
             {/* Help + notes */}
             <div className="news-cards">
               <article className="news-help">
-                <span className="news-help-ic" aria-hidden><Headset size={26} /></span>
+                <span className="news-help-ic" aria-hidden>
+                  <Headset size={26} />
+                </span>
                 <div>
-                  <h3>CS DTE &amp; SCPL Helpdesk</h3>
-                  <p>Questions on registration, supply orders, payments or delivery? The helpdesk team can guide you.</p>
+                  <h3>Smart Card Helpdesk</h3>
+                  <p>
+                    Questions on registration, supply orders, payments or
+                    delivery? The helpdesk team can guide you.
+                  </p>
                   <div className="row">
-                    <Link to="/info/help-desk" className="btn light"><Headset size={16} aria-hidden /> Help Desk</Link>
-                    <Link to="/info/contact" className="btn ghost-l"><Phone size={16} aria-hidden /> Contact us</Link>
+                    <Link to="/info/help-desk" className="btn light">
+                      <Headset size={16} aria-hidden /> Help Desk
+                    </Link>
+                    <Link to="/info/contact" className="btn ghost-l">
+                      <Phone size={16} aria-hidden /> Contact us
+                    </Link>
                   </div>
                 </div>
               </article>
 
               <article className="news-note">
                 <div className="news-note-head">
-                  <span className="news-ic amber" aria-hidden><Info size={20} /></span>
+                  <span className="news-ic amber" aria-hidden>
+                    <Info size={20} />
+                  </span>
                   <h3>Please note</h3>
                 </div>
                 <ul>
-                  <li><CircleCheck size={18} aria-hidden /><span>Keep your supply order number and registered mobile number ready before contacting the helpdesk.</span></li>
-                  <li><CircleCheck size={18} aria-hidden /><span>Check price, availability and delivery details on the product page before ordering.</span></li>
-                  <li><CircleCheck size={18} aria-hidden /><span>Never share your password or OTP with anyone.</span></li>
+                  <li>
+                    <CircleCheck size={18} aria-hidden />
+                    <span>
+                      Keep your supply order number and registered mobile number
+                      ready before contacting the helpdesk.
+                    </span>
+                  </li>
+                  <li>
+                    <CircleCheck size={18} aria-hidden />
+                    <span>
+                      Check price, availability and delivery details on the
+                      product page before ordering.
+                    </span>
+                  </li>
+                  <li>
+                    <CircleCheck size={18} aria-hidden />
+                    <span>Never share your password or OTP with anyone.</span>
+                  </li>
+                  <li>
+                    <CircleCheck size={18} aria-hidden />
+                    <span></span>
+                  </li>
                 </ul>
               </article>
             </div>

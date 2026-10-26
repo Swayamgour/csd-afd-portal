@@ -655,6 +655,7 @@
 }
 
 /* ---------- 7. Forms ---------- */
+.form-field,
 .app-shell-root .form-field,
 .admin-portal .form-field {
   display: flex;
@@ -662,23 +663,31 @@
   gap: .35rem;
 }
 
+.form-label,
 .app-shell-root .form-label,
 .admin-portal .form-label,
 .app-shell-root .director-field-label,
 .admin-portal .director-field-label,
 .app-shell-root .depot-form-label,
 .admin-portal .depot-form-label {
+  display: block;
   font-size: .8rem;
   font-weight: 600;
-  color: var(--adm-ink);
+  color: var(--adm-ink, #0f172a);
   letter-spacing: .01em;
+  margin-bottom: 0.25rem;
 }
 
+.req-star,
 .app-shell-root .req-star,
 .admin-portal .req-star {
-  color: var(--adm-danger);
+  color: var(--adm-danger, #ef4444);
 }
 
+.form-control,
+.select-input,
+.input,
+.select,
 .app-shell-root .fld input,
 .admin-portal .fld input,
 .app-shell-root .fld textarea,
@@ -687,6 +696,21 @@
 .admin-portal .select-input,
 .app-shell-root .form-control,
 .admin-portal .form-control,
+.app-shell-root .input,
+.admin-portal .input,
+.app-shell-root .select,
+.admin-portal .select,
+.app-shell-root input[type="text"],
+.app-shell-root input[type="number"],
+.app-shell-root input[type="date"],
+.app-shell-root input[type="search"],
+.app-shell-root select,
+.app-shell-root textarea,
+.admin-portal input[type="text"],
+.admin-portal input[type="number"],
+.admin-portal input[type="date"],
+.admin-portal select,
+.admin-portal textarea,
 .app-shell-root .director-field-input,
 .admin-portal .director-field-input,
 .app-shell-root .depot-form-input,
@@ -695,38 +719,78 @@
 .admin-portal .search-input {
   width: 100%;
   min-height: 40px;
-  padding: .5rem .8rem;
+  padding: .5rem .85rem;
   box-sizing: border-box;
-  background: var(--adm-surface);
-  color: var(--adm-ink);
-  border: 1px solid var(--adm-line-strong);
-  border-radius: var(--adm-radius-sm);
+  background: #ffffff;
+  color: var(--adm-ink, #0f172a);
+  border: 1px solid var(--adm-line-strong, #cbd5e1);
+  border-radius: var(--adm-radius-sm, 6px);
   font: inherit;
-  font-size: .9rem;
+  font-size: .88rem;
+  line-height: 1.4;
   transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
 }
 
+select.form-control,
+select.select-input,
+select.select,
+.select-input,
+.select,
+.app-shell-root select,
+.admin-portal select,
+.app-shell-root .select-input,
+.admin-portal .select-input,
+.app-shell-root .select,
+.admin-portal .select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem 1rem;
+  padding-right: 2.25rem !important;
+  cursor: pointer;
+}
+
+.form-control::placeholder,
+.input::placeholder,
 .app-shell-root .fld input::placeholder,
 .app-shell-root .form-control::placeholder,
 .app-shell-root .search-input::placeholder,
+.app-shell-root .input::placeholder,
 .admin-portal .fld input::placeholder,
-.admin-portal .form-control::placeholder {
+.admin-portal .form-control::placeholder,
+.admin-portal .input::placeholder {
   color: #94a3b8;
 }
 
+.form-control:hover,
+.select-input:hover,
+.input:hover,
+.select:hover,
 .app-shell-root .fld input:hover,
 .app-shell-root .select-input:hover,
 .app-shell-root .form-control:hover,
+.app-shell-root .input:hover,
+.app-shell-root .select:hover,
 .admin-portal .fld input:hover,
 .admin-portal .select-input:hover,
-.admin-portal .form-control:hover {
-  border-color: #a9b6cf;
+.admin-portal .form-control:hover,
+.admin-portal .input:hover,
+.admin-portal .select:hover {
+  border-color: #94a3b8;
 }
 
+.form-control:focus,
+.select-input:focus,
+.input:focus,
+.select:focus,
 .app-shell-root .fld input:focus,
 .app-shell-root .fld textarea:focus,
 .app-shell-root .select-input:focus,
 .app-shell-root .form-control:focus,
+.app-shell-root .input:focus,
+.app-shell-root .select:focus,
 .app-shell-root .director-field-input:focus,
 .app-shell-root .depot-form-input:focus,
 .app-shell-root .search-input:focus,
@@ -734,15 +798,19 @@
 .admin-portal .fld textarea:focus,
 .admin-portal .select-input:focus,
 .admin-portal .form-control:focus,
+.admin-portal .input:focus,
+.admin-portal .select:focus,
 .admin-portal .director-field-input:focus,
 .admin-portal .depot-form-input:focus {
   outline: none;
-  border-color: var(--adm-brand);
-  box-shadow: var(--adm-focus);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
 }
 
 .app-shell-root .fld input:disabled,
 .app-shell-root .select-input:disabled,
+.app-shell-root .input:disabled,
+.app-shell-root .select:disabled,
 .app-shell-root .form-control:disabled,
 .admin-portal .fld input:disabled,
 .admin-portal .select-input:disabled,

@@ -135,13 +135,16 @@ export default function CsdOrders() {
       header: 'Actions',
       accessor: '_id',
       render: (row) => (
-        <button
-          onClick={() => setSelectedOrder(row)}
-          className="px-2.5 py-1 text-xs font-semibold bg-brand/10 text-brand rounded hover:bg-brand/20 transition flex items-center gap-1"
-        >
-          <Eye className="w-3.5 h-3.5" />
-          <span>Dossier</span>
-        </button>
+        <div className="csd-action-row">
+          <button
+            type="button"
+            onClick={() => setSelectedOrder(row)}
+            className="csd-btn-action-view"
+            title="Inspect Order Dossier"
+          >
+            <Eye size={13} /> View
+          </button>
+        </div>
       ),
     },
   ];
@@ -245,46 +248,77 @@ export default function CsdOrders() {
       {/* Order Dossier Modal */}
       {selectedOrder && (
         <Modal
-          isOpen={!!selectedOrder}
+          isOpen={Boolean(selectedOrder)}
           onClose={() => setSelectedOrder(null)}
-          title={`Supply Order Dossier · ${selectedOrder.orderNo || selectedOrder.id}`}
-          size="md"
+          title={`Supply Order Dossier: ${selectedOrder.orderNo || selectedOrder.id}`}
+          maxWidth="640px"
         >
-          <div className="space-y-4 text-xs">
-            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 grid grid-cols-2 gap-2">
-              <div>
-                <span className="text-slate-500 block">Beneficiary:</span>
-                <span className="font-semibold text-ink">
-                  {selectedOrder.beneficiaryId?.fullName || selectedOrder.beneficiaryId?.name || selectedOrder.beneficiaryName}
-                </span>
+          <div className="director-modal-form">
+            <div className="csd-card-preview-box">
+              <div className="csd-card-preview-header">
+                <h3 className="csd-card-preview-title">
+                  {selectedOrder.items?.[0]?.name || selectedOrder.productName || 'AFD Item'}
+                </h3>
+                <Badge
+                  variant={
+                    selectedOrder.status === 'DELIVERED' || selectedOrder.status === 'COMPLETED'
+                      ? 'success'
+                      : selectedOrder.status === 'IN_TRANSIT'
+                      ? 'brand'
+                      : 'warning'
+                  }
+                >
+                  {selectedOrder.status}
+                </Badge>
               </div>
-              <div>
-                <span className="text-slate-500 block">Service Number:</span>
-                <span className="font-mono">{selectedOrder.beneficiaryId?.serviceNumber || 'Armed Forces'}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block">Order Status:</span>
-                <Badge variant={selectedOrder.status === 'DELIVERED' ? 'success' : 'brand'}>{selectedOrder.status}</Badge>
-              </div>
-              <div>
-                <span className="text-slate-500 block">Date Issued:</span>
-                <span className="font-mono">{formatDate(selectedOrder.createdAt)}</span>
+              <div className="csd-subtext-muted">
+                Order No: <strong>{selectedOrder.orderNo || selectedOrder.id}</strong> | Demand: <strong>{selectedOrder.demandId?.demandNo || selectedOrder.demandNo || 'N/A'}</strong> | SKU: <strong>{selectedOrder.items?.[0]?.sku || selectedOrder.sku || 'N/A'}</strong>
               </div>
             </div>
 
-            <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Commercial Dealer:</span>
-                <span className="font-semibold">{selectedOrder.dealerId?.name || selectedOrder.dealer}</span>
+            <div className="csd-preview-grid-2">
+              <div>
+                <span className="csd-preview-field-label">Beneficiary</span>
+                <div className="csd-preview-field-value">
+                  {selectedOrder.beneficiaryId?.fullName || selectedOrder.beneficiaryId?.name || selectedOrder.beneficiaryName || 'Applicant'}
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Depot Allocation:</span>
-                <span className="font-semibold">{selectedOrder.depotId?.name || selectedOrder.depot}</span>
+              <div>
+                <span className="csd-preview-field-label">Service Number</span>
+                <div className="csd-preview-field-value font-mono">
+                  {selectedOrder.beneficiaryId?.serviceNumber || selectedOrder.serviceNumber || 'Armed Forces'}
+                </div>
               </div>
-              <div className="flex justify-between border-t border-slate-100 pt-1 font-bold">
-                <span>Total Value:</span>
-                <span className="text-brand font-mono text-sm">{formatCurrency(selectedOrder.amount || selectedOrder.totalAmount)}</span>
+              <div>
+                <span className="csd-preview-field-label">Commercial Dealer</span>
+                <div className="csd-preview-field-value">
+                  {selectedOrder.dealerId?.name || selectedOrder.dealer || '—'}
+                </div>
               </div>
+              <div>
+                <span className="csd-preview-field-label">Allocated Depot</span>
+                <div className="csd-preview-field-value">
+                  {selectedOrder.depotId?.name || selectedOrder.depot || '—'}
+                </div>
+              </div>
+              <div>
+                <span className="csd-preview-field-label">Date Issued</span>
+                <div className="csd-preview-field-value">
+                  {formatDate(selectedOrder.createdAt)}
+                </div>
+              </div>
+              <div>
+                <span className="csd-preview-field-label">Total Sanction Value</span>
+                <div className="csd-preview-field-value font-bold text-brand">
+                  {formatCurrency(selectedOrder.amount || selectedOrder.totalAmount || selectedOrder.csdPrice)}
+                </div>
+              </div>
+            </div>
+
+            <div className="director-modal-actions">
+              <Button variant="outline" onClick={() => setSelectedOrder(null)}>
+                Close
+              </Button>
             </div>
           </div>
         </Modal>

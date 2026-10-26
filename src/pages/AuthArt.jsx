@@ -13,7 +13,7 @@ export default function AuthArt({ title, text }) {
                     alt="Armed forces personnel from the Army, Navy and Air Force"
                 />
             </div>
-            <ul className="auth-perks">
+            {/* <ul className="auth-perks">
                 <li>
                     <ShieldCheck size={18} aria-hidden /> Secure OTP verified access
                 </li>
@@ -23,7 +23,7 @@ export default function AuthArt({ title, text }) {
                 <li>
                     <Truck size={18} aria-hidden /> Delivery across India
                 </li>
-            </ul>
+            </ul> */}
         </aside>
     );
 }

@@ -104,6 +104,9 @@ const UrcProfile = lazyImport(() => import('./features/urc/UrcProfile.jsx'), 'Ur
 // 5. OEM Pages
 const OemDashboard = lazyImport(() => import('./features/oem/OemDashboard.jsx'), 'OemDashboard');
 const OemProducts = lazyImport(() => import('./features/oem/OemProducts.jsx'), 'OemProducts');
+const OemDealers = lazyImport(() => import('./features/oem/OemDealers.jsx'), 'OemDealers');
+const OemDealerProducts = lazyImport(() => import('./features/oem/OemDealerProducts.jsx'), 'OemDealerProducts');
+const OemPricing = lazyImport(() => import('./features/oem/OemPricing.jsx'), 'OemPricing');
 const OemOrders = lazyImport(() => import('./features/oem/OemOrders.jsx'), 'OemOrders');
 const OemDemands = lazyImport(() => import('./features/oem/OemDemands.jsx'), 'OemDemands');
 const OemDocuments = lazyImport(() => import('./features/oem/OemDocuments.jsx'), 'OemDocuments');
@@ -257,15 +260,18 @@ export default function App() {
           <Route path="/urc/profile" element={<RoleRoute allowedRoles={[ROLES.URC_USER]}><UrcProfile /></RoleRoute>} />
 
           {/* 5. OEM PORTAL */}
-          <Route path="/oem/dashboard" element={<RoleRoute allowedRoles={[ROLES.OEM_USER]}><OemDashboard /></RoleRoute>} />
-          <Route path="/oem/products" element={<RoleRoute allowedRoles={[ROLES.OEM_USER]}><OemProducts /></RoleRoute>} />
-          <Route path="/oem/orders" element={<RoleRoute allowedRoles={[ROLES.OEM_USER]}><OemOrders /></RoleRoute>} />
-          <Route path="/oem/demands" element={<RoleRoute allowedRoles={[ROLES.OEM_USER]}><OemDemands /></RoleRoute>} />
-          <Route path="/oem/documents" element={<RoleRoute allowedRoles={[ROLES.OEM_USER]}><OemDocuments /></RoleRoute>} />
-          <Route path="/oem/reports" element={<RoleRoute allowedRoles={[ROLES.OEM_USER]}><OemReports /></RoleRoute>} />
-          <Route path="/oem/notifications" element={<RoleRoute allowedRoles={[ROLES.OEM_USER]}><OemNotifications /></RoleRoute>} />
-          <Route path="/oem/support" element={<RoleRoute allowedRoles={[ROLES.OEM_USER]}><OemSupport /></RoleRoute>} />
-          <Route path="/oem/profile" element={<RoleRoute allowedRoles={[ROLES.OEM_USER]}><OemProfile /></RoleRoute>} />
+          <Route path="/oem/dashboard" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDashboard /></RoleRoute>} />
+          <Route path="/oem/products" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemProducts /></RoleRoute>} />
+          <Route path="/oem/dealers" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDealers /></RoleRoute>} />
+          <Route path="/oem/dealer-products" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDealerProducts /></RoleRoute>} />
+          <Route path="/oem/pricing" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemPricing /></RoleRoute>} />
+          <Route path="/oem/orders" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemOrders /></RoleRoute>} />
+          <Route path="/oem/demands" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDemands /></RoleRoute>} />
+          <Route path="/oem/documents" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDocuments /></RoleRoute>} />
+          <Route path="/oem/reports" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemReports /></RoleRoute>} />
+          <Route path="/oem/notifications" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemNotifications /></RoleRoute>} />
+          <Route path="/oem/support" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemSupport /></RoleRoute>} />
+          <Route path="/oem/profile" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemProfile /></RoleRoute>} />
 
           {/* 6. DEALER PORTAL */}
           <Route path="/dealer/dashboard" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerDashboard /></RoleRoute>} />

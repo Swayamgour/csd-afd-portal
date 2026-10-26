@@ -7,7 +7,8 @@ import {
   RefreshCw,
   Clock,
   AlertTriangle,
-  RotateCcw
+  RotateCcw,
+  Eye
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
@@ -15,12 +16,14 @@ import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
+import Modal from '../../components/common/Modal.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
 import { useGetPaymentsQuery, useVerifyPaymentMutation } from '../payment/paymentApi.js';
 
 export default function CsdPayments() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [selectedPayment, setSelectedPayment] = useState(null);
   const [toast, setToast] = useState('');
 
   const queryParams = useMemo(() => {
@@ -132,21 +135,34 @@ export default function CsdPayments() {
     {
       header: 'Reconciliation',
       accessor: '_id',
-      render: (row) =>
-        row.status !== 'SUCCESS' && row.status !== 'VERIFIED' ? (
+      render: (row) => (
+        <div className="csd-action-row">
           <button
             type="button"
-            className="px-2.5 py-1 text-xs font-semibold bg-brand text-white rounded hover:bg-brand-dark transition"
-            onClick={() => handleVerify(row)}
-            disabled={isVerifying}
+            className="csd-btn-action-view"
+            onClick={() => setSelectedPayment(row)}
+            title="Inspect Payment Details"
           >
-            Verify & Reconcile
+            <Eye size={13} /> View
           </button>
-        ) : (
-          <span className="text-xs text-green-700 font-semibold flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Reconciled
-          </span>
-        ),
+          {row.status !== 'SUCCESS' && row.status !== 'VERIFIED' ? (
+            <button
+              type="button"
+              className="csd-btn-action-edit"
+              onClick={() => handleVerify(row)}
+              disabled={isVerifying}
+              title="Verify & Reconcile against Treasury"
+            >
+              <RotateCcw size={13} className={isVerifying ? 'spin-icon' : ''} />
+              <span>Verify & Reconcile</span>
+            </button>
+          ) : (
+            <span className="csd-badge-active" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+              <CheckCircle2 size={13} /> Reconciled
+            </span>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -251,6 +267,89 @@ export default function CsdPayments() {
           <DataTable columns={columns} data={payments} />
         )}
       </Card>
+
+      {/* Payment Inspection Modal */}
+      {selectedPayment && (
+        <Modal
+          isOpen={Boolean(selectedPayment)}
+          onClose={() => setSelectedPayment(null)}
+          title={`Payment Dossier: ${selectedPayment.paymentNo || selectedPayment._id?.slice(-8)}`}
+          maxWidth="640px"
+        >
+          <div className="director-modal-form">
+            <div className="csd-card-preview-box">
+              <div className="csd-card-preview-header">
+                <h3 className="csd-card-preview-title">
+                  Amount Realized: {formatCurrency(selectedPayment.amount)}
+                </h3>
+                <Badge variant={selectedPayment.status === 'SUCCESS' || selectedPayment.status === 'VERIFIED' ? 'success' : selectedPayment.status === 'FAILED' ? 'danger' : 'warning'}>
+                  {selectedPayment.status}
+                </Badge>
+              </div>
+              <div className="csd-subtext-muted">
+                Payment No: <strong>{selectedPayment.paymentNo || selectedPayment._id}</strong> | Demand Ref: <strong>{selectedPayment.demandId?.demandNo || selectedPayment.demandNo || 'N/A'}</strong>
+              </div>
+            </div>
+
+            <div className="csd-preview-grid-2">
+              <div>
+                <span className="csd-preview-field-label">Beneficiary</span>
+                <div className="csd-preview-field-value">
+                  {selectedPayment.beneficiaryId?.fullName || selectedPayment.beneficiaryId?.name || 'Applicant'}
+                </div>
+              </div>
+              <div>
+                <span className="csd-preview-field-label">Service Number</span>
+                <div className="csd-preview-field-value font-mono">
+                  {selectedPayment.beneficiaryId?.serviceNumber || 'Armed Forces'}
+                </div>
+              </div>
+              <div>
+                <span className="csd-preview-field-label">Payment Channel</span>
+                <div className="csd-preview-field-value uppercase">
+                  {selectedPayment.method || selectedPayment.provider || 'ONLINE'}
+                </div>
+              </div>
+              <div>
+                <span className="csd-preview-field-label">UTR / Gateway Txn ID</span>
+                <div className="csd-preview-field-value font-mono">
+                  {selectedPayment.utr || selectedPayment.gatewayTxnId || 'Direct Treasury'}
+                </div>
+              </div>
+              <div>
+                <span className="csd-preview-field-label">Transaction Date</span>
+                <div className="csd-preview-field-value">
+                  {formatDate(selectedPayment.createdAt)}
+                </div>
+              </div>
+              <div>
+                <span className="csd-preview-field-label">Reconciliation Status</span>
+                <div className="csd-preview-field-value">
+                  {selectedPayment.status === 'SUCCESS' || selectedPayment.status === 'VERIFIED' ? 'Fully Reconciled' : 'Pending Clearance'}
+                </div>
+              </div>
+            </div>
+
+            <div className="director-modal-actions">
+              {selectedPayment.status !== 'SUCCESS' && selectedPayment.status !== 'VERIFIED' && (
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    handleVerify(selectedPayment);
+                    setSelectedPayment(null);
+                  }}
+                  disabled={isVerifying}
+                >
+                  <RotateCcw size={14} className="mr-xs" /> Reconcile Now
+                </Button>
+              )}
+              <Button variant="outline" onClick={() => setSelectedPayment(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

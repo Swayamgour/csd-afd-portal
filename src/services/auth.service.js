@@ -90,15 +90,28 @@ export const authService = {
     throw new Error('Invalid OTP provided. Please try again.');
   },
 
-  async requestPasswordReset({ identifier }) {
+  async requestPasswordReset({ identifier, mobile, email }) {
     const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier })
+      body: JSON.stringify({ identifier, mobile, email })
     });
     const body = await apiRes.json().catch(() => ({}));
     if (!apiRes.ok) {
       throw new Error(body.message || 'Unable to process password reset request.');
+    }
+    return body;
+  },
+
+  async resetPassword({ identifier, mobile, email, target, otp, newPassword }) {
+    const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, mobile, email, target, otp, newPassword })
+    });
+    const body = await apiRes.json().catch(() => ({}));
+    if (!apiRes.ok) {
+      throw new Error(body.message || 'Unable to reset password. Please verify the OTP and try again.');
     }
     return body;
   },

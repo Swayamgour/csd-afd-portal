@@ -93,13 +93,13 @@ export const ROLE_SIDEBAR_NAV = {
 
   [ROLES.OEM]: [
     { title: 'OEM Dashboard', to: '/oem/dashboard', icon: LayoutDashboard },
-    { title: 'Catalog Lineup', to: '/oem/products', icon: Package },
+    { title: 'Product Catalog', to: '/oem/products', icon: Package },
+    { title: 'Authorized Dealers', to: '/oem/dealers', icon: Store },
+    { title: 'Dealer Products', to: '/oem/dealer-products', icon: Layers },
+    { title: 'State Pricing', to: '/oem/pricing', icon: CreditCard },
+    { title: 'AFD Demands', to: '/oem/demands', icon: FileText },
     { title: 'Supply Orders', to: '/oem/orders', icon: Truck },
-    { title: 'Demand Allocation', to: '/oem/demands', icon: FileText },
-    // { title: 'Compliance Docs', to: '/oem/documents', icon: FileCheck },
-    // { title: 'Performance Reports', to: '/oem/reports', icon: FileSpreadsheet },
-    // { title: 'Notifications', to: '/oem/notifications', icon: Bell },
-    // { title: 'Support Desk', to: '/oem/support', icon: HelpCircle },
+    { title: 'Reports & MIS', to: '/oem/reports', icon: FileSpreadsheet },
     { title: 'OEM Profile', to: '/oem/profile', icon: Building2 }
   ],
 

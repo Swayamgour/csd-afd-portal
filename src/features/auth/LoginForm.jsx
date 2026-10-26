@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
-  User, Lock, Eye, EyeOff, ShieldAlert, ArrowLeft, Loader2
+  User, Lock, Eye, EyeOff, ShieldAlert, ArrowLeft, Loader2, RefreshCw, KeyRound
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath, normalizeRole, isPathAllowedForRole } from '../../permissions/roles.js';
 import { authService } from '../../services/auth.service.js';
+import { makeCaptcha } from '../../utils/captcha.js';
 
 function Field({ id, label, req, hint, err, children }) {
   return (
@@ -16,9 +17,9 @@ function Field({ id, label, req, hint, err, children }) {
       </label>
       {children}
       {hint && <p className="small hint">{hint}</p>}
-      <p className="err" role={err ? 'alert' : undefined}>
+      {/* <p className="err" role={err ? 'alert' : undefined}>
         {err && `⚠ ${err}`}
-      </p>
+      </p> */}
     </div>
   );
 }
@@ -32,8 +33,15 @@ export default function LoginForm({ onNeedOtp }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [cap, setCap] = useState(makeCaptcha);
+  const [capIn, setCapIn] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const refreshCaptcha = () => {
+    setCap(makeCaptcha());
+    setCapIn('');
+  };
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -129,6 +137,12 @@ export default function LoginForm({ onNeedOtp }) {
     if (!password) {
       newErrors.password = 'Please enter your password.';
     }
+    if (!capIn.trim()) {
+      newErrors.cap = 'Enter the captcha text.';
+    } else if (capIn.trim() !== cap) {
+      newErrors.cap = 'Captcha does not match. Try again.';
+      refreshCaptcha();
+    }
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -180,13 +194,14 @@ export default function LoginForm({ onNeedOtp }) {
     }
   };
 
-  const isSubmitDisabled = loading || !username.trim() || !password;
+  const isSubmitDisabled = loading || !username.trim() || !password || !capIn.trim();
 
   return (
     <form className="panel logincard authcard" onSubmit={handleSubmit} noValidate aria-labelledby="lh">
       <div className="between">
         <Link to="/register" className="vli">
-          New user? Register
+          {/* New user? Register */}
+          Are you a new user Click here ?
         </Link>
         <button type="button" className="circle" aria-label="Go back" onClick={() => navigate(-1)}>
           <ArrowLeft />
@@ -276,22 +291,61 @@ export default function LoginForm({ onNeedOtp }) {
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
+
+        <div className="between mb-3">
+
+          <Link to="/forgot-password" className="vli">
+            Forgot Password?
+          </Link>
+        </div>
+
+
       </Field>
 
-      <div className="between mb-3">
-        <label className="inline agree pointer">
-          <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
+      {/* CAPTCHA FIELD */}
+      <Field id="cap" label="Captcha" req err={errors.cap}>
+        <div className="captcha-row">
+          <span
+            className="captcha-img"
+            aria-label={`Captcha ${cap.split('').join(' ')}`}
+          >
+            {cap}
+          </span>
+          <button
+            type="button"
+            className="icon sm"
+            aria-label="Refresh captcha"
+            onClick={refreshCaptcha}
             disabled={loading}
-          />{' '}
-          Remember credentials
-        </label>
-        <Link to="/forgot-password" className="vli">
-          Forgot Password?
-        </Link>
-      </div>
+          >
+            <RefreshCw size={18} />
+          </button>
+        </div>
+        <div className="fld">
+          <KeyRound size={18} aria-hidden />
+          <input
+            id="cap"
+            autoComplete="off"
+            maxLength={5}
+            placeholder="Type the captcha text displayed above"
+            value={capIn}
+            onChange={(e) => {
+              setCapIn(e.target.value);
+              if (errors.cap || errors.form) {
+                setErrors((prev) => {
+                  const updated = { ...prev };
+                  delete updated.cap;
+                  delete updated.form;
+                  return updated;
+                });
+              }
+            }}
+            disabled={loading}
+            aria-invalid={!!errors.cap}
+          />
+        </div>
+      </Field>
+
 
       {/* SUBMIT BUTTON */}
       <button

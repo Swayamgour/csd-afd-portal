@@ -31,7 +31,7 @@ const CATS = [
   ["bike", "Bikes", Bike],
   ["white-goods", "Appliances", Refrigerator],
 ];
-const RATINGS = [4.5, 4, 3];
+// const RATINGS = [4.5, 4, 3];
 const toggle = (set, v) =>
   set((x) => (x.includes(v) ? x.filter((i) => i !== v) : [...x, v]));
 const lakh = (v) => `₹${+v.toFixed(1)} L`;
@@ -257,6 +257,7 @@ export default function Catalog({
         set={setTypes}
         counts={count((p) => [p.type])}
       />
+      {/* {console.log("fuelList", fuelList)} */}
       {cat !== "white-goods" && (
         <Group
           title="Fuel type"

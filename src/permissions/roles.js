@@ -44,8 +44,20 @@ export const MASTER_ROLES = WP_ROLES.map((r) => ({
 }));
 
 export const ROLES = {
-  // Exact WordPress Role Keys
+  // Canonical Application Roles
+  ADMIN: 'admin',
   CS_DIRECTOR: 'cs_director',
+  CSD: 'csd',
+  CSD_HO: 'csd',
+  DEPOT: 'depot',
+  URC: 'urc',
+  OEM: 'oem',
+  DEALER: 'dealer',
+  BENEFICIARY: 'beneficiary',
+  HELPDESK_AGENT: 'helpdesk_agent',
+  HELPDESK_SUPERVISOR: 'helpdesk_supervisor',
+
+  // Canonical Legacy / WP Roles
   AFD_FINANCE: 'afdfinanceuser',
   FNA_HO: 'fnaho',
   LAOS_REPORTS: 'laos_reports',
@@ -53,7 +65,6 @@ export const ROLES = {
   HELP_DESK: 'help_desk',
   PAYER: 'payer',
   AUDIT: 'audit',
-  OEM: 'oem',
   REGISTRATIONS: 'registrations',
   OPERATIONS: 'operations',
   MANUAL_ORDER: 'manualorder',
@@ -61,12 +72,8 @@ export const ROLES = {
   DEPOT_NODAL: 'depot-nodal',
   SUB_DIRECTORATE: 'sub-directorate',
   STATE: 'state',
-  CSD_HO: 'csdho',
   CSD_DIRECTORATE: 'csddirectorate',
   CSD_HEADQUARTERS: 'csdheadquarters',
-  DEALER: 'dealer',
-  URC: 'urc',
-  DEPOT: 'depot',
   SHOP_MANAGER: 'shop_manager',
   CUSTOMER: 'customer',
   SUBSCRIBER: 'subscriber',
@@ -75,23 +82,13 @@ export const ROLES = {
   EDITOR: 'editor',
   ADMINISTRATOR: 'administrator',
 
-  // System aliases
-  ADMIN: 'admin',
-  BENEFICIARY: 'beneficiary',
-  HELPDESK_AGENT: 'helpdesk_agent',
-  HELPDESK_SUPERVISOR: 'helpdesk_supervisor',
-  TECH_SUPPORT: 'helpdesk_agent',
-  CSD: 'csd',
+  // System Aliases (distinct keys mapped to canonical roles)
   CSD_OFFICIAL: 'csd',
-  CSD_HO: 'csd',
-  DEPOT: 'depot',
   DEPOT_OFFICIAL: 'depot',
-  URC: 'urc',
   URC_USER: 'urc',
-  OEM: 'oem',
   OEM_USER: 'oem',
-  DEALER: 'dealer',
-  DEALER_USER: 'dealer'
+  DEALER_USER: 'dealer',
+  TECH_SUPPORT: 'helpdesk_agent'
 };
 
 /**

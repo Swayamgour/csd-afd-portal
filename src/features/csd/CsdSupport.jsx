@@ -160,16 +160,19 @@ export default function CsdSupport() {
       header: 'Actions',
       accessor: '_id',
       render: (row) => (
-        <button
-          onClick={() => {
-            setSelectedTicket(row);
-            setActionStatus(row.status);
-          }}
-          className="px-2.5 py-1 text-xs font-semibold bg-brand/10 text-brand rounded hover:bg-brand/20 transition flex items-center gap-1"
-        >
-          <Eye className="w-3.5 h-3.5" />
-          <span>Review</span>
-        </button>
+        <div className="csd-action-row">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedTicket(row);
+              setActionStatus(row.status);
+            }}
+            className="csd-btn-action-view"
+            title="Inspect Ticket Details"
+          >
+            <Eye size={13} /> View
+          </button>
+        </div>
       ),
     },
   ];

@@ -27,7 +27,7 @@ export default function Login() {
   return (
     <div className="wrap auth">
       <AuthArt
-        title="Welcome back to CSD AFD."
+        title="Welcome  to CSD AFD Portal"
         text="Login with your portal role and credentials to access your account."
       />
 

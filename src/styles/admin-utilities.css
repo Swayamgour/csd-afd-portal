@@ -120,6 +120,24 @@
    background: rgba(30, 79, 216, .1)
 }
 
+:is(.app-shell-root, .admin-portal) .bg-brand {
+   background-color: var(--adm-brand, #1e4fd8);
+   color: #ffffff;
+}
+
+:is(.app-shell-root, .admin-portal) .hover\:bg-brand-dark:hover {
+   background-color: var(--adm-brand-d, #0f3d79);
+   color: #ffffff;
+}
+
+:is(.app-shell-root, .admin-portal) .text-brand {
+   color: var(--adm-brand, #1e4fd8);
+}
+
+:is(.app-shell-root, .admin-portal) .text-white {
+   color: #ffffff;
+}
+
 :is(.app-shell-root, .admin-portal) .bg-red-soft {
    background: #fdecec
 }

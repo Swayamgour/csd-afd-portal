@@ -268,6 +268,7 @@ export default function CsdOems() {
       {/* CREATE / EDIT OEM MODAL */}
       {(isAddModalOpen || selectedOemForEdit) && (
         <Modal
+          isOpen={Boolean(isAddModalOpen || selectedOemForEdit)}
           title={selectedOemForEdit ? `Edit OEM: ${selectedOemForEdit.name}` : 'Register New Manufacturer (OEM)'}
           onClose={() => {
             setIsAddModalOpen(false);
@@ -429,8 +430,10 @@ export default function CsdOems() {
       {/* OEM DETAILS INSPECTION MODAL */}
       {selectedOemForView && (
         <Modal
+          isOpen={Boolean(selectedOemForView)}
           title={`OEM Profile: ${selectedOemForView.name}`}
           onClose={() => setSelectedOemForView(null)}
+          maxWidth="640px"
         >
           <div className="director-modal-form">
             <div className="csd-card-preview-box">
@@ -441,26 +444,40 @@ export default function CsdOems() {
                 </span>
               </div>
               <div className="csd-subtext-muted">
-                Code: <strong>{selectedOemForView.code}</strong> | GSTIN: <strong>{selectedOemForView.gstin || 'N/A'}</strong>
+                Code: <strong>{selectedOemForView.code}</strong>
+                {selectedOemForView.vendorCode ? <> | Vendor Code: <strong>{selectedOemForView.vendorCode}</strong></> : null}
+                {selectedOemForView.firmCode ? <> | Firm Code: <strong>{selectedOemForView.firmCode}</strong></> : null}
+                {' '}| GSTIN: <strong>{selectedOemForView.gstin || selectedOemForView.gstNumber || 'N/A'}</strong>
+                {selectedOemForView.panNumber ? <> | PAN: <strong>{selectedOemForView.panNumber}</strong></> : null}
               </div>
             </div>
 
             <div className="csd-preview-grid-2">
               <div>
                 <span className="csd-preview-field-label">Institutional Head</span>
-                <div className="csd-preview-field-value">{selectedOemForView.person || '—'}</div>
+                <div className="csd-preview-field-value">
+                  {selectedOemForView.person || selectedOemForView.contactPerson?.name || (typeof selectedOemForView.contactPerson === 'string' ? selectedOemForView.contactPerson : '') || '—'}
+                </div>
               </div>
               <div>
                 <span className="csd-preview-field-label">Contact Mobile</span>
-                <div className="csd-preview-field-value">{selectedOemForView.phone || '—'}</div>
+                <div className="csd-preview-field-value">
+                  {selectedOemForView.phone || selectedOemForView.contactPerson?.phone || selectedOemForView.alternatePhone || '—'}
+                </div>
               </div>
               <div>
                 <span className="csd-preview-field-label">Official Email</span>
-                <div className="csd-preview-field-value">{selectedOemForView.email || '—'}</div>
+                <div className="csd-preview-field-value">
+                  {selectedOemForView.email || selectedOemForView.contactPerson?.email || '—'}
+                </div>
               </div>
               <div>
                 <span className="csd-preview-field-label">Location / City</span>
-                <div className="csd-preview-field-value">{selectedOemForView.city ? `${selectedOemForView.city}, ${selectedOemForView.state || ''}` : '—'}</div>
+                <div className="csd-preview-field-value">
+                  {selectedOemForView.city
+                    ? `${selectedOemForView.city}${selectedOemForView.state ? `, ${selectedOemForView.state}` : ''}${selectedOemForView.pincode ? ` - ${selectedOemForView.pincode}` : ''}`
+                    : selectedOemForView.state || '—'}
+                </div>
               </div>
             </div>
 
@@ -472,7 +489,17 @@ export default function CsdOems() {
             )}
 
             <div className="director-modal-actions">
-              <Button variant="outline" onClick={() => setSelectedOemForView(null)}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const target = selectedOemForView;
+                  setSelectedOemForView(null);
+                  handleOpenEdit(target);
+                }}
+              >
+                <Edit2 size={13} className="mr-xs" /> Edit OEM
+              </Button>
+              <Button variant="primary" onClick={() => setSelectedOemForView(null)}>
                 Close
               </Button>
             </div>

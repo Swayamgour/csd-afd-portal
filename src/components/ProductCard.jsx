@@ -72,7 +72,7 @@ export default function ProductCard({ p, list }) {
           </button>
         </div>
       </div>
-      <div className="">
+      <div className="card-body">
         <p className="brand-l">
           {p.brand} · {p.type}
         </p>

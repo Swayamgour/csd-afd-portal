@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export function Modal({
-  isOpen,
+  isOpen = true,
   onClose,
   title,
   subtitle,
@@ -14,7 +14,7 @@ export function Modal({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && onClose) onClose();
     };
     document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
@@ -37,6 +37,7 @@ export function Modal({
       <div
         className="modal-container modal-container-default panel"
         onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth }}
       >
         <div className="modal-header between">
           <div>

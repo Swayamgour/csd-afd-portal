@@ -26,15 +26,7 @@ import {
 } from "../features/auth/authApi";
 import EmailOtpModal from "../components/modals/EmailOtpModal.jsx";
 import { userService } from "../services/user.service.js";
-
-// MOCK flow. Wire OTP, validation and CAPTCHA to a real server-side API before production.
-
-const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-const makeCaptcha = () =>
-  Array.from(
-    { length: 5 },
-    () => CHARS[Math.floor(Math.random() * CHARS.length)],
-  ).join("");
+import { makeCaptcha } from "../utils/captcha.js";
 
 const EMPLOYMENT = ["Serving", "Retired", "Defence Civilian"];
 const ORGS = ["Army", "Navy", "Air Force", "Defence Civilian / Other"];
@@ -268,7 +260,7 @@ export default function Register() {
 
     if (!capIn.trim()) {
       x.cap = "Enter the captcha text.";
-    } else if (capIn.trim().toUpperCase() !== cap) {
+    } else if (capIn.trim() !== cap) {
       x.cap = "Captcha does not match. Try again.";
       refreshCaptcha();
     }

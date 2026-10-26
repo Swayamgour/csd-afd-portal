@@ -42,6 +42,10 @@ export default function Header() {
   const { isAuthenticated, user, roleHome, role } = useAuth();
   const { data: dynamicBanners } = useGetBannersQuery({ position: 'forces_header' });
 
+  // console.log()
+
+  // const { data: me } = useGetMeQuery(undefined, { skip: !isAuthenticated });
+
   const { data: notificationsResp } = useGetNotificationsQuery(undefined, { skip: !isAuthenticated });
   const unreadCount = notificationsResp?.unreadCount ?? (Array.isArray(notificationsResp?.data) ? notificationsResp.data.filter(n => !n.read && !n.isRead).length : 0);
 
@@ -100,7 +104,7 @@ export default function Header() {
         </button>
         <Link to="/">
           <img
-            src="./assets/logo.png"
+            src="/assets/logo.png"
             // width="300"
             className="csd-logo"
           />
@@ -113,24 +117,30 @@ export default function Header() {
           <SearchBox variant="header" />
         )}
         <div className="actions">
-          <Link
-            to="/products?wish=1"
-            className="act"
-            aria-label={`Wishlist, ${wish.length} items`}
-          >
-            <Heart size={20} />
-            {wish.length > 0 && <b>{wish.length}</b>}
-            <span>Wishlist</span>
-          </Link>
-          <Link
-            to="/cart"
-            className="act"
-            aria-label={`Cart, ${cart.length} items`}
-          >
-            <ShoppingCart size={20} />
-            {cart.length > 0 && <b>{cart.length}</b>}
-            <span>Cart</span>
-          </Link>
+          {loc.pathname !== "/login" && loc.pathname !== "/register" && isAuthenticated && (
+            <>
+              <Link
+                to="/products?wish=1"
+                className="act"
+                aria-label={`Wishlist, ${wish.length} items`}
+              >
+                <Heart size={20} />
+                {wish.length > 0 && <b>{wish.length}</b>}
+                <span>Wishlist</span>
+              </Link>
+              <Link
+                to="/cart"
+                className="act"
+                aria-label={`Cart, ${cart.length} items`}
+              >
+                <ShoppingCart size={20} />
+                {cart.length > 0 && <b>{cart.length}</b>}
+                <span>Cart</span>
+              </Link>
+
+            </>
+          )
+          }
           {isAuthenticated && (
             <Link
               to="/beneficiary/notifications"

@@ -141,13 +141,16 @@ export default function CsdDemands() {
       header: 'Action',
       accessor: '_id',
       render: (d) => (
-        <button
-          onClick={() => setSelectedDemand(d)}
-          className="px-2.5 py-1 text-xs font-semibold bg-brand/10 text-brand rounded hover:bg-brand/20 transition flex items-center gap-1"
-        >
-          <Eye className="w-3.5 h-3.5" />
-          <span>Inspect</span>
-        </button>
+        <div className="csd-action-row">
+          <button
+            type="button"
+            onClick={() => setSelectedDemand(d)}
+            className="csd-btn-action-view"
+            title="Inspect Demand"
+          >
+            <Eye size={13} /> View
+          </button>
+        </div>
       ),
     },
   ];

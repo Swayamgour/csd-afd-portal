@@ -111,14 +111,14 @@ export default function CsdBeneficiaries() {
       header: 'Actions',
       accessor: '_id',
       render: (row) => (
-        <div className="flex items-center gap-1.5">
+        <div className="csd-action-row">
           <button
             type="button"
-            className="px-2.5 py-1 text-xs font-semibold bg-brand/10 text-brand rounded hover:bg-brand/20 transition flex items-center gap-1"
+            className="csd-btn-action-view"
             onClick={() => setSelectedBeneficiary(row)}
+            title="Inspect Beneficiary Dossier"
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Details</span>
+            <Eye size={13} /> View
           </button>
           {!isDirector && (row.verificationStatus === 'PENDING' || !row.verificationStatus) && (
             <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
