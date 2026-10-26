@@ -302,7 +302,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Full Name:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
@@ -314,7 +314,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Service Number:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.serviceNumber}
                     onChange={(e) => setFormData({ ...formData, serviceNumber: e.target.value })}
                   />
@@ -326,7 +326,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Permanent Account Number (PAN):</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.pan}
                     onChange={(e) => setFormData({ ...formData, pan: e.target.value.toUpperCase() })}
                   />
@@ -338,7 +338,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Smart Card ID:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.cardId}
                     onChange={(e) => setFormData({ ...formData, cardId: e.target.value })}
                   />
@@ -350,7 +350,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">PPO Number (if retired):</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.ppo}
                     onChange={(e) => setFormData({ ...formData, ppo: e.target.value })}
                   />
@@ -367,7 +367,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Service Branch / Org:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.organization}
                     onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
                   />
@@ -379,7 +379,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Serving Unit:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.unit}
                     onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                   />
@@ -391,7 +391,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Rank / Grade:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.rank}
                     onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
                   />
@@ -403,7 +403,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Pay Level (7th CPC):</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     placeholder="e.g. Level 7"
                     value={formData.payLevel}
                     onChange={(e) => setFormData({ ...formData, payLevel: e.target.value })}
@@ -416,7 +416,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Employment Status:</span>
                 {editing ? (
                   <select
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.employmentStatus}
                     onChange={(e) => setFormData({ ...formData, employmentStatus: e.target.value })}
                   >
@@ -432,7 +432,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Entitlement Class:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     placeholder="e.g. AFD-I / AFD-II"
                     value={formData.entitlement}
                     onChange={(e) => setFormData({ ...formData, entitlement: e.target.value })}
@@ -455,7 +455,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Mobile Number:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.mobile}
                     onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                   />
@@ -467,7 +467,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Registered Email:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
@@ -490,7 +490,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Address Line 1:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.line1}
                     onChange={(e) => setFormData({ ...formData, line1: e.target.value })}
                   />
@@ -502,7 +502,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Address Line 2:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.line2}
                     onChange={(e) => setFormData({ ...formData, line2: e.target.value })}
                   />
@@ -514,7 +514,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">City:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   />
@@ -526,7 +526,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">State:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.state}
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                   />
@@ -538,7 +538,7 @@ export function BeneficiaryProfile() {
                 <span className="muted">Pincode:</span>
                 {editing ? (
                   <input
-                    className="fld-input-sm"
+                    className="form-control"
                     value={formData.pincode}
                     onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
                   />

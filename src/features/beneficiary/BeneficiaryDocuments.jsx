@@ -93,11 +93,11 @@ export default function BeneficiaryDocuments() {
 
         <Card title="Upload New or Renewal Document">
           <div className="form-field mb-2">
-            <label className="form-label font-semibold small">Document Type</label>
+            <label className="form-label">Document Type</label>
             <select
               value={docType}
               onChange={(e) => setDocType(e.target.value)}
-              className="select-input"
+              className="form-control"
             >
               <option value="SERVICE_ID">Service Identity Card / Ex-Servicemen Card</option>
               <option value="PAYSLIP">Latest Pay Slip / Pension Statement</option>

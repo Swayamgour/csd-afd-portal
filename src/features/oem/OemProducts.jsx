@@ -449,7 +449,7 @@ export default function OemProducts() {
             <div className="form-field">
               <label className="form-label">CSD Category <span className="req-star">*</span></label>
               <select
-                className="form-control select-input"
+                className="form-control"
                 value={formState.categoryId}
                 onChange={(e) => setFormState({ ...formState, categoryId: e.target.value })}
                 required
@@ -488,7 +488,7 @@ export default function OemProducts() {
             <div className="form-field">
               <label className="form-label">Fuel Type</label>
               <select
-                className="form-control select-input"
+                className="form-control"
                 value={formState.fuelType}
                 onChange={(e) => setFormState({ ...formState, fuelType: e.target.value })}
               >
@@ -549,7 +549,7 @@ export default function OemProducts() {
           <div className="form-field">
             <label className="form-label">Initial Status</label>
             <select
-              className="form-control select-input"
+              className="form-control"
               value={formState.status}
               onChange={(e) => setFormState({ ...formState, status: e.target.value })}
             >

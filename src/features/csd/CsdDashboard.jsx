@@ -44,14 +44,14 @@ export default function CsdDashboard() {
   const demands = Array.isArray(demandsData?.items)
     ? demandsData.items
     : Array.isArray(demandsData)
-    ? demandsData
-    : [];
+      ? demandsData
+      : [];
 
   const escalatedTickets = Array.isArray(ticketsData)
     ? ticketsData
     : Array.isArray(ticketsData?.items)
-    ? ticketsData.items
-    : [];
+      ? ticketsData.items
+      : [];
 
   const loading = loadingSummary || loadingDemands || loadingTickets;
 
@@ -105,7 +105,7 @@ export default function CsdDashboard() {
   return (
     <div className="csd-dashboard-page">
       <PageHeader
-        title="CSD Head Office Operations Directorate"
+        title="CSD HO  Admin Dashboard"
         subtitle="National procurement oversight, policy enforcement, depot sanctions, and institutional dealer governance."
         actions={
           <div className="row gap-1">

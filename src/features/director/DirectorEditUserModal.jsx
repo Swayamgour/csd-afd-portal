@@ -165,46 +165,46 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
           <h4 className="director-section-heading">
             Personal & Contact Information
           </h4>
-          <div className="director-form-grid">
+          <div className="form-grid-2">
             <div>
-              <label className="director-field-label">Full Name *</label>
+              <label className="form-label">Full Name *</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">Mobile Number</label>
+              <label className="form-label">Mobile Number</label>
               <input
                 type="text"
                 name="mobile"
                 value={formData.mobile}
                 onChange={handleChange}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">Email Address</label>
+              <label className="form-label">Email Address</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">Date of Birth</label>
+              <label className="form-label">Date of Birth</label>
               <input
                 type="date"
                 name="dob"
                 value={formData.dob}
                 onChange={handleChange}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
           </div>
@@ -215,36 +215,36 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
           <h4 className="director-section-heading">
             Armed Forces Service Details
           </h4>
-          <div className="director-form-grid">
+          <div className="form-grid-2">
             <div>
-              <label className="director-field-label">Service Number</label>
+              <label className="form-label">Service Number</label>
               <input
                 type="text"
                 name="serviceNumber"
                 value={formData.serviceNumber}
                 onChange={handleChange}
                 placeholder="e.g. JC-765432X"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">Rank</label>
+              <label className="form-label">Rank</label>
               <input
                 type="text"
                 name="rank"
                 value={formData.rank}
                 onChange={handleChange}
                 placeholder="e.g. Subedar Major, Havildar, Major"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">Service Branch / Arm</label>
+              <label className="form-label">Service Branch / Arm</label>
               <select
                 name="organization"
                 value={formData.organization}
                 onChange={handleChange}
-                className="director-field-input"
+                className="form-control"
               >
                 <option value="Indian Army">Indian Army</option>
                 <option value="Indian Navy">Indian Navy</option>
@@ -255,23 +255,23 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
               </select>
             </div>
             <div>
-              <label className="director-field-label">Regiment / Unit</label>
+              <label className="form-label">Regiment / Unit</label>
               <input
                 type="text"
                 name="unit"
                 value={formData.unit}
                 onChange={handleChange}
                 placeholder="e.g. Rajputana Rifles, 7 Wing AF"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">Employment Status</label>
+              <label className="form-label">Employment Status</label>
               <select
                 name="employmentStatus"
                 value={formData.employmentStatus}
                 onChange={handleChange}
-                className="director-field-input"
+                className="form-control"
               >
                 <option value="SERVING">Serving Personnel</option>
                 <option value="RETIRED">Ex-Serviceman / ESM</option>
@@ -279,12 +279,12 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
               </select>
             </div>
             <div>
-              <label className="director-field-label">Category</label>
+              <label className="form-label">Category</label>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="director-field-input"
+                className="form-control"
               >
                 <option value="SERVING">Serving</option>
                 <option value="EX_SERVICEMAN">Ex-Serviceman</option>
@@ -295,25 +295,25 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
               </select>
             </div>
             <div>
-              <label className="director-field-label">Pay Level</label>
+              <label className="form-label">Pay Level</label>
               <input
                 type="text"
                 name="payLevel"
                 value={formData.payLevel}
                 onChange={handleChange}
                 placeholder="e.g. Level 7, Level 10, Level 14"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">Entitlement Category</label>
+              <label className="form-label">Entitlement Category</label>
               <input
                 type="text"
                 name="entitlement"
                 value={formData.entitlement}
                 onChange={handleChange}
                 placeholder="e.g. Officer, JCO, OR"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
           </div>
@@ -324,49 +324,49 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
           <h4 className="director-section-heading">
             CSD Canteen Card & Document Details
           </h4>
-          <div className="director-form-grid">
+          <div className="form-grid-2">
             <div>
-              <label className="director-field-label">CSD Grocery/Smart Card ID</label>
+              <label className="form-label">CSD Grocery/Smart Card ID</label>
               <input
                 type="text"
                 name="cardId"
                 value={formData.cardId}
                 onChange={handleChange}
                 placeholder="e.g. GC12345678"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">Card Chip Number</label>
+              <label className="form-label">Card Chip Number</label>
               <input
                 type="text"
                 name="chipNumber"
                 value={formData.chipNumber}
                 onChange={handleChange}
                 placeholder="e.g. CHIP-987654"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">PAN Number</label>
+              <label className="form-label">PAN Number</label>
               <input
                 type="text"
                 name="pan"
                 value={formData.pan}
                 onChange={handleChange}
                 placeholder="e.g. ABCDE1234F"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">PPO Number (For ESM)</label>
+              <label className="form-label">PPO Number (For ESM)</label>
               <input
                 type="text"
                 name="ppo"
                 value={formData.ppo}
                 onChange={handleChange}
                 placeholder="Pension Payment Order No."
-                className="director-field-input"
+                className="form-control"
               />
             </div>
           </div>
@@ -377,58 +377,58 @@ export function DirectorEditUserModal({ isOpen, onClose, user, onUserUpdated }) 
           <h4 className="director-section-heading">
             Address & Postal Code
           </h4>
-          <div className="director-form-grid">
+          <div className="form-grid-2">
             <div className="director-grid-span-2">
-              <label className="director-field-label">Street / House Address</label>
+              <label className="form-label">Street / House Address</label>
               <input
                 type="text"
                 name="addressLine1"
                 value={formData.addressLine1}
                 onChange={handleChange}
                 placeholder="House No., Quarter, Street, Area"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">City / Station</label>
+              <label className="form-label">City / Station</label>
               <input
                 type="text"
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">State</label>
+              <label className="form-label">State</label>
               <input
                 type="text"
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">Pincode (6 digits)</label>
+              <label className="form-label">Pincode (6 digits)</label>
               <input
                 type="text"
                 name="pincode"
                 value={formData.pincode}
                 onChange={handleChange}
                 maxLength={6}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
             <div>
-              <label className="director-field-label">CS Director Remarks / Note</label>
+              <label className="form-label">CS Director Remarks / Note</label>
               <input
                 type="text"
                 name="remarks"
                 value={formData.remarks}
                 onChange={handleChange}
                 placeholder="Reason for change / verification comments"
-                className="director-field-input"
+                className="form-control"
               />
             </div>
           </div>

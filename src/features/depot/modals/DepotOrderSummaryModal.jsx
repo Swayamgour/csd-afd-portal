@@ -67,7 +67,7 @@ export default function DepotOrderSummaryModal({ isOpen, onClose, demand }) {
             {/* Product & Procurement Details */}
             <div className="depot-summary-section">
               <h4 className="depot-summary-heading">Vehicle / Item Procurement</h4>
-              <table className="depot-summary-meta-table">
+              <div className="data-table-wrapper"><table className="data-table">
                 <tbody>
                   <tr>
                     <td>Item Name:</td>
@@ -98,13 +98,13 @@ export default function DepotOrderSummaryModal({ isOpen, onClose, demand }) {
                     <td>{demand.dealerId?.name || demand.dealer || 'Authorized Dealership'}</td>
                   </tr>
                 </tbody>
-              </table>
+              </table></div>
             </div>
 
             {/* Beneficiary Details */}
             <div className="depot-summary-section">
               <h4 className="depot-summary-heading">Beneficiary Particulars</h4>
-              <table className="depot-summary-meta-table">
+              <div className="data-table-wrapper"><table className="data-table">
                 <tbody>
                   <tr>
                     <td>Username:</td>
@@ -131,7 +131,7 @@ export default function DepotOrderSummaryModal({ isOpen, onClose, demand }) {
                     <td><span className="text-green font-semibold">● {demand.paymentStatus || 'Verified'}</span></td>
                   </tr>
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </div>
 

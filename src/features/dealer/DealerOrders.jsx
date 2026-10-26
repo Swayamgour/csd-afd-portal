@@ -153,13 +153,13 @@ export default function DealerOrders() {
             </p>
 
             <div className="fgrp">
-              <label htmlFor="gatepassNotes" className="small font-semibold">
+              <label htmlFor="gatepassNotes" className="form-label">
                 Delivery Gatepass Notes
               </label>
               <textarea
                 id="gatepassNotes"
                 rows="3"
-                className="inp"
+                className="form-control"
                 value={deliveryNote}
                 onChange={(e) => setDeliveryNote(e.target.value)}
               />

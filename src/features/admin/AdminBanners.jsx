@@ -343,8 +343,8 @@ export default function AdminBanners() {
           maxWidth="560px"
         >
           <form onSubmit={handleFormSubmit} className="director-modal-form">
-            <div className="portal-form-group">
-              <label className="director-field-label">
+            <div className="form-field">
+              <label className="form-label">
                 Banner Name: <span className="doc-upload-required-star">*</span>
               </label>
               <input
@@ -353,12 +353,12 @@ export default function AdminBanners() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                className="director-field-input"
+                className="form-control"
               />
             </div>
 
-            <div className="portal-form-group">
-              <label className="director-field-label">
+            <div className="form-field">
+              <label className="form-label">
                 Image URL or Path (e.g. /assets/home_page.png or https://...): <span className="doc-upload-required-star">*</span>
               </label>
               <input
@@ -367,7 +367,7 @@ export default function AdminBanners() {
                 value={formData.imageUrl}
                 onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                 required
-                className="director-field-input"
+                className="form-control"
               />
             </div>
 
@@ -390,13 +390,13 @@ export default function AdminBanners() {
 
             <div className="checkout-form-row-2 mb-sm">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Position / Slot:
                 </label>
                 <select
                   value={formData.position}
                   onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 >
                   <option value="forces_header">Top Header Forces Logo</option>
                   <option value="home_hero">Home Hero Slider</option>
@@ -406,7 +406,7 @@ export default function AdminBanners() {
               </div>
 
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Display Order:
                 </label>
                 <input
@@ -415,13 +415,13 @@ export default function AdminBanners() {
                   max="99"
                   value={formData.order}
                   onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value, 10) || 0 })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
 
-            <div className="portal-form-group">
-              <label className="director-field-label">
+            <div className="form-field">
+              <label className="form-label">
                 Destination Link URL (Optional):
               </label>
               <input
@@ -429,7 +429,7 @@ export default function AdminBanners() {
                 placeholder="e.g. /products?cat=car or https://..."
                 value={formData.linkUrl}
                 onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
 

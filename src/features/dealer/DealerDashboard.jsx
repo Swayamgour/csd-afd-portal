@@ -615,7 +615,7 @@ export default function DealerDashboard() {
                 <input
                   type="text"
                   placeholder="Search Demand or Officer..."
-                  className="inp sm"
+                  className="form-control"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -803,13 +803,13 @@ export default function DealerDashboard() {
 
               <div className="grid col-2 gap-2 mb-2">
                 <div className="fgrp">
-                  <label htmlFor="chassisNo" className="small font-semibold">
+                  <label htmlFor="chassisNo" className="form-label">
                     Allotted Chassis / VIN No. <span className="text-danger">*</span>
                   </label>
                   <input
                     id="chassisNo"
                     type="text"
-                    className="inp font-mono font-bold"
+                    className="form-control font-mono"
                     placeholder="e.g. MAH-VIN-2026-9812"
                     value={chassisNo}
                     onChange={(e) => setChassisNo(e.target.value.toUpperCase())}
@@ -818,13 +818,13 @@ export default function DealerDashboard() {
                 </div>
 
                 <div className="fgrp">
-                  <label htmlFor="engineNo" className="small font-semibold">
+                  <label htmlFor="engineNo" className="form-label">
                     Engine Number (Optional)
                   </label>
                   <input
                     id="engineNo"
                     type="text"
-                    className="inp font-mono"
+                    className="form-control font-mono"
                     placeholder="e.g. ENG-2198-4421"
                     value={engineNo}
                     onChange={(e) => setEngineNo(e.target.value.toUpperCase())}
@@ -834,7 +834,7 @@ export default function DealerDashboard() {
 
               <div className="grid col-2 gap-2 mb-2">
                 <div className="fgrp">
-                  <label htmlFor="deliveryDays" className="small font-semibold">
+                  <label htmlFor="deliveryDays" className="form-label">
                     Estimated Delivery Lead Time (Days)
                   </label>
                   <input
@@ -842,34 +842,34 @@ export default function DealerDashboard() {
                     type="number"
                     min="1"
                     max="90"
-                    className="inp"
+                    className="form-control"
                     value={deliveryDays}
                     onChange={(e) => setDeliveryDays(e.target.value)}
                   />
                 </div>
 
                 <div className="fgrp">
-                  <label htmlFor="priceConfirm" className="small font-semibold">
+                  <label htmlFor="priceConfirm" className="form-label">
                     Price Verification Status
                   </label>
                   <input
                     id="priceConfirm"
                     type="text"
                     disabled
-                    className="inp text-success font-semibold"
+                    className="form-control"
                     value="✓ Verified with Showroom Rate List"
                   />
                 </div>
               </div>
 
               <div className="fgrp">
-                <label htmlFor="remarks" className="small font-semibold">
+                <label htmlFor="remarks" className="form-label">
                   Dealership Verification Remarks
                 </label>
                 <textarea
                   id="remarks"
                   rows="2"
-                  className="inp"
+                  className="form-control"
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
                 />
@@ -911,13 +911,13 @@ export default function DealerDashboard() {
             </p>
 
             <div className="fgrp mb-2">
-              <label htmlFor="handoverNotes" className="small font-semibold">
+              <label htmlFor="handoverNotes" className="form-label">
                 Delivery Notes / Gatepass Stamp Record
               </label>
               <textarea
                 id="handoverNotes"
                 rows="3"
-                className="inp"
+                className="form-control"
                 placeholder="Vehicle inspected and released to beneficiary in satisfactory condition."
                 value={handoverNotes}
                 onChange={(e) => setHandoverNotes(e.target.value)}

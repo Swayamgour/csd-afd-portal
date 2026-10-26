@@ -333,7 +333,7 @@ export default function BeneficiaryPayments() {
           <Search size={18} className="text-slate-400" />
           <input
             type="text"
-            className="bg-transparent border-none outline-none text-sm w-full text-slate-800"
+            className="form-control"
             placeholder="Search by receipt ID, demand ref, UTR, or channel..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -343,7 +343,7 @@ export default function BeneficiaryPayments() {
         <div className="flex items-center gap-3">
           <Filter size={18} className="text-slate-500" />
           <select
-            className="border border-slate-300 rounded px-3 py-2 text-sm bg-white text-slate-700 outline-none"
+            className="form-control"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -494,7 +494,7 @@ export default function BeneficiaryPayments() {
             <span className="small text-green font-semibold">● Official Zero-Surcharge Gateway for Defence Personnel</span>
           </div>
 
-          <label className="form-label font-semibold small mb-1 block">Choose Payment Gateway Channel</label>
+          <label className="form-label">Choose Payment Gateway Channel</label>
           <div className="payment-modes-grid row gap-1 mb-3">
             <button
               type="button"

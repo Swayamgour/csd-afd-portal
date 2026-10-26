@@ -35,7 +35,7 @@ export function CatalogToolbar({
         <label className="catalog-select">
           <FilterIcon size={16} className="catalog-select-icon" aria-hidden="true" />
           <select
-            className="select-input"
+            className="form-control"
             value={category}
             onChange={(e) => onCategoryChange(e.target.value)}
             aria-label="Filter by category"

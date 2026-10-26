@@ -387,7 +387,7 @@ export const AdminReports = () => {
               placeholder={`Search in ${activeTabObj?.label.replace(/^\d+\.\s*/, '')}...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand focus:outline-none"
+              className="form-control pl-9"
             />
           </div>
 
@@ -397,7 +397,7 @@ export const AdminReports = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+                className="form-control"
               >
                 <option value="">All Statuses</option>
                 {activeReport === 'demands' && (
@@ -456,7 +456,7 @@ export const AdminReports = () => {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-700"
+                  className="form-control"
                   title="From Date"
                 />
                 <span className="text-slate-400 text-xs">to</span>
@@ -464,7 +464,7 @@ export const AdminReports = () => {
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-slate-700"
+                  className="form-control"
                   title="To Date"
                 />
               </div>

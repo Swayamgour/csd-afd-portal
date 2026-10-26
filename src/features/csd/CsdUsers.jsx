@@ -170,7 +170,7 @@ export default function CsdUsers() {
         }}
       >
         <div className="flex-1 min-w-xs">
-          <label className="form-label small font-semibold">Search Users</label>
+          <label className="form-label">Search Users</label>
           <SearchInput
             value={searchTerm}
             onChange={setSearchTerm}

@@ -260,7 +260,7 @@ export default function CsdUrcs() {
               placeholder="Search URC name, code, depot..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="csd-search-field-input director-field-input"
+              className="form-control"
             />
           </div>
         }
@@ -284,14 +284,14 @@ export default function CsdUrcs() {
         >
           <form onSubmit={handleSaveUrc} className="director-modal-form">
             <div>
-              <label className="director-field-label">
+              <label className="form-label">
                 Select Parent Regional Depot *
               </label>
               <select
                 required
                 value={formData.depotId}
                 onChange={(e) => setFormData({ ...formData, depotId: e.target.value })}
-                className="director-field-input"
+                className="form-control"
               >
                 <option value="">-- Choose Parent Depot --</option>
                 {depots.map((d) => (
@@ -307,7 +307,7 @@ export default function CsdUrcs() {
 
             <div className="csd-form-grid-2-1">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   URC Name *
                 </label>
                 <input
@@ -316,11 +316,11 @@ export default function CsdUrcs() {
                   placeholder="e.g. 7 WING AF CANTEEN"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   URC Code *
                 </label>
                 <input
@@ -329,14 +329,14 @@ export default function CsdUrcs() {
                   placeholder="e.g. URC-7AF"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
 
-            <div className="csd-form-grid-3">
+            <div className="grid-3-col">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Officer-in-Charge
                 </label>
                 <input
@@ -344,11 +344,11 @@ export default function CsdUrcs() {
                   placeholder="Canteen Officer"
                   value={formData.person}
                   onChange={(e) => setFormData({ ...formData, person: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Email
                 </label>
                 <input
@@ -356,11 +356,11 @@ export default function CsdUrcs() {
                   placeholder="urc@station.gov.in"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Contact Phone
                 </label>
                 <input
@@ -368,13 +368,13 @@ export default function CsdUrcs() {
                   placeholder="Canteen Phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
 
             <div>
-              <label className="director-field-label">
+              <label className="form-label">
                 Station Address
               </label>
               <input
@@ -382,13 +382,13 @@ export default function CsdUrcs() {
                 placeholder="Military Base / Station Location"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
 
-            <div className="csd-form-grid-2">
+            <div className="form-grid-2">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   City
                 </label>
                 <input
@@ -396,11 +396,11 @@ export default function CsdUrcs() {
                   placeholder="City"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   State
                 </label>
                 <input
@@ -408,7 +408,7 @@ export default function CsdUrcs() {
                   placeholder="State"
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
@@ -420,7 +420,7 @@ export default function CsdUrcs() {
                 checked={formData.active}
                 onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
               />
-              <label htmlFor="urcActive" className="director-field-label">
+              <label htmlFor="urcActive" className="form-label">
                 Operational & Open for Beneficiary Deliveries
               </label>
             </div>

@@ -61,7 +61,7 @@ export default function CsdLoginHistory() {
         onReset={() => setSearchTerm('')}
       >
         <div className="flex-1 min-w-xs">
-          <label className="form-label small font-semibold">Search Logins</label>
+          <label className="form-label">Search Logins</label>
           <SearchInput
             value={searchTerm}
             onChange={setSearchTerm}

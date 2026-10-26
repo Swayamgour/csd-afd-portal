@@ -213,10 +213,10 @@ export default function CsdContent() {
           </div>
 
           <div className="form-field mb-2">
-            <label className="form-label font-semibold small">Executive Summary *</label>
+            <label className="form-label">Executive Summary *</label>
             <textarea
               rows={3}
-              className="fld w-full"
+              className="form-control fld"
               placeholder="Brief summary of revised rules..."
               value={newCircular.summary}
               onChange={(e) => setNewCircular({ ...newCircular, summary: e.target.value })}

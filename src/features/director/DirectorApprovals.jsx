@@ -442,7 +442,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
                 placeholder="Search name, svc no, card, email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="director-search-input-field"
+                className="form-control"
               />
               {searchQuery && (
                 <button
@@ -458,7 +458,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="director-select-filter"
+              className="form-control"
             >
               <option value="ALL">All Categories</option>
               <option value="SERVING">Serving Personnel</option>
@@ -509,14 +509,14 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
           title={`Reject Application: ${rejectModalUser.name || rejectModalUser.username}`}
         >
           <form onSubmit={handleConfirmReject} className="director-modal-form">
-            <div className="portal-form-group">
-              <label className="director-field-label">
+            <div className="form-field">
+              <label className="form-label">
                 Primary Reason for Rejection *
               </label>
               <select
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="director-field-input"
+                className="form-control"
               >
                 <option value="Service records mismatch with Armed Forces database">Service records mismatch with Armed Forces database</option>
                 <option value="CSD smart canteen card invalid or expired">CSD smart canteen card invalid or expired</option>
@@ -527,8 +527,8 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
               </select>
             </div>
 
-            <div className="portal-form-group-spaced">
-              <label className="director-field-label">
+            <div className="form-field">
+              <label className="form-label">
                 Additional Remarks / Correction Instructions for Beneficiary
               </label>
               <textarea
@@ -536,7 +536,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
                 value={rejectCustomRemarks}
                 onChange={(e) => setRejectCustomRemarks(e.target.value)}
                 placeholder="Explain the required documents or correction so the user can rectify and re-apply..."
-                className="director-field-input"
+                className="form-control"
               />
             </div>
 

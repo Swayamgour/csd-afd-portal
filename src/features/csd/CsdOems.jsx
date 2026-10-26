@@ -252,7 +252,7 @@ export default function CsdOems() {
               placeholder="Search OEM name, code, city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="csd-search-field-input director-field-input"
+              className="form-control"
             />
           </div>
         }
@@ -278,7 +278,7 @@ export default function CsdOems() {
           <form onSubmit={handleSaveOem} className="director-modal-form">
             <div className="csd-form-grid-2-1">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   OEM Name *
                 </label>
                 <input
@@ -287,11 +287,11 @@ export default function CsdOems() {
                   placeholder="e.g. Maruti Suzuki India Ltd."
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   OEM Code *
                 </label>
                 <input
@@ -300,14 +300,14 @@ export default function CsdOems() {
                   placeholder="e.g. MSIL"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
 
-            <div className="csd-form-grid-3">
+            <div className="grid-3-col">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Contact Person
                 </label>
                 <input
@@ -315,11 +315,11 @@ export default function CsdOems() {
                   placeholder="Institutional Head"
                   value={formData.person}
                   onChange={(e) => setFormData({ ...formData, person: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Email
                 </label>
                 <input
@@ -327,11 +327,11 @@ export default function CsdOems() {
                   placeholder="csd.sales@oem.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Mobile / Phone
                 </label>
                 <input
@@ -339,13 +339,13 @@ export default function CsdOems() {
                   placeholder="Official Phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
 
             <div>
-              <label className="director-field-label">
+              <label className="form-label">
                 Corporate Address
               </label>
               <input
@@ -353,13 +353,13 @@ export default function CsdOems() {
                 placeholder="HQ Plant / Office Address"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
 
-            <div className="csd-form-grid-3">
+            <div className="grid-3-col">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   City
                 </label>
                 <input
@@ -367,11 +367,11 @@ export default function CsdOems() {
                   placeholder="City"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   State
                 </label>
                 <input
@@ -379,11 +379,11 @@ export default function CsdOems() {
                   placeholder="State"
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   GSTIN Number
                 </label>
                 <input
@@ -391,7 +391,7 @@ export default function CsdOems() {
                   placeholder="GSTIN"
                   value={formData.gstin}
                   onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
@@ -403,7 +403,7 @@ export default function CsdOems() {
                 checked={formData.active}
                 onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
               />
-              <label htmlFor="oemActive" className="director-field-label">
+              <label htmlFor="oemActive" className="form-label">
                 Active in CSD Catalog (Dealers & products can be assigned)
               </label>
             </div>

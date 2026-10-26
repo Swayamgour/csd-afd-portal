@@ -263,7 +263,7 @@ export default function OemDealerProducts() {
         <div className="flex flex-wrap gap-2 justify-between items-center mb-3">
           <div className="flex gap-2 items-center flex-1 max-w-md">
             <select
-              className="form-control select-input w-64"
+              className="form-control w-64"
               value={selectedDealerFilter}
               onChange={(e) => {
                 setSelectedDealerFilter(e.target.value);
@@ -279,7 +279,7 @@ export default function OemDealerProducts() {
             </select>
 
             <select
-              className="form-control select-input w-44"
+              className="form-control w-44"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -346,7 +346,7 @@ export default function OemDealerProducts() {
           <div className="form-field">
             <label className="form-label">Select Dealership <span className="req-star">*</span></label>
             <select
-              className="form-control select-input"
+              className="form-control"
               value={formDealerId}
               onChange={(e) => setFormDealerId(e.target.value)}
               required
@@ -363,7 +363,7 @@ export default function OemDealerProducts() {
           <div className="form-field">
             <label className="form-label">Select Empaneled Model <span className="req-star">*</span></label>
             <select
-              className="form-control select-input"
+              className="form-control"
               value={formProductId}
               onChange={(e) => setFormProductId(e.target.value)}
               required
@@ -381,7 +381,7 @@ export default function OemDealerProducts() {
             <div className="form-field">
               <label className="form-label">Stock Availability</label>
               <select
-                className="form-control select-input"
+                className="form-control"
                 value={formAvailability}
                 onChange={(e) => setFormAvailability(e.target.value)}
               >

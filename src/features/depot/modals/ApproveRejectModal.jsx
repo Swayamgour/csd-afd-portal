@@ -188,8 +188,8 @@ export default function ApproveRejectModal({ isOpen, onClose, demand, mode = 'ap
                   </span>
                 </div>
 
-                <div className="form-group mt-1">
-                  <label className="form-label small font-semibold">
+                <div className="form-field mt-1">
+                  <label className="form-label">
                     Rejection Reason / Discrepancy Note:<span className="text-danger">*</span>
                   </label>
                   <textarea

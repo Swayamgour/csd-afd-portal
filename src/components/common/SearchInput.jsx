@@ -22,7 +22,7 @@ export function SearchInput({
         value={value || ''}
         onChange={handleChange}
         placeholder={placeholder}
-        className="search-input"
+        className="form-control"
         aria-label={placeholder}
       />
       {value && (

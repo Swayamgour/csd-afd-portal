@@ -63,7 +63,7 @@ export function UserStatusModal({ isOpen, onClose, user, onStatusUpdated }) {
         </div>
 
         <div className="mb-md">
-          <label className="form-label font-semibold" htmlFor="new_status_select">
+          <label className="form-label" htmlFor="new_status_select">
             New Account Status <span className="req-star">*</span>
           </label>
           <select
@@ -73,7 +73,7 @@ export function UserStatusModal({ isOpen, onClose, user, onStatusUpdated }) {
               setNewStatus(e.target.value);
               setError('');
             }}
-            className="director-field-input"
+            className="form-control"
           >
             <option value="Active">Active (Full access)</option>
             <option value="Pending">Pending (Awaiting document verification)</option>
@@ -84,14 +84,14 @@ export function UserStatusModal({ isOpen, onClose, user, onStatusUpdated }) {
         </div>
 
         <div className="mb-md">
-          <label className="form-label font-semibold" htmlFor="status_reason">
+          <label className="form-label" htmlFor="status_reason">
             Reason for Status Change <span className="req-star">*</span>
           </label>
           <textarea
             id="status_reason"
             rows={3}
             required
-            className={`director-field-input ${error ? 'input-error' : ''}`}
+            className={`form-control ${error ? 'input-error' : ''}`}
             placeholder="e.g. Identity verified via service depot nodal certificate / Account suspended pending enquiry..."
             value={reason}
             onChange={(e) => setReason(e.target.value)}

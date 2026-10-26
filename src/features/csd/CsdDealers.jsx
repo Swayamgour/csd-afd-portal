@@ -280,7 +280,7 @@ export default function CsdDealers() {
               placeholder="Search dealer name, city, OEM..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="csd-search-field-input director-field-input"
+              className="form-control"
             />
           </div>
         }
@@ -304,14 +304,14 @@ export default function CsdDealers() {
         >
           <form onSubmit={handleSaveDealer} className="director-modal-form">
             <div>
-              <label className="director-field-label">
+              <label className="form-label">
                 Select Affiliated OEM / Manufacturer *
               </label>
               <select
                 required
                 value={formData.oemId}
                 onChange={(e) => setFormData({ ...formData, oemId: e.target.value })}
-                className="director-field-input"
+                className="form-control"
               >
                 <option value="">-- Choose OEM Manufacturer --</option>
                 {oems.map((o) => (
@@ -327,7 +327,7 @@ export default function CsdDealers() {
 
             <div className="csd-form-grid-2-1">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Dealership Name *
                 </label>
                 <input
@@ -336,11 +336,11 @@ export default function CsdDealers() {
                   placeholder="e.g. AAA Vehicleades Pvt. Ltd. Mundka"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Dealer Code *
                 </label>
                 <input
@@ -349,14 +349,14 @@ export default function CsdDealers() {
                   placeholder="e.g. DLR-101"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
 
-            <div className="csd-form-grid-3">
+            <div className="grid-3-col">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Contact Person
                 </label>
                 <input
@@ -364,11 +364,11 @@ export default function CsdDealers() {
                   placeholder="Showroom Manager"
                   value={formData.person}
                   onChange={(e) => setFormData({ ...formData, person: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Email
                 </label>
                 <input
@@ -376,11 +376,11 @@ export default function CsdDealers() {
                   placeholder="dealer@dealership.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Phone Number
                 </label>
                 <input
@@ -388,13 +388,13 @@ export default function CsdDealers() {
                   placeholder="Contact Mobile"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
 
             <div>
-              <label className="director-field-label">
+              <label className="form-label">
                 Showroom Address
               </label>
               <input
@@ -402,13 +402,13 @@ export default function CsdDealers() {
                 placeholder="Full Street Address"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
 
-            <div className="csd-form-grid-3">
+            <div className="grid-3-col">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   City
                 </label>
                 <input
@@ -416,11 +416,11 @@ export default function CsdDealers() {
                   placeholder="City"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   State
                 </label>
                 <input
@@ -428,11 +428,11 @@ export default function CsdDealers() {
                   placeholder="State"
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   PIN Code
                 </label>
                 <input
@@ -440,7 +440,7 @@ export default function CsdDealers() {
                   placeholder="6-digit PIN"
                   value={formData.pincode}
                   onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
@@ -452,7 +452,7 @@ export default function CsdDealers() {
                 checked={formData.active}
                 onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
               />
-              <label htmlFor="dealerActive" className="director-field-label">
+              <label htmlFor="dealerActive" className="form-label">
                 Active for Beneficiary Delivery Selection
               </label>
             </div>

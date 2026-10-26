@@ -190,11 +190,11 @@ export default function DealerProducts() {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="director-field-label">1. Select Manufacturer (OEM) *</label>
+            <label className="form-label">1. Select Manufacturer (OEM) *</label>
             <select
               value={selectedOemId}
               onChange={(e) => handleOemChange(e.target.value)}
-              className="director-field-input"
+              className="form-control"
               disabled={loadingOems}
             >
               <option value="">-- Choose OEM / Manufacturer --</option>
@@ -207,11 +207,11 @@ export default function DealerProducts() {
           </div>
 
           <div>
-            <label className="director-field-label">2. Select Dealership (Showroom) *</label>
+            <label className="form-label">2. Select Dealership (Showroom) *</label>
             <select
               value={selectedDealerId}
               onChange={(e) => setSelectedDealerId(e.target.value)}
-              className="director-field-input"
+              className="form-control"
               disabled={loadingDealers || !selectedOemId}
             >
               <option value="">-- Choose Dealership --</option>
@@ -251,7 +251,7 @@ export default function DealerProducts() {
                 placeholder="Search models, SKU..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="csd-search-field-input director-field-input"
+                className="form-control"
               />
             </div>
           }
@@ -267,16 +267,16 @@ export default function DealerProducts() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="data-table">
+              <div className="data-table-wrapper"><table className="data-table">
                 <thead>
                   <tr>
-                    <th className="p-3 w-12 text-center">Auth</th>
-                    <th className="p-3">Vehicle Model</th>
-                    <th className="p-3">SKU / Index</th>
-                    <th className="p-3">CSD Price</th>
-                    <th className="p-3">Availability Status</th>
-                    <th className="p-3">Est. Delivery</th>
-                    <th className="p-3 text-right">Actions</th>
+                    <th className="w-12 text-center">Auth</th>
+                    <th>Vehicle Model</th>
+                    <th>SKU / Index</th>
+                    <th>CSD Price</th>
+                    <th>Availability Status</th>
+                    <th>Est. Delivery</th>
+                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -292,7 +292,7 @@ export default function DealerProducts() {
                           isAuthorized ? 'bg-emerald-50/30' : ''
                         }`}
                       >
-                        <td className="p-3 text-center">
+                        <td className="text-center">
                           <button
                             type="button"
                             onClick={() => handleToggleProduct(prod)}
@@ -306,17 +306,17 @@ export default function DealerProducts() {
                             )}
                           </button>
                         </td>
-                        <td className="p-3">
+                        <td>
                           <div className="font-semibold text-slate-900">{prod.name}</div>
                           <div className="text-[10px] text-slate-500">{prod.variant || ''}</div>
                         </td>
-                        <td className="p-3 font-mono text-slate-600">
+                        <td className="font-mono text-slate-600">
                           {prod.sku || prod.indexNo || '—'}
                         </td>
-                        <td className="p-3 font-mono font-bold text-brand">
+                        <td className="font-mono font-bold text-brand">
                           ₹ {(prod.priceToCustomer || prod.price || 0).toLocaleString('en-IN')}
                         </td>
-                        <td className="p-3">
+                        <td>
                           {mapping ? (
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -331,10 +331,10 @@ export default function DealerProducts() {
                             <span className="text-slate-400 text-[11px]">Not Authorized</span>
                           )}
                         </td>
-                        <td className="p-3 font-mono text-slate-600">
+                        <td className="font-mono text-slate-600">
                           {mapping ? `${mapping.estimatedDeliveryDays || 15} Days` : '—'}
                         </td>
-                        <td className="p-3 text-right">
+                        <td className="text-right">
                           {mapping && (
                             <button
                               type="button"
@@ -350,7 +350,7 @@ export default function DealerProducts() {
                     );
                   })}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           )}
         </Card>

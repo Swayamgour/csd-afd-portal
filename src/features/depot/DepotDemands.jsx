@@ -230,9 +230,9 @@ export default function DepotDemands() {
         {/* Filter Controls (Fig. 3: Sort By, Search By, Search Input) */}
         <div className="depot-manual-filter-group row align-center gap-1">
           <div className="row align-center gap-05">
-            <label className="depot-filter-label">Sort By:</label>
+            <label className="form-label">Sort By:</label>
             <select
-              className="depot-filter-select"
+              className="form-control"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
@@ -244,9 +244,9 @@ export default function DepotDemands() {
           </div>
 
           <div className="row align-center gap-05">
-            <label className="depot-filter-label">Search By:</label>
+            <label className="form-label">Search By:</label>
             <select
-              className="depot-filter-select"
+              className="form-control"
               value={searchBy}
               onChange={(e) => setSearchBy(e.target.value)}
             >
@@ -261,7 +261,7 @@ export default function DepotDemands() {
           <div className="depot-search-input-wrap">
             <input
               type="text"
-              className="depot-search-input"
+              className="form-control"
               placeholder="Search demands..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
@@ -325,15 +325,15 @@ export default function DepotDemands() {
             No demands found matching criteria for Depot {depotDisplayName}.
           </div>
         ) : (
-          <table className="depot-received-table">
+          <div className="data-table-wrapper"><table className="data-table">
             <thead>
               <tr>
-                <th className="th-demand-no">Demand Number</th>
-                <th className="th-po-details">PO details</th>
-                <th className="th-pay-beneficiary">Payment from Beneficiary</th>
-                <th className="th-pay-received">Payment Received</th>
-                <th className="th-demand-status">Demand Status</th>
-                <th className="th-action">Action</th>
+                <th>Demand Number</th>
+                <th>PO details</th>
+                <th>Payment from Beneficiary</th>
+                <th>Payment Received</th>
+                <th>Demand Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -367,7 +367,7 @@ export default function DepotDemands() {
                 return (
                   <tr key={demand._id || demand.id || dNumber}>
                     {/* 1. Demand Number */}
-                    <td className="td-demand-no">
+                    <td>
                       <strong className="depot-demand-id-link">
                         {dNumber}
                       </strong>
@@ -377,7 +377,7 @@ export default function DepotDemands() {
                     </td>
 
                     {/* 2. PO details */}
-                    <td className="td-po-details">
+                    <td>
                       <div className="depot-po-customer-header">
                         <span className="depot-customer-link">
                           {benName} &gt;
@@ -480,7 +480,7 @@ export default function DepotDemands() {
                     </td>
 
                     {/* 3. Payment from Beneficiary */}
-                    <td className="td-pay-beneficiary">
+                    <td>
                       <div className="depot-beneficiary-payment-box">
                         <p className="depot-pay-method-header">
                           Payment status: <span className="font-semibold">{demand.paymentStatus || 'UNPAID'}</span>
@@ -535,7 +535,7 @@ export default function DepotDemands() {
                     </td>
 
                     {/* 4. Payment Received */}
-                    <td className="td-pay-received">
+                    <td>
                       {demand.csdPayment ? (
                         <div className="depot-csd-payment-entered-box">
                           <div className="depot-csd-pay-tag">
@@ -581,7 +581,7 @@ export default function DepotDemands() {
                     </td>
 
                     {/* 5. Demand Status */}
-                    <td className="td-demand-status">
+                    <td>
                       <div className="depot-status-col-wrap">
                         {isProcessed ? (
                           <span className="depot-status-pill status-supply-issued depot-pill-issued">
@@ -616,7 +616,7 @@ export default function DepotDemands() {
                     </td>
 
                     {/* 6. Action Column */}
-                    <td className="td-action">
+                    <td>
                       <div className="depot-action-btn-stack">
                         {demand.status === 'CREATED' ? (
                           <button
@@ -720,7 +720,7 @@ export default function DepotDemands() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
 

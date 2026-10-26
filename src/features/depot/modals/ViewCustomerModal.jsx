@@ -56,7 +56,7 @@ export default function ViewCustomerModal({ isOpen, onClose, demand }) {
             </div>
           </div>
 
-          <table className="depot-summary-meta-table mt-15">
+          <div className="data-table-wrapper"><table className="data-table mt-15">
             <tbody>
               <tr>
                 <td className="w-40"><span className="row align-center gap-05"><Award size={14} className="text-muted" /> Service Number:</span></td>
@@ -91,7 +91,7 @@ export default function ViewCustomerModal({ isOpen, onClose, demand }) {
                 <td><strong>{demand.depotId?.name || demand.depot || 'Delhi Regional Depot'}</strong></td>
               </tr>
             </tbody>
-          </table>
+          </table></div>
 
           {/* Attached Customer Verification Documents */}
           {docs.length > 0 && (

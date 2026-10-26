@@ -76,13 +76,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
           <div className="csd-modal-body">
             <div className="depot-manual-form-grid">
               {/* OR Number */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   OR number:<span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
-                  className={`depot-form-input ${errors.orNumber ? 'has-error' : ''}`}
+                  className={`form-control ${errors.orNumber ? 'has-error' : ''}`}
                   value={formData.orNumber}
                   onChange={(e) => handleChange('orNumber', e.target.value)}
                   placeholder="Enter Official Receipt Number"
@@ -91,13 +91,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* Total Amount Received */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   Total Amount Received:<span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
-                  className={`depot-form-input ${errors.totalAmountReceived ? 'has-error' : ''}`}
+                  className={`form-control ${errors.totalAmountReceived ? 'has-error' : ''}`}
                   value={formData.totalAmountReceived}
                   onChange={(e) => handleChange('totalAmountReceived', e.target.value)}
                   placeholder="Total Amount in INR"
@@ -106,13 +106,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* Excess Payment collected */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   Excess Payment collected (optional):
                 </label>
                 <input
                   type="number"
-                  className="depot-form-input"
+                  className="form-control"
                   value={formData.excessPayment}
                   onChange={(e) => handleChange('excessPayment', e.target.value)}
                   placeholder="Excess Amount (if any)"
@@ -120,13 +120,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* TCS collected */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   TCS collected (optional):
                 </label>
                 <input
                   type="number"
-                  className="depot-form-input"
+                  className="form-control"
                   value={formData.tcsCollected}
                   onChange={(e) => handleChange('tcsCollected', e.target.value)}
                   placeholder="Tax Collected at Source"
@@ -134,13 +134,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* OR Date */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   OR Date:<span className="text-danger">*</span>
                 </label>
                 <input
                   type="date"
-                  className={`depot-form-input ${errors.orDate ? 'has-error' : ''}`}
+                  className={`form-control ${errors.orDate ? 'has-error' : ''}`}
                   value={formData.orDate}
                   onChange={(e) => handleChange('orDate', e.target.value)}
                 />
@@ -148,13 +148,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* CSD Bank Reference No */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   CSD Bank Reference No:<span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
-                  className={`depot-form-input ${errors.csdBankRef ? 'has-error' : ''}`}
+                  className={`form-control ${errors.csdBankRef ? 'has-error' : ''}`}
                   value={formData.csdBankRef}
                   onChange={(e) => handleChange('csdBankRef', e.target.value)}
                   placeholder="CSD Treasury Ref / UTR"
@@ -163,13 +163,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* Amount Received from Beneficiary Account */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   Amount Received (from Beneficiary Account):<span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
-                  className={`depot-form-input ${errors.amountFromBeneficiary ? 'has-error' : ''}`}
+                  className={`form-control ${errors.amountFromBeneficiary ? 'has-error' : ''}`}
                   value={formData.amountFromBeneficiary}
                   onChange={(e) => handleChange('amountFromBeneficiary', e.target.value)}
                   placeholder="Amount from beneficiary account"
@@ -178,13 +178,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* Date of Payment Received */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   Date of Payment Received:<span className="text-danger">*</span>
                 </label>
                 <input
                   type="date"
-                  className={`depot-form-input ${errors.datePaymentReceived ? 'has-error' : ''}`}
+                  className={`form-control ${errors.datePaymentReceived ? 'has-error' : ''}`}
                   value={formData.datePaymentReceived}
                   onChange={(e) => handleChange('datePaymentReceived', e.target.value)}
                 />
@@ -192,13 +192,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* CSD Bank Reference No (Loan) optional */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   CSD Bank Reference No (Loan) optional:
                 </label>
                 <input
                   type="text"
-                  className="depot-form-input"
+                  className="form-control"
                   value={formData.csdBankRefLoan}
                   onChange={(e) => handleChange('csdBankRefLoan', e.target.value)}
                   placeholder="Loan Disbursement Bank Ref"
@@ -206,13 +206,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* Amount Received (Loan) optional */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   Amount Received (Loan) optional:
                 </label>
                 <input
                   type="number"
-                  className="depot-form-input"
+                  className="form-control"
                   value={formData.amountReceivedLoan}
                   onChange={(e) => handleChange('amountReceivedLoan', e.target.value)}
                   placeholder="Loan Amount (if applicable)"
@@ -220,26 +220,26 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* Date of Payment Received (Loan) optional */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   Date of Payment Received (Loan) optional:
                 </label>
                 <input
                   type="date"
-                  className="depot-form-input"
+                  className="form-control"
                   value={formData.datePaymentReceivedLoan}
                   onChange={(e) => handleChange('datePaymentReceivedLoan', e.target.value)}
                 />
               </div>
 
               {/* PO Number */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   PO Number:<span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
-                  className={`depot-form-input ${errors.poNumber ? 'has-error' : ''}`}
+                  className={`form-control ${errors.poNumber ? 'has-error' : ''}`}
                   value={formData.poNumber}
                   onChange={(e) => handleChange('poNumber', e.target.value)}
                   placeholder="Purchase Order Number"
@@ -248,13 +248,13 @@ export default function AddPaymentDetailsModal({ isOpen, onClose, demand, onSave
               </div>
 
               {/* PO Date */}
-              <div className="depot-form-group">
-                <label className="depot-form-label">
+              <div className="form-field">
+                <label className="form-label">
                   PO Date:<span className="text-danger">*</span>
                 </label>
                 <input
                   type="date"
-                  className={`depot-form-input ${errors.poDate ? 'has-error' : ''}`}
+                  className={`form-control ${errors.poDate ? 'has-error' : ''}`}
                   value={formData.poDate}
                   onChange={(e) => handleChange('poDate', e.target.value)}
                 />

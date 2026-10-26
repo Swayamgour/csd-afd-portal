@@ -474,7 +474,7 @@ export default function CsdProducts() {
               placeholder="Search by model, SKU, brand, body type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="csd-search-field-input director-field-input"
+              className="form-control"
             />
           </div>
 
@@ -483,7 +483,7 @@ export default function CsdProducts() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="csd-filter-select"
+              className="form-control"
               aria-label="Filter by Category"
             >
               <option value="all">All Categories</option>
@@ -498,7 +498,7 @@ export default function CsdProducts() {
             <select
               value={oemFilter}
               onChange={(e) => setOemFilter(e.target.value)}
-              className="csd-filter-select"
+              className="form-control"
               aria-label="Filter by OEM"
             >
               <option value="all">All OEMs / Brands</option>
@@ -513,7 +513,7 @@ export default function CsdProducts() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="csd-filter-select"
+              className="form-control"
               aria-label="Filter by Status"
             >
               <option value="">All Statuses</option>
@@ -569,37 +569,37 @@ export default function CsdProducts() {
           maxWidth="760px"
         >
           <form onSubmit={handleSave}>
-            <div className="csd-form-grid-2">
+            <div className="form-grid-2">
               <div>
-                <label className="director-field-label">Product Model Name *</label>
+                <label className="form-label">Product Model Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Mahindra Scorpio N Z2 D MT 2WD 7 STR"
                   value={formState.name}
                   onChange={(e) => setFormState({ ...formState, name: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
 
               <div>
-                <label className="director-field-label">Index No. / SKU Code *</label>
+                <label className="form-label">Index No. / SKU Code *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. 67681-T"
                   value={formState.sku}
                   onChange={(e) => setFormState({ ...formState, sku: e.target.value, indexNo: e.target.value })}
-                  className="director-field-input director-field-mono"
+                  className="form-control font-mono"
                 />
               </div>
 
               <div>
-                <label className="director-field-label">Product Category *</label>
+                <label className="form-label">Product Category *</label>
                 <select
                   value={formState.categoryId}
                   onChange={(e) => setFormState({ ...formState, categoryId: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 >
                   {categories.map((c) => (
                     <option key={c._id || c.code} value={c._id || c.code}>
@@ -610,11 +610,11 @@ export default function CsdProducts() {
               </div>
 
               <div>
-                <label className="director-field-label">OEM / Manufacturer *</label>
+                <label className="form-label">OEM / Manufacturer *</label>
                 <select
                   value={formState.oemId}
                   onChange={(e) => setFormState({ ...formState, oemId: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 >
                   {oems.map((o) => (
                     <option key={o._id || o.code} value={o._id || o.code}>
@@ -625,7 +625,7 @@ export default function CsdProducts() {
               </div>
 
               <div>
-                <label className="director-field-label">CSD Concessional Price (₹) *</label>
+                <label className="form-label">CSD Concessional Price (₹) *</label>
                 <input
                   type="number"
                   required
@@ -633,7 +633,7 @@ export default function CsdProducts() {
                   placeholder="e.g. 1216296"
                   value={formState.price}
                   onChange={(e) => setFormState({ ...formState, price: e.target.value })}
-                  className="director-field-input director-field-price"
+                  className="form-control font-mono"
                 />
                 <span className="director-field-help">
                   Final customer payable amount after CSD concessions
@@ -641,34 +641,34 @@ export default function CsdProducts() {
               </div>
 
               <div>
-                <label className="director-field-label">Civil Market MRP (₹)</label>
+                <label className="form-label">Civil Market MRP (₹)</label>
                 <input
                   type="number"
                   min="1000"
                   placeholder="e.g. 1420000"
                   value={formState.mrp}
                   onChange={(e) => setFormState({ ...formState, mrp: e.target.value })}
-                  className="director-field-input director-field-mono"
+                  className="form-control font-mono"
                 />
               </div>
 
               <div>
-                <label className="director-field-label">Engine Capacity (cc)</label>
+                <label className="form-label">Engine Capacity (cc)</label>
                 <input
                   type="number"
                   placeholder="e.g. 2198"
                   value={formState.engineCapacity}
                   onChange={(e) => setFormState({ ...formState, engineCapacity: e.target.value })}
-                  className="director-field-input director-field-mono"
+                  className="form-control font-mono"
                 />
               </div>
 
               <div>
-                <label className="director-field-label">Fuel Type</label>
+                <label className="form-label">Fuel Type</label>
                 <select
                   value={formState.fuelType}
                   onChange={(e) => setFormState({ ...formState, fuelType: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 >
                   <option value="Petrol">Petrol</option>
                   <option value="Diesel">Diesel</option>
@@ -679,22 +679,22 @@ export default function CsdProducts() {
               </div>
 
               <div>
-                <label className="director-field-label">Variant / Body Type</label>
+                <label className="form-label">Variant / Body Type</label>
                 <input
                   type="text"
                   placeholder="e.g. Compact SUV / 7-Seater"
                   value={formState.variant}
                   onChange={(e) => setFormState({ ...formState, variant: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
 
               <div>
-                <label className="director-field-label">Catalogue Status</label>
+                <label className="form-label">Catalogue Status</label>
                 <select
                   value={formState.status}
                   onChange={(e) => setFormState({ ...formState, status: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 >
                   <option value="ACTIVE">ACTIVE (Available for Indenting)</option>
                   <option value="INACTIVE">INACTIVE (Hidden from Beneficiaries)</option>
@@ -702,13 +702,13 @@ export default function CsdProducts() {
               </div>
 
               <div className="director-grid-span-2">
-                <label className="director-field-label">Cover Image URL</label>
+                <label className="form-label">Cover Image URL</label>
                 <input
                   type="url"
                   placeholder="https://..."
                   value={formState.imageUrl}
                   onChange={(e) => setFormState({ ...formState, imageUrl: e.target.value })}
-                  className="director-field-input director-field-mono"
+                  className="form-control font-mono"
                 />
               </div>
             </div>

@@ -139,11 +139,11 @@ export const AdminNotifications = () => {
               ...Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v })),
             ]}
           />
-          <div className="portal-form-group">
-            <label className="portal-label">Message Content</label>
+          <div className="form-field">
+            <label className="form-label">Message Content</label>
             <textarea
               rows={4}
-              className="portal-textarea"
+              className="form-control"
               placeholder="Enter system announcement..."
               value={newNotice.message}
               onChange={(e) => setNewNotice({ ...newNotice, message: e.target.value })}

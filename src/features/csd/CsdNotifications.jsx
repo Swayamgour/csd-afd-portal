@@ -139,11 +139,11 @@ export function CsdNotifications() {
               { value: 'DEPOT', label: 'Depot Instruction' },
             ]}
           />
-          <div className="portal-form-group">
-            <label className="director-field-label">Circular / Message Content</label>
+          <div className="form-field">
+            <label className="form-label">Circular / Message Content</label>
             <textarea
               rows={4}
-              className="director-field-input"
+              className="form-control"
               placeholder="Enter message details for broadcast..."
               value={newNotice.message}
               onChange={(e) => setNewNotice({ ...newNotice, message: e.target.value })}

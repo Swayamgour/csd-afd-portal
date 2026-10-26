@@ -19,7 +19,7 @@ export function FilterBar({
           <div className="filter-search-col">
             <input
               type="text"
-              className="form-control filter-search-input"
+              className="form-control"
               placeholder={searchPlaceholder}
               value={searchValue || ''}
               onChange={onSearchChange}
@@ -32,7 +32,7 @@ export function FilterBar({
             <select
               value={f.value}
               onChange={f.onChange}
-              className="select-input filter-select-input"
+              className="form-control"
             >
               {(f.options || []).map((opt, oIdx) => (
                 <option key={oIdx} value={typeof opt === 'object' ? opt.value : opt}>

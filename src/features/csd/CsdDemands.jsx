@@ -200,7 +200,7 @@ export default function CsdDemands() {
               placeholder="Search by Demand No, Service No, or Model..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand focus:outline-none"
+              className="form-control pl-9"
             />
           </div>
 
@@ -208,7 +208,7 @@ export default function CsdDemands() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+              className="form-control"
             >
               <option value="">All Demand Statuses</option>
               <option value="CREATED">Created</option>

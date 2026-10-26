@@ -134,7 +134,7 @@ export function BeneficiaryEligibility() {
         className="mb-3"
       >
         <div className="max-w-xl mb-3">
-          <label className="form-label font-semibold small">
+          <label className="form-label">
             Select Product from Catalogue
           </label>
           <div className="fld mb-2">
@@ -142,7 +142,7 @@ export function BeneficiaryEligibility() {
             <select
               value={selectedProductId}
               onChange={handleProductSelect}
-              className="select-input"
+              className="form-control"
               disabled={productsLoading || checkingEligibility}
             >
               <option value="">-- Choose a vehicle or product --</option>

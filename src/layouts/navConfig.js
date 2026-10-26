@@ -48,7 +48,7 @@ export const ROLE_SIDEBAR_NAV = {
   ],
 
   [ROLES.CSD]: [
-    { title: 'HQ Dashboard', to: '/csd/dashboard', icon: LayoutDashboard },
+    { title: 'HO Dashboard', to: '/csd/dashboard', icon: LayoutDashboard },
     { title: 'AFD Demands', to: '/csd/demands', icon: FileText },
     { title: 'Supply Orders', to: '/csd/orders', icon: Truck },
     { title: 'Treasury Payments', to: '/csd/payments', icon: CreditCard },
@@ -156,10 +156,10 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'Payment Registry', to: '/csd/payments', icon: CreditCard },
     { title: 'Content & Banners', to: '/admin/banners', icon: Image },
     { title: 'Audit Logs', to: '/admin/audit-logs', icon: ShieldAlert },
-    { title: 'Authentication Logs', to: '/admin/authentication-logs', icon: History },
-    { title: 'System Alerts', to: '/admin/notifications', icon: Bell },
-    { title: 'Roles & Security', to: '/admin/roles', icon: ShieldCheck },
+    // { title: 'Authentication Logs', to: '/admin/authentication-logs', icon: History },
+    // { title: 'System Alerts', to: '/admin/notifications', icon: Bell },
+    // { title: 'Roles & Security', to: '/admin/roles', icon: ShieldCheck },
     { title: 'System Reports', to: '/admin/reports', icon: FileSpreadsheet },
-    { title: 'System Settings', to: '/admin/system-settings', icon: Settings },
+    // { title: 'System Settings', to: '/admin/system-settings', icon: Settings },
   ]
 };

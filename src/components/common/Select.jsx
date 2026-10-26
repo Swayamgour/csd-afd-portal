@@ -28,7 +28,7 @@ export function Select({
           disabled={disabled}
           required={required}
           aria-invalid={!!error}
-          className="select-input"
+          className="form-control"
           {...props}
         >
           {placeholder && <option value="">{placeholder}</option>}

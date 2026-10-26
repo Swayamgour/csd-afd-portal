@@ -32,7 +32,7 @@ export default function CsdSettings() {
       <div className="grid-2-col gap-2">
         <Card title="Sanction & Procurement Rules">
           <div className="form-field mb-2">
-            <label className="form-label font-semibold small">
+            <label className="form-label">
               Automated Two-Wheeler Sanction Ceiling (₹)
             </label>
             <input

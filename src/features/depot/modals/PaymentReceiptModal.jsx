@@ -44,7 +44,7 @@ export default function PaymentReceiptModal({ isOpen, onClose, demand }) {
               <h2 className="text-green font-extrabold m-0">₹{Number(payment.amountPaid || 0).toLocaleString('en-IN')}</h2>
             </div>
 
-            <table className="depot-summary-meta-table mt-15">
+            <div className="data-table-wrapper"><table className="data-table mt-15">
               <tbody>
                 <tr>
                   <td>Remitting Bank:</td>
@@ -75,7 +75,7 @@ export default function PaymentReceiptModal({ isOpen, onClose, demand }) {
                   <td>{demand.productName}</td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
 

@@ -531,14 +531,14 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
           </div>
           <div className="form-grid-2">
             <div>
-              <label className="form-label font-semibold" htmlFor="primary_role_select">
+              <label className="form-label" htmlFor="primary_role_select">
                 Primary Portal Role <span className="req-star">*</span>
               </label>
               <select
                 id="primary_role_select"
                 value={role}
                 onChange={(e) => handlePrimaryRoleChange(e.target.value)}
-                className="director-field-input"
+                className="form-control"
               >
                 {Object.entries(groupedRoles).map(([category, items]) => (
                   <optgroup key={category} label={category}>
@@ -556,13 +556,13 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
             </div>
 
             <div>
-              <label className="form-label font-semibold">
+              <label className="form-label">
                 Account Status
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="director-field-input"
+                className="form-control"
               >
                 <option value="Active">Active (Full access)</option>
                 <option value="Pending">Pending (Awaiting document verification)</option>
@@ -578,7 +578,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
 
           {/* Other Roles (Multi-select dropdown) */}
           <div className="mt-md pt-sm border-t">
-            <label className="form-label font-semibold">
+            <label className="form-label">
               Other Roles (Multiple Secondary Roles)
             </label>
             <p className="micro muted mb-xs">
@@ -589,7 +589,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
               <select
                 value={selectedOtherRoleToAdd}
                 onChange={(e) => setSelectedOtherRoleToAdd(e.target.value)}
-                className="director-field-input flex-1"
+                className="form-control flex-1"
               >
                 <option value="">-- Choose additional role to add --</option>
                 {availableOtherRoles.map((r) => (
@@ -654,7 +654,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
               <input
                 id="lastDemand4W"
                 type="date"
-                className="director-field-input"
+                className="form-control"
                 value={lastDemand4Wheeler}
                 onChange={(e) => setLastDemand4Wheeler(e.target.value)}
               />
@@ -668,7 +668,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
               <input
                 id="lastDemand2W"
                 type="date"
-                className="director-field-input"
+                className="form-control"
                 value={lastDemand2Wheeler}
                 onChange={(e) => setLastDemand2Wheeler(e.target.value)}
               />
@@ -719,7 +719,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
               <textarea
                 id="feedbackComment"
                 rows={2}
-                className="director-field-input"
+                className="form-control"
                 placeholder="Beneficiary feedback or onboarding remarks..."
                 value={feedbackComment}
                 onChange={(e) => setFeedbackComment(e.target.value)}
@@ -735,7 +735,7 @@ export function AddNewUserModal({ isOpen, onClose, onUserCreated }) {
             <textarea
               id="reasonOfDenial"
               rows={2}
-              className={`director-field-input ${errors.reasonOfDenial ? 'input-error' : ''}`}
+              className={`form-control ${errors.reasonOfDenial ? 'input-error' : ''}`}
               placeholder="Mandatory reason if account or application is rejected/denied..."
               value={reasonOfDenial}
               onChange={(e) => setReasonOfDenial(e.target.value)}

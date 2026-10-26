@@ -485,7 +485,7 @@ export default function AdminAddUser() {
                   {/* Left Column: Password */}
                   <div>
                     <div className="flex-between-center mb-xs min-h-30">
-                      <label htmlFor="pass1" className="form-label fw-semibold m-0">
+                      <label htmlFor="pass1" className="form-label">
                         Password <span className="req-star text-danger">*</span>
                       </label>
                       <button
@@ -509,7 +509,7 @@ export default function AdminAddUser() {
                         autoComplete="new-password"
                         spellCheck="false"
                         required
-                        className={`portal-input-field pr-pw ${errors.pass1 ? 'border-danger-15' : 'border-slate-300'} ${showPassword ? 'font-mono' : ''}`}
+                        className={`form-control pr-pw ${errors.pass1 ? 'form-control' : 'form-control'} ${showPassword ? 'font-mono' : ''}`}
                       />
                       <div className="pw-action-buttons-group">
                         <button
@@ -541,7 +541,7 @@ export default function AdminAddUser() {
                   {/* Right Column: Repeat Password */}
                   <div>
                     <div className="flex-align-center mb-xs min-h-30">
-                      <label htmlFor="pass2" className="form-label fw-semibold m-0">
+                      <label htmlFor="pass2" className="form-label">
                         Repeat Password <span className="description fw-normal text-muted fs-sm">(required)</span>
                       </label>
                     </div>
@@ -556,7 +556,7 @@ export default function AdminAddUser() {
                         onChange={(e) => setPass2(e.target.value)}
                         autoComplete="new-password"
                         spellCheck="false"
-                        className={`portal-input-field ${errors.pass2 ? 'border-danger-15' : 'border-slate-300'} ${showPassword ? 'font-mono' : ''}`}
+                        className={`form-control ${errors.pass2 ? 'form-control' : 'form-control'} ${showPassword ? 'font-mono' : ''}`}
                       />
                       <p className="micro muted mt-xs" id="pass2-desc">
                         Type the password again.
@@ -632,7 +632,7 @@ export default function AdminAddUser() {
 
               {/* Role (role) */}
               <div className="border-top-divider">
-                <label className="form-label font-semibold" htmlFor="role">
+                <label className="form-label" htmlFor="role">
                   Role <span className="req-star text-danger">*</span>
                 </label>
                 <select
@@ -640,7 +640,7 @@ export default function AdminAddUser() {
                   name="role"
                   value={role}
                   onChange={(e) => handlePrimaryRoleChange(e.target.value)}
-                  className="select-input portal-select-custom"
+                  className="form-control"
                 >
                   {WP_ROLES.map((r) => (
                     <option key={r.value} value={r.value}>
@@ -663,7 +663,7 @@ export default function AdminAddUser() {
                 <h3 className="form-section-title">User Add</h3>
               </div>
               <div className="acf-field acf-field-radio">
-                <label className="form-label font-semibold">
+                <label className="form-label">
                   Created by Admin <span className="req-star">*</span>
                 </label>
                 <div className="row align-center gap-2 mt-xs">
@@ -752,7 +752,7 @@ export default function AdminAddUser() {
                     type="date"
                     id="acf-field_5fdc59cbbd5ea"
                     name="acf[field_5fdc59cbbd5ea]"
-                    className="select-input portal-date-input"
+                    className="form-control"
                     value={lastPurchase4Wheeler}
                     onChange={(e) => setLastPurchase4Wheeler(e.target.value)}
                   />
@@ -768,7 +768,7 @@ export default function AdminAddUser() {
                     type="date"
                     id="acf-field_5fdc5a06bd5eb"
                     name="acf[field_5fdc5a06bd5eb]"
-                    className="select-input portal-date-input"
+                    className="form-control"
                     value={lastPurchase2Wheeler}
                     onChange={(e) => setLastPurchase2Wheeler(e.target.value)}
                   />
@@ -839,7 +839,7 @@ export default function AdminAddUser() {
                     id="acf-field_656576d33136e"
                     name="acf[field_656576d33136e]"
                     rows={3}
-                    className="select-input portal-textarea-custom"
+                    className="form-control"
                     placeholder="User feedback comment"
                     value={feedbackComment}
                     onChange={(e) => setFeedbackComment(e.target.value)}
@@ -855,7 +855,7 @@ export default function AdminAddUser() {
                     id="acf-field_5fd9e1fc632c5"
                     name="acf[field_5fd9e1fc632c5]"
                     rows={8}
-                    className="select-input portal-textarea-custom"
+                    className="form-control"
                     placeholder="Enter reason of denial if application/access is rejected"
                     value={denyReason}
                     onChange={(e) => setDenyReason(e.target.value)}
@@ -874,7 +874,7 @@ export default function AdminAddUser() {
               </div>
 
               <div>
-                <label className="form-label font-semibold" htmlFor="ure_select_other_roles">
+                <label className="form-label" htmlFor="ure_select_other_roles">
                   Other Roles
                 </label>
                 <p className="micro muted mb-sm">
@@ -890,7 +890,7 @@ export default function AdminAddUser() {
                     const selected = Array.from(e.target.selectedOptions, (option) => option.value);
                     setOtherRoles(selected.filter((r) => r !== role));
                   }}
-                  className="select-input multiselect-roles-box"
+                  className="form-control multiselect-roles-box"
                 >
                   {WP_ROLES.map((r) => (
                     <option key={r.value} value={r.value} disabled={r.value === role}>

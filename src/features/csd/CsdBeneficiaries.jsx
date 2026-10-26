@@ -175,7 +175,7 @@ export default function CsdBeneficiaries() {
               placeholder="Search by Service No, PAN, or Name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand focus:outline-none"
+              className="form-control pl-9"
             />
           </div>
 
@@ -183,7 +183,7 @@ export default function CsdBeneficiaries() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+              className="form-control"
             >
               <option value="">All Verification Statuses</option>
               <option value="APPROVED">Verified / Approved</option>

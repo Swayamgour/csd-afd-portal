@@ -4,11 +4,9 @@ import Sidebar from './Sidebar.jsx';
 import HeaderBar from './HeaderBar.jsx';
 import Breadcrumbs from './Breadcrumbs.jsx';
 import { LoadingState } from '../components/common/States.jsx';
-// Admin-only styles. Every selector in these 3 files is scoped to .app-shell-root / .admin-portal,
-// so the public storefront is never affected. Order matters: legacy -> design system -> utilities.
-import '../styles/admin-legacy.css';
+// Admin-only styles (single file). Every selector is scoped to .app-shell-root / .admin-portal,
+// so the public storefront is never affected.
 import '../styles/admin.css';
-import '../styles/admin-utilities.css';
 
 export function AppShell({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -57,7 +57,7 @@ export default function DepotNotesModal({ isOpen, onClose, demand, onAddNote }) 
 
           {/* Add Note Form */}
           <form onSubmit={handleAdd} className="mt-2">
-            <label className="form-label small font-semibold">Add Internal Note:</label>
+            <label className="form-label">Add Internal Note:</label>
             <textarea
               rows={3}
               className="form-control"

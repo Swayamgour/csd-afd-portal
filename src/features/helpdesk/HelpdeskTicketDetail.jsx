@@ -248,7 +248,7 @@ export const HelpdeskTicketDetail = () => {
             <div className="portal-flex-col-gap-sm">
               <textarea
                 rows={4}
-                className="helpdesk-textarea-reply"
+                className="form-control"
                 placeholder="Compose official resolution update or clarification to citizen..."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
@@ -269,7 +269,7 @@ export const HelpdeskTicketDetail = () => {
             <div className="portal-flex-col-gap-sm">
               <textarea
                 rows={2}
-                className="helpdesk-textarea-confidential"
+                className="form-control"
                 placeholder="Log internal finding, payment trace UTR, or escalation reason (hidden from citizen)..."
                 value={internalNote}
                 onChange={(e) => setInternalNote(e.target.value)}
@@ -351,11 +351,11 @@ export const HelpdeskTicketDetail = () => {
               { value: 'Level 4 - CSD HQ Escalation', label: 'Level 4: CSD Head Office Directorate' },
             ]}
           />
-          <div className="portal-form-group-spaced">
-            <label className="director-field-label">Reason for Escalation</label>
+          <div className="form-field">
+            <label className="form-label">Reason for Escalation</label>
             <textarea
               rows={3}
-              className="director-field-input"
+              className="form-control"
               placeholder="Explain why this requires senior intervention..."
               value={escalateReason}
               onChange={(e) => setEscalateReason(e.target.value)}
@@ -370,11 +370,11 @@ export const HelpdeskTicketDetail = () => {
 
       {showResolveModal && (
         <Modal isOpen={showResolveModal} onClose={() => setShowResolveModal(false)} title="Mark Incident as Resolved">
-          <div className="portal-form-group">
-            <label className="director-field-label">Resolution Summary to Citizen</label>
+          <div className="form-field">
+            <label className="form-label">Resolution Summary to Citizen</label>
             <textarea
               rows={4}
-              className="director-field-input"
+              className="form-control"
               placeholder="State the resolution steps taken and advice to beneficiary..."
               value={resolutionSummary}
               onChange={(e) => setResolutionSummary(e.target.value)}

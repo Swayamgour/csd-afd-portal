@@ -222,7 +222,7 @@ export default function CsdSupport() {
               placeholder="Search by Ticket No, Complainant, or Keyword..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand focus:outline-none"
+              className="form-control pl-9"
             />
           </div>
 
@@ -230,7 +230,7 @@ export default function CsdSupport() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+              className="form-control"
             >
               <option value="">All Statuses</option>
               <option value="OPEN">Open</option>
@@ -243,7 +243,7 @@ export default function CsdSupport() {
             <select
               value={severityFilter}
               onChange={(e) => setSeverityFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand"
+              className="form-control"
             >
               <option value="">All Severities</option>
               <option value="LOW">Low</option>
@@ -326,11 +326,11 @@ export default function CsdSupport() {
               <h5 className="font-semibold text-slate-800">Operational Resolution & Stage Update</h5>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 mb-1">Target Status</label>
+                  <label className="form-label">Target Status</label>
                   <select
                     value={actionStatus}
                     onChange={(e) => setActionStatus(e.target.value)}
-                    className="w-full p-2 border border-slate-300 rounded-lg bg-white"
+                    className="form-control"
                   >
                     <option value="ASSIGNED">ASSIGNED</option>
                     <option value="IN_PROGRESS">IN_PROGRESS</option>
@@ -341,13 +341,13 @@ export default function CsdSupport() {
                 </div>
                 {actionStatus === 'RESOLVED' && (
                   <div className="md:col-span-2">
-                    <label className="block text-slate-600 mb-1">Resolution Summary (Mandatory for Resolution)</label>
+                    <label className="form-label">Resolution Summary (Mandatory for Resolution)</label>
                     <textarea
                       rows={2}
                       value={resolutionSummary}
                       onChange={(e) => setResolutionSummary(e.target.value)}
                       placeholder="Enter precise resolution notes and action taken..."
-                      className="w-full p-2 border border-slate-300 rounded-lg"
+                      className="form-control"
                     />
                   </div>
                 )}
@@ -372,7 +372,7 @@ export default function CsdSupport() {
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Type reply to complainant..."
-                className="w-full p-2 border border-slate-300 rounded-lg text-xs"
+                className="form-control"
               />
               <div className="flex justify-end">
                 <Button

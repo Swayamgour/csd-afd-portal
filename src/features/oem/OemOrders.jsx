@@ -246,7 +246,7 @@ export default function OemOrders() {
               />
             </div>
             <select
-              className="form-control select-input w-44"
+              className="form-control w-44"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -315,7 +315,7 @@ export default function OemOrders() {
           <div className="form-field">
             <label className="form-label">Target Lifecycle State <span className="req-star">*</span></label>
             <select
-              className="form-control select-input"
+              className="form-control"
               value={statusChoice}
               onChange={(e) => setStatusChoice(e.target.value)}
               required

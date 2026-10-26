@@ -267,7 +267,7 @@ export default function CsdDepots() {
               placeholder="Search depot name, code, state..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="csd-search-field-input director-field-input"
+              className="form-control"
             />
           </div>
         }
@@ -292,7 +292,7 @@ export default function CsdDepots() {
           <form onSubmit={handleSaveDepot} className="director-modal-form">
             <div className="csd-form-grid-2-1">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Depot Name *
                 </label>
                 <input
@@ -301,11 +301,11 @@ export default function CsdDepots() {
                   placeholder="e.g. DELHI CSD DEPOT"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Depot Code *
                 </label>
                 <input
@@ -314,20 +314,20 @@ export default function CsdDepots() {
                   placeholder="e.g. DEP-DEL"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
 
             <div>
-              <label className="director-field-label">
+              <label className="form-label">
                 Jurisdictional Price Zone *
               </label>
               <select
                 required
                 value={formData.priceZoneId}
                 onChange={(e) => setFormData({ ...formData, priceZoneId: e.target.value })}
-                className="director-field-input"
+                className="form-control"
               >
                 <option value="">Select Price Zone...</option>
                 {priceZones.map((pz) => (
@@ -338,9 +338,9 @@ export default function CsdDepots() {
               </select>
             </div>
 
-            <div className="csd-form-grid-3">
+            <div className="grid-3-col">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Commanding Officer / Nodal
                 </label>
                 <input
@@ -348,11 +348,11 @@ export default function CsdDepots() {
                   placeholder="Depot Manager"
                   value={formData.person}
                   onChange={(e) => setFormData({ ...formData, person: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Official Email
                 </label>
                 <input
@@ -360,11 +360,11 @@ export default function CsdDepots() {
                   placeholder="depot@csdindia.gov.in"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   Contact Phone
                 </label>
                 <input
@@ -372,13 +372,13 @@ export default function CsdDepots() {
                   placeholder="Depot Phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
 
             <div>
-              <label className="director-field-label">
+              <label className="form-label">
                 Premises Address
               </label>
               <input
@@ -386,13 +386,13 @@ export default function CsdDepots() {
                 placeholder="Station / Area Depot Address"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="director-field-input"
+                className="form-control"
               />
             </div>
 
-            <div className="csd-form-grid-2">
+            <div className="form-grid-2">
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   City
                 </label>
                 <input
@@ -400,11 +400,11 @@ export default function CsdDepots() {
                   placeholder="City"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
               <div>
-                <label className="director-field-label">
+                <label className="form-label">
                   State
                 </label>
                 <input
@@ -412,7 +412,7 @@ export default function CsdDepots() {
                   placeholder="State"
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="director-field-input"
+                  className="form-control"
                 />
               </div>
             </div>
@@ -424,7 +424,7 @@ export default function CsdDepots() {
                 checked={formData.active}
                 onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
               />
-              <label htmlFor="depotActive" className="director-field-label">
+              <label htmlFor="depotActive" className="form-label">
                 Operational & Open for Inbound Demands
               </label>
             </div>

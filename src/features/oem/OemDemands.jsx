@@ -154,7 +154,7 @@ export default function OemDemands() {
               />
             </div>
             <select
-              className="form-control select-input w-44"
+              className="form-control w-44"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);

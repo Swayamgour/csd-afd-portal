@@ -94,8 +94,6 @@ export default function Home() {
   const { isAuthenticated, role, roleHome, user } = useAuth();
   const navigate = useNavigate();
 
-  // const { isAuthenticated, user, roleHome, role } = useAuth();
-
   // If a departmental officer (Depot, Dealer, CSD HO, URC, Admin) visits the home page, redirect to their operations dashboard
   useEffect(() => {
     if (isAuthenticated) {
@@ -169,8 +167,6 @@ export default function Home() {
       ? dynamicHeroBanners
       : DEFAULT_HERO_BANNERS;
 
-
-
   return (
     <div className="home">
       {!isAuthenticated &&
@@ -216,11 +212,12 @@ export default function Home() {
                   <strong>IMPORTANT:</strong> [Official notice to be provided]
                 </p> */}
           </div>
-        </section>)}
+        </section>)
+      }
 
       <div className="wrap">
         {/* <ul className="perks">
-          {perks.map(([Ic, t, s]) =>    (<li key={t}><span><Ic size={22} aria-hidden /></span><div><strong>{t}</strong><small>{s}</small></div></li>))}
+          {perks.map(([Ic, t, s]) => (<li key={t}><span><Ic size={22} aria-hidden /></span><div><strong>{t}</strong><small>{s}</small></div></li>))}
         </ul> */}
 
         <section aria-labelledby="cats">
@@ -384,10 +381,10 @@ export default function Home() {
                     <CircleCheck size={18} aria-hidden />
                     <span>Never share your password or OTP with anyone.</span>
                   </li>
-                  <li>
+                  {/* <li>
                     <CircleCheck size={18} aria-hidden />
                     <span></span>
-                  </li>
+                  </li> */}
                 </ul>
               </article>
             </div>

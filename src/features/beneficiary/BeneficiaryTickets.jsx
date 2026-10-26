@@ -172,7 +172,7 @@ export default function BeneficiaryTickets() {
               required
               className="mb-2"
             />
-            <div className="form-group mb-2">
+            <div className="form-field mb-2">
               <label className="form-label" htmlFor="ticketDesc">Detailed Description</label>
               <textarea
                 id="ticketDesc"

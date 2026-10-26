@@ -271,7 +271,7 @@ export default function OemPricing() {
         <div className="flex flex-wrap gap-2 justify-between items-center mb-3">
           <div className="flex gap-2 items-center flex-1 max-w-lg">
             <select
-              className="form-control select-input w-48"
+              className="form-control w-48"
               value={stateFilter}
               onChange={(e) => {
                 setStateFilter(e.target.value);
@@ -287,7 +287,7 @@ export default function OemPricing() {
             </select>
 
             <select
-              className="form-control select-input w-64"
+              className="form-control w-64"
               value={productFilter}
               onChange={(e) => {
                 setProductFilter(e.target.value);
@@ -303,7 +303,7 @@ export default function OemPricing() {
             </select>
 
             <select
-              className="form-control select-input w-36"
+              className="form-control w-36"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -371,7 +371,7 @@ export default function OemPricing() {
           <div className="form-field">
             <label className="form-label">Empaneled Vehicle Model <span className="req-star">*</span></label>
             <select
-              className="form-control select-input"
+              className="form-control"
               value={formState.productId}
               onChange={(e) => {
                 const prod = products.find((p) => p._id === e.target.value);
@@ -397,7 +397,7 @@ export default function OemPricing() {
           <div className="form-field">
             <label className="form-label">State / Union Territory <span className="req-star">*</span></label>
             <select
-              className="form-control select-input"
+              className="form-control"
               value={formState.state}
               onChange={(e) => setFormState({ ...formState, state: e.target.value })}
               required
@@ -469,7 +469,7 @@ export default function OemPricing() {
           <div className="form-field">
             <label className="form-label">Schedule Status</label>
             <select
-              className="form-control select-input"
+              className="form-control"
               value={formState.status}
               onChange={(e) => setFormState({ ...formState, status: e.target.value })}
             >

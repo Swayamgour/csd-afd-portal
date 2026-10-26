@@ -42,7 +42,7 @@ export default function Header() {
   const { isAuthenticated, user, roleHome, role } = useAuth();
   const { data: dynamicBanners } = useGetBannersQuery({ position: 'forces_header' });
 
-  // console.log()
+  console.log(isAuthenticated)
 
   // const { data: me } = useGetMeQuery(undefined, { skip: !isAuthenticated });
 

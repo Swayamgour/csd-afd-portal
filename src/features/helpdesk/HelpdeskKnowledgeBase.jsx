@@ -161,11 +161,11 @@ export const HelpdeskKnowledgeBase = () => {
               { value: 'Technical', label: 'Technical & System Gateway' },
             ]}
           />
-          <div className="portal-form-group">
-            <label className="director-field-label">Article Content / SOP Steps</label>
+          <div className="form-field">
+            <label className="form-label">Article Content / SOP Steps</label>
             <textarea
               rows={6}
-              className="director-field-input"
+              className="form-control"
               placeholder="Detail the root cause, standard steps for resolution, citizen advice, and escalation triggers..."
               value={newArticle.content}
               onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}

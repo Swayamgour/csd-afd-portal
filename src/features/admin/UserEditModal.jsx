@@ -173,11 +173,11 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
             <h3 className="form-section-title">Roles & Governance</h3>
           </div>
           <div>
-            <label className="form-label font-semibold">Primary Portal Role</label>
+            <label className="form-label">Primary Portal Role</label>
             <select
               value={role}
               onChange={(e) => handlePrimaryRoleChange(e.target.value)}
-              className="director-field-input"
+              className="form-control"
             >
               {MASTER_ROLES.map((r) => (
                 <option key={r.code} value={r.code}>
@@ -188,12 +188,12 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
           </div>
 
           <div className="mt-md pt-sm border-t">
-            <label className="form-label font-semibold">Other Secondary Roles</label>
+            <label className="form-label">Other Secondary Roles</label>
             <div className="row align-center gap-1 mb-sm">
               <select
                 value={selectedOtherRoleToAdd}
                 onChange={(e) => setSelectedOtherRoleToAdd(e.target.value)}
-                className="director-field-input flex-1"
+                className="form-control flex-1"
               >
                 <option value="">-- Add another role --</option>
                 {availableOtherRoles.map((r) => (
@@ -244,7 +244,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
               <label className="form-label">Date of Last Demand (4-Wheeler)</label>
               <input
                 type="date"
-                className="director-field-input"
+                className="form-control"
                 value={lastDemand4Wheeler}
                 onChange={(e) => setLastDemand4Wheeler(e.target.value)}
               />
@@ -253,7 +253,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
               <label className="form-label">Date of Last Demand (2-Wheeler)</label>
               <input
                 type="date"
-                className="director-field-input"
+                className="form-control"
                 value={lastDemand2Wheeler}
                 onChange={(e) => setLastDemand2Wheeler(e.target.value)}
               />
@@ -293,7 +293,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
               <label className="form-label">Feedback Remarks</label>
               <textarea
                 rows={2}
-                className="director-field-input"
+                className="form-control"
                 value={feedbackComment}
                 onChange={(e) => setFeedbackComment(e.target.value)}
               />
@@ -304,7 +304,7 @@ export function UserEditModal({ isOpen, onClose, user, onUserUpdated }) {
             <label className="form-label">Reason of Denial (If applicable)</label>
             <textarea
               rows={2}
-              className="director-field-input"
+              className="form-control"
               value={reasonOfDenial}
               onChange={(e) => setReasonOfDenial(e.target.value)}
             />

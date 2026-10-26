@@ -331,7 +331,7 @@ export function BeneficiaryDemands() {
           <Search size={16} className="text-slate-400 flex-shrink-0" />
           <input
             type="text"
-            className="bg-transparent border-none outline-none text-sm w-full text-slate-800"
+            className="form-control"
             placeholder="Search by demand no, vehicle name, depot, or color..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -351,7 +351,7 @@ export function BeneficiaryDemands() {
         <div className="flex items-center gap-2">
           <Filter size={16} className="text-slate-500 flex-shrink-0" />
           <select
-            className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white text-slate-700 outline-none cursor-pointer hover:border-slate-400 focus:border-brand"
+            className="form-control"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >

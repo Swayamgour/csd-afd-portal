@@ -782,17 +782,7 @@ export default function ProductDetails() {
               ))}
             </ul>
           )}
-          <ul className="trust">
-            <li>
-              <ShieldCheck size={18} aria-hidden /> 100% free service
-            </li>
-            <li>
-              <BadgePercent size={18} aria-hidden /> CSD concessional price
-            </li>
-            <li>
-              <Truck size={18} aria-hidden /> Delivery on supply order
-            </li>
-          </ul>
+         
         </div>
 
         {/* ---------- buy box (Step 6, Fig. 6) ---------- */}
@@ -1189,54 +1179,20 @@ export default function ProductDetails() {
                 ) : checkingEligibility ? (
                   "VERIFYING ELIGIBILITY..."
                 ) : (
-                  "CHECKOUT"
+                  "Add to Cart"
                 )}
               </button>
 
-              <div className="pdp-footer-meta">
-                <span>
-                  Category: <strong>4 Wheelers</strong>
-                </span>
-                <span className="row align-center gap-1">
-                  <span>Share:</span>
-                  <button
-                    type="button"
-                    onClick={copy}
-                    className="btn-copy-link"
-                  >
-                    {copied ? "Link Copied" : "Copy Link"}
-                  </button>
-                </span>
-              </div>
+             
             </div>
           </div>
 
-          <div className="sub-row pdp-subrow-mt">
-            {!appl && (
-              <Link to="/info/book-test-ride">
-                <CalendarCheck size={16} aria-hidden /> Book a test ride
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={() =>
-                alert("OEM link: [Official Information To Be Provided]")
-              }
-            >
-              <ArrowRight size={16} aria-hidden /> View on OEM site
-            </button>
-            <button type="button" onClick={copy}>
-              {copied ? (
-                <Check size={16} aria-hidden />
-              ) : (
-                <Share2 size={16} aria-hidden />
-              )}{" "}
-              {copied ? "Link copied" : "Share"}
-            </button>
-          </div>
+          {/* <div className="sub-row ">
+          
+          </div> */}
 
           {highlights.length > 0 && (
-            <ul className="hl">
+            <ul className="hl pdp-subrow-mt">
               {highlights.slice(0, 6).map(([Ic, l, v]) => (
                 <li key={l}>
                   <span>
