@@ -89,7 +89,7 @@ export default function LoginForm({ onNeedOtp }) {
       label: "OEM (Mahindra)",
       icon: "🚗",
       username: "oem_mahindra_test",
-      password: "Test@123456",
+      password: "Passw0rd!x",
     },
     {
       role: "DEALER",
@@ -262,6 +262,11 @@ export default function LoginForm({ onNeedOtp }) {
             aria-invalid={!!errors.username}
           />
         </div>
+        <div className="row justify-end mt-1" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Link to="/forgot-username" className="vli">
+            Forgot Username?
+          </Link>
+        </div>
       </Field>
 
       {/* PASSWORD FIELD */}
@@ -292,14 +297,11 @@ export default function LoginForm({ onNeedOtp }) {
           </button>
         </div>
 
-        <div className="between mb-3">
-
+        <div className="row justify-end mt-1 mb-3" style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Link to="/forgot-password" className="vli">
             Forgot Password?
           </Link>
         </div>
-
-
       </Field>
 
       {/* CAPTCHA FIELD */}

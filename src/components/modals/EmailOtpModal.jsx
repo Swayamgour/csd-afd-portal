@@ -32,6 +32,8 @@ export default function EmailOtpModal({
       setExpiresAt(Date.now() + 5 * 60 * 1000);
       setTimeLeft(300);
       setIsExpired(false);
+      setIsVerified(false);
+      setDigits(['', '', '', '', '', '']);
       setErrorMessage('');
       setStatusMessage(`Verification OTP sent to ${email}`);
     }
@@ -82,35 +84,95 @@ export default function EmailOtpModal({
 
   const handleDigitChange = (index, value) => {
     const cleaned = value.replace(/\D/g, '');
-    const newDigits = [...digits];
 
-    if (cleaned.length > 1) {
-      const pasted = cleaned.slice(0, 6).split('');
-      pasted.forEach((char, idx) => {
-        if (index + idx < 6) {
-          newDigits[index + idx] = char;
-        }
+    // If 6 or more digits typed or pasted into box
+    if (cleaned.length >= 6) {
+      const chars = cleaned.slice(0, 6).split('');
+      const newDigits = ['', '', '', '', '', ''];
+      chars.forEach((char, idx) => {
+        newDigits[idx] = char;
       });
       setDigits(newDigits);
-      const nextFocus = Math.min(5, index + pasted.length);
-      if (inputsRef.current[nextFocus]) {
-        inputsRef.current[nextFocus].focus();
+      if (inputsRef.current[5]) {
+        inputsRef.current[5].focus();
+        inputsRef.current[5].select();
       }
-    } else {
+      setErrorMessage('');
+      return;
+    }
+
+    const newDigits = [...digits];
+
+    if (cleaned.length === 2) {
+      // User typed a new digit while input already had a digit -> take the newest digit
+      const latestChar = cleaned.slice(-1);
+      newDigits[index] = latestChar;
+      setDigits(newDigits);
+      if (index < 5 && inputsRef.current[index + 1]) {
+        inputsRef.current[index + 1].focus();
+        inputsRef.current[index + 1].select();
+      }
+    } else if (cleaned.length === 1) {
       newDigits[index] = cleaned;
       setDigits(newDigits);
-      if (cleaned && index < 5 && inputsRef.current[index + 1]) {
+      if (index < 5 && inputsRef.current[index + 1]) {
         inputsRef.current[index + 1].focus();
+        inputsRef.current[index + 1].select();
       }
+    } else {
+      newDigits[index] = '';
+      setDigits(newDigits);
     }
 
     setErrorMessage('');
   };
 
   const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !digits[index] && index > 0 && inputsRef.current[index - 1]) {
-      inputsRef.current[index - 1].focus();
+    if (e.key === 'Backspace') {
+      if (digits[index]) {
+        // Clear current digit
+        const newDigits = [...digits];
+        newDigits[index] = '';
+        setDigits(newDigits);
+      } else if (index > 0 && inputsRef.current[index - 1]) {
+        // If current is already empty, move to previous and clear it
+        const newDigits = [...digits];
+        newDigits[index - 1] = '';
+        setDigits(newDigits);
+        inputsRef.current[index - 1].focus();
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      e.preventDefault();
+      inputsRef.current[index - 1]?.focus();
+      inputsRef.current[index - 1]?.select();
+    } else if (e.key === 'ArrowRight' && index < 5) {
+      e.preventDefault();
+      inputsRef.current[index + 1]?.focus();
+      inputsRef.current[index + 1]?.select();
+    } else if (e.key === 'Delete') {
+      const newDigits = [...digits];
+      newDigits[index] = '';
+      setDigits(newDigits);
     }
+  };
+
+  const handlePaste = (e, index) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text').replace(/\D/g, '');
+    if (!pastedText) return;
+
+    const chars = pastedText.slice(0, 6).split('');
+    const newDigits = ['', '', '', '', '', ''];
+    chars.forEach((char, idx) => {
+      newDigits[idx] = char;
+    });
+    setDigits(newDigits);
+    const nextFocus = Math.min(5, chars.length);
+    if (inputsRef.current[nextFocus]) {
+      inputsRef.current[nextFocus].focus();
+      inputsRef.current[nextFocus].select();
+    }
+    setErrorMessage('');
   };
 
   const formatTime = (secs) => {
@@ -167,7 +229,13 @@ export default function EmailOtpModal({
       setIsVerified(true);
     } catch (err) {
       setIsVerified(false);
-      setErrorMessage(err.message || 'Failed to complete registration. Please verify the code.');
+      setErrorMessage(err.message || 'Incorrect verification code. Please check and try again.');
+      setTimeout(() => {
+        if (inputsRef.current[0]) {
+          inputsRef.current[0].focus();
+          inputsRef.current[0].select();
+        }
+      }, 50);
     }
   };
 
@@ -228,9 +296,33 @@ export default function EmailOtpModal({
 
           {/* 6-Digit Code Input Boxes */}
           <div className="fgrp">
-            <label className="text-center block small fw-bold">
-              ENTER 6-DIGIT VERIFICATION CODE
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+              <label className="small fw-bold" style={{ margin: 0 }}>
+                ENTER 6-DIGIT VERIFICATION CODE
+              </label>
+              {digits.some((d) => d !== '') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDigits(['', '', '', '', '', '']);
+                    setErrorMessage('');
+                    inputsRef.current[0]?.focus();
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#2563eb',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    padding: 0
+                  }}
+                >
+                  Clear Code
+                </button>
+              )}
+            </div>
 
             <div className="csd-otp-inputs-grid">
               {digits.map((digit, idx) => (
@@ -239,10 +331,14 @@ export default function EmailOtpModal({
                   ref={(el) => (inputsRef.current[idx] = el)}
                   type="text"
                   inputMode="numeric"
-                  maxLength={idx === 0 ? 6 : 1}
+                  autoComplete="one-time-code"
+                  maxLength={6}
                   value={digit}
+                  onFocus={(e) => e.target.select()}
+                  onClick={(e) => e.target.select()}
                   onChange={(e) => handleDigitChange(idx, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(idx, e)}
+                  onPaste={(e) => handlePaste(e, idx)}
                   disabled={isSubmitting || isVerified}
                   className={`csd-otp-digit ${digit ? 'filled' : ''} ${isExpired ? 'expired' : ''}`}
                 />

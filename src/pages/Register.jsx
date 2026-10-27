@@ -16,7 +16,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from "lucide-react";
 import AuthArt from "./AuthArt";
 
@@ -106,10 +107,35 @@ function Section({ n, title, children }) {
   );
 }
 
+const FIELD_LABELS = {
+  name: "Beneficiary Name",
+  cardId: "Grocery Card ID",
+  chip: "Chip Number",
+  employment: "Employment Status",
+  org: "Organization",
+  dob: "Date of Birth",
+  doe: "Date of Enrollment",
+  dor: "Date of Retirement",
+  entitlement: "Entitlement Category",
+  payLevel: "Pay Level",
+  ppo: "PPO Number",
+  pan: "PAN Number",
+  panC: "Confirm PAN",
+  username: "Username",
+  email: "Email Address",
+  pw: "Password",
+  pwC: "Confirm Password",
+  mobile: "Mobile Number",
+  agree: "Terms of Use & Privacy Policy",
+  cap: "Captcha Verification",
+};
+
 // Register
 export default function Register() {
   const [f, setF] = useState(INIT),
     [errs, setErrs] = useState({}),
+    [topErrorBanner, setTopErrorBanner] = useState(""),
+    [formErrorList, setFormErrorList] = useState([]),
     [showPw, setShowPw] = useState(false),
     [showPwC, setShowPwC] = useState(false),
     [cap, setCap] = useState(makeCaptcha),
@@ -130,11 +156,16 @@ export default function Register() {
       ...f,
       [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
     });
-    if (errs[k] || errs.submit) {
+    if (errs[k] || errs.submit || topErrorBanner) {
       setErrs((prev) => {
         const next = { ...prev };
         delete next[k];
         delete next.submit;
+        return next;
+      });
+      setFormErrorList((prev) => {
+        const next = prev.filter((item) => item.field !== (FIELD_LABELS[k] || k));
+        if (next.length === 0) setTopErrorBanner("");
         return next;
       });
     }
@@ -142,11 +173,16 @@ export default function Register() {
 
   const upper = (k) => (e) => {
     setF({ ...f, [k]: e.target.value.toUpperCase() });
-    if (errs[k] || errs.submit) {
+    if (errs[k] || errs.submit || topErrorBanner) {
       setErrs((prev) => {
         const next = { ...prev };
         delete next[k];
         delete next.submit;
+        return next;
+      });
+      setFormErrorList((prev) => {
+        const next = prev.filter((item) => item.field !== (FIELD_LABELS[k] || k));
+        if (next.length === 0) setTopErrorBanner("");
         return next;
       });
     }
@@ -170,6 +206,16 @@ export default function Register() {
     setCap(makeCaptcha());
     setCapIn("");
   };
+
+  const scrollToFormTop = () => {
+    setTimeout(() => {
+      const topEl = document.getElementById("rh") || document.querySelector(".authcard");
+      if (topEl) {
+        topEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+  };
+
   const submit = async (e) => {
     e.preventDefault();
 
@@ -268,11 +314,20 @@ export default function Register() {
     setErrs(x);
 
     if (Object.keys(x).length) {
+      const errorItems = Object.entries(x).map(([key, msg]) => ({
+        field: FIELD_LABELS[key] || key,
+        message: msg,
+      }));
+      setTopErrorBanner("Please correct the highlighted field errors below to proceed with registration.");
+      setFormErrorList(errorItems);
+      scrollToFormTop();
       return;
     }
 
     // Step 1: Pre-check duplicate fields (username, email, cardId, etc.) BEFORE sending OTP
     setIsDispatchingOtp(true);
+    setTopErrorBanner("");
+    setFormErrorList([]);
     try {
       const dupCheck = await userService.checkDuplicates({
         username: f.username,
@@ -284,12 +339,19 @@ export default function Register() {
       });
 
       if (!dupCheck.available) {
+        const conflictItems = Object.entries(dupCheck.conflicts || {}).map(([key, msg]) => ({
+          field: FIELD_LABELS[key] || key,
+          message: msg,
+        }));
         setErrs((prev) => ({
           ...prev,
           ...dupCheck.conflicts,
           submit:
             "Some details (such as username, email or Card ID) are already registered in the CSD AFD Portal. Please correct the highlighted fields.",
         }));
+        setTopErrorBanner("Some details are already registered in the CSD AFD Portal. Please review the highlighted fields below.");
+        setFormErrorList(conflictItems);
+        scrollToFormTop();
         setIsDispatchingOtp(false);
         return;
       }
@@ -304,13 +366,19 @@ export default function Register() {
         purpose: "REGISTER_EMAIL",
       }).unwrap();
 
+      setTopErrorBanner("");
+      setFormErrorList([]);
       setIsOtpModalOpen(true);
     } catch (err) {
       console.error("OTP dispatch error:", err);
+      const errMsg = err?.data?.message || err?.message || "Failed to dispatch verification email.";
       setErrs((prev) => ({
         ...prev,
-        submit: err?.data?.message || err?.message || "Failed to dispatch verification email.",
+        submit: errMsg,
       }));
+      setTopErrorBanner(errMsg);
+      setFormErrorList([]);
+      scrollToFormTop();
     } finally {
       setIsDispatchingOtp(false);
     }
@@ -374,13 +442,34 @@ export default function Register() {
         fieldErrors.chip = "Chip number is already registered.";
       }
 
+      const isOtpError =
+        errCode === "OTP_INVALID" ||
+        errCode === "OTP_EXPIRED" ||
+        errCode === "OTP_LOCKED" ||
+        (errCode && String(errCode).includes("OTP")) ||
+        (apiMsg && apiMsg.toLowerCase().includes("otp"));
+
+      if (isOtpError) {
+        // KEEP modal open so the user can easily re-type or correct the OTP!
+        throw new Error(apiMsg || "Incorrect OTP. Please check and try again.");
+      }
+
+      // If error is for form fields (like duplicate username/card), close modal and display on form
       setIsOtpModalOpen(false);
       setErrs((prev) => ({
         ...prev,
         ...fieldErrors,
         submit: apiMsg,
       }));
-      return;
+      setTopErrorBanner(apiMsg);
+      setFormErrorList(
+        Object.entries(fieldErrors).map(([key, msg]) => ({
+          field: FIELD_LABELS[key] || key,
+          message: msg,
+        }))
+      );
+      scrollToFormTop();
+      throw new Error(apiMsg);
     }
 
     // 2. State transition to approval pending state
@@ -495,6 +584,53 @@ export default function Register() {
           check out forms. Your login/AFD Demand will be rejected/cancelled if
           service particulars are used.
         </p>
+
+        {/* Top Validation & Submission Error Banner */}
+        {topErrorBanner && (
+          <div
+            className="alert-banner danger mb-3"
+            role="alert"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.55rem",
+              padding: "1rem 1.25rem",
+              borderRadius: "10px",
+              backgroundColor: "#fef2f2",
+              border: "1.5px solid #fca5a5",
+              color: "#991b1b",
+            }}
+          >
+            <div className="row align-center gap-1" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <AlertCircle size={20} className="flex-shrink-0" style={{ color: "#dc2626" }} />
+              <strong style={{ fontSize: "0.95rem", color: "#991b1b" }}>
+                Form Submission Blocked: Please resolve the following errors:
+              </strong>
+            </div>
+            <p style={{ margin: "0.15rem 0", fontSize: "0.88rem", color: "#7f1d1d" }}>
+              {topErrorBanner}
+            </p>
+            {formErrorList.length > 0 && (
+              <ul
+                style={{
+                  margin: "0.25rem 0 0 0",
+                  paddingLeft: "1.35rem",
+                  fontSize: "0.85rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.3rem",
+                  color: "#991b1b",
+                }}
+              >
+                {formErrorList.map((item, idx) => (
+                  <li key={idx}>
+                    <strong>{item.field}:</strong> {item.message}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         <Section n="1" title="Card details">
           <Field
@@ -857,15 +993,19 @@ export default function Register() {
         )}
 
         <button
-          className="btn big wide"
+          className="btn big wide row align-center justify-center gap-1"
           type="submit"
           disabled={isRegistering || isDispatchingOtp}
+          style={{ display: "flex" }}
         >
-          {isDispatchingOtp
-            ? "Sending Email OTP via EmailJS..."
-            : isRegistering
-              ? "Finalizing Registration..."
-              : "Register & Verify Email via OTP"}
+          {(isDispatchingOtp || isRegistering) && <Loader2 size={18} className="spin" />}
+          <span>
+            {isDispatchingOtp
+              ? "Validating & Sending Email OTP..."
+              : isRegistering
+                ? "Finalizing Registration..."
+                : "Register & Verify Email via OTP"}
+          </span>
         </button>
       </form>
 

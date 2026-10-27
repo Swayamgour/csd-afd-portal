@@ -37,6 +37,7 @@ const lazyImport = (importFn, name) =>
 
 // Auth Security Pages
 const PasswordReset = lazyImport(() => import('./features/auth/PasswordReset.jsx'), 'PasswordReset');
+const ForgotUsername = lazyImport(() => import('./features/auth/ForgotUsername.jsx'), 'ForgotUsername');
 const Unauthorized = lazyImport(() => import('./features/auth/Unauthorized.jsx'), 'Unauthorized');
 const SessionExpired = lazyImport(() => import('./features/auth/SessionExpired.jsx'), 'SessionExpired');
 
@@ -187,6 +188,7 @@ export default function App() {
           {/* AUTH SECURITY LAYER */}
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<PasswordReset />} />
+          <Route path="/forgot-username" element={<ForgotUsername />} />
           <Route path="/reset-password" element={<PasswordReset />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/session-expired" element={<SessionExpired />} />

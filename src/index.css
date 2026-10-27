@@ -3072,17 +3072,16 @@ section.hero {
    Paste at the END of your main stylesheet (replaces register-additions.css).
    ===================================================================== */
 
-.auth {
+.auth,
+.auth.reg {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2rem;
     align-items: start;
     min-height: 72vh;
-    padding-top: 2rem
-}
-
-.auth.reg {
-    grid-template-columns: minmax(0, .8fr) minmax(420px, 720px)
+    padding-top: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 /* ---- left art panel ---- */
@@ -6682,4 +6681,310 @@ img.product-table-thumb {
     color: #a3adc4;
     cursor: default;
     text-decoration: none;
+}
+
+/* =====================================================================
+   CSD Email OTP Verification Modal Styles
+   ===================================================================== */
+.csd-modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(10, 25, 60, 0.72) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 99999 !important;
+  padding: 1.25rem !important;
+}
+
+.csd-modal-window {
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 25px 60px -15px rgba(10, 25, 60, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+  width: 100% !important;
+  max-width: 520px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  animation: csdModalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes csdModalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.csd-otp-modal-header {
+  background: linear-gradient(135deg, #0a1f4d 0%, #123a8a 55%, #1e4fd8 100%) !important;
+  color: #ffffff !important;
+  padding: 1.25rem 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 2px solid rgba(255, 138, 31, 0.4) !important;
+}
+
+.csd-otp-header-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.85rem !important;
+}
+
+.csd-otp-header-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #ffd9ad !important;
+  flex-shrink: 0 !important;
+}
+
+.csd-otp-header-left .csd-modal-title {
+  margin: 0 !important;
+  font-size: 1.22rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  line-height: 1.25 !important;
+}
+
+.csd-otp-header-badge {
+  display: inline-block !important;
+  font-size: 0.72rem !important;
+  color: #ffd9ad !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-weight: 700 !important;
+  margin-top: 2px !important;
+}
+
+.csd-otp-modal-close {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.csd-otp-modal-close:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  transform: scale(1.05) !important;
+}
+
+.csd-otp-modal-body {
+  padding: 1.5rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.1rem !important;
+  background: #ffffff !important;
+}
+
+.csd-otp-target-email {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1e3a8a !important;
+  padding: 0.7rem 1rem !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  font-size: 0.96rem !important;
+  text-align: center !important;
+  word-break: break-all !important;
+  letter-spacing: 0.02em !important;
+}
+
+.csd-otp-status-banner {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 10px !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+}
+
+.csd-otp-status-banner.success {
+  background: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #065f46 !important;
+}
+
+.csd-otp-status-banner.error {
+  background: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  color: #b91c1c !important;
+}
+
+.csd-otp-inputs-grid {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 0.6rem !important;
+  margin: 0.65rem 0 !important;
+}
+
+.csd-otp-digit {
+  width: 52px !important;
+  height: 58px !important;
+  border: 2px solid #cbd5e1 !important;
+  border-radius: 12px !important;
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  transition: all 0.18s ease !important;
+  outline: none !important;
+  padding: 0 !important;
+}
+
+.csd-otp-digit:focus {
+  border-color: #2563eb !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18) !important;
+}
+
+.csd-otp-digit.filled {
+  border-color: #3b82f6 !important;
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+}
+
+.csd-otp-digit.expired {
+  border-color: #fca5a5 !important;
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+}
+
+.csd-otp-meta-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 0.85rem !important;
+  margin-top: 0.35rem !important;
+}
+
+.csd-otp-timer {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+
+.csd-otp-timer.expired {
+  color: #dc2626 !important;
+}
+
+.csd-otp-timer-highlight {
+  color: #ea580c !important;
+  font-weight: 800 !important;
+}
+
+.csd-otp-resend-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #2563eb !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  cursor: pointer !important;
+  padding: 0.3rem 0.6rem !important;
+  border-radius: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+.csd-otp-resend-btn:hover:not(:disabled) {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  text-decoration: underline !important;
+}
+
+.csd-otp-resend-btn:disabled {
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+}
+
+.csd-otp-statutory-notice {
+  background: #f8fafc !important;
+  border-left: 4px solid #f59e0b !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0 10px 10px 0 !important;
+  font-size: 0.82rem !important;
+  color: #475569 !important;
+  line-height: 1.45 !important;
+  border-top: 1px solid #f1f5f9 !important;
+  border-right: 1px solid #f1f5f9 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.csd-otp-modal-actions {
+  display: flex !important;
+  gap: 0.75rem !important;
+  justify-content: flex-end !important;
+  margin-top: 0.5rem !important;
+}
+
+.csd-otp-cancel-btn {
+  padding: 0.75rem 1.25rem !important;
+  border: 1.5px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.csd-otp-cancel-btn:hover:not(:disabled) {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+.csd-otp-submit-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.55rem !important;
+  padding: 0.75rem 1.5rem !important;
+  background: linear-gradient(135deg, #1e4fd8 0%, #0a1f4d 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 14px rgba(30, 79, 216, 0.35) !important;
+}
+
+.csd-otp-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #163cb5 0%, #071536 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(30, 79, 216, 0.45) !important;
+}
+
+.csd-otp-submit-btn:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
 }

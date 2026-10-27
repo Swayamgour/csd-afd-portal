@@ -116,6 +116,32 @@ export const authService = {
     return body;
   },
 
+  async requestForgotUsername({ email }) {
+    const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/forgot-username`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: (email || '').trim() })
+    });
+    const body = await apiRes.json().catch(() => ({}));
+    if (!apiRes.ok) {
+      throw new Error(body.message || 'Unable to process request. Please check your registered email.');
+    }
+    return body;
+  },
+
+  async verifyForgotUsername({ email, otp }) {
+    const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/verify-forgot-username`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: (email || '').trim(), otp: (otp || '').trim() })
+    });
+    const body = await apiRes.json().catch(() => ({}));
+    if (!apiRes.ok) {
+      throw new Error(body.message || 'Unable to verify OTP. Please try again.');
+    }
+    return body;
+  },
+
   async logout() {
     try {
       const token = localStorage.getItem('csd_auth_token');
