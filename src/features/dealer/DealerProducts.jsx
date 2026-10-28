@@ -41,6 +41,7 @@ export default function DealerProducts() {
   const [selectedDealerId, setSelectedDealerId] = useState(user?.dealerId || '');
   const [toastMessage, setToastMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [mappingToDelete, setMappingToDelete] = useState(null);
 
   // Queries
   const { data: oems = [], isLoading: loadingOems } = useGetOemsQuery({ active: true });
@@ -139,11 +140,12 @@ export default function DealerProducts() {
   };
 
   // Delete mapping
-  const handleDeleteMapping = async (dp) => {
-    if (!window.confirm('Revoke authorization mapping for this product?')) return;
+  const confirmDeleteMapping = async () => {
+    if (!mappingToDelete) return;
     try {
-      await deleteDealerProduct(dp._id || dp.id).unwrap();
+      await deleteDealerProduct(mappingToDelete._id || mappingToDelete.id).unwrap();
       showToast('Authorization mapping removed.');
+      setMappingToDelete(null);
     } catch (err) {
       alert(err?.data?.message || 'Failed to delete mapping');
     }
@@ -239,6 +241,21 @@ export default function DealerProducts() {
       </Card>
 
       {/* PRODUCT AUTHORIZATION MATRIX */}
+      {mappingToDelete && (
+        <Card className="mb-3 border-danger">
+          <div className="card-header between mb-2">
+            <div>
+              <h4 className="card-title text-danger">Revoke Authorization Mapping</h4>
+              <p className="micro muted">Are you sure you want to permanently revoke this product mapping for {selectedDealer?.name || 'this dealer'}?</p>
+            </div>
+            <div className="row gap-1">
+              <Button variant="outline" size="sm" onClick={() => setMappingToDelete(null)}>Cancel</Button>
+              <Button variant="danger" size="sm" onClick={confirmDeleteMapping}>Confirm Revocation</Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {selectedDealerId ? (
         <Card
           title="Vehicle Model Authorization Matrix"
@@ -338,7 +355,7 @@ export default function DealerProducts() {
                           {mapping && (
                             <button
                               type="button"
-                              onClick={() => handleDeleteMapping(mapping)}
+                              onClick={() => setMappingToDelete(mapping)}
                               className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition"
                               title="Delete Authorization Record"
                             >

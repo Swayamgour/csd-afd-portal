@@ -1,12 +1,10 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
 import { Card } from '../../components/common/Card.jsx';
 import { DataTable } from '../../components/common/DataTable.jsx';
 import { StatCard } from '../../components/common/StatCard.jsx';
 import { Button } from '../../components/common/Button.jsx';
-import { Modal } from '../../components/common/Modal.jsx';
-import { DirectorEditUserModal } from './DirectorEditUserModal.jsx';
-import { UserDetailsModal } from '../admin/UserDetailsModal.jsx';
 import { useGetUsersQuery, useApproveUserMutation, useRejectUserMutation } from '../admin/adminApi.js';
 import {
   Users,
@@ -27,14 +25,13 @@ import {
 } from 'lucide-react';
 
 export function DirectorApprovals({ defaultTab = 'PENDING' }) {
+  const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState(defaultTab);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [toastMessage, setToastMessage] = useState('');
 
-  // Modals state
-  const [selectedUserForEdit, setSelectedUserForEdit] = useState(null);
-  const [selectedUserForDetails, setSelectedUserForDetails] = useState(null);
+  // Inline rejection state
   const [rejectModalUser, setRejectModalUser] = useState(null);
   const [rejectReason, setRejectReason] = useState('Service records mismatch with Armed Forces database');
   const [rejectCustomRemarks, setRejectCustomRemarks] = useState('');
@@ -310,7 +307,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
               type="button"
               className="circle btn-icon-action-edit"
               title="Edit Beneficiary Details & Service Records"
-              onClick={() => setSelectedUserForEdit(u)}
+              onClick={() => navigate(`/director/users/${u.id || u._id}/edit`)}
             >
               <Edit2 size={14} />
             </button>
@@ -320,7 +317,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
               type="button"
               className="circle btn-icon-action-inspect"
               title="View Full Profile Details"
-              onClick={() => setSelectedUserForDetails(u)}
+              onClick={() => navigate(`/director/users/${u.id || u._id}`)}
             >
               <Eye size={14} />
             </button>
@@ -482,41 +479,24 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
         />
       </Card>
 
-      {/* Edit Beneficiary Modal (CS Director only) */}
-      {selectedUserForEdit && (
-        <DirectorEditUserModal
-          isOpen={!!selectedUserForEdit}
-          onClose={() => setSelectedUserForEdit(null)}
-          user={selectedUserForEdit}
-          onUserUpdated={handleUserUpdated}
-        />
-      )}
-
-      {/* View User Details Modal */}
-      {selectedUserForDetails && (
-        <UserDetailsModal
-          isOpen={!!selectedUserForDetails}
-          onClose={() => setSelectedUserForDetails(null)}
-          user={selectedUserForDetails}
-        />
-      )}
-
-      {/* Reject Modal */}
+      {/* Inline Reject Workflow Card */}
       {rejectModalUser && (
-        <Modal
-          isOpen={!!rejectModalUser}
-          onClose={() => setRejectModalUser(null)}
-          title={`Reject Application: ${rejectModalUser.name || rejectModalUser.username}`}
-        >
-          <form onSubmit={handleConfirmReject} className="director-modal-form">
-            <div className="form-field">
+        <div className="card mb-2" style={{ borderColor: '#fca5a5', background: '#fff5f5' }}>
+          <div className="card-header" style={{ background: '#fef2f2', borderBottomColor: '#fecaca' }}>
+            <h3 className="card-title text-danger row align-center gap-1">
+              <AlertTriangle size={18} />
+              Reject Beneficiary Application: {rejectModalUser.name || rejectModalUser.username}
+            </h3>
+          </div>
+          <form onSubmit={handleConfirmReject} className="card-body">
+            <div className="form-group">
               <label className="form-label">
                 Primary Reason for Rejection *
               </label>
               <select
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="form-control"
+                className="form-select"
               >
                 <option value="Service records mismatch with Armed Forces database">Service records mismatch with Armed Forces database</option>
                 <option value="CSD smart canteen card invalid or expired">CSD smart canteen card invalid or expired</option>
@@ -527,7 +507,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
               </select>
             </div>
 
-            <div className="form-field">
+            <div className="form-group">
               <label className="form-label">
                 Additional Remarks / Correction Instructions for Beneficiary
               </label>
@@ -536,24 +516,24 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
                 value={rejectCustomRemarks}
                 onChange={(e) => setRejectCustomRemarks(e.target.value)}
                 placeholder="Explain the required documents or correction so the user can rectify and re-apply..."
-                className="form-control"
+                className="form-textarea"
               />
             </div>
 
-            <div className="portal-flex-end gap-sm">
+            <div className="form-actions">
               <Button variant="outline" type="button" onClick={() => setRejectModalUser(null)}>
                 Cancel
               </Button>
               <Button
-                variant="primary"
+                variant="danger"
                 type="submit"
-                className="portal-btn-deny-danger"
+                loading={actionLoadingId === (rejectModalUser.id || rejectModalUser._id)}
               >
                 Confirm Rejection
               </Button>
             </div>
           </form>
-        </Modal>
+        </div>
       )}
     </div>
   );

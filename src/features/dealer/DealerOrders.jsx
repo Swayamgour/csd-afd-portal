@@ -5,7 +5,6 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import {
   useGetOrdersQuery,
   useUpdateOrderStatusMutation
@@ -103,6 +102,57 @@ export default function DealerOrders() {
         </div>
       )}
 
+      {handoverModalOrder && (
+        <Card
+          className="mb-4 border-primary"
+          title={`Confirm Customer Vehicle Handover · Order #${handoverModalOrder.orderNo || handoverModalOrder.id}`}
+          subtitle={`Beneficiary: ${handoverModalOrder.beneficiaryName || 'Defence Personnel'}`}
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setHandoverModalOrder(null)}>
+              Dismiss
+            </Button>
+          }
+        >
+          <div className="handover-form p-2">
+            <div className="alert-banner info mb-3">
+              <strong>Mandatory Handover Verification:</strong>
+              <ul className="mt-1 pl-4 list-disc text-sm">
+                <li>Verify original CSD Smart Card of the serving/retired personnel.</li>
+                <li>Ensure zero handling/documentation fee is levied as per official CSD circular.</li>
+                <li>Verify chassis and engine numbers against the CSD Supply Order Sanction.</li>
+              </ul>
+            </div>
+
+            <div className="form-group mb-3">
+              <label htmlFor="gatepassNotes" className="form-label font-medium">
+                Delivery Gatepass Notes / Remarks
+              </label>
+              <textarea
+                id="gatepassNotes"
+                rows="3"
+                className="form-control"
+                value={deliveryNote}
+                onChange={(e) => setDeliveryNote(e.target.value)}
+                placeholder="Enter gatepass notes, battery/tool checklist or remarks..."
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button variant="outline" onClick={() => setHandoverModalOrder(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleMarkDelivered}
+                loading={isUpdating}
+              >
+                Confirm Handover & Issue Gatepass
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card
         title="Allocated Vehicle Orders"
         subtitle="Live showroom orders awaiting delivery release"
@@ -122,51 +172,6 @@ export default function DealerOrders() {
           }
         />
       </Card>
-
-      {handoverModalOrder && (
-        <Modal
-          isOpen={!!handoverModalOrder}
-          onClose={() => setHandoverModalOrder(null)}
-          title={`Confirm Customer Vehicle Handover · ${handoverModalOrder.orderNo || handoverModalOrder.id}`}
-          subtitle={`Beneficiary: ${handoverModalOrder.beneficiaryName || 'Defence Personnel'}`}
-          maxWidth="540px"
-          footer={
-            <div className="modal-footer-btns row between align-center w-full">
-              <Button variant="outline" onClick={() => setHandoverModalOrder(null)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleMarkDelivered}
-                disabled={isUpdating}
-              >
-                {isUpdating ? 'Recording...' : 'Confirm Handover & Issue Gatepass'}
-              </Button>
-            </div>
-          }
-        >
-          <div className="handover-form p-2">
-            <p className="small muted mb-2">
-              Before marking delivery, verify:
-              <br />1. Original CSD Smart Card of the serving/retired personnel.
-              <br />2. Zero handling/documentation fee levied as per CSD circular.
-            </p>
-
-            <div className="fgrp">
-              <label htmlFor="gatepassNotes" className="form-label">
-                Delivery Gatepass Notes
-              </label>
-              <textarea
-                id="gatepassNotes"
-                rows="3"
-                className="form-control"
-                value={deliveryNote}
-                onChange={(e) => setDeliveryNote(e.target.value)}
-              />
-            </div>
-          </div>
-        </Modal>
-      )}
     </div>
   );
 }

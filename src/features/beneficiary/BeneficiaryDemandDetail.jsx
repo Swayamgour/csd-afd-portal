@@ -20,20 +20,19 @@ import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Timeline from '../../components/common/Timeline.jsx';
 import DocumentViewer from '../../components/common/DocumentViewer.jsx';
-import ConfirmDialog from '../../components/common/ConfirmDialog.jsx';
 import { LoadingState, EmptyState } from '../../components/common/States.jsx';
 import { useGetDemandByIdQuery, useCancelDemandMutation } from '../demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../payment/paymentApi.js';
-import { PaymentDetailsModal } from '../../components/modals/PaymentDetailsModal.jsx';
+import InlinePaymentCard from '../../components/common/InlinePaymentCard.jsx';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 export default function BeneficiaryDemandDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [showCancelPrompt, setShowCancelPrompt] = useState(false);
   const [cancelReason, setCancelReason] = useState('Beneficiary request');
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [toast, setToast] = useState({ type: '', message: '' });
 
   const {
@@ -174,7 +173,7 @@ export default function BeneficiaryDemandDetail() {
               <Button
                 variant="primary"
                 icon={CreditCard}
-                onClick={() => setPaymentModalOpen(true)}
+                onClick={() => setShowPaymentForm(!showPaymentForm)}
                 style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff', fontWeight: 700 }}
               >
                 {demand.paymentStatus === 'PENDING_VERIFICATION' ? 'Update Payment UTR' : 'Pay Now / Submit Bank UTR'}
@@ -194,7 +193,7 @@ export default function BeneficiaryDemandDetail() {
                 variant="ghost"
                 className="text-danger"
                 icon={XCircle}
-                onClick={() => setCancelModalOpen(true)}
+                onClick={() => setShowCancelPrompt(!showCancelPrompt)}
               >
                 Cancel Demand
               </Button>
@@ -202,6 +201,38 @@ export default function BeneficiaryDemandDetail() {
           </div>
         }
       />
+
+      {/* Inline Cancellation Confirmation Banner */}
+      {showCancelPrompt && (
+        <div className="alert-banner error mb-3 p-3 bg-red-50 border border-red-200 rounded flex items-center justify-between">
+          <div>
+            <strong className="text-red-900 block">Are you sure you want to cancel Demand {demand.demandNo || demand._id}?</strong>
+            <p className="text-xs text-red-700 m-0 mt-0.5">This will withdraw the vehicle allocation from the regional depot. This operation cannot be undone.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowCancelPrompt(false)}>
+              Keep Demand
+            </Button>
+            <Button variant="danger" size="sm" loading={isCancelling} onClick={handleCancel}>
+              Confirm Cancellation
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Inline Payment Submission Card */}
+      {showPaymentForm && (
+        <div className="mb-4">
+          <InlinePaymentCard
+            demand={demand}
+            onCancel={() => setShowPaymentForm(false)}
+            onPaymentSubmitted={() => {
+              setShowPaymentForm(false);
+              refetch();
+            }}
+          />
+        </div>
+      )}
 
       {toast.message && (
         <div
@@ -366,27 +397,6 @@ export default function BeneficiaryDemandDetail() {
           )}
         </div>
       </div>
-
-      {/* Confirmation Modal for Demand Cancellation */}
-      <ConfirmDialog
-        open={cancelModalOpen}
-        title="Cancel AFD Demand"
-        message={`Are you sure you want to cancel Demand ${demand.demandNo || demand._id}? This will withdraw the allocation from the regional depot.`}
-        confirmText={isCancelling ? 'Cancelling...' : 'Confirm Cancellation'}
-        confirmVariant="danger"
-        onConfirm={handleCancel}
-        onCancel={() => setCancelModalOpen(false)}
-      />
-
-      {/* Payment Details / UTR Modal */}
-      {paymentModalOpen && (
-        <PaymentDetailsModal
-          isOpen={paymentModalOpen}
-          onClose={() => setPaymentModalOpen(false)}
-          demand={demand}
-          onSubmitSuccess={handlePaymentSubmitSuccess}
-        />
-      )}
     </div>
   );
 }

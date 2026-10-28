@@ -318,32 +318,32 @@ export default function AdminAddUser() {
           { label: 'Users', href: '/admin/users' },
           { label: 'Add New User' }
         ]}
-        actions={
-          <div className="flex-gap-sm">
-            <Button
-              variant="outline"
-              icon={ArrowLeft}
-              onClick={() => navigate('/admin/users')}
-            >
-              Back to Users
-            </Button>
-            <Button
-              variant="ghost"
-              icon={RotateCcw}
-              onClick={resetForm}
-              disabled={loading}
-            >
-              Reset
-            </Button>
-            <Button
-              icon={CheckCircle2}
-              loading={loading}
-              onClick={handleSubmit}
-            >
-              Add New User
-            </Button>
-          </div>
-        }
+        // actions={
+        //   <div className="flex-gap-sm">
+        //     <Button
+        //       variant="outline"
+        //       icon={ArrowLeft}
+        //       onClick={() => navigate('/admin/users')}
+        //     >
+        //       Back to Users
+        //     </Button>
+        //     <Button
+        //       variant="ghost"
+        //       icon={RotateCcw}
+        //       onClick={resetForm}
+        //       disabled={loading}
+        //     >
+        //       Reset
+        //     </Button>
+        //     <Button
+        //       icon={CheckCircle2}
+        //       loading={loading}
+        //       onClick={handleSubmit}
+        //     >
+        //       Add New User
+        //     </Button>
+        //   </div>
+        // }
       />
 
       {submitError && (

@@ -4,7 +4,6 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { Button } from '../../components/common/Button';
-import { Modal } from '../../components/common/Modal';
 import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
 import { Timeline } from '../../components/common/Timeline';
@@ -286,16 +285,124 @@ export const HelpdeskTicketDetail = () => {
         {/* COLUMN 3: RIGHT - 4-LEVEL ESCALATION, SLA, ACTIONS, KB SUGGESTIONS */}
         <div className="portal-flex-col-gap-md">
           
+          {/* INLINE WORKFLOW: ASSIGN */}
+          {showAssignModal && (
+            <Card
+              className="border-primary mb-3"
+              title="Assign Ticket to Officer"
+              headerAction={
+                <Button variant="outline" size="sm" onClick={() => setShowAssignModal(false)}>
+                  Cancel
+                </Button>
+              }
+            >
+              <div className="space-y-3">
+                <Input
+                  label="Officer Username or Name"
+                  placeholder="e.g. nodal_delhi"
+                  value={assignAgent}
+                  onChange={(e) => setAssignAgent(e.target.value)}
+                />
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <Button variant="outline" size="sm" onClick={() => setShowAssignModal(false)}>Cancel</Button>
+                  <Button size="sm" loading={isAssigning} onClick={handleAssign}>Assign</Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* INLINE WORKFLOW: ESCALATE */}
+          {showEscalateModal && (
+            <Card
+              className="border-primary mb-3"
+              title="Escalate Incident Tier"
+              headerAction={
+                <Button variant="outline" size="sm" onClick={() => setShowEscalateModal(false)}>
+                  Cancel
+                </Button>
+              }
+            >
+              <div className="space-y-3">
+                <Select
+                  label="Escalate Target Level"
+                  value={escalateLevel}
+                  onChange={(e) => setEscalateLevel(e.target.value)}
+                  options={[
+                    { value: 'Level 2 - Technical Team', label: 'Level 2: Technical Gateway Team' },
+                    { value: 'Level 3 - Specialist Officer', label: 'Level 3: Quartermaster Specialist' },
+                    { value: 'Level 4 - CSD HQ Escalation', label: 'Level 4: CSD Head Office Directorate' },
+                  ]}
+                />
+                <div className="form-field">
+                  <label className="form-label">Reason for Escalation</label>
+                  <textarea
+                    rows={3}
+                    className="form-control"
+                    placeholder="Explain why this requires senior intervention..."
+                    value={escalateReason}
+                    onChange={(e) => setEscalateReason(e.target.value)}
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <Button variant="outline" size="sm" onClick={() => setShowEscalateModal(false)}>Cancel</Button>
+                  <Button size="sm" loading={isUpdatingStatus} onClick={handleEscalate}>Confirm Escalation</Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* INLINE WORKFLOW: RESOLVE */}
+          {showResolveModal && (
+            <Card
+              className="border-primary mb-3"
+              title="Mark Incident as Resolved"
+              headerAction={
+                <Button variant="outline" size="sm" onClick={() => setShowResolveModal(false)}>
+                  Cancel
+                </Button>
+              }
+            >
+              <div className="space-y-3">
+                <div className="form-field">
+                  <label className="form-label">Resolution Summary to Citizen</label>
+                  <textarea
+                    rows={4}
+                    className="form-control"
+                    placeholder="State the resolution steps taken and advice to beneficiary..."
+                    value={resolutionSummary}
+                    onChange={(e) => setResolutionSummary(e.target.value)}
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <Button variant="outline" size="sm" onClick={() => setShowResolveModal(false)}>Cancel</Button>
+                  <Button size="sm" loading={isUpdatingStatus} onClick={handleResolve}>Submit Resolution</Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {/* Action Hub */}
           <Card title="Ticket Governance Actions">
             <div className="portal-flex-col-gap-xs">
-              <Button variant="outline" size="sm" fullWidth onClick={() => setShowAssignModal(true)}>
+              <Button variant="outline" size="sm" fullWidth onClick={() => {
+                setShowAssignModal(true);
+                setShowEscalateModal(false);
+                setShowResolveModal(false);
+              }}>
                 Assign / Reassign Officer
               </Button>
-              <Button variant="secondary" size="sm" fullWidth onClick={() => setShowEscalateModal(true)}>
+              <Button variant="secondary" size="sm" fullWidth onClick={() => {
+                setShowEscalateModal(true);
+                setShowAssignModal(false);
+                setShowResolveModal(false);
+              }}>
                 Escalate Incident Tier
               </Button>
-              <Button variant="primary" size="sm" fullWidth onClick={() => setShowResolveModal(true)}>
+              <Button variant="primary" size="sm" fullWidth onClick={() => {
+                setShowResolveModal(true);
+                setShowAssignModal(false);
+                setShowEscalateModal(false);
+              }}>
                 Resolve & Close Ticket
               </Button>
             </div>
@@ -322,70 +429,6 @@ export const HelpdeskTicketDetail = () => {
           </Card>
         </div>
       </div>
-
-      {/* MODALS */}
-      {showAssignModal && (
-        <Modal isOpen={showAssignModal} onClose={() => setShowAssignModal(false)} title="Assign Ticket to Officer">
-          <Input
-            label="Officer Username or Name"
-            placeholder="e.g. nodal_delhi"
-            value={assignAgent}
-            onChange={(e) => setAssignAgent(e.target.value)}
-          />
-          <div className="director-modal-actions">
-            <Button variant="outline" onClick={() => setShowAssignModal(false)}>Cancel</Button>
-            <Button loading={isAssigning} onClick={handleAssign}>Assign</Button>
-          </div>
-        </Modal>
-      )}
-
-      {showEscalateModal && (
-        <Modal isOpen={showEscalateModal} onClose={() => setShowEscalateModal(false)} title="Escalate Incident Tier">
-          <Select
-            label="Escalate Target Level"
-            value={escalateLevel}
-            onChange={(e) => setEscalateLevel(e.target.value)}
-            options={[
-              { value: 'Level 2 - Technical Team', label: 'Level 2: Technical Gateway Team' },
-              { value: 'Level 3 - Specialist Officer', label: 'Level 3: Quartermaster Specialist' },
-              { value: 'Level 4 - CSD HQ Escalation', label: 'Level 4: CSD Head Office Directorate' },
-            ]}
-          />
-          <div className="form-field">
-            <label className="form-label">Reason for Escalation</label>
-            <textarea
-              rows={3}
-              className="form-control"
-              placeholder="Explain why this requires senior intervention..."
-              value={escalateReason}
-              onChange={(e) => setEscalateReason(e.target.value)}
-            />
-          </div>
-          <div className="director-modal-actions">
-            <Button variant="outline" onClick={() => setShowEscalateModal(false)}>Cancel</Button>
-            <Button loading={isUpdatingStatus} onClick={handleEscalate}>Confirm Escalation</Button>
-          </div>
-        </Modal>
-      )}
-
-      {showResolveModal && (
-        <Modal isOpen={showResolveModal} onClose={() => setShowResolveModal(false)} title="Mark Incident as Resolved">
-          <div className="form-field">
-            <label className="form-label">Resolution Summary to Citizen</label>
-            <textarea
-              rows={4}
-              className="form-control"
-              placeholder="State the resolution steps taken and advice to beneficiary..."
-              value={resolutionSummary}
-              onChange={(e) => setResolutionSummary(e.target.value)}
-            />
-          </div>
-          <div className="director-modal-actions">
-            <Button variant="outline" onClick={() => setShowResolveModal(false)}>Cancel</Button>
-            <Button loading={isUpdatingStatus} onClick={handleResolve}>Submit Resolution</Button>
-          </div>
-        </Modal>
-      )}
     </div>
   );
 };

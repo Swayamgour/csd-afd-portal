@@ -378,12 +378,12 @@ export default function EmailOtpModal({
           </div>
 
           {/* Workflow Explanation Banner */}
-          <div className="csd-otp-statutory-notice">
+          {/* <div className="csd-otp-statutory-notice">
             <strong className="block text-navy mb-1">
               Statutory Security Requirement
             </strong>
             Email verification confirms your official contact for supply order sanctions. Once verified, your profile will transition to <b>PENDING ADMIN APPROVAL</b> for rank entitlement validation.
-          </div>
+          </div> */}
 
           {/* Action Buttons */}
           <div className="csd-otp-modal-actions">

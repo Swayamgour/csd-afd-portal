@@ -9,14 +9,14 @@ import {
   Store,
   Warehouse,
   CheckCircle2,
-  Package
+  Package,
+  X
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
 import { useGetOrdersQuery } from '../demand/demandApi.js';
@@ -245,14 +245,18 @@ export default function CsdOrders() {
         )}
       </Card>
 
-      {/* Order Dossier Modal */}
+      {/* Order Dossier Inline Card */}
       {selectedOrder && (
-        <Modal
-          isOpen={Boolean(selectedOrder)}
-          onClose={() => setSelectedOrder(null)}
-          title={`Supply Order Dossier: ${selectedOrder.orderNo || selectedOrder.id}`}
-          maxWidth="640px"
-        >
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">Supply Order Dossier: {selectedOrder.orderNo || selectedOrder.id}</h3>
+              <p className="micro muted">Detailed view of issued supply order and logistics progress</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setSelectedOrder(null)}>
+              Close Dossier
+            </Button>
+          </div>
           <div className="director-modal-form">
             <div className="csd-card-preview-box">
               <div className="csd-card-preview-header">
@@ -315,13 +319,13 @@ export default function CsdOrders() {
               </div>
             </div>
 
-            <div className="director-modal-actions">
+            <div className="row justify-end mt-2">
               <Button variant="outline" onClick={() => setSelectedOrder(null)}>
-                Close
+                Close Dossier
               </Button>
             </div>
           </div>
-        </Modal>
+        </Card>
       )}
     </div>
   );

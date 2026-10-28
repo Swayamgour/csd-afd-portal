@@ -10,14 +10,14 @@ import {
   RefreshCw,
   XCircle,
   Eye,
-  MessageSquare
+  MessageSquare,
+  X
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatDate } from '../../utils/formatters.js';
 import {
@@ -286,14 +286,18 @@ export default function CsdSupport() {
         )}
       </Card>
 
-      {/* Ticket Review & Action Modal */}
+      {/* Ticket Review & Action Inline Card */}
       {selectedTicket && (
-        <Modal
-          isOpen={!!selectedTicket}
-          onClose={() => setSelectedTicket(null)}
-          title={`Review Ticket ${selectedTicket.ticketNo}`}
-          size="lg"
-        >
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">Review Ticket {selectedTicket.ticketNo}</h3>
+              <p className="micro muted">Operational resolution, internal notes, and direct communications</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setSelectedTicket(null)}>
+              Close
+            </Button>
+          </div>
           <div className="space-y-4 text-xs">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
               <div>
@@ -387,8 +391,14 @@ export default function CsdSupport() {
                 </Button>
               </div>
             </div>
+
+            <div className="row justify-end border-t border-slate-200 pt-2">
+              <Button variant="outline" onClick={() => setSelectedTicket(null)}>
+                Close Ticket View
+              </Button>
+            </div>
           </div>
-        </Modal>
+        </Card>
       )}
     </div>
   );

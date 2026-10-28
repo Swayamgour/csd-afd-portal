@@ -31,9 +31,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import DocumentPreviewModal from '../../components/common/DocumentPreviewModal.jsx';
 import {
   useGetDemandsQuery,
   useGetOrdersQuery,
@@ -44,7 +42,6 @@ import {
 export default function DealerDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [previewDoc, setPreviewDoc] = useState(null);
 
   // Active view tab: 'verification' (Demands) or 'handover' (Orders)
   const [activeTab, setActiveTab] = useState('verification');
@@ -663,44 +660,21 @@ export default function DealerDashboard() {
         </Card>
       )}
 
-      {/* MODAL 1: DEMAND VERIFICATION MODAL */}
+      {/* INLINE WORKFLOW 1: DEMAND VERIFICATION */}
       {verifyingDemand && (
-        <Modal
-          isOpen={!!verifyingDemand}
-          onClose={() => setVerifyingDemand(null)}
+        <Card
+          className="mt-4 border-primary"
           title={`Review & Verify Demand · ${verifyingDemand.demandNo}`}
-          subtitle={`Dealership Verification Desk · Authorized Sign-off`}
-          maxWidth="680px"
-          footer={
-            <div className="modal-footer-btns row between align-center w-full">
-              <Button
-                variant="outline"
-                onClick={() => setVerifyingDemand(null)}
-                disabled={isSubmittingVerification}
-              >
-                Cancel
-              </Button>
-
-              <div className="row gap-1">
-                <Button
-                  variant="outline"
-                  className="btn-danger-outline"
-                  icon={X}
-                  onClick={() => handlePerformVerification('REJECTED')}
-                  disabled={isSubmittingVerification}
-                >
-                  Reject Demand
-                </Button>
-                <Button
-                  variant="primary"
-                  icon={CheckCircle2}
-                  onClick={() => handlePerformVerification('VERIFIED')}
-                  disabled={isSubmittingVerification}
-                >
-                  {isSubmittingVerification ? 'Saving Verification...' : 'Confirm Availability & Approve'}
-                </Button>
-              </div>
-            </div>
+          subtitle="Dealership Verification Desk · Authorized Sign-off"
+          headerAction={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setVerifyingDemand(null)}
+              disabled={isSubmittingVerification}
+            >
+              Dismiss
+            </Button>
           }
         >
           <div className="demand-verification-modal-content">
@@ -782,14 +756,15 @@ export default function DealerDashboard() {
                         <span className="micro text-success">✓ Scanned Signed Document</span>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setPreviewDoc(cert)}
-                      className="btn sm primary cursor-pointer"
+                    <a
+                      href={fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn sm primary cursor-pointer inline-flex items-center gap-1"
                     >
                       <Eye size={14} />
                       <span>Open Certificate</span>
-                    </button>
+                    </a>
                   </div>
                 );
               })()}
@@ -875,32 +850,47 @@ export default function DealerDashboard() {
                 />
               </div>
             </div>
-          </div>
-        </Modal>
-      )}
 
-      {/* MODAL 2: VEHICLE HANDOVER MODAL */}
-      {handoverOrder && (
-        <Modal
-          isOpen={!!handoverOrder}
-          onClose={() => setHandoverOrder(null)}
-          title={`Confirm Customer Vehicle Handover · ${handoverOrder.orderNo || handoverOrder.id}`}
-          subtitle="Issue Physical Gatepass & Release Vehicle"
-          maxWidth="520px"
-          footer={
-            <div className="modal-footer-btns row between align-center w-full">
-              <Button variant="outline" onClick={() => setHandoverOrder(null)}>
+            <div className="flex justify-end gap-2 pt-3 mt-3 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setVerifyingDemand(null)}
+                disabled={isSubmittingVerification}
+              >
                 Cancel
               </Button>
               <Button
-                variant="primary"
-                icon={Check}
-                onClick={handlePerformHandover}
-                disabled={isSubmittingHandover}
+                variant="outline"
+                className="btn-danger-outline"
+                icon={X}
+                onClick={() => handlePerformVerification('REJECTED')}
+                disabled={isSubmittingVerification}
               >
-                {isSubmittingHandover ? 'Processing...' : 'Confirm Delivery & Release'}
+                Reject Demand
+              </Button>
+              <Button
+                variant="primary"
+                icon={CheckCircle2}
+                onClick={() => handlePerformVerification('VERIFIED')}
+                disabled={isSubmittingVerification}
+              >
+                {isSubmittingVerification ? 'Saving Verification...' : 'Confirm Availability & Approve'}
               </Button>
             </div>
+          </div>
+        </Card>
+      )}
+
+      {/* INLINE WORKFLOW 2: VEHICLE HANDOVER */}
+      {handoverOrder && (
+        <Card
+          className="mt-4 border-primary"
+          title={`Confirm Customer Vehicle Handover · ${handoverOrder.orderNo || handoverOrder.id}`}
+          subtitle="Issue Physical Gatepass & Release Vehicle"
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setHandoverOrder(null)}>
+              Dismiss
+            </Button>
           }
         >
           <div className="p-2">
@@ -923,17 +913,22 @@ export default function DealerDashboard() {
                 onChange={(e) => setHandoverNotes(e.target.value)}
               />
             </div>
-          </div>
-        </Modal>
-      )}
 
-      {/* In-Portal Document Previewer Modal */}
-      {previewDoc && (
-        <DocumentPreviewModal
-          isOpen={!!previewDoc}
-          onClose={() => setPreviewDoc(null)}
-          doc={previewDoc}
-        />
+            <div className="flex justify-end gap-2 pt-3 border-t">
+              <Button variant="outline" onClick={() => setHandoverOrder(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                icon={Check}
+                onClick={handlePerformHandover}
+                disabled={isSubmittingHandover}
+              >
+                {isSubmittingHandover ? 'Processing...' : 'Confirm Delivery & Release'}
+              </Button>
+            </div>
+          </div>
+        </Card>
       )}
     </div>
   );

@@ -8,9 +8,6 @@ import { FilterBar } from '../../components/common/FilterBar.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { ExportButton } from '../../components/common/ExportButton.jsx';
 import { StatCard } from '../../components/common/StatCard.jsx';
-import { UserDetailsModal } from './UserDetailsModal.jsx';
-import { UserEditModal } from './UserEditModal.jsx';
-import { UserStatusModal } from './UserStatusModal.jsx';
 import { useGetUsersQuery, useUpdateUserStatusMutation } from './adminApi.js';
 import { MASTER_ROLES, ROLE_LABELS } from '../../permissions/roles.js';
 import {
@@ -50,11 +47,6 @@ export const AdminUsers = () => {
     isEmailVerified: u.isEmailVerified !== undefined ? u.isEmailVerified : true,
   }));
 
-  // Modals
-  const [selectedUserForDetails, setSelectedUserForDetails] = useState(null);
-  const [selectedUserForEdit, setSelectedUserForEdit] = useState(null);
-  const [selectedUserForStatus, setSelectedUserForStatus] = useState(null);
-
   // Success Feedback Toast
   const [toastMessage, setToastMessage] = useState('');
 
@@ -87,27 +79,6 @@ export const AdminUsers = () => {
       fetchUsers();
     } catch (err) {
       alert(err?.data?.message || err.message || 'Failed to toggle account lock state');
-    }
-  };
-
-  const handleApproveBeneficiary = async (user) => {
-    try {
-      await userService.approveBeneficiaryUser(user.id, 'APPROVED', 'Approved by administrator');
-      showToast(`✓ Beneficiary "${user.name || user.username}" approved successfully. Demand generation is now enabled.`);
-      fetchUsers();
-    } catch (err) {
-      alert(err.message || 'Failed to approve beneficiary');
-    }
-  };
-
-  const handleRejectBeneficiary = async (user) => {
-    const reason = window.prompt('Please enter the reason for rejecting this beneficiary application:', 'Documentation incomplete or invalid canteen card') || 'Application rejected by administrator';
-    try {
-      await userService.approveBeneficiaryUser(user.id, 'REJECTED', reason);
-      showToast(`Beneficiary "${user.name || user.username}" status updated to REJECTED.`);
-      fetchUsers();
-    } catch (err) {
-      alert(err.message || 'Failed to reject beneficiary');
     }
   };
 
@@ -256,7 +227,7 @@ export const AdminUsers = () => {
             type="button"
             className="header-icon-btn circle btn-size-30 text-slate-600"
             title="Inspect Full User File"
-            onClick={() => setSelectedUserForDetails(u)}
+            onClick={() => navigate(`/admin/users/${u.id || u._id}`)}
           >
             <Eye size={15} />
           </button>
@@ -265,18 +236,9 @@ export const AdminUsers = () => {
             type="button"
             className="header-icon-btn circle btn-size-30 text-brand"
             title="Edit User Profile"
-            onClick={() => setSelectedUserForEdit(u)}
+            onClick={() => navigate(`/admin/users/${u.id || u._id}/edit`)}
           >
             <Edit2 size={15} />
-          </button>
-
-          <button
-            type="button"
-            className="header-icon-btn circle btn-size-30 text-amber"
-            title="Change Account Security Status"
-            onClick={() => setSelectedUserForStatus(u)}
-          >
-            <Shield size={15} />
           </button>
 
           <button
@@ -392,31 +354,6 @@ export const AdminUsers = () => {
           emptyMessage="Try adjusting your search criteria or role filters to view portal accounts."
         />
       </Card>
-
-      {/* 1. USER DETAILS INSPECTOR MODAL */}
-      <UserDetailsModal
-        isOpen={!!selectedUserForDetails}
-        user={selectedUserForDetails}
-        onClose={() => setSelectedUserForDetails(null)}
-        onEdit={(u) => setSelectedUserForEdit(u)}
-        onChangeStatus={(u) => setSelectedUserForStatus(u)}
-      />
-
-      {/* 3. USER EDIT MODAL */}
-      <UserEditModal
-        isOpen={!!selectedUserForEdit}
-        user={selectedUserForEdit}
-        onClose={() => setSelectedUserForEdit(null)}
-        onUserUpdated={handleUserUpdated}
-      />
-
-      {/* 4. USER STATUS CHANGE MODAL */}
-      <UserStatusModal
-        isOpen={!!selectedUserForStatus}
-        user={selectedUserForStatus}
-        onClose={() => setSelectedUserForStatus(null)}
-        onStatusUpdated={handleStatusUpdated}
-      />
     </div>
   );
 };

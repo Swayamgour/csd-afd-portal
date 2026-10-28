@@ -8,7 +8,8 @@ import {
   Clock,
   AlertTriangle,
   RotateCcw,
-  Eye
+  Eye,
+  X
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
@@ -16,7 +17,6 @@ import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
 import { useGetPaymentsQuery, useVerifyPaymentMutation } from '../payment/paymentApi.js';
 
@@ -268,14 +268,18 @@ export default function CsdPayments() {
         )}
       </Card>
 
-      {/* Payment Inspection Modal */}
+      {/* Payment Inspection Inline Card */}
       {selectedPayment && (
-        <Modal
-          isOpen={Boolean(selectedPayment)}
-          onClose={() => setSelectedPayment(null)}
-          title={`Payment Dossier: ${selectedPayment.paymentNo || selectedPayment._id?.slice(-8)}`}
-          maxWidth="640px"
-        >
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">Payment Dossier: {selectedPayment.paymentNo || selectedPayment._id?.slice(-8)}</h3>
+              <p className="micro muted">Reviewing payment verification and cyber treasury settlement details</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setSelectedPayment(null)}>
+              Close Dossier
+            </Button>
+          </div>
           <div className="director-modal-form">
             <div className="csd-card-preview-box">
               <div className="csd-card-preview-header">
@@ -330,7 +334,7 @@ export default function CsdPayments() {
               </div>
             </div>
 
-            <div className="director-modal-actions">
+            <div className="row gap-1 justify-end mt-2">
               {selectedPayment.status !== 'SUCCESS' && selectedPayment.status !== 'VERIFIED' && (
                 <Button
                   variant="primary"
@@ -344,11 +348,11 @@ export default function CsdPayments() {
                 </Button>
               )}
               <Button variant="outline" onClick={() => setSelectedPayment(null)}>
-                Close
+                Close Dossier
               </Button>
             </div>
           </div>
-        </Modal>
+        </Card>
       )}
     </div>
   );

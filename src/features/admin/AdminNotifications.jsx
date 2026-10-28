@@ -4,7 +4,6 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { DataTable } from '../../components/common/DataTable';
 import { Button } from '../../components/common/Button';
-import { Modal } from '../../components/common/Modal';
 import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
 import {
@@ -112,6 +111,54 @@ export const AdminNotifications = () => {
         <div className="alert alert-success mb-lg">✓ {sentMsg}</div>
       )}
 
+      {/* Broadcast Notification Inline Form Card */}
+      {showModal && (
+        <Card
+          className="mb-4 border-primary"
+          title="Dispatch System Notification"
+          subtitle="Broadcast official alert across portal roles"
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+          }
+        >
+          <form onSubmit={handleBroadcast} className="space-y-4">
+            <Input
+              label="Notice Title"
+              placeholder="e.g. Scheduled Maintenance Notice"
+              value={newNotice.title}
+              onChange={(e) => setNewNotice({ ...newNotice, title: e.target.value })}
+              required
+            />
+            <Select
+              label="Target Role"
+              value={newNotice.targetRole}
+              onChange={(e) => setNewNotice({ ...newNotice, targetRole: e.target.value })}
+              options={[
+                { value: 'ALL', label: 'All Roles (Global)' },
+                ...Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v })),
+              ]}
+            />
+            <div className="form-field">
+              <label className="form-label">Message Content</label>
+              <textarea
+                rows={4}
+                className="form-control"
+                placeholder="Enter system announcement..."
+                value={newNotice.message}
+                onChange={(e) => setNewNotice({ ...newNotice, message: e.target.value })}
+                required
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-3 border-t">
+              <Button variant="outline" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
+              <Button type="submit" loading={isBroadcasting}>Broadcast</Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
       <Card>
         <DataTable
           columns={columns}
@@ -120,42 +167,6 @@ export const AdminNotifications = () => {
           emptyMessage="No broadcast notifications logged."
         />
       </Card>
-
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Dispatch System Notification">
-        <form onSubmit={handleBroadcast} className="flex-col-gap-md">
-          <Input
-            label="Notice Title"
-            placeholder="e.g. Scheduled Maintenance Notice"
-            value={newNotice.title}
-            onChange={(e) => setNewNotice({ ...newNotice, title: e.target.value })}
-            required
-          />
-          <Select
-            label="Target Role"
-            value={newNotice.targetRole}
-            onChange={(e) => setNewNotice({ ...newNotice, targetRole: e.target.value })}
-            options={[
-              { value: 'ALL', label: 'All Roles (Global)' },
-              ...Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v })),
-            ]}
-          />
-          <div className="form-field">
-            <label className="form-label">Message Content</label>
-            <textarea
-              rows={4}
-              className="form-control"
-              placeholder="Enter system announcement..."
-              value={newNotice.message}
-              onChange={(e) => setNewNotice({ ...newNotice, message: e.target.value })}
-              required
-            />
-          </div>
-          <div className="flex-end-gap-sm mt-sm">
-            <Button variant="outline" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button type="submit" loading={isBroadcasting}>Broadcast</Button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 };

@@ -16,7 +16,6 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import {
   useGetOemOrdersQuery,
@@ -282,193 +281,195 @@ export default function OemOrders() {
         />
       </Card>
 
-      {/* Update Order Status / Allocate VIN Modal */}
-      <Modal
-        isOpen={Boolean(selectedOrder)}
-        onClose={() => setSelectedOrder(null)}
-        title={`Update Order Status · ${selectedOrder?.orderNo || '...'}`}
-        subtitle="Advance order through factory fulfillment lifecycle with tracking telemetry"
-        maxWidth="560px"
-        footer={
-          <div className="flex justify-end gap-2 w-full">
-            <Button variant="outline" onClick={() => setSelectedOrder(null)}>
+      {/* Update Order Status / Allocate VIN Inline Section */}
+      {Boolean(selectedOrder) && (
+        <Card
+          className="mt-4 border-primary"
+          title={`Update Order Status · ${selectedOrder?.orderNo || '...'}`}
+          subtitle="Advance order through factory fulfillment lifecycle with tracking telemetry"
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setSelectedOrder(null)}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              loading={isUpdating}
-              onClick={handleStatusSubmit}
-            >
-              Confirm Status Update
+          }
+        >
+          <form onSubmit={handleStatusSubmit} className="space-y-4">
+            {formError && (
+              <div className="p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
+                <AlertCircle size={16} />
+                <span>{formError}</span>
+              </div>
+            )}
+
+            <div className="form-field">
+              <label className="form-label">Target Lifecycle State <span className="req-star">*</span></label>
+              <select
+                className="form-control"
+                value={statusChoice}
+                onChange={(e) => setStatusChoice(e.target.value)}
+                required
+              >
+                {selectedOrder?.status === 'PLACED' && (
+                  <option value="PROCESSING">PROCESSING (Allocate Chassis & Engine)</option>
+                )}
+                {selectedOrder?.status === 'PROCESSING' && (
+                  <option value="DISPATCHED">DISPATCHED (Factory Gate-Out / Transit)</option>
+                )}
+                {selectedOrder?.status === 'DISPATCHED' && (
+                  <option value="DELIVERED">DELIVERED (Handover Stamped by Dealer)</option>
+                )}
+                <option value={selectedOrder?.status}>{selectedOrder?.status} (Update Details Only)</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="form-field">
+                <label className="form-label">Chassis / VIN Number</label>
+                <input
+                  type="text"
+                  className="form-control font-mono uppercase"
+                  placeholder="e.g. MA1TA2...9876"
+                  value={chassisInput}
+                  onChange={(e) => setChassisInput(e.target.value)}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">Engine Number</label>
+                <input
+                  type="text"
+                  className="form-control font-mono uppercase"
+                  placeholder="e.g. E4N123456"
+                  value={engineInput}
+                  onChange={(e) => setEngineInput(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="form-field">
+                <label className="form-label">Commercial Invoice Number</label>
+                <input
+                  type="text"
+                  className="form-control font-mono"
+                  placeholder="e.g. INV-2026-9812"
+                  value={invoiceInput}
+                  onChange={(e) => setInvoiceInput(e.target.value)}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">Transit LR / Tracking No.</label>
+                <input
+                  type="text"
+                  className="form-control font-mono"
+                  placeholder="e.g. TRK-MH-9988"
+                  value={trackingInput}
+                  onChange={(e) => setTrackingInput(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="form-field">
+              <label className="form-label">Fulfillment Note / Remarks</label>
+              <textarea
+                className="form-control"
+                rows={2}
+                placeholder="Factory dispatch notes, carrier name, or handover remarks..."
+                value={noteInput}
+                onChange={(e) => setNoteInput(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t">
+              <Button type="button" variant="outline" onClick={() => setSelectedOrder(null)}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={isUpdating}
+              >
+                Confirm Status Update
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
+
+      {/* Order Details Inline Dossier */}
+      {Boolean(detailOrderId) && (
+        <Card
+          className="mt-4 border-primary"
+          title={`Order Details: ${orderDetail?.orderNo || '...'}`}
+          subtitle="Institutional CSD Supply Order Dossier"
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setDetailOrderId(null)}>
+              Close Dossier
             </Button>
-          </div>
-        }
-      >
-        <form onSubmit={handleStatusSubmit} className="space-y-4">
-          {formError && (
-            <div className="p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
-              <AlertCircle size={16} />
-              <span>{formError}</span>
-            </div>
-          )}
-
-          <div className="form-field">
-            <label className="form-label">Target Lifecycle State <span className="req-star">*</span></label>
-            <select
-              className="form-control"
-              value={statusChoice}
-              onChange={(e) => setStatusChoice(e.target.value)}
-              required
-            >
-              {selectedOrder?.status === 'PLACED' && (
-                 <option value="PROCESSING">PROCESSING (Allocate Chassis & Engine)</option>
-              )}
-              {selectedOrder?.status === 'PROCESSING' && (
-                 <option value="DISPATCHED">DISPATCHED (Factory Gate-Out / Transit)</option>
-              )}
-              {selectedOrder?.status === 'DISPATCHED' && (
-                 <option value="DELIVERED">DELIVERED (Handover Stamped by Dealer)</option>
-              )}
-              <option value={selectedOrder?.status}>{selectedOrder?.status} (Update Details Only)</option>
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="form-field">
-              <label className="form-label">Chassis / VIN Number</label>
-              <input
-                type="text"
-                className="form-control font-mono uppercase"
-                placeholder="e.g. MA1TA2...9876"
-                value={chassisInput}
-                onChange={(e) => setChassisInput(e.target.value)}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">Engine Number</label>
-              <input
-                type="text"
-                className="form-control font-mono uppercase"
-                placeholder="e.g. E4N123456"
-                value={engineInput}
-                onChange={(e) => setEngineInput(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="form-field">
-              <label className="form-label">Commercial Invoice Number</label>
-              <input
-                type="text"
-                className="form-control font-mono"
-                placeholder="e.g. INV-2026-9812"
-                value={invoiceInput}
-                onChange={(e) => setInvoiceInput(e.target.value)}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">Transit LR / Tracking No.</label>
-              <input
-                type="text"
-                className="form-control font-mono"
-                placeholder="e.g. TRK-MH-9988"
-                value={trackingInput}
-                onChange={(e) => setTrackingInput(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">Fulfillment Note / Remarks</label>
-            <textarea
-              className="form-control"
-              rows={2}
-              placeholder="Factory dispatch notes, carrier name, or handover remarks..."
-              value={noteInput}
-              onChange={(e) => setNoteInput(e.target.value)}
-            />
-          </div>
-        </form>
-      </Modal>
-
-      {/* Order Details Modal */}
-      <Modal
-        isOpen={Boolean(detailOrderId)}
-        onClose={() => setDetailOrderId(null)}
-        title={`Order Details: ${orderDetail?.orderNo || '...'}`}
-        subtitle="Institutional CSD Supply Order Dossier"
-        maxWidth="640px"
-        footer={
-          <div className="flex justify-end w-full">
-            <Button variant="outline" onClick={() => setDetailOrderId(null)}>
-              Close
-            </Button>
-          </div>
-        }
-      >
-        {loadingDetail ? (
-          <div className="py-8 text-center text-muted">Loading order details...</div>
-        ) : (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg text-sm">
-              <div>
-                <span className="text-muted block text-xs">Order Number:</span>
-                <span className="font-mono font-semibold text-brand">{orderDetail?.orderNo}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Current Status:</span>
-                <StatusBadge status={orderDetail?.status} />
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Dealership:</span>
-                <span className="font-medium">{orderDetail?.dealerId?.name || '—'}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Regional Depot:</span>
-                <span>{orderDetail?.depotId?.name || '—'}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Order Amount:</span>
-                <span className="font-mono font-bold text-slate-900">
-                  {formatCurrency(orderDetail?.amount || 0)}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Created Date:</span>
-                <span>{orderDetail?.createdAt ? new Date(orderDetail.createdAt).toLocaleString() : '—'}</span>
-              </div>
-            </div>
-
-            {/* Vehicle Delivery & Allocation Info */}
-            <div className="p-3 border rounded-lg bg-white text-sm">
-              <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-                Factory Dispatch & VIN Telemetry
-              </h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+          }
+        >
+          {loadingDetail ? (
+            <div className="py-8 text-center text-muted">Loading order details...</div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">
                 <div>
-                  <span className="text-muted block">Chassis / VIN:</span>
-                  <span className="font-mono font-semibold">
-                    {orderDetail?.delivery?.chassisNo || orderDetail?.delivery?.trackingNo || '—'}
+                  <span className="text-muted block text-xs">Order Number:</span>
+                  <span className="font-mono font-semibold text-brand">{orderDetail?.orderNo}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Current Status:</span>
+                  <StatusBadge status={orderDetail?.status} />
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Dealership:</span>
+                  <span className="font-medium">{orderDetail?.dealerId?.name || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Regional Depot:</span>
+                  <span>{orderDetail?.depotId?.name || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Order Amount:</span>
+                  <span className="font-mono font-bold text-slate-900">
+                    {formatCurrency(orderDetail?.amount || 0)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted block">Engine Number:</span>
-                  <span className="font-mono font-semibold">{orderDetail?.delivery?.engineNo || '—'}</span>
+                  <span className="text-muted block text-xs">Created Date:</span>
+                  <span>{orderDetail?.createdAt ? new Date(orderDetail.createdAt).toLocaleString() : '—'}</span>
                 </div>
-                <div>
-                  <span className="text-muted block">Invoice Number:</span>
-                  <span className="font-mono">{orderDetail?.delivery?.invoiceNo || '—'}</span>
-                </div>
-                <div>
-                  <span className="text-muted block">Dispatch Remarks:</span>
-                  <span>{orderDetail?.delivery?.remarks || '—'}</span>
+              </div>
+
+              {/* Vehicle Delivery & Allocation Info */}
+              <div className="p-3 border rounded-lg bg-white text-sm">
+                <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                  Factory Dispatch & VIN Telemetry
+                </h4>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-muted block">Chassis / VIN:</span>
+                    <span className="font-mono font-semibold">
+                      {orderDetail?.delivery?.chassisNo || orderDetail?.delivery?.trackingNo || '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted block">Engine Number:</span>
+                    <span className="font-mono font-semibold">{orderDetail?.delivery?.engineNo || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted block">Invoice Number:</span>
+                    <span className="font-mono">{orderDetail?.delivery?.invoiceNo || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted block">Dispatch Remarks:</span>
+                    <span>{orderDetail?.delivery?.remarks || '—'}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </Modal>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

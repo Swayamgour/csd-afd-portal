@@ -15,7 +15,6 @@ import {
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import { LoadingState, ErrorState } from '../../components/common/States.jsx';
 import { useGetOemProfileQuery, useUpdateOemProfileMutation } from './oemApi.js';
@@ -242,131 +241,135 @@ export default function OemProfile() {
         </Card>
       </div>
 
-      {/* Edit Profile Modal */}
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Edit Corporate Institutional Profile"
-        subtitle="Update manufacturer communication addresses and designated contact person"
-        maxWidth="600px"
-        footer={
-          <div className="flex justify-end gap-2 w-full">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+      {/* Edit Profile Section */}
+      {modalOpen && (
+        <Card
+          className="mt-4 border-primary"
+          title="Edit Corporate Institutional Profile"
+          subtitle="Update manufacturer communication addresses and designated contact person"
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              loading={isUpdating}
-              onClick={handleSubmit}
-            >
-              Save Profile
-            </Button>
-          </div>
-        }
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {formError && (
-            <div className="p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
-              <AlertCircle size={16} />
-              <span>{formError}</span>
-            </div>
-          )}
+          }
+        >
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {formError && (
+              <div className="p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
+                <AlertCircle size={16} />
+                <span>{formError}</span>
+              </div>
+            )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="form-field">
-              <label className="form-label">Legal Entity Name</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formState.legalName}
-                onChange={(e) => setFormState({ ...formState, legalName: e.target.value })}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">Short Name / Brand</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formState.shortName}
-                onChange={(e) => setFormState({ ...formState, shortName: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">Registered Corporate Address</label>
-            <input
-              type="text"
-              className="form-control"
-              value={formState.address}
-              onChange={(e) => setFormState({ ...formState, address: e.target.value })}
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="form-field">
-              <label className="form-label">City</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formState.city}
-                onChange={(e) => setFormState({ ...formState, city: e.target.value })}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">State</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formState.state}
-                onChange={(e) => setFormState({ ...formState, state: e.target.value })}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">Pincode</label>
-              <input
-                type="text"
-                className="form-control font-mono"
-                value={formState.pincode}
-                onChange={(e) => setFormState({ ...formState, pincode: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="p-3 bg-slate-50 rounded-lg space-y-3">
-            <h4 className="text-xs font-semibold text-slate-700 uppercase">Designated Contact Person</h4>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <div className="form-field">
-                <label className="form-label">Name</label>
+                <label className="form-label">Legal Entity Name</label>
                 <input
                   type="text"
                   className="form-control"
-                  value={formState.contactPersonName}
-                  onChange={(e) => setFormState({ ...formState, contactPersonName: e.target.value })}
+                  value={formState.legalName}
+                  onChange={(e) => setFormState({ ...formState, legalName: e.target.value })}
                 />
               </div>
               <div className="form-field">
-                <label className="form-label">Email</label>
+                <label className="form-label">Short Name / Brand</label>
                 <input
-                  type="email"
+                  type="text"
                   className="form-control"
-                  value={formState.contactPersonEmail}
-                  onChange={(e) => setFormState({ ...formState, contactPersonEmail: e.target.value })}
+                  value={formState.shortName}
+                  onChange={(e) => setFormState({ ...formState, shortName: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="form-field">
+              <label className="form-label">Registered Corporate Address</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formState.address}
+                onChange={(e) => setFormState({ ...formState, address: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="form-field">
+                <label className="form-label">City</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formState.city}
+                  onChange={(e) => setFormState({ ...formState, city: e.target.value })}
                 />
               </div>
               <div className="form-field">
-                <label className="form-label">Phone</label>
+                <label className="form-label">State</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formState.state}
+                  onChange={(e) => setFormState({ ...formState, state: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label className="form-label">Pincode</label>
                 <input
                   type="text"
                   className="form-control font-mono"
-                  value={formState.contactPersonPhone}
-                  onChange={(e) => setFormState({ ...formState, contactPersonPhone: e.target.value })}
+                  value={formState.pincode}
+                  onChange={(e) => setFormState({ ...formState, pincode: e.target.value })}
                 />
               </div>
             </div>
-          </div>
-        </form>
-      </Modal>
+
+            <div className="p-3 bg-slate-50 rounded-lg space-y-3 border">
+              <h4 className="text-xs font-semibold text-slate-700 uppercase">Designated Contact Person</h4>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="form-field">
+                  <label className="form-label">Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={formState.contactPersonName}
+                    onChange={(e) => setFormState({ ...formState, contactPersonName: e.target.value })}
+                  />
+                </div>
+                <div className="form-field">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={formState.contactPersonEmail}
+                    onChange={(e) => setFormState({ ...formState, contactPersonEmail: e.target.value })}
+                  />
+                </div>
+                <div className="form-field">
+                  <label className="form-label">Phone</label>
+                  <input
+                    type="text"
+                    className="form-control font-mono"
+                    value={formState.contactPersonPhone}
+                    onChange={(e) => setFormState({ ...formState, contactPersonPhone: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t">
+              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                loading={isUpdating}
+              >
+                Save Profile
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
     </div>
   );
 }

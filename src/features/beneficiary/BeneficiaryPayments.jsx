@@ -21,8 +21,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
-import { PaymentDetailsModal } from '../../components/modals/PaymentDetailsModal.jsx';
+import InlinePaymentCard from '../../components/common/InlinePaymentCard.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import {
   useGetPaymentsQuery,
@@ -444,33 +443,36 @@ export default function BeneficiaryPayments() {
         />
       </Card>
 
-      {/* 7. Modal 1: Bank Transfer (NEFT/RTGS) Details & UTR Upload Modal */}
+      {/* 7. Inline Section: Bank Transfer (NEFT/RTGS) Details & UTR Upload */}
       {utrModalOpen && selectedDemand && (
-        <PaymentDetailsModal
-          isOpen={utrModalOpen}
-          onClose={() => {
-            setUtrModalOpen(false);
-            setSelectedDemand(null);
-          }}
-          demand={selectedDemand}
-          onSubmitSuccess={handleUtrSubmitSuccess}
-        />
+        <div className="mt-4">
+          <InlinePaymentCard
+            demand={selectedDemand}
+            onCancel={() => {
+              setUtrModalOpen(false);
+              setSelectedDemand(null);
+            }}
+            onPaymentSubmitted={() => {
+              setUtrModalOpen(false);
+              setSelectedDemand(null);
+              showToast('success', 'Bank Transfer UTR details submitted successfully! Awaiting depot verification.');
+              refetchDemands();
+              refetchPayments();
+            }}
+          />
+        </div>
       )}
 
-      {/* 8. Modal 2: Online Cyber Treasury Gateway Modal */}
-      <Modal
-        isOpen={payModalOpen}
-        onClose={() => {
-          setPayModalOpen(false);
-          setSelectedDemand(null);
-        }}
-        title="CSD AFD Secure Cyber Treasury Gateway"
-        subtitle={`Sanctioned Demand: ${selectedDemand?.demandNo || selectedDemand?._id} · ${selectedDemand?.productId?.name || selectedDemand?.productName || 'AFD Item'}`}
-        maxWidth="520px"
-        footer={
-          <div className="modal-footer-btns">
+      {/* 8. Inline Section: Online Cyber Treasury Gateway */}
+      {payModalOpen && selectedDemand && (
+        <Card
+          className="mt-4 border-2 border-brand"
+          title="CSD AFD Secure Cyber Treasury Gateway"
+          subtitle={`Sanctioned Demand: ${selectedDemand?.demandNo || selectedDemand?._id} · ${selectedDemand?.productId?.name || selectedDemand?.productName || 'AFD Item'}`}
+          headerActions={
             <Button
               variant="outline"
+              size="sm"
               onClick={() => {
                 setPayModalOpen(false);
                 setSelectedDemand(null);
@@ -479,47 +481,60 @@ export default function BeneficiaryPayments() {
             >
               Cancel
             </Button>
-            <Button variant="primary" loading={processing} onClick={handleCompletePayment}>
-              Authorize &amp; Pay ₹ {(Number(selectedDemand?.totalAmount || selectedDemand?.totalPrice || selectedDemand?.netPayable || 0)).toLocaleString('en-IN')}
-            </Button>
-          </div>
-        }
-      >
-        <div className="payment-modal-body">
-          <div className="panel p-3 bg-slate-50 border border-slate-200 rounded text-center mb-3">
-            <span className="small muted block">Total Sanctioned Net Price</span>
-            <p className="h2 text-brand font-bold my-1">
-              ₹ {(Number(selectedDemand?.totalAmount || selectedDemand?.totalPrice || selectedDemand?.netPayable || 0)).toLocaleString('en-IN')}
+          }
+        >
+          <div className="payment-modal-body">
+            <div className="panel p-3 bg-slate-50 border border-slate-200 rounded text-center mb-3">
+              <span className="small muted block">Total Sanctioned Net Price</span>
+              <p className="h2 text-brand font-bold my-1">
+                ₹ {(Number(selectedDemand?.totalAmount || selectedDemand?.totalPrice || selectedDemand?.netPayable || 0)).toLocaleString('en-IN')}
+              </p>
+              <span className="small text-green font-semibold">● Official Zero-Surcharge Gateway for Defence Personnel</span>
+            </div>
+
+            <label className="form-label">Choose Payment Gateway Channel</label>
+            <div className="payment-modes-grid row gap-1 mb-3">
+              <button
+                type="button"
+                className={`panel p-2 flex-1 text-left ${paymentMode === 'sbi_epay' ? 'border-brand bg-brand-soft' : ''}`}
+                onClick={() => setPaymentMode('sbi_epay')}
+              >
+                <span className="font-semibold small block">SBI Cyber Treasury (e-Pay)</span>
+                <span className="micro muted">Net Banking / Direct Bank Debit</span>
+              </button>
+
+              <button
+                type="button"
+                className={`panel p-2 flex-1 text-left ${paymentMode === 'bharatkosh' ? 'border-brand bg-brand-soft' : ''}`}
+                onClick={() => setPaymentMode('bharatkosh')}
+              >
+                <span className="font-semibold small block">Bharatkosh Portal</span>
+                <span className="micro muted">Govt. Non-Tax Receipt Portal</span>
+              </button>
+            </div>
+
+            <p className="micro muted mb-3">
+              *Security Directive: Transactions are processed through NIC/SBI Cyber Treasury servers with 256-bit encryption. Never share your OTP with anyone.
             </p>
-            <span className="small text-green font-semibold">● Official Zero-Surcharge Gateway for Defence Personnel</span>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPayModalOpen(false);
+                  setSelectedDemand(null);
+                }}
+                disabled={processing}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" loading={processing} onClick={handleCompletePayment}>
+                Authorize &amp; Pay ₹ {(Number(selectedDemand?.totalAmount || selectedDemand?.totalPrice || selectedDemand?.netPayable || 0)).toLocaleString('en-IN')}
+              </Button>
+            </div>
           </div>
-
-          <label className="form-label">Choose Payment Gateway Channel</label>
-          <div className="payment-modes-grid row gap-1 mb-3">
-            <button
-              type="button"
-              className={`panel p-2 flex-1 text-left ${paymentMode === 'sbi_epay' ? 'border-brand bg-brand-soft' : ''}`}
-              onClick={() => setPaymentMode('sbi_epay')}
-            >
-              <span className="font-semibold small block">SBI Cyber Treasury (e-Pay)</span>
-              <span className="micro muted">Net Banking / Direct Bank Debit</span>
-            </button>
-
-            <button
-              type="button"
-              className={`panel p-2 flex-1 text-left ${paymentMode === 'bharatkosh' ? 'border-brand bg-brand-soft' : ''}`}
-              onClick={() => setPaymentMode('bharatkosh')}
-            >
-              <span className="font-semibold small block">Bharatkosh Portal</span>
-              <span className="micro muted">Govt. Non-Tax Receipt Portal</span>
-            </button>
-          </div>
-
-          <p className="micro muted mb-0">
-            *Security Directive: Transactions are processed through NIC/SBI Cyber Treasury servers with 256-bit encryption. Never share your OTP with anyone.
-          </p>
-        </div>
-      </Modal>
+        </Card>
+      )}
     </div>
   );
 }

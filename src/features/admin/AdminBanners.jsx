@@ -4,7 +4,6 @@ import { StatCard } from '../../components/common/StatCard.jsx';
 import { Card } from '../../components/common/Card.jsx';
 import { DataTable } from '../../components/common/DataTable.jsx';
 import { Button } from '../../components/common/Button.jsx';
-import { Modal } from '../../components/common/Modal.jsx';
 import {
   useGetAllAdminBannersQuery,
   useCreateBannerMutation,
@@ -88,7 +87,7 @@ export default function AdminBanners() {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.imageUrl.trim()) {
-      alert('Please provide banner name and image URL.');
+      showToast('⚠️ Please provide banner name and image URL.');
       return;
     }
 
@@ -105,7 +104,7 @@ export default function AdminBanners() {
       }
       setModalOpen(false);
     } catch (err) {
-      alert(err?.data?.message || err.message || 'Operation failed');
+      showToast('⚠️ ' + (err?.data?.message || err.message || 'Operation failed'));
     }
   };
 
@@ -117,7 +116,7 @@ export default function AdminBanners() {
       }).unwrap();
       showToast(`✓ Banner "${b.name}" ${!b.isActive ? 'activated' : 'deactivated'}.`);
     } catch (err) {
-      alert(err?.data?.message || err.message || 'Failed to toggle status');
+      showToast('⚠️ ' + (err?.data?.message || err.message || 'Failed to toggle status'));
     }
   };
 
@@ -128,7 +127,7 @@ export default function AdminBanners() {
       showToast(`✓ Banner "${deleteModalBanner.name}" deleted successfully.`);
       setDeleteModalBanner(null);
     } catch (err) {
-      alert(err?.data?.message || err.message || 'Failed to delete banner');
+      showToast('⚠️ ' + (err?.data?.message || err.message || 'Failed to delete banner'));
     }
   };
 
@@ -335,12 +334,15 @@ export default function AdminBanners() {
 
       {/* CREATE / EDIT MODAL */}
       {modalOpen && (
-        <Modal
-          isOpen={true}
-          onClose={() => setModalOpen(false)}
+        <Card
+          className="mt-4 border-primary"
           title={editingBanner ? `Edit Banner: ${editingBanner.name}` : 'Add New Banner'}
           subtitle="Enter image URL/path and placement settings for dynamic portal display"
-          maxWidth="560px"
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+          }
         >
           <form onSubmit={handleFormSubmit} className="director-modal-form">
             <div className="form-field">
@@ -460,42 +462,41 @@ export default function AdminBanners() {
               </Button>
             </div>
           </form>
-        </Modal>
+        </Card>
       )}
 
-      {/* DELETE CONFIRM MODAL */}
+      {/* DELETE CONFIRM INLINE CARD */}
       {deleteModalBanner && (
-        <Modal
-          isOpen={true}
-          onClose={() => setDeleteModalBanner(null)}
-          title="Delete Banner"
-          maxWidth="460px"
+        <Card
+          className="mt-4 border-danger"
+          title={`Confirm Deletion: "${deleteModalBanner.name}"`}
+          subtitle="This graphic will immediately stop appearing on the portal"
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setDeleteModalBanner(null)}>
+              Cancel
+            </Button>
+          }
         >
-          <div className="flex-align-center-gap-sm mb-md">
-            <AlertTriangle size={24} className="text-danger flex-shrink-0" />
-            <div>
-              <p className="portal-profile-name mb-xs">
-                Are you sure you want to delete banner <strong>"{deleteModalBanner.name}"</strong>?
-              </p>
-              <p className="portal-subtext-muted fs-xs m-0">
-                This graphic will immediately stop appearing on the portal.
-              </p>
-            </div>
+          <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200 text-sm mb-3">
+            <AlertTriangle size={24} className="text-red-600 flex-shrink-0" />
+            <p className="text-red-800 m-0">
+              Are you sure you want to permanently remove this dynamic banner from active portal rotations?
+            </p>
           </div>
-          <div className="portal-flex-end gap-sm">
+          <div className="flex justify-end gap-2 pt-2 border-t">
             <Button variant="outline" size="sm" onClick={() => setDeleteModalBanner(null)}>
               Cancel
             </Button>
             <Button
               size="sm"
-              className="portal-btn-deny-danger"
+              variant="danger"
               disabled={isDeleting}
               onClick={handleDelete}
             >
               {isDeleting ? 'Deleting...' : 'Confirm Delete'}
             </Button>
           </div>
-        </Modal>
+        </Card>
       )}
     </div>
   );

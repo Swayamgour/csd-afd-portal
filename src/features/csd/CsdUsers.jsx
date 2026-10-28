@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, Search, UserCheck, ShieldAlert, KeyRound, CheckCircle2 } from 'lucide-react';
+import { PlusCircle, Search, UserCheck, ShieldAlert, KeyRound, CheckCircle2, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
@@ -8,7 +8,6 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import FilterBar from '../../components/common/FilterBar.jsx';
 import Select from '../../components/common/Select.jsx';
 import SearchInput from '../../components/common/SearchInput.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import Input from '../../components/common/Input.jsx';
 import { useGetUsersQuery, useCreateUserMutation, useUpdateUserStatusMutation } from '../admin/adminApi.js';
 import { ROLE_LABELS, ROLES } from '../../permissions/roles.js';
@@ -215,20 +214,18 @@ export default function CsdUsers() {
         />
       </Card>
 
-      {/* User Details Modal */}
+      {/* User Details Section */}
       {selectedUser && (
-        <Modal
-          isOpen={!!selectedUser}
-          onClose={() => setSelectedUser(null)}
-          title={`User Dossier · ${selectedUser.name}`}
-          subtitle={`ID: ${selectedUser.id} · Role: ${ROLE_LABELS[selectedUser.role]}`}
-          maxWidth="520px"
-          footer={
-            <Button variant="outline" onClick={() => setSelectedUser(null)}>
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">User Dossier · {selectedUser.name}</h3>
+              <p className="micro muted">ID: {selectedUser.id} · Role: {ROLE_LABELS[selectedUser.role]}</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setSelectedUser(null)}>
               Close Dossier
             </Button>
-          }
-        >
+          </div>
           <div className="info-kv-list">
             <div className="kv-row between small py-1 border-bottom">
               <span className="muted">User ID:</span>
@@ -259,79 +256,84 @@ export default function CsdUsers() {
               <StatusBadge status={selectedUser.status} />
             </div>
           </div>
-        </Modal>
+        </Card>
       )}
 
-      {/* Create User Modal */}
-      <Modal
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        title="Provision New Official User"
-        subtitle="Assign portal authority to Departmental Official, Depot Manager, or URC Officer"
-        maxWidth="540px"
-        footer={
-          <div className="modal-footer-btns">
-            <Button variant="outline" onClick={() => setCreateModalOpen(false)}>
+      {/* Create User Card */}
+      {createModalOpen && (
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">Provision New Official User</h3>
+              <p className="micro muted">Assign portal authority to Departmental Official, Depot Manager, or URC Officer</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setCreateModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleCreateUser}>
-              Provision User
-            </Button>
           </div>
-        }
-      >
-        <div className="create-user-form">
-          <Input
-            id="newUserName"
-            label="Full Name"
-            placeholder="e.g. Lt. Col. R. K. Singh"
-            value={newUserData.name}
-            onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
-            required
-            className="mb-2"
-          />
+          <form onSubmit={handleCreateUser} className="create-user-form">
+            <Input
+              id="newUserName"
+              label="Full Name"
+              placeholder="e.g. Lt. Col. R. K. Singh"
+              value={newUserData.name}
+              onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
+              required
+              className="mb-2"
+            />
 
-          <Select
-            label="Portal Role"
-            value={newUserData.role}
-            onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value })}
-            options={Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v }))}
-            required
-            className="mb-2"
-          />
+            <Select
+              label="Portal Role"
+              value={newUserData.role}
+              onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value })}
+              options={Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v }))}
+              required
+              className="mb-2"
+            />
 
-          <div className="row gap-1 mb-2">
-            <div className="flex-1">
-              <Input
-                id="newUserEmail"
-                label="Official Email"
-                placeholder="officer@gov.in"
-                value={newUserData.email}
-                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
-                required
-              />
+            <div className="row gap-1 mb-2">
+              <div className="flex-1">
+                <Input
+                  id="newUserEmail"
+                  label="Official Email"
+                  placeholder="officer@gov.in"
+                  value={newUserData.email}
+                  onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="flex-1">
+                <Input
+                  id="newUserPhone"
+                  label="Mobile Number"
+                  placeholder="+91 98765 00000"
+                  value={newUserData.phone}
+                  onChange={(e) => setNewUserData({ ...newUserData, phone: e.target.value })}
+                  required
+                />
+              </div>
             </div>
-            <div className="flex-1">
-              <Input
-                id="newUserPhone"
-                label="Mobile Number"
-                placeholder="+91 98765 00000"
-                value={newUserData.phone}
-                onChange={(e) => setNewUserData({ ...newUserData, phone: e.target.value })}
-                required
-              />
-            </div>
-          </div>
 
-          <Input
-            id="newUserDesig"
-            label="Designation / Branch"
-            placeholder="e.g. Regional Depot Manager / Accounts Desk"
-            value={newUserData.designation}
-            onChange={(e) => setNewUserData({ ...newUserData, designation: e.target.value })}
-          />
-        </div>
-      </Modal>
+            <Input
+              id="newUserDesig"
+              label="Designation / Branch"
+              placeholder="e.g. Regional Depot Manager / Accounts Desk"
+              value={newUserData.designation}
+              onChange={(e) => setNewUserData({ ...newUserData, designation: e.target.value })}
+              className="mb-3"
+            />
+
+            <div className="row gap-1 justify-end">
+              <Button type="button" variant="outline" onClick={() => setCreateModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary">
+                Provision User
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
     </div>
   );
 }

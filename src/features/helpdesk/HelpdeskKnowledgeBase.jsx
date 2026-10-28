@@ -5,7 +5,6 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { SearchInput } from '../../components/common/SearchInput';
-import { Modal } from '../../components/common/Modal';
 import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
 import { LoadingState } from '../../components/common/States';
@@ -139,51 +138,66 @@ export const HelpdeskKnowledgeBase = () => {
         </div>
       )}
 
-      {/* CREATE ARTICLE MODAL */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Author Knowledge Article">
-        <form onSubmit={handleCreateArticle} className="director-modal-form">
-          <Input
-            label="Article Title"
-            placeholder="e.g. Procedure for Manual UTR Reconciliation with SBI ePay"
-            value={newArticle.title}
-            onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
-            required
-          />
-          <Select
-            label="Category"
-            value={newArticle.category}
-            onChange={(e) => setNewArticle({ ...newArticle, category: e.target.value })}
-            options={[
-              { value: 'Payment', label: 'Payment & Treasury' },
-              { value: 'Eligibility', label: 'Eligibility & Pay Levels' },
-              { value: 'Demands', label: 'Demand Approval & Sanction' },
-              { value: 'Delivery', label: 'Dealer Delivery & Inspection' },
-              { value: 'Technical', label: 'Technical & System Gateway' },
-            ]}
-          />
-          <div className="form-field">
-            <label className="form-label">Article Content / SOP Steps</label>
-            <textarea
-              rows={6}
-              className="form-control"
-              placeholder="Detail the root cause, standard steps for resolution, citizen advice, and escalation triggers..."
-              value={newArticle.content}
-              onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
+      {/* CREATE ARTICLE INLINE SECTION */}
+      {showCreateModal && (
+        <Card
+          className="mt-4 border-primary"
+          title="Author Knowledge Article"
+          subtitle="Standard Operating Procedure & Troubleshooting Guide for Beneficiaries"
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setShowCreateModal(false)}>
+              Cancel
+            </Button>
+          }
+        >
+          <form onSubmit={handleCreateArticle} className="space-y-4">
+            <Input
+              label="Article Title"
+              placeholder="e.g. Procedure for Manual UTR Reconciliation with SBI ePay"
+              value={newArticle.title}
+              onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
               required
             />
-          </div>
-          <Input
-            label="Search Keywords (comma separated)"
-            placeholder="utr, challan, sbi epay, double debit"
-            value={newArticle.tags}
-            onChange={(e) => setNewArticle({ ...newArticle, tags: e.target.value })}
-          />
-          <div className="director-modal-actions">
-            <Button variant="outline" type="button" onClick={() => setShowCreateModal(false)}>Cancel</Button>
-            <Button type="submit" loading={isPublishing}>Publish to Repository</Button>
-          </div>
-        </form>
-      </Modal>
+            <Select
+              label="Category"
+              value={newArticle.category}
+              onChange={(e) => setNewArticle({ ...newArticle, category: e.target.value })}
+              options={[
+                { value: 'Payment', label: 'Payment & Treasury' },
+                { value: 'Eligibility', label: 'Eligibility & Pay Levels' },
+                { value: 'Demands', label: 'Demand Approval & Sanction' },
+                { value: 'Delivery', label: 'Dealer Delivery & Inspection' },
+                { value: 'Technical', label: 'Technical & System Gateway' },
+              ]}
+            />
+            <div className="form-field">
+              <label className="form-label">Article Content / SOP Steps</label>
+              <textarea
+                rows={6}
+                className="form-control"
+                placeholder="Detail the root cause, standard steps for resolution, citizen advice, and escalation triggers..."
+                value={newArticle.content}
+                onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
+                required
+              />
+            </div>
+            <Input
+              label="Search Keywords (comma separated)"
+              placeholder="utr, challan, sbi epay, double debit"
+              value={newArticle.tags}
+              onChange={(e) => setNewArticle({ ...newArticle, tags: e.target.value })}
+            />
+            <div className="flex justify-end gap-2 pt-3 border-t">
+              <Button variant="outline" type="button" onClick={() => setShowCreateModal(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" loading={isPublishing}>
+                Publish to Repository
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
     </div>
   );
 };

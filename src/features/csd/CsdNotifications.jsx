@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, X } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
-import { Modal } from '../../components/common/Modal';
 import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
 import {
@@ -110,52 +109,63 @@ export function CsdNotifications() {
         </div>
       </Card>
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Issue Directorate Advisory Bulletin">
-        <form onSubmit={handleBroadcast} className="director-modal-form">
-          <Input
-            label="Notification Title"
-            placeholder="e.g. FY 2024-25 Q3 Demand Allocation Quotas"
-            value={newNotice.title}
-            onChange={(e) => setNewNotice({ ...newNotice, title: e.target.value })}
-            required
-          />
-          <Select
-            label="Target Audience"
-            value={newNotice.targetRole}
-            onChange={(e) => setNewNotice({ ...newNotice, targetRole: e.target.value })}
-            options={[
-              { value: 'ALL', label: 'All Stakeholders (Global)' },
-              ...Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v })),
-            ]}
-          />
-          <Select
-            label="Category"
-            value={newNotice.type}
-            onChange={(e) => setNewNotice({ ...newNotice, type: e.target.value })}
-            options={[
-              { value: 'DIRECTORATE', label: 'Directorate Advisory' },
-              { value: 'POLICY', label: 'Policy Update' },
-              { value: 'PAYMENT', label: 'Treasury / Payment' },
-              { value: 'DEPOT', label: 'Depot Instruction' },
-            ]}
-          />
-          <div className="form-field">
-            <label className="form-label">Circular / Message Content</label>
-            <textarea
-              rows={4}
-              className="form-control"
-              placeholder="Enter message details for broadcast..."
-              value={newNotice.message}
-              onChange={(e) => setNewNotice({ ...newNotice, message: e.target.value })}
+      {showModal && (
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">Issue Directorate Advisory Bulletin</h3>
+              <p className="micro muted">Broadcast official notices to depots, URCs, OEMs, or all portal stakeholders</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+          </div>
+          <form onSubmit={handleBroadcast} className="director-modal-form">
+            <Input
+              label="Notification Title"
+              placeholder="e.g. FY 2024-25 Q3 Demand Allocation Quotas"
+              value={newNotice.title}
+              onChange={(e) => setNewNotice({ ...newNotice, title: e.target.value })}
               required
             />
-          </div>
-          <div className="director-modal-actions">
-            <Button variant="outline" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button type="submit" loading={isBroadcasting}>Publish Circular</Button>
-          </div>
-        </form>
-      </Modal>
+            <Select
+              label="Target Audience"
+              value={newNotice.targetRole}
+              onChange={(e) => setNewNotice({ ...newNotice, targetRole: e.target.value })}
+              options={[
+                { value: 'ALL', label: 'All Stakeholders (Global)' },
+                ...Object.entries(ROLE_LABELS).map(([k, v]) => ({ value: k, label: v })),
+              ]}
+            />
+            <Select
+              label="Category"
+              value={newNotice.type}
+              onChange={(e) => setNewNotice({ ...newNotice, type: e.target.value })}
+              options={[
+                { value: 'DIRECTORATE', label: 'Directorate Advisory' },
+                { value: 'POLICY', label: 'Policy Update' },
+                { value: 'PAYMENT', label: 'Treasury / Payment' },
+                { value: 'DEPOT', label: 'Depot Instruction' },
+              ]}
+            />
+            <div className="form-field">
+              <label className="form-label">Circular / Message Content</label>
+              <textarea
+                rows={4}
+                className="form-control"
+                placeholder="Enter message details for broadcast..."
+                value={newNotice.message}
+                onChange={(e) => setNewNotice({ ...newNotice, message: e.target.value })}
+                required
+              />
+            </div>
+            <div className="row gap-1 justify-end mt-2">
+              <Button variant="outline" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
+              <Button type="submit" loading={isBroadcasting}>Publish Circular</Button>
+            </div>
+          </form>
+        </Card>
+      )}
     </div>
   );
 }

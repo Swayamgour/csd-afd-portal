@@ -9,14 +9,14 @@ import {
   UserCheck,
   CheckCircle2,
   XCircle,
-  Clock
+  Clock,
+  X
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ROLES } from '../../permissions/roles.js';
@@ -224,14 +224,18 @@ export default function CsdBeneficiaries() {
         )}
       </Card>
 
-      {/* Dossier Modal */}
+      {/* Dossier Inline Card */}
       {selectedBeneficiary && (
-        <Modal
-          isOpen={!!selectedBeneficiary}
-          onClose={() => setSelectedBeneficiary(null)}
-          title={`Beneficiary Dossier · ${selectedBeneficiary.name}`}
-          size="md"
-        >
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">Beneficiary Dossier · {selectedBeneficiary.name}</h3>
+              <p className="micro muted">Service No: {selectedBeneficiary.serviceNumber || 'N/A'} · Rank: {selectedBeneficiary.rank || 'Armed Forces'}</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setSelectedBeneficiary(null)}>
+              Close Dossier
+            </Button>
+          </div>
           <div className="space-y-4 text-xs">
             <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 grid grid-cols-2 gap-2">
               <div>
@@ -278,8 +282,14 @@ export default function CsdBeneficiaries() {
                 <strong>Governance Rule:</strong> Admin & CSD-HO have strictly View-Only access to the Beneficiary Registry. Registration approvals and profile modifications are exclusively exercised by the <strong>CS Director</strong>.
               </div>
             )}
+
+            <div className="row justify-end mt-2">
+              <Button variant="outline" onClick={() => setSelectedBeneficiary(null)}>
+                Close Dossier
+              </Button>
+            </div>
           </div>
-        </Modal>
+        </Card>
       )}
     </div>
   );

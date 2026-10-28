@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Layers,
   PlusCircle,
@@ -16,11 +17,9 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import {
   useGetOemDealerProductsListQuery,
-  useCreateOemDealerProductMutation,
   useUpdateOemDealerProductMutation,
   useDeleteOemDealerProductMutation,
   useGetOemDealersQuery,
@@ -28,18 +27,25 @@ import {
 } from './oemApi.js';
 
 export default function OemDealerProducts() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [page, setPage] = useState(1);
   const pageSize = 15;
   const [selectedDealerFilter, setSelectedDealerFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [formDealerId, setFormDealerId] = useState('');
-  const [formProductId, setFormProductId] = useState('');
-  const [formDeliveryDays, setFormDeliveryDays] = useState('15');
-  const [formAvailability, setFormAvailability] = useState('AVAILABLE');
   const [formError, setFormError] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
+
+  useEffect(() => {
+    if (location.state?.toast) {
+      setToastMessage(location.state.toast);
+      window.history.replaceState({}, document.title);
+      const timer = setTimeout(() => setToastMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
 
   const queryParams = useMemo(() => {
     const p = { page, limit: pageSize };
@@ -58,7 +64,6 @@ export default function OemDealerProducts() {
   const { data: dealersData } = useGetOemDealersQuery({ limit: 50, active: true });
   const { data: productsData } = useGetOemProductsQuery({ limit: 50, status: 'ACTIVE' });
 
-  const [createMapping, { isLoading: isCreating }] = useCreateOemDealerProductMutation();
   const [updateMapping, { isLoading: isUpdating }] = useUpdateOemDealerProductMutation();
   const [deleteMapping, { isLoading: isDeleting }] = useDeleteOemDealerProductMutation();
 
@@ -68,37 +73,7 @@ export default function OemDealerProducts() {
   const products = productsData?.items || [];
 
   const handleOpenCreate = () => {
-    setFormError('');
-    setFormDealerId(dealers[0]?._id || '');
-    setFormProductId(products[0]?._id || '');
-    setFormDeliveryDays('');
-    setFormAvailability('AVAILABLE');
-    setModalOpen(true);
-  };
-
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault();
-    setFormError('');
-
-    if (!formDealerId || !formProductId) {
-      setFormError('Please select both a dealership and a vehicle model.');
-      return;
-    }
-
-    try {
-      await createMapping({
-        dealerId: formDealerId,
-        productId: formProductId,
-        availabilityStatus: formAvailability || undefined,
-        estimatedDeliveryDays: formDeliveryDays ? Number(formDeliveryDays) : undefined,
-      }).unwrap();
-
-      setToastMessage('Dealer-Product mapping created successfully.');
-      setModalOpen(false);
-      setTimeout(() => setToastMessage(null), 5000);
-    } catch (err) {
-      setFormError(err?.data?.message || err?.message || 'Failed to authorize dealership for model.');
-    }
+    navigate('/oem/dealer-products/new');
   };
 
   const handleToggleActive = async (mapping) => {
@@ -243,7 +218,7 @@ export default function OemDealerProducts() {
         </div>
       )}
 
-      {formError && !modalOpen && (
+      {formError && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
             <AlertCircle size={18} className="text-red-600 flex-shrink-0" />
@@ -312,98 +287,6 @@ export default function OemDealerProducts() {
           emptyText="No dealership product allotments found matching your filter."
         />
       </Card>
-
-      {/* Authorize Dealership Modal */}
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Authorize Dealership for Vehicle Model"
-        subtitle="Grant dealership showroom permission to accept orders and handover vehicles"
-        maxWidth="540px"
-        footer={
-          <div className="flex justify-end gap-2 w-full">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              loading={isCreating}
-              onClick={handleCreateSubmit}
-            >
-              Confirm Allotment
-            </Button>
-          </div>
-        }
-      >
-        <form onSubmit={handleCreateSubmit} className="space-y-4">
-          {formError && (
-            <div className="p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
-              <AlertCircle size={16} />
-              <span>{formError}</span>
-            </div>
-          )}
-
-          <div className="form-field">
-            <label className="form-label">Select Dealership <span className="req-star">*</span></label>
-            <select
-              className="form-control"
-              value={formDealerId}
-              onChange={(e) => setFormDealerId(e.target.value)}
-              required
-            >
-              <option value="">Select Showroom</option>
-              {dealers.map((d) => (
-                <option key={d._id} value={d._id}>
-                  {d.name} · {d.city}, {d.state} ({d.code})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">Select Empaneled Model <span className="req-star">*</span></label>
-            <select
-              className="form-control"
-              value={formProductId}
-              onChange={(e) => setFormProductId(e.target.value)}
-              required
-            >
-              <option value="">Select Vehicle Model</option>
-              {products.map((p) => (
-                <option key={p._id} value={p._id}>
-                  {p.name} (SKU: {p.sku}) · ₹ {(p.price || 0).toLocaleString('en-IN')}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="form-field">
-              <label className="form-label">Stock Availability</label>
-              <select
-                className="form-control"
-                value={formAvailability}
-                onChange={(e) => setFormAvailability(e.target.value)}
-              >
-                <option value="AVAILABLE">Available for Dispatch</option>
-                <option value="WAITING_PERIOD">Waiting Period</option>
-                <option value="UNAVAILABLE">Temporarily Unavailable</option>
-              </select>
-            </div>
-            <div className="form-field">
-              <label className="form-label">Est. Handover Days</label>
-              <input
-                type="number"
-                className="form-control font-mono"
-                placeholder="15"
-                value={formDeliveryDays}
-                onChange={(e) => setFormDeliveryDays(e.target.value)}
-                min="1"
-              />
-            </div>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2,
   CheckCircle2,
@@ -19,94 +20,33 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { Modal } from '../../components/common/Modal.jsx';
 import {
   useGetOemsQuery,
-  useCreateOemMutation,
   useUpdateOemMutation,
 } from '../org/orgApi.js';
 
 export default function CsdOems() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const { data: oems = [], isLoading: loading, isFetching: refreshing, refetch } = useGetOemsQuery();
-  const [createOem, { isLoading: isCreating }] = useCreateOemMutation();
-  const [updateOem, { isLoading: isUpdating }] = useUpdateOemMutation();
+  const [updateOem] = useUpdateOemMutation();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedOemForEdit, setSelectedOemForEdit] = useState(null);
   const [selectedOemForView, setSelectedOemForView] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
-
-  // Form State
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    person: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    gstin: '',
-    active: true,
-  });
 
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 4500);
   };
 
-  const handleOpenAdd = () => {
-    setFormData({
-      name: '',
-      code: '',
-      person: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      state: '',
-      gstin: '',
-      active: true,
-    });
-    setIsAddModalOpen(true);
-  };
-
-  const handleOpenEdit = (oem) => {
-    setSelectedOemForEdit(oem);
-    setFormData({
-      name: oem.name || '',
-      code: oem.code || '',
-      person: oem.person || '',
-      email: oem.email || '',
-      phone: oem.phone || '',
-      address: oem.address || '',
-      city: oem.city || '',
-      state: oem.state || '',
-      gstin: oem.gstin || '',
-      active: oem.active ?? true,
-    });
-  };
-
-  const handleSaveOem = async (e) => {
-    e.preventDefault();
-    try {
-      if (selectedOemForEdit) {
-        await updateOem({
-          id: selectedOemForEdit._id || selectedOemForEdit.id,
-          ...formData,
-        }).unwrap();
-        showToast(`✓ OEM "${formData.name}" successfully updated.`);
-        setSelectedOemForEdit(null);
-      } else {
-        await createOem(formData).unwrap();
-        showToast(`✓ OEM "${formData.name}" successfully registered in CSD Catalog.`);
-        setIsAddModalOpen(false);
-      }
-    } catch (err) {
-      alert(err?.data?.message || err.message || 'Failed to save OEM record');
+  useEffect(() => {
+    if (location.state?.toast) {
+      showToast(location.state.toast);
+      window.history.replaceState({}, document.title);
     }
-  };
+  }, [location.state]);
 
   const handleToggleStatus = async (oem) => {
     try {
@@ -117,7 +57,7 @@ export default function CsdOems() {
       }).unwrap();
       showToast(`OEM "${oem.name}" is now ${nextActive ? 'ACTIVE' : 'INACTIVE'}.`);
     } catch (err) {
-      alert(err?.data?.message || err.message || 'Failed to toggle status');
+      showToast('⚠️ ' + (err?.data?.message || err.message || 'Failed to toggle status'));
     }
   };
 
@@ -197,7 +137,7 @@ export default function CsdOems() {
           </button>
           <button
             type="button"
-            onClick={() => handleOpenEdit(row)}
+            onClick={() => navigate(`/csd/oems/${row._id || row.id}/edit`)}
             className="csd-btn-action-edit"
             title="Edit Details"
           >
@@ -234,7 +174,7 @@ export default function CsdOems() {
               <RefreshCw size={14} className={`mr-xs ${refreshing ? 'spin-icon' : ''}`} />
               {refreshing ? 'Syncing...' : 'Sync OEMs'}
             </Button>
-            <Button variant="primary" size="sm" onClick={handleOpenAdd}>
+            <Button variant="primary" size="sm" onClick={() => navigate('/csd/oems/new')}>
               <Plus size={14} className="mr-xs" /> Add New OEM
             </Button>
           </div>
@@ -265,176 +205,18 @@ export default function CsdOems() {
         />
       </Card>
 
-      {/* CREATE / EDIT OEM MODAL */}
-      {(isAddModalOpen || selectedOemForEdit) && (
-        <Modal
-          isOpen={Boolean(isAddModalOpen || selectedOemForEdit)}
-          title={selectedOemForEdit ? `Edit OEM: ${selectedOemForEdit.name}` : 'Register New Manufacturer (OEM)'}
-          onClose={() => {
-            setIsAddModalOpen(false);
-            setSelectedOemForEdit(null);
-          }}
-        >
-          <form onSubmit={handleSaveOem} className="director-modal-form">
-            <div className="csd-form-grid-2-1">
-              <div>
-                <label className="form-label">
-                  OEM Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Maruti Suzuki India Ltd."
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-              <div>
-                <label className="form-label">
-                  OEM Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. MSIL"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="form-control"
-                />
-              </div>
-            </div>
-
-            <div className="grid-3-col">
-              <div>
-                <label className="form-label">
-                  Contact Person
-                </label>
-                <input
-                  type="text"
-                  placeholder="Institutional Head"
-                  value={formData.person}
-                  onChange={(e) => setFormData({ ...formData, person: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-              <div>
-                <label className="form-label">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="csd.sales@oem.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-              <div>
-                <label className="form-label">
-                  Mobile / Phone
-                </label>
-                <input
-                  type="text"
-                  placeholder="Official Phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="form-label">
-                Corporate Address
-              </label>
-              <input
-                type="text"
-                placeholder="HQ Plant / Office Address"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="form-control"
-              />
-            </div>
-
-            <div className="grid-3-col">
-              <div>
-                <label className="form-label">
-                  City
-                </label>
-                <input
-                  type="text"
-                  placeholder="City"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-              <div>
-                <label className="form-label">
-                  State
-                </label>
-                <input
-                  type="text"
-                  placeholder="State"
-                  value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-              <div>
-                <label className="form-label">
-                  GSTIN Number
-                </label>
-                <input
-                  type="text"
-                  placeholder="GSTIN"
-                  value={formData.gstin}
-                  onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
-                  className="form-control"
-                />
-              </div>
-            </div>
-
-            <div className="portal-flex-wrap-gap-sm">
-              <input
-                type="checkbox"
-                id="oemActive"
-                checked={formData.active}
-                onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-              />
-              <label htmlFor="oemActive" className="form-label">
-                Active in CSD Catalog (Dealers & products can be assigned)
-              </label>
-            </div>
-
-            <div className="director-modal-actions">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsAddModalOpen(false);
-                  setSelectedOemForEdit(null);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary" disabled={isCreating || isUpdating}>
-                {isCreating || isUpdating ? 'Saving...' : selectedOemForEdit ? 'Update OEM' : 'Register OEM'}
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
-
-      {/* OEM DETAILS INSPECTION MODAL */}
+      {/* OEM DETAILS INSPECTION INLINE CARD */}
       {selectedOemForView && (
-        <Modal
-          isOpen={Boolean(selectedOemForView)}
-          title={`OEM Profile: ${selectedOemForView.name}`}
-          onClose={() => setSelectedOemForView(null)}
-          maxWidth="640px"
-        >
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">OEM Profile: {selectedOemForView.name}</h3>
+              <p className="micro muted">Corporate registration and institutional contact data</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setSelectedOemForView(null)}>
+              Close
+            </Button>
+          </div>
           <div className="director-modal-form">
             <div className="csd-card-preview-box">
               <div className="csd-card-preview-header">
@@ -488,23 +270,23 @@ export default function CsdOems() {
               </div>
             )}
 
-            <div className="director-modal-actions">
+            <div className="row gap-1 justify-end mt-2">
               <Button
                 variant="outline"
                 onClick={() => {
                   const target = selectedOemForView;
                   setSelectedOemForView(null);
-                  handleOpenEdit(target);
+                  navigate(`/csd/oems/${target._id || target.id}/edit`);
                 }}
               >
                 <Edit2 size={13} className="mr-xs" /> Edit OEM
               </Button>
               <Button variant="primary" onClick={() => setSelectedOemForView(null)}>
-                Close
+                Close Dossier
               </Button>
             </div>
           </div>
-        </Modal>
+        </Card>
       )}
     </div>
   );

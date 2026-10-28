@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { DocumentUpload } from '../components/common/DocumentUpload.jsx';
-import { DemandConfirmationModal } from '../components/modals/DemandConfirmationModal.jsx';
 import { useCreateDemandMutation } from '../features/demand/demandApi.js';
 import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
 import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery } from '../features/org/orgApi.js';
@@ -121,7 +120,6 @@ export default function Checkout() {
   // Remarks & Submission states
   const [remarks, setRemarks] = useState('');
   const [formErrors, setFormErrors] = useState({});
-  const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // If no product in state or session, show clean empty state
@@ -205,18 +203,13 @@ export default function Checkout() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!validateCheckoutForm()) {
       window.scrollTo({ top: 400, behavior: 'smooth' });
       return;
     }
 
-    setConfirmationModalOpen(true);
-  };
-
-  const handleConfirmedDemand = async () => {
-    setConfirmationModalOpen(false);
     await executeDemandSubmission();
   };
 
@@ -1135,25 +1128,6 @@ export default function Checkout() {
           </div>
         </div>
       </form>
-
-      {/* Confirmation Modal */}
-      <DemandConfirmationModal
-        isOpen={confirmationModalOpen}
-        onClose={() => setConfirmationModalOpen(false)}
-        onConfirm={handleConfirmedDemand}
-        demandSummary={{
-          productName: product.productName,
-          sku: product.sku,
-          color: product.selectedColor,
-          dealerName: dealerInfo.name,
-          depot: product.selectedDepot,
-          urc: product.selectedUrc,
-          priceZone: product.selectedZone,
-          netPrice,
-          paymentMethod: 'Post Depot Approval'
-        }}
-        loading={submitting}
-      />
     </div>
   );
 }

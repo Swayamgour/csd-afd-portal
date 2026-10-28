@@ -156,6 +156,16 @@ const AdminReports = lazyImport(() => import('./features/admin/AdminReports.jsx'
 const AdminSecurity = lazyImport(() => import('./features/admin/AdminSecurity.jsx'), 'AdminSecurity');
 const AdminProfile = lazyImport(() => import('./features/admin/AdminProfile.jsx'), 'AdminProfile');
 const AdminBanners = lazyImport(() => import('./features/admin/AdminBanners.jsx'), 'default');
+const AdminUserDetail = lazyImport(() => import('./features/admin/AdminUserDetail.jsx'), 'AdminUserDetail');
+const AdminUserEdit = lazyImport(() => import('./features/admin/AdminUserEdit.jsx'), 'AdminUserEdit');
+const DepotDemandDetail = lazyImport(() => import('./features/depot/DepotDemandDetail.jsx'), 'DepotDemandDetail');
+const ProductFormPage = lazyImport(() => import('./features/catalog/ProductFormPage.jsx'), 'ProductFormPage');
+const OemFormPage = lazyImport(() => import('./features/csd/OemFormPage.jsx'), 'default');
+const DealerFormPage = lazyImport(() => import('./features/csd/DealerFormPage.jsx'), 'default');
+const DepotFormPage = lazyImport(() => import('./features/csd/DepotFormPage.jsx'), 'default');
+const UrcFormPage = lazyImport(() => import('./features/csd/UrcFormPage.jsx'), 'default');
+const OemPricingFormPage = lazyImport(() => import('./features/oem/OemPricingFormPage.jsx'), 'default');
+const OemDealerProductFormPage = lazyImport(() => import('./features/oem/OemDealerProductFormPage.jsx'), 'default');
 
 export default function App() {
   const { pathname } = useLocation();
@@ -222,12 +232,22 @@ export default function App() {
           <Route path="/csd/users" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdUsers /></RoleRoute>} />
           <Route path="/csd/beneficiaries" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdBeneficiaries /></RoleRoute>} />
           <Route path="/csd/products" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdProducts /></RoleRoute>} />
+          <Route path="/csd/products/new" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><ProductFormPage /></RoleRoute>} />
+          <Route path="/csd/products/:id/edit" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><ProductFormPage /></RoleRoute>} />
           <Route path="/csd/categories" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdCategories /></RoleRoute>} />
           <Route path="/csd/oems" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdOems /></RoleRoute>} />
+          <Route path="/csd/oems/new" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><OemFormPage /></RoleRoute>} />
+          <Route path="/csd/oems/:id/edit" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><OemFormPage /></RoleRoute>} />
           <Route path="/csd/dealers" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDealers /></RoleRoute>} />
+          <Route path="/csd/dealers/new" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><DealerFormPage /></RoleRoute>} />
+          <Route path="/csd/dealers/:id/edit" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><DealerFormPage /></RoleRoute>} />
           <Route path="/csd/dealer-products" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><DealerProducts /></RoleRoute>} />
           <Route path="/csd/depots" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDepots /></RoleRoute>} />
+          <Route path="/csd/depots/new" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><DepotFormPage /></RoleRoute>} />
+          <Route path="/csd/depots/:id/edit" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><DepotFormPage /></RoleRoute>} />
           <Route path="/csd/urcs" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdUrcs /></RoleRoute>} />
+          <Route path="/csd/urcs/new" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><UrcFormPage /></RoleRoute>} />
+          <Route path="/csd/urcs/:id/edit" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><UrcFormPage /></RoleRoute>} />
           <Route path="/csd/demands" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdDemands /></RoleRoute>} />
           <Route path="/csd/orders" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdOrders /></RoleRoute>} />
           <Route path="/csd/payments" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdPayments /></RoleRoute>} />
@@ -243,6 +263,7 @@ export default function App() {
           {/* 3. DEPOT OFFICIAL PORTAL */}
           <Route path="/depot/dashboard" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotDashboard /></RoleRoute>} />
           <Route path="/depot/demands" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotDemands /></RoleRoute>} />
+          <Route path="/depot/demands/:id" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotDemandDetail /></RoleRoute>} />
           <Route path="/depot/orders" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotOrders /></RoleRoute>} />
           <Route path="/depot/products" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotProducts /></RoleRoute>} />
           <Route path="/depot/transactions" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotTransactions /></RoleRoute>} />
@@ -264,9 +285,14 @@ export default function App() {
           {/* 5. OEM PORTAL */}
           <Route path="/oem/dashboard" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDashboard /></RoleRoute>} />
           <Route path="/oem/products" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemProducts /></RoleRoute>} />
+          <Route path="/oem/products/new" element={<RoleRoute allowedRoles={[ROLES.OEM]}><ProductFormPage /></RoleRoute>} />
+          <Route path="/oem/products/:id/edit" element={<RoleRoute allowedRoles={[ROLES.OEM]}><ProductFormPage /></RoleRoute>} />
           <Route path="/oem/dealers" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDealers /></RoleRoute>} />
           <Route path="/oem/dealer-products" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDealerProducts /></RoleRoute>} />
+          <Route path="/oem/dealer-products/new" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDealerProductFormPage /></RoleRoute>} />
           <Route path="/oem/pricing" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemPricing /></RoleRoute>} />
+          <Route path="/oem/pricing/new" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemPricingFormPage /></RoleRoute>} />
+          <Route path="/oem/pricing/:id/edit" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemPricingFormPage /></RoleRoute>} />
           <Route path="/oem/orders" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemOrders /></RoleRoute>} />
           <Route path="/oem/demands" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDemands /></RoleRoute>} />
           <Route path="/oem/documents" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDocuments /></RoleRoute>} />
@@ -306,6 +332,8 @@ export default function App() {
           <Route path="/admin/dashboard" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminDashboard /></RoleRoute>} />
           <Route path="/admin/users" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminUsers /></RoleRoute>} />
           <Route path="/admin/users/new" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminAddUser /></RoleRoute>} />
+          <Route path="/admin/users/:id" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminUserDetail /></RoleRoute>} />
+          <Route path="/admin/users/:id/edit" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminUserEdit /></RoleRoute>} />
           <Route path="/admin/roles" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminRoles /></RoleRoute>} />
           <Route path="/admin/permissions" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminPermissions /></RoleRoute>} />
           <Route path="/admin/system-settings" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminSystemSettings /></RoleRoute>} />
@@ -321,6 +349,8 @@ export default function App() {
           <Route path="/director/approvals" element={<RoleRoute allowedRoles={[ROLES.CS_DIRECTOR]}><DirectorApprovals defaultTab="PENDING" /></RoleRoute>} />
           <Route path="/director/beneficiaries" element={<RoleRoute allowedRoles={[ROLES.CS_DIRECTOR]}><DirectorApprovals defaultTab="ALL" /></RoleRoute>} />
           <Route path="/director/users" element={<RoleRoute allowedRoles={[ROLES.CS_DIRECTOR]}><DirectorApprovals defaultTab="ALL" /></RoleRoute>} />
+          <Route path="/director/users/:id" element={<RoleRoute allowedRoles={[ROLES.CS_DIRECTOR]}><AdminUserDetail /></RoleRoute>} />
+          <Route path="/director/users/:id/edit" element={<RoleRoute allowedRoles={[ROLES.CS_DIRECTOR]}><AdminUserEdit /></RoleRoute>} />
 
         </Route>
 

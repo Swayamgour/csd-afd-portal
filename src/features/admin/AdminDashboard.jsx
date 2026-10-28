@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
 import { Card } from '../../components/common/Card.jsx';
 import { Button } from '../../components/common/Button.jsx';
-import { UserDetailsModal } from './UserDetailsModal.jsx';
 import {
   useGetAdminSummaryQuery,
   useGetAdminAnalyticsQuery,
@@ -551,13 +550,6 @@ export const AdminDashboard = () => {
       {/* SECTION 4: USER & BENEFICIARY DIRECTORY (View-only for Admin, approvals reserved for Director) */}
     
 
-      {/* User Details Modal */}
-      {selectedUserForDetails && (
-        <UserDetailsModal
-          user={selectedUserForDetails}
-          onClose={() => setSelectedUserForDetails(null)}
-        />
-      )}
     </div>
   );
 };

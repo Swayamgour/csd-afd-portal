@@ -12,24 +12,22 @@ import {
   Warehouse,
   Package,
   CreditCard,
-  ExternalLink
+  ExternalLink,
+  X
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
-import DocumentPreviewModal from '../../components/common/DocumentPreviewModal.jsx';
 
 export default function CsdDemands() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDemand, setSelectedDemand] = useState(null);
-  const [previewDoc, setPreviewDoc] = useState(null);
 
   const queryParams = useMemo(() => {
     const p = {};
@@ -257,14 +255,18 @@ export default function CsdDemands() {
         )}
       </Card>
 
-      {/* Scrutiny & Dossier Modal */}
+      {/* Scrutiny & Dossier Inline Card */}
       {selectedDemand && (
-        <Modal
-          isOpen={!!selectedDemand}
-          onClose={() => setSelectedDemand(null)}
-          title={`Scrutiny Dossier · Indent ${selectedDemand.demandNo}`}
-          size="lg"
-        >
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">Scrutiny Dossier · Indent {selectedDemand.demandNo}</h3>
+              <p className="micro muted">Reviewing beneficiary demand indent scrutiny details</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setSelectedDemand(null)}>
+              Close Dossier
+            </Button>
+          </div>
           <div className="space-y-4 text-xs">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
               <div>
@@ -345,30 +347,28 @@ export default function CsdDemands() {
                 <h5 className="font-bold text-slate-800">Uploaded Verification Documents</h5>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {selectedDemand.documents.map((doc, i) => (
-                    <button
+                    <a
                       key={i}
-                      type="button"
-                      onClick={() => setPreviewDoc(doc)}
-                      className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 transition text-brand font-medium text-left cursor-pointer"
+                      href={doc.url || doc.fileUrl || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 transition text-brand font-medium text-left"
                     >
                       <span className="truncate">{doc.name || doc.type}</span>
-                      <Eye className="w-3.5 h-3.5 flex-shrink-0 ml-2" />
-                    </button>
+                      <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 ml-2" />
+                    </a>
                   ))}
                 </div>
               </div>
             )}
-          </div>
-        </Modal>
-      )}
 
-      {/* In-Portal Document Previewer Modal */}
-      {previewDoc && (
-        <DocumentPreviewModal
-          isOpen={!!previewDoc}
-          onClose={() => setPreviewDoc(null)}
-          doc={previewDoc}
-        />
+            <div className="row justify-end mt-2">
+              <Button variant="outline" onClick={() => setSelectedDemand(null)}>
+                Close Dossier
+              </Button>
+            </div>
+          </div>
+        </Card>
       )}
     </div>
   );

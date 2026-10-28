@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   CreditCard,
   PlusCircle,
@@ -16,12 +17,9 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import {
   useGetOemPricingQuery,
-  useCreateOemPricingMutation,
-  useUpdateOemPricingMutation,
   useGetOemProductsQuery,
 } from './oemApi.js';
 
@@ -36,27 +34,25 @@ const INDIAN_STATES = [
 ];
 
 export default function OemPricing() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [page, setPage] = useState(1);
   const pageSize = 15;
   const [stateFilter, setStateFilter] = useState('');
   const [productFilter, setProductFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingPrice, setEditingPrice] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
-  const [formError, setFormError] = useState('');
 
-  const [formState, setFormState] = useState({
-    productId: '',
-    state: 'DELHI',
-    basePrice: '',
-    salePrice: '',
-    taxPercent: '',
-    status: 'PUBLISHED',
-    effectiveFrom: new Date().toISOString().slice(0, 10),
-    effectiveTo: '',
-  });
+  useEffect(() => {
+    if (location.state?.toast) {
+      setToastMessage(location.state.toast);
+      window.history.replaceState({}, document.title);
+      const timer = setTimeout(() => setToastMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
 
   const queryParams = useMemo(() => {
     const p = { page, limit: pageSize };
@@ -75,85 +71,16 @@ export default function OemPricing() {
 
   const { data: productsData } = useGetOemProductsQuery({ limit: 50, status: 'ACTIVE' });
 
-  const [createPricing, { isLoading: isCreating }] = useCreateOemPricingMutation();
-  const [updatePricing, { isLoading: isUpdating }] = useUpdateOemPricingMutation();
-
   const prices = pricingData?.items || [];
   const meta = pricingData?.meta || {};
   const products = productsData?.items || [];
 
   const handleOpenCreate = () => {
-    setEditingPrice(null);
-    setFormError('');
-    setFormState({
-      productId: products[0]?._id || '',
-      state: 'DELHI',
-      basePrice: products[0]?.price || '',
-      salePrice: '',
-      taxPercent: products[0]?.taxPercent !== undefined && products[0]?.taxPercent !== null ? String(products[0].taxPercent) : '',
-      status: 'PUBLISHED',
-      effectiveFrom: new Date().toISOString().slice(0, 10),
-      effectiveTo: '',
-    });
-    setModalOpen(true);
+    navigate('/oem/pricing/new');
   };
 
   const handleOpenEdit = (priceDoc) => {
-    setEditingPrice(priceDoc);
-    setFormError('');
-    setFormState({
-      productId: priceDoc.productId?._id || priceDoc.productId,
-      state: priceDoc.state || 'DELHI',
-      basePrice: priceDoc.basePrice || '',
-      salePrice: priceDoc.salePrice || '',
-      taxPercent: priceDoc.taxPercent !== undefined && priceDoc.taxPercent !== null ? String(priceDoc.taxPercent) : '',
-      status: priceDoc.status || 'PUBLISHED',
-      effectiveFrom: priceDoc.effectiveFrom ? new Date(priceDoc.effectiveFrom).toISOString().slice(0, 10) : '',
-      effectiveTo: priceDoc.effectiveTo ? new Date(priceDoc.effectiveTo).toISOString().slice(0, 10) : '',
-    });
-    setModalOpen(true);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormError('');
-
-    if (!formState.productId || !formState.state || !formState.basePrice || !formState.salePrice) {
-      setFormError('Please enter all required fields.');
-      return;
-    }
-
-    if (formState.effectiveFrom && formState.effectiveTo) {
-      if (new Date(formState.effectiveFrom) >= new Date(formState.effectiveTo)) {
-        setFormError('Effective From date must be earlier than Effective To date.');
-        return;
-      }
-    }
-
-    const payload = {
-      productId: formState.productId,
-      state: formState.state.toUpperCase().trim(),
-      basePrice: Number(formState.basePrice),
-      salePrice: Number(formState.salePrice),
-      taxPercent: Number(formState.taxPercent || 0),
-      status: formState.status,
-      effectiveFrom: formState.effectiveFrom ? new Date(formState.effectiveFrom) : undefined,
-      effectiveTo: formState.effectiveTo ? new Date(formState.effectiveTo) : undefined,
-    };
-
-    try {
-      if (editingPrice) {
-        await updatePricing({ id: editingPrice._id, ...payload }).unwrap();
-        setToastMessage(`Pricing updated for ${payload.state}.`);
-      } else {
-        await createPricing(payload).unwrap();
-        setToastMessage(`Published state pricing created for ${payload.state}.`);
-      }
-      setModalOpen(false);
-      setTimeout(() => setToastMessage(null), 5000);
-    } catch (err) {
-      setFormError(err?.data?.message || err?.message || 'Failed to save state pricing.');
-    }
+    navigate(`/oem/pricing/${priceDoc._id || priceDoc.id}/edit`);
   };
 
   const columns = [
@@ -337,149 +264,6 @@ export default function OemPricing() {
           emptyText="No state pricing tiers found matching your filter."
         />
       </Card>
-
-      {/* Add / Edit Pricing Modal */}
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={editingPrice ? 'Update State Rate Contract' : 'Publish State Rate Contract'}
-        subtitle="Final price schedule for beneficiary payment sanction across regional depots"
-        maxWidth="600px"
-        footer={
-          <div className="flex justify-end gap-2 w-full">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              loading={isCreating || isUpdating}
-              onClick={handleSubmit}
-            >
-              {editingPrice ? 'Save Pricing' : 'Publish Rate'}
-            </Button>
-          </div>
-        }
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {formError && (
-            <div className="p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
-              <AlertCircle size={16} />
-              <span>{formError}</span>
-            </div>
-          )}
-
-          <div className="form-field">
-            <label className="form-label">Empaneled Vehicle Model <span className="req-star">*</span></label>
-            <select
-              className="form-control"
-              value={formState.productId}
-              onChange={(e) => {
-                const prod = products.find((p) => p._id === e.target.value);
-                setFormState({
-                  ...formState,
-                  productId: e.target.value,
-                  basePrice: prod?.price ? String(prod.price) : formState.basePrice,
-                  taxPercent: prod?.taxPercent !== undefined && prod?.taxPercent !== null ? String(prod.taxPercent) : formState.taxPercent,
-                });
-              }}
-              disabled={Boolean(editingPrice)}
-              required
-            >
-              <option value="">Select Model</option>
-              {products.map((p) => (
-                <option key={p._id} value={p._id}>
-                  {p.name} (SKU: {p.sku})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">State / Union Territory <span className="req-star">*</span></label>
-            <select
-              className="form-control"
-              value={formState.state}
-              onChange={(e) => setFormState({ ...formState, state: e.target.value })}
-              required
-            >
-              {INDIAN_STATES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="form-field">
-              <label className="form-label">Base Price (₹) <span className="req-star">*</span></label>
-              <input
-                type="number"
-                className="form-control font-mono"
-                placeholder="e.g. 1000000"
-                value={formState.basePrice}
-                onChange={(e) => setFormState({ ...formState, basePrice: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">GST Tax (%)</label>
-              <input
-                type="number"
-                className="form-control font-mono"
-                placeholder="e.g. 18 or 28"
-                value={formState.taxPercent}
-                onChange={(e) => setFormState({ ...formState, taxPercent: e.target.value })}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">Final Sale Price (₹) <span className="req-star">*</span></label>
-              <input
-                type="number"
-                className="form-control font-mono"
-                placeholder="e.g. 1280000"
-                value={formState.salePrice}
-                onChange={(e) => setFormState({ ...formState, salePrice: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="form-field">
-              <label className="form-label">Effective From</label>
-              <input
-                type="date"
-                className="form-control"
-                value={formState.effectiveFrom}
-                onChange={(e) => setFormState({ ...formState, effectiveFrom: e.target.value })}
-              />
-            </div>
-            <div className="form-field">
-              <label className="form-label">Effective To (Optional)</label>
-              <input
-                type="date"
-                className="form-control"
-                value={formState.effectiveTo}
-                onChange={(e) => setFormState({ ...formState, effectiveTo: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">Schedule Status</label>
-            <select
-              className="form-control"
-              value={formState.status}
-              onChange={(e) => setFormState({ ...formState, status: e.target.value })}
-            >
-              <option value="PUBLISHED">PUBLISHED (Active Ceiling)</option>
-              <option value="DRAFT">DRAFT</option>
-              <option value="INACTIVE">INACTIVE</option>
-            </select>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 }

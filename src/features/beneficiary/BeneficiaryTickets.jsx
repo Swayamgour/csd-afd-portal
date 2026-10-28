@@ -6,7 +6,6 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import Input from '../../components/common/Input.jsx';
 import Select from '../../components/common/Select.jsx';
 import { useGetTicketsQuery, useCreateTicketMutation } from '../helpdesk/ticketApi.js';
@@ -17,7 +16,7 @@ export default function BeneficiaryTickets() {
   const { data: ticketsData, isLoading: loading, isFetching, refetch } = useGetTicketsQuery();
   const [createTicket, { isLoading: submitting }] = useCreateTicketMutation();
 
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [subject, setSubject] = useState('');
   const [category, setCategory] = useState('Supply Order');
   const [description, setDescription] = useState('');
@@ -44,7 +43,7 @@ export default function BeneficiaryTickets() {
         severity: 'MEDIUM',
       }).unwrap();
 
-      setCreateModalOpen(false);
+      setShowCreateForm(false);
       setSubject('');
       setDescription('');
       setToast('Support ticket registered successfully.');
@@ -111,9 +110,9 @@ export default function BeneficiaryTickets() {
             <Button
               variant="primary"
               icon={PlusCircle}
-              onClick={() => setCreateModalOpen(true)}
+              onClick={() => setShowCreateForm(!showCreateForm)}
             >
-              Raise New Grievance
+              {showCreateForm ? 'Close Form' : 'Raise New Grievance'}
             </Button>
           </div>
         }
@@ -126,26 +125,15 @@ export default function BeneficiaryTickets() {
         </div>
       )}
 
-      <Card>
-        <DataTable columns={columns} data={tickets} loading={loading} />
-      </Card>
-
-      {createModalOpen && (
-        <Modal
-          isOpen={createModalOpen}
-          onClose={() => setCreateModalOpen(false)}
+      {showCreateForm && (
+        <Card
           title="Register Formal Grievance / Inquiry Ticket"
           subtitle="Direct escalation to CSD AFD Helpdesk nodal team"
-          maxWidth="560px"
-          footer={
-            <div className="modal-footer-btns">
-              <Button variant="outline" onClick={() => setCreateModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" loading={submitting} onClick={handleCreate}>
-                Submit Ticket
-              </Button>
-            </div>
+          className="mb-4"
+          headerActions={
+            <Button variant="outline" size="sm" onClick={() => setShowCreateForm(false)}>
+              Close
+            </Button>
           }
         >
           <form onSubmit={handleCreate} className="ticket-form">
@@ -172,7 +160,7 @@ export default function BeneficiaryTickets() {
               required
               className="mb-2"
             />
-            <div className="form-field mb-2">
+            <div className="form-field mb-3">
               <label className="form-label" htmlFor="ticketDesc">Detailed Description</label>
               <textarea
                 id="ticketDesc"
@@ -184,9 +172,21 @@ export default function BeneficiaryTickets() {
                 required
               />
             </div>
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" loading={submitting}>
+                Submit Ticket
+              </Button>
+            </div>
           </form>
-        </Modal>
+        </Card>
       )}
+
+      <Card>
+        <DataTable columns={columns} data={tickets} loading={loading} />
+      </Card>
     </div>
   );
 }

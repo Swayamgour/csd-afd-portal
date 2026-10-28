@@ -27,8 +27,7 @@ import {
 } from 'lucide-react';
 import { useGetDemandByIdQuery } from '../features/demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
-import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal.jsx';
-import DocumentPreviewModal from '../components/common/DocumentPreviewModal.jsx';
+import InlinePaymentCard from '../components/common/InlinePaymentCard.jsx';
 
 export default function DemandDetail() {
   const { id } = useParams();
@@ -45,9 +44,8 @@ export default function DemandDetail() {
   const [submitDirectTransfer] = useSubmitDirectTransferMutation();
   const demand = demandData?.data || demandData;
 
-  // Payment upload modal
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [previewDoc, setPreviewDoc] = useState(null);
+  // Inline payment form toggle
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const handlePaymentSubmitSuccess = async (paymentPayload) => {
     try {
@@ -231,13 +229,26 @@ export default function DemandDetail() {
             </p>
           </div>
           <button
-            onClick={() => setPaymentModalOpen(true)}
+            onClick={() => setShowPaymentForm(!showPaymentForm)}
             className="btn-primary-action flex-align-center-gap-xs"
             style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}
           >
             <CreditCard size={15} />
-            Pay Now / Submit UTR
+            {showPaymentForm ? 'Hide Payment Form' : 'Pay Now / Submit UTR'}
           </button>
+        </div>
+      )}
+
+      {showPaymentForm && (
+        <div className="mb-4">
+          <InlinePaymentCard
+            demand={demand}
+            onCancel={() => setShowPaymentForm(false)}
+            onPaymentSubmitted={() => {
+              setShowPaymentForm(false);
+              fetchDemand();
+            }}
+          />
         </div>
       )}
 
@@ -530,14 +541,15 @@ export default function DemandDetail() {
                     </div>
                   </div>
                   {doc.url ? (
-                    <button
-                      type="button"
-                      onClick={() => setPreviewDoc(doc)}
-                      className="checkout-spec-pill badge-verified-pill flex-align-center-gap-xs cursor-pointer"
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="checkout-spec-pill badge-verified-pill flex-align-center-gap-xs cursor-pointer text-decoration-none"
                       style={{ border: 'none', background: 'var(--brand-light, #eff6ff)', color: 'var(--brand, #1e4fd8)' }}
                     >
                       <ExternalLink size={12} /> View
-                    </button>
+                    </a>
                   ) : (
                     <span className="checkout-spec-pill badge-verified-pill">Attached</span>
                   )}
@@ -570,25 +582,6 @@ export default function DemandDetail() {
             ))}
           </div>
         </div>
-      )}
-
-      {/* Payment Details Modal */}
-      {paymentModalOpen && (
-        <PaymentDetailsModal
-          isOpen={paymentModalOpen}
-          onClose={() => setPaymentModalOpen(false)}
-          demand={demand}
-          onSubmitSuccess={handlePaymentSubmitSuccess}
-        />
-      )}
-
-      {/* In-Portal Document Previewer Modal */}
-      {previewDoc && (
-        <DocumentPreviewModal
-          isOpen={!!previewDoc}
-          onClose={() => setPreviewDoc(null)}
-          doc={previewDoc}
-        />
       )}
     </div>
   );

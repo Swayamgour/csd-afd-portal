@@ -14,7 +14,6 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useGetOemDemandsQuery, useGetOemDemandByIdQuery } from './oemApi.js';
 
@@ -137,6 +136,91 @@ export default function OemDemands() {
         }
       />
 
+      {/* Demand Details Inline Dossier */}
+      {Boolean(selectedDemandId) && (
+        <Card
+          className="mb-4 border-primary"
+          title={`Demand Ref: ${demandDetail?.demandNo || '...'}`}
+          subtitle="Sanctioned Defence Purchase Demand Profile"
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setSelectedDemandId(null)}>
+              Close Dossier
+            </Button>
+          }
+        >
+          {loadingDetail ? (
+            <div className="py-8 text-center text-muted">Loading demand specifications...</div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">
+                <div>
+                  <span className="text-muted block text-xs">Demand Number:</span>
+                  <span className="font-mono font-semibold text-brand">{demandDetail?.demandNo}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Status:</span>
+                  <StatusBadge status={demandDetail?.status} />
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Vehicle Model:</span>
+                  <span className="font-medium">
+                    {demandDetail?.productSnapshot?.name || demandDetail?.productId?.name || '—'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">CSD Index / SKU:</span>
+                  <span className="font-mono">
+                    {demandDetail?.productSnapshot?.sku || demandDetail?.productId?.sku || '—'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Assigned Dealership:</span>
+                  <span className="font-medium">{demandDetail?.dealerId?.name || '—'}</span>
+                  {demandDetail?.dealerId?.city && (
+                    <span className="muted small block">{demandDetail.dealerId.city}, {demandDetail.dealerId.state}</span>
+                  )}
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Regional CSD Depot:</span>
+                  <span>{demandDetail?.depotId?.name || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Sanctioned Total:</span>
+                  <span className="font-mono font-bold text-slate-900">
+                    {formatCurrency(demandDetail?.totalAmount || 0)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Payment Status:</span>
+                  <span className="badge badge-success">{demandDetail?.paymentStatus || 'PAID'}</span>
+                </div>
+              </div>
+
+              {/* Sanitized Beneficiary Profile */}
+              <div className="p-3 border rounded-lg text-sm bg-white">
+                <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                  Beneficiary Quota Information
+                </h4>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-muted block">Entitlement Category:</span>
+                    <span className="font-medium">
+                      {demandDetail?.beneficiarySnapshot?.category || 'Armed Forces Personnel'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted block">Service Details:</span>
+                    <span className="font-mono">
+                      {demandDetail?.beneficiarySnapshot?.serviceNumber || 'Verified Defence Record'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
       <Card>
         <div className="flex flex-wrap gap-2 justify-between items-center mb-3">
           <div className="flex gap-2 items-center flex-1 max-w-md">
@@ -191,93 +275,6 @@ export default function OemDemands() {
           emptyText="No defence demands matching your query were found."
         />
       </Card>
-
-      {/* Demand Details Modal */}
-      <Modal
-        isOpen={Boolean(selectedDemandId)}
-        onClose={() => setSelectedDemandId(null)}
-        title={`Demand Ref: ${demandDetail?.demandNo || '...'}`}
-        subtitle="Sanctioned Defence Purchase Demand Profile"
-        maxWidth="640px"
-        footer={
-          <div className="flex justify-end w-full">
-            <Button variant="outline" onClick={() => setSelectedDemandId(null)}>
-              Close
-            </Button>
-          </div>
-        }
-      >
-        {loadingDetail ? (
-          <div className="py-8 text-center text-muted">Loading demand specifications...</div>
-        ) : (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg text-sm">
-              <div>
-                <span className="text-muted block text-xs">Demand Number:</span>
-                <span className="font-mono font-semibold text-brand">{demandDetail?.demandNo}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Status:</span>
-                <StatusBadge status={demandDetail?.status} />
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Vehicle Model:</span>
-                <span className="font-medium">
-                  {demandDetail?.productSnapshot?.name || demandDetail?.productId?.name || '—'}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">CSD Index / SKU:</span>
-                <span className="font-mono">
-                  {demandDetail?.productSnapshot?.sku || demandDetail?.productId?.sku || '—'}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Assigned Dealership:</span>
-                <span className="font-medium">{demandDetail?.dealerId?.name || '—'}</span>
-                {demandDetail?.dealerId?.city && (
-                  <span className="muted small block">{demandDetail.dealerId.city}, {demandDetail.dealerId.state}</span>
-                )}
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Regional CSD Depot:</span>
-                <span>{demandDetail?.depotId?.name || '—'}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Sanctioned Total:</span>
-                <span className="font-mono font-bold text-slate-900">
-                  {formatCurrency(demandDetail?.totalAmount || 0)}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Payment Status:</span>
-                <span className="badge badge-success">{demandDetail?.paymentStatus || 'PAID'}</span>
-              </div>
-            </div>
-
-            {/* Sanitized Beneficiary Profile */}
-            <div className="p-3 border rounded-lg text-sm bg-white">
-              <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-                Beneficiary Quota Information
-              </h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-muted block">Entitlement Category:</span>
-                  <span className="font-medium">
-                    {demandDetail?.beneficiarySnapshot?.category || 'Armed Forces Personnel'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted block">Service Details:</span>
-                  <span className="font-mono">
-                    {demandDetail?.beneficiarySnapshot?.serviceNumber || 'Verified Defence Record'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

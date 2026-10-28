@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, ShieldCheck, CheckCircle2, AlertCircle, FileText, Upload, Check, X, Eye, FileDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import {
@@ -7,16 +8,6 @@ import {
   useRejectDemandMutation,
   useRecordPaymentDetailsMutation
 } from '../demand/demandApi.js';
-
-// Modals adhering to CSD Depot Manual
-import AddPaymentDetailsModal from './modals/AddPaymentDetailsModal.jsx';
-import UploadSupplyOrderModal from './modals/UploadSupplyOrderModal.jsx';
-import ApproveRejectModal from './modals/ApproveRejectModal.jsx';
-import DepotOrderSummaryModal from './modals/DepotOrderSummaryModal.jsx';
-import DepotNotesModal from './modals/DepotNotesModal.jsx';
-import ViewCustomerModal from './modals/ViewCustomerModal.jsx';
-import PaymentReceiptModal from './modals/PaymentReceiptModal.jsx';
-import DocumentPreviewModal from '../../components/common/DocumentPreviewModal.jsx';
 
 const DOC_LABELS = {
   CANTEEN_CARD: 'Canteen Card',
@@ -28,6 +19,7 @@ const DOC_LABELS = {
 };
 
 export default function DepotDemands() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: demandsData, isLoading: loading, refetch: loadDemands } = useGetDemandsQuery();
   const [approveDemand] = useApproveDemandMutation();
@@ -46,83 +38,11 @@ export default function DepotDemands() {
   const [sortBy, setSortBy] = useState('newest');
   const [searchBy, setSearchBy] = useState('demandNumber');
   const [searchInput, setSearchInput] = useState('');
-
-  // Active Modals State
-  const [activeDemand, setActiveDemand] = useState(null);
-  const [modalType, setModalType] = useState(null); // 'payment' | 'upload' | 'approve' | 'reject' | 'summary' | 'notes' | 'customer' | 'receipt'
   const [previewDoc, setPreviewDoc] = useState(null);
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 6000);
-  };
-
-  // Modal Action Handlers
-  const openModal = (demand, type) => {
-    console.log(demand , type)
-    setActiveDemand(demand);
-    setModalType(type);
-  };
-
-  const closeModal = () => {
-    setActiveDemand(null);
-    setModalType(null);
-  };
-
-  const handleSavePaymentDetails = async (formData) => {
-    if (!activeDemand) return;
-    try {
-      const targetId = activeDemand._id || activeDemand.id;
-      await recordPaymentDetails({ id: targetId, ...formData }).unwrap();
-      showToast(`Payment details (OR No: ${formData.orNumber}) successfully recorded for ${activeDemand.demandNo || activeDemand.id}`);
-      closeModal();
-    } catch (e) {
-      alert(e?.data?.message || e.message || 'Error recording payment');
-    }
-  };
-
-  const handleUploadSupplyOrder = async (docsData) => {
-    if (!activeDemand) return;
-    try {
-      showToast(`Local Supply Order & Authority Letter uploaded for ${activeDemand.demandNo || activeDemand.id}`);
-      closeModal();
-    } catch (e) {
-      alert(e?.data?.message || e.message || 'Error uploading documents');
-    }
-  };
-
-  const handleApproveDemand = async ({ status, note }) => {
-    if (!activeDemand) return;
-    try {
-      const targetId = activeDemand._id || activeDemand.id;
-      const isPrePayment = (activeDemand.status || '').toUpperCase() === 'CREATED' || (!activeDemand.paymentStatus || activeDemand.paymentStatus === 'UNPAID');
-      await approveDemand({ id: targetId, note, remarks: note }).unwrap();
-      if (isPrePayment) {
-        showToast(`Demand ${activeDemand.demandNo || activeDemand.id} Approved! Payment link has been enabled for the beneficiary.`);
-      } else {
-        showToast(`Payment Verified! Local Supply Order issued for ${activeDemand.demandNo || activeDemand.id} and handed over to URC.`);
-      }
-      closeModal();
-    } catch (e) {
-      alert(e?.data?.message || e.message || 'Error approving demand');
-    }
-  };
-
-  const handleRejectDemand = async ({ reason }) => {
-    if (!activeDemand) return;
-    try {
-      const targetId = activeDemand._id || activeDemand.id;
-      await rejectDemand({ id: targetId, reason }).unwrap();
-      showToast(`Demand ${activeDemand.demandNo || activeDemand.id} Rejected. Payment refund process initiated.`);
-      closeModal();
-    } catch (e) {
-      alert(e?.data?.message || e.message || 'Error rejecting demand');
-    }
-  };
-
-  const handleAddNote = async (noteText) => {
-    if (!activeDemand) return;
-    showToast(`Internal note logged on ${activeDemand.demandNo || activeDemand.id}`);
   };
 
   // Tab Filter State
@@ -385,7 +305,7 @@ export default function DepotDemands() {
                         <button
                           type="button"
                           className="btn-depot-view-customer"
-                          onClick={() => openModal(demand, 'customer')}
+                          onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                         >
                           View Customer
                         </button>
@@ -437,7 +357,7 @@ export default function DepotDemands() {
                               <button
                                 type="button"
                                 className="small text-brand font-semibold underline"
-                                onClick={() => openModal(demand, 'summary')}
+                                onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                                 title="View detailed summary and documents list"
                                 style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '11px' }}
                               >
@@ -525,7 +445,7 @@ export default function DepotDemands() {
                             <button
                               type="button"
                               className="btn-depot-payment-receipt"
-                              onClick={() => openModal(demand, 'receipt')}
+                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                             >
                               Payment Receipt
                             </button>
@@ -608,7 +528,7 @@ export default function DepotDemands() {
                         <button
                           type="button"
                           className="btn-depot-status-view"
-                          onClick={() => openModal(demand, 'summary')}
+                          onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                         >
                           View
                         </button>
@@ -623,7 +543,7 @@ export default function DepotDemands() {
                             type="button"
                             className="btn-depot-action btn-action-approve"
                             style={{ background: '#16a34a', color: '#fff', fontWeight: 700 }}
-                            onClick={() => openModal(demand, 'approve')}
+                            onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                             title="Scrutinize documents and approve demand to enable payment option for beneficiary"
                           >
                             ✓ Approve Demand (Grant Sanction)
@@ -641,7 +561,7 @@ export default function DepotDemands() {
                             <button
                               type="button"
                               className="btn-depot-action btn-action-payment-received"
-                              onClick={() => openModal(demand, 'payment')}
+                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                               title="Enter Payment details received directly by CSD (Fig. 5)"
                               style={{ marginTop: '4px' }}
                             >
@@ -654,7 +574,7 @@ export default function DepotDemands() {
                             <button
                               type="button"
                               className="btn-depot-action btn-action-payment-received"
-                              onClick={() => openModal(demand, 'payment')}
+                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                               title="Enter Payment details, received by CSD (Fig. 5)"
                             >
                               Payment Received By CSD
@@ -664,7 +584,7 @@ export default function DepotDemands() {
                             <button
                               type="button"
                               className="btn-depot-action btn-action-upload-supply"
-                              onClick={() => openModal(demand, 'upload')}
+                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                               title="Upload Official Receipt, Supply Order, and Authority Letter (Fig. 6)"
                             >
                               Upload Local Supply Order
@@ -674,7 +594,7 @@ export default function DepotDemands() {
                             <button
                               type="button"
                               className="btn-depot-action btn-action-approve"
-                              onClick={() => openModal(demand, 'approve')}
+                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                               disabled={isProcessed}
                               style={!isProcessed ? { background: '#2563eb', color: '#fff', fontWeight: 700 } : {}}
                               title="Issue Local Supply Order after verifying payment"
@@ -688,31 +608,21 @@ export default function DepotDemands() {
                         <button
                           type="button"
                           className="btn-depot-action btn-action-reject"
-                          onClick={() => openModal(demand, 'reject')}
+                          onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                           disabled={isProcessed || isRejected}
                           title="Reject order and refund payment"
                         >
                           Reject
                         </button>
 
-                        {/* 5. Summary */}
+                        {/* 5. Process & Details */}
                         <button
                           type="button"
                           className="btn-depot-action btn-action-summary"
-                          onClick={() => openModal(demand, 'summary')}
-                          title="View order summary"
+                          onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
+                          title="View order summary and file"
                         >
-                          Summary
-                        </button>
-
-                        {/* 6. Notes */}
-                        <button
-                          type="button"
-                          className="btn-depot-action btn-action-notes"
-                          onClick={() => openModal(demand, 'notes')}
-                          title="View & add internal depot notes"
-                        >
-                          Notes
+                          Process File
                         </button>
                       </div>
                     </td>
@@ -723,69 +633,6 @@ export default function DepotDemands() {
           </table></div>
         )}
       </div>
-
-      {/* Step 5.1 Modal: Add Payment Details (Fig. 5) */}
-      <AddPaymentDetailsModal
-        isOpen={modalType === 'payment'}
-        onClose={closeModal}
-        demand={activeDemand}
-        onSave={handleSavePaymentDetails}
-      />
-
-      {/* Step 5.2 Modal: Upload Local Supply Order (Fig. 6) */}
-      <UploadSupplyOrderModal
-        isOpen={modalType === 'upload'}
-        onClose={closeModal}
-        demand={activeDemand}
-        onSave={handleUploadSupplyOrder}
-      />
-
-      {/* Step 5.3 Modal: Approve / Reject with Step 4 Checks */}
-      <ApproveRejectModal
-        isOpen={modalType === 'approve' || modalType === 'reject'}
-        mode={modalType === 'reject' ? 'reject' : 'approve'}
-        onClose={closeModal}
-        demand={activeDemand}
-        onConfirm={modalType === 'reject' ? handleRejectDemand : handleApproveDemand}
-      />
-
-      {/* Modal: Order Summary */}
-      <DepotOrderSummaryModal
-        isOpen={modalType === 'summary'}
-        onClose={closeModal}
-        demand={activeDemand}
-      />
-
-      {/* Modal: Depot Notes */}
-      <DepotNotesModal
-        isOpen={modalType === 'notes'}
-        onClose={closeModal}
-        demand={activeDemand}
-        onAddNote={handleAddNote}
-      />
-
-      {/* Modal: View Customer */}
-      <ViewCustomerModal
-        isOpen={modalType === 'customer'}
-        onClose={closeModal}
-        demand={activeDemand}
-      />
-
-      {/* Modal: Payment Receipt */}
-      <PaymentReceiptModal
-        isOpen={modalType === 'receipt'}
-        onClose={closeModal}
-        demand={activeDemand}
-      />
-
-      {/* In-Portal Document Previewer Modal */}
-      {previewDoc && (
-        <DocumentPreviewModal
-          isOpen={!!previewDoc}
-          onClose={() => setPreviewDoc(null)}
-          doc={previewDoc}
-        />
-      )}
     </div>
   );
 }

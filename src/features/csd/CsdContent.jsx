@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, PlusCircle, CheckCircle2, Download, Image as ImageIcon } from 'lucide-react';
+import { FileText, PlusCircle, CheckCircle2, Download, Image as ImageIcon, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import Input from '../../components/common/Input.jsx';
 import Select from '../../components/common/Select.jsx';
 import { useGetContentQuery, useCreateContentMutation, useGetAllAdminBannersQuery } from '../admin/adminApi.js';
@@ -161,70 +160,74 @@ export default function CsdContent() {
         </Card>
       )}
 
-      {/* Publish Modal */}
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Publish Official Policy Circular"
-        subtitle="This circular will be digitally published across all URCs and depots"
-        maxWidth="540px"
-        footer={
-          <div className="modal-footer-btns">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+      {/* Publish Policy Circular Inline Card */}
+      {modalOpen && (
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">Publish Official Policy Circular</h3>
+              <p className="micro muted">This circular will be digitally published across all URCs and depots</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleCreateCircular}>
-              Publish Circular
-            </Button>
           </div>
-        }
-      >
-        <div className="publish-form">
-          <Input
-            id="cirTitle"
-            label="Circular Title"
-            placeholder="e.g. Revised Guidelines on EV Two-Wheelers 2024"
-            value={newCircular.title}
-            onChange={(e) => setNewCircular({ ...newCircular, title: e.target.value })}
-            required
-            className="mb-2"
-          />
-
-          <div className="row gap-1 mb-2">
-            <div className="flex-1">
-              <Input
-                id="cirNum"
-                label="Dispatch File Number"
-                placeholder="CSD/AFD/POL/2024/..."
-                value={newCircular.number}
-                onChange={(e) => setNewCircular({ ...newCircular, number: e.target.value })}
-                required
-              />
-            </div>
-            <div className="flex-1">
-              <Select
-                label="Document Classification"
-                value={newCircular.category}
-                onChange={(e) => setNewCircular({ ...newCircular, category: e.target.value })}
-                options={['Circular', 'Office Order', 'Advisory Notice', 'Gazette Extract']}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="form-field mb-2">
-            <label className="form-label">Executive Summary *</label>
-            <textarea
-              rows={3}
-              className="form-control fld"
-              placeholder="Brief summary of revised rules..."
-              value={newCircular.summary}
-              onChange={(e) => setNewCircular({ ...newCircular, summary: e.target.value })}
+          <form onSubmit={handleCreateCircular} className="publish-form">
+            <Input
+              id="cirTitle"
+              label="Circular Title"
+              placeholder="e.g. Revised Guidelines on EV Two-Wheelers 2024"
+              value={newCircular.title}
+              onChange={(e) => setNewCircular({ ...newCircular, title: e.target.value })}
               required
+              className="mb-2"
             />
-          </div>
-        </div>
-      </Modal>
+
+            <div className="row gap-1 mb-2">
+              <div className="flex-1">
+                <Input
+                  id="cirNum"
+                  label="Dispatch File Number"
+                  placeholder="CSD/AFD/POL/2024/..."
+                  value={newCircular.number}
+                  onChange={(e) => setNewCircular({ ...newCircular, number: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="flex-1">
+                <Select
+                  label="Document Classification"
+                  value={newCircular.category}
+                  onChange={(e) => setNewCircular({ ...newCircular, category: e.target.value })}
+                  options={['Circular', 'Office Order', 'Advisory Notice', 'Gazette Extract']}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-field mb-3">
+              <label className="form-label">Executive Summary *</label>
+              <textarea
+                rows={3}
+                className="form-control fld"
+                placeholder="Brief summary of revised rules..."
+                value={newCircular.summary}
+                onChange={(e) => setNewCircular({ ...newCircular, summary: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="row gap-1 justify-end">
+              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" loading={creating}>
+                Publish Circular
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
     </div>
   );
 }

@@ -18,7 +18,6 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
-import Modal from '../../components/common/Modal.jsx';
 import {
   useGetOemDealersQuery,
   useGetOemDealerByIdQuery,
@@ -152,6 +151,118 @@ export default function OemDealers() {
         }
       />
 
+      {/* Dealer Detail Inline Dossier */}
+      {Boolean(selectedDealerId) && (
+        <Card
+          className="mb-4 border-primary"
+          title={selectedDealer?.name || 'Dealership Dossier'}
+          subtitle={`Showroom Code: ${selectedDealer?.code || '—'} · Authorized OEM Representative`}
+          headerAction={
+            <Button variant="outline" size="sm" onClick={() => setSelectedDealerId(null)}>
+              Close Dossier
+            </Button>
+          }
+        >
+          {loadingDetail ? (
+            <div className="py-8 text-center text-muted">Loading dealer details...</div>
+          ) : (
+            <div className="space-y-4">
+              {/* Dealer Details Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">
+                <div>
+                  <span className="text-muted block text-xs">Dealership Name:</span>
+                  <span className="font-semibold">{selectedDealer?.name}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Dealer Code:</span>
+                  <span className="font-mono font-medium">{selectedDealer?.code}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Location:</span>
+                  <span>{selectedDealer?.city}, {selectedDealer?.state}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Address:</span>
+                  <span>{selectedDealer?.address || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Phone:</span>
+                  <span>{selectedDealer?.phone || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted block text-xs">Official Email:</span>
+                  <span>{selectedDealer?.email || '—'}</span>
+                </div>
+              </div>
+
+              {/* Depot Appointments */}
+              <div>
+                <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+                  <Building2 size={16} className="text-brand" />
+                  Regional CSD Depot Appointments ({dealerAppointments.length})
+                </h4>
+                {loadingAppointments ? (
+                  <div className="text-xs text-muted py-2">Loading appointments...</div>
+                ) : dealerAppointments.length === 0 ? (
+                  <div className="text-xs text-muted p-2 bg-slate-50 rounded border">
+                    No explicit depot appointment records found. Operating under primary OEM dealership scope.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                    {dealerAppointments.map((app, idx) => (
+                      <div
+                        key={app._id || idx}
+                        className="p-2 border rounded flex justify-between items-center text-xs bg-white"
+                      >
+                        <div>
+                          <span className="font-semibold">{app.depotId?.name || '—'}</span>
+                          {app.depotId?.code && <span className="text-muted ml-2 font-mono">({app.depotId.code})</span>}
+                        </div>
+                        <Badge variant={app.status === 'APPROVED' || app.status === 'ACTIVE' ? 'success' : 'neutral'}>
+                          {app.status || '—'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Authorized Products */}
+              <div>
+                <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+                  <Package size={16} className="text-brand" />
+                  Authorized Vehicle Lineup ({dealerProducts.length})
+                </h4>
+                {loadingProducts ? (
+                  <div className="text-xs text-muted py-2">Loading products...</div>
+                ) : dealerProducts.length === 0 ? (
+                  <div className="text-xs text-muted p-2 bg-slate-50 rounded border">
+                    No individual vehicle allotments configured yet. Use "Dealer Products" tab to map models.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                    {dealerProducts.map((p, idx) => (
+                      <div
+                        key={p._id || idx}
+                        className="p-2 border rounded flex justify-between items-center text-xs bg-white"
+                      >
+                        <div>
+                          <span className="font-semibold">{p.name}</span>
+                          <span className="text-muted ml-2 font-mono">SKU: {p.sku}</span>
+                        </div>
+                        <span className="font-mono font-medium text-brand">
+                          ₹ {(p.price || 0).toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
       <Card>
         <div className="flex flex-wrap gap-2 justify-between items-center mb-3">
           <div className="flex gap-2 items-center flex-1 max-w-md">
@@ -202,120 +313,6 @@ export default function OemDealers() {
           emptyText="No dealerships matching your query exist in your authorized OEM network."
         />
       </Card>
-
-      {/* Dealer Detail Modal */}
-      <Modal
-        isOpen={Boolean(selectedDealerId)}
-        onClose={() => setSelectedDealerId(null)}
-        title={selectedDealer?.name || 'Dealership Dossier'}
-        subtitle={`Showroom Code: ${selectedDealer?.code || '—'} · Authorized OEM Representative`}
-        maxWidth="720px"
-        footer={
-          <div className="flex justify-end w-full">
-            <Button variant="outline" onClick={() => setSelectedDealerId(null)}>
-              Close
-            </Button>
-          </div>
-        }
-      >
-        {loadingDetail ? (
-          <div className="py-8 text-center text-muted">Loading dealer details...</div>
-        ) : (
-          <div className="space-y-4">
-            {/* Dealer Details Card */}
-            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg text-sm">
-              <div>
-                <span className="text-muted block text-xs">Dealership Name:</span>
-                <span className="font-semibold">{selectedDealer?.name}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Dealer Code:</span>
-                <span className="font-mono font-medium">{selectedDealer?.code}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Location:</span>
-                <span>{selectedDealer?.city}, {selectedDealer?.state}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Address:</span>
-                <span>{selectedDealer?.address || '—'}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Phone:</span>
-                <span>{selectedDealer?.phone || '—'}</span>
-              </div>
-              <div>
-                <span className="text-muted block text-xs">Official Email:</span>
-                <span>{selectedDealer?.email || '—'}</span>
-              </div>
-            </div>
-
-            {/* Depot Appointments */}
-            <div>
-              <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-                <Building2 size={16} className="text-brand" />
-                Regional CSD Depot Appointments ({dealerAppointments.length})
-              </h4>
-              {loadingAppointments ? (
-                <div className="text-xs text-muted py-2">Loading appointments...</div>
-              ) : dealerAppointments.length === 0 ? (
-                <div className="text-xs text-muted p-2 bg-slate-50 rounded">
-                  No explicit depot appointment records found. Operating under primary OEM dealership scope.
-                </div>
-              ) : (
-                <div className="space-y-1.5 max-h-36 overflow-y-auto">
-                  {dealerAppointments.map((app, idx) => (
-                    <div
-                      key={app._id || idx}
-                      className="p-2 border rounded flex justify-between items-center text-xs"
-                    >
-                      <div>
-                        <span className="font-semibold">{app.depotId?.name || '—'}</span>
-                        {app.depotId?.code && <span className="text-muted ml-2 font-mono">({app.depotId.code})</span>}
-                      </div>
-                      <Badge variant={app.status === 'APPROVED' || app.status === 'ACTIVE' ? 'success' : 'neutral'}>
-                        {app.status || '—'}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Authorized Products */}
-            <div>
-              <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
-                <Package size={16} className="text-brand" />
-                Authorized Vehicle Lineup ({dealerProducts.length})
-              </h4>
-              {loadingProducts ? (
-                <div className="text-xs text-muted py-2">Loading products...</div>
-              ) : dealerProducts.length === 0 ? (
-                <div className="text-xs text-muted p-2 bg-slate-50 rounded">
-                  No individual vehicle allotments configured yet. Use "Dealer Products" tab to map models.
-                </div>
-              ) : (
-                <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                  {dealerProducts.map((p, idx) => (
-                    <div
-                      key={p._id || idx}
-                      className="p-2 border rounded flex justify-between items-center text-xs"
-                    >
-                      <div>
-                        <span className="font-semibold">{p.name}</span>
-                        <span className="text-muted ml-2 font-mono">SKU: {p.sku}</span>
-                      </div>
-                      <span className="font-mono font-medium text-brand">
-                        ₹ {(p.price || 0).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

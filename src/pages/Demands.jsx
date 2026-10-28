@@ -23,8 +23,6 @@ import { useGetDemandsQuery, useCancelDemandMutation } from '../features/demand/
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
-import PaymentDetailsModal from '../components/modals/PaymentDetailsModal.jsx';
-
 export default function Demands() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -44,53 +42,8 @@ export default function Demands() {
 
   const demands = demandsData?.items || [];
 
-  // Modal state for "Upload Payment Details" (Fig. 21 & 22)
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [selectedDemandForPayment, setSelectedDemandForPayment] = useState(null);
-
   // Status explanation toggle
   const [showStatusLegend, setShowStatusLegend] = useState(true);
-
-  const handleOpenPaymentModal = (demand) => {
-    setSelectedDemandForPayment(demand);
-    setPaymentModalOpen(true);
-  };
-
-  const handlePaymentSubmitSuccess = async (paymentPayload) => {
-    try {
-      if (paymentPayload && (paymentPayload.selfAccount?.utr || paymentPayload.utrNumber)) {
-        const targetDemandId = selectedDemandForPayment?._id || selectedDemandForPayment?.id;
-        const utr = paymentPayload.selfAccount?.utr || paymentPayload.utrNumber;
-        const bank = paymentPayload.selfAccount?.bank || paymentPayload.bankName || 'State Bank of India';
-        const date = paymentPayload.selfAccount?.date || paymentPayload.depositDate || new Date().toISOString();
-        const remarks = `Bank Transfer UTR: ${utr} (${bank}). Amount: ₹${paymentPayload.totalPaid || selectedDemandForPayment?.totalAmount}`;
-
-        await submitDirectTransfer({
-          demandId: targetDemandId,
-          utrNumber: utr,
-          bankName: bank,
-          depositDate: date,
-          remarks,
-        }).unwrap();
-      }
-      setPaymentModalOpen(false);
-      setSelectedDemandForPayment(null);
-      refetch();
-    } catch (e) {
-      alert(e?.data?.message || e.message || 'Error submitting payment details');
-    }
-  };
-
-  const handleCancelDemand = async (demandId) => {
-    if (window.confirm(`Are you sure you want to cancel demand ${demandId}?`)) {
-      try {
-        await cancelDemand({ id: demandId, reason: 'Cancelled by beneficiary' }).unwrap();
-        refetch();
-      } catch (err) {
-        alert(err?.data?.message || 'Failed to cancel demand');
-      }
-    }
-  };
 
   // Helper for Status Badge styling matching CSD Portal
   const getStatusBadge = (status) => {
@@ -325,7 +278,7 @@ export default function Demands() {
                           {/* Payment / UTR upload (enabled once Depot approves) */}
                           {(['APPROVED', 'PAYMENT_PENDING', 'ON HOLD'].includes((d.status || '').toUpperCase()) && d.paymentStatus !== 'PAID') && (
                             <button
-                              onClick={() => handleOpenPaymentModal(d)}
+                              onClick={() => navigate(`/demands/${encodeURIComponent(d._id || d.id)}`)}
                               className="btn-action-upload-details"
                               style={{ fontWeight: 700, background: '#16a34a', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #15803d' }}
                             >
@@ -420,19 +373,6 @@ export default function Demands() {
           </div>
         )}
       </div>
-
-      {/* Payment Details Modal (Fig. 21 & 22) */}
-      {paymentModalOpen && selectedDemandForPayment && (
-        <PaymentDetailsModal
-          isOpen={paymentModalOpen}
-          onClose={() => {
-            setPaymentModalOpen(false);
-            setSelectedDemandForPayment(null);
-          }}
-          demand={selectedDemandForPayment}
-          onSubmitSuccess={handlePaymentSubmitSuccess}
-        />
-      )}
     </div>
   );
 }

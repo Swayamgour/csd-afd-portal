@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Shield,
   Warehouse,
@@ -11,107 +12,40 @@ import {
   Phone,
   Mail,
   MapPin,
+  X,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { Modal } from '../../components/common/Modal.jsx';
 import {
   useGetUrcsQuery,
-  useGetDepotsQuery,
-  useCreateUrcMutation,
   useUpdateUrcMutation,
 } from '../org/orgApi.js';
 
 export default function CsdUrcs() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const { data: urcs = [], isLoading: loading, isFetching: refreshing, refetch } = useGetUrcsQuery();
-  const { data: depots = [] } = useGetDepotsQuery({ active: true });
-  const [createUrc, { isLoading: isCreating }] = useCreateUrcMutation();
-  const [updateUrc, { isLoading: isUpdating }] = useUpdateUrcMutation();
+  const [updateUrc] = useUpdateUrcMutation();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedUrcForEdit, setSelectedUrcForEdit] = useState(null);
   const [selectedUrcForView, setSelectedUrcForView] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
-
-  // Form State
-  const [formData, setFormData] = useState({
-    depotId: '',
-    name: '',
-    code: '',
-    person: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    active: true,
-  });
 
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 4500);
   };
 
-  const handleOpenAdd = () => {
-    setFormData({
-      depotId: depots[0]?._id || '',
-      name: '',
-      code: '',
-      person: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      state: '',
-      active: true,
-    });
-    setIsAddModalOpen(true);
-  };
-
-  const handleOpenEdit = (urc) => {
-    setSelectedUrcForEdit(urc);
-    setFormData({
-      depotId: urc.depotId?._id || urc.depotId || '',
-      name: urc.name || '',
-      code: urc.code || '',
-      person: urc.person || '',
-      email: urc.email || '',
-      phone: urc.phone || '',
-      address: urc.address || '',
-      city: urc.city || '',
-      state: urc.state || '',
-      active: urc.active ?? true,
-    });
-  };
-
-  const handleSaveUrc = async (e) => {
-    e.preventDefault();
-    if (!formData.depotId) {
-      alert('URC must be operationally associated with an active Regional Depot.');
-      return;
+  useEffect(() => {
+    if (location.state?.toast) {
+      showToast(location.state.toast);
+      window.history.replaceState({}, document.title);
     }
-
-    try {
-      if (selectedUrcForEdit) {
-        await updateUrc({
-          id: selectedUrcForEdit._id || selectedUrcForEdit.id,
-          ...formData,
-        }).unwrap();
-        showToast(`✓ Station Canteen "${formData.name}" successfully updated.`);
-        setSelectedUrcForEdit(null);
-      } else {
-        await createUrc(formData).unwrap();
-        showToast(`✓ Station Canteen "${formData.name}" registered under Parent Depot.`);
-        setIsAddModalOpen(false);
-      }
-    } catch (err) {
-      alert(err?.data?.message || err.message || 'Failed to save URC record');
-    }
-  };
+  }, [location.state]);
 
   const handleToggleStatus = async (urc) => {
     try {
@@ -122,7 +56,7 @@ export default function CsdUrcs() {
       }).unwrap();
       showToast(`URC "${urc.name}" is now ${nextActive ? 'ACTIVE' : 'INACTIVE'}.`);
     } catch (err) {
-      alert(err?.data?.message || err.message || 'Failed to toggle status');
+      showToast('⚠️ ' + (err?.data?.message || err.message || 'Failed to toggle status'));
     }
   };
 
@@ -205,7 +139,7 @@ export default function CsdUrcs() {
           </button>
           <button
             type="button"
-            onClick={() => handleOpenEdit(row)}
+            onClick={() => navigate(`/csd/urcs/${row._id || row.id}/edit`)}
             className="csd-btn-action-edit"
             title="Edit Details"
           >
@@ -242,7 +176,7 @@ export default function CsdUrcs() {
               <RefreshCw size={14} className={`mr-xs ${refreshing ? 'spin-icon' : ''}`} />
               {refreshing ? 'Syncing...' : 'Sync URCs'}
             </Button>
-            <Button variant="primary" size="sm" onClick={handleOpenAdd}>
+            <Button variant="primary" size="sm" onClick={() => navigate('/csd/urcs/new')}>
               <Plus size={14} className="mr-xs" /> Add New URC
             </Button>
           </div>
@@ -273,183 +207,20 @@ export default function CsdUrcs() {
         />
       </Card>
 
-      {/* CREATE / EDIT URC MODAL */}
-      {(isAddModalOpen || selectedUrcForEdit) && (
-        <Modal
-          title={selectedUrcForEdit ? `Edit URC: ${selectedUrcForEdit.name}` : 'Register Unit Run Canteen (URC)'}
-          onClose={() => {
-            setIsAddModalOpen(false);
-            setSelectedUrcForEdit(null);
-          }}
-        >
-          <form onSubmit={handleSaveUrc} className="director-modal-form">
-            <div>
-              <label className="form-label">
-                Select Parent Regional Depot *
-              </label>
-              <select
-                required
-                value={formData.depotId}
-                onChange={(e) => setFormData({ ...formData, depotId: e.target.value })}
-                className="form-control"
-              >
-                <option value="">-- Choose Parent Depot --</option>
-                {depots.map((d) => (
-                  <option key={d._id || d.id} value={d._id || d.id}>
-                    {d.name} ({d.code})
-                  </option>
-                ))}
-              </select>
-              <span className="csd-loc-secondary">
-                * URC is operationally attached to this CSD Depot for supply chain dispatch.
-              </span>
-            </div>
 
-            <div className="csd-form-grid-2-1">
-              <div>
-                <label className="form-label">
-                  URC Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 7 WING AF CANTEEN"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-              <div>
-                <label className="form-label">
-                  URC Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. URC-7AF"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="form-control"
-                />
-              </div>
-            </div>
 
-            <div className="grid-3-col">
-              <div>
-                <label className="form-label">
-                  Officer-in-Charge
-                </label>
-                <input
-                  type="text"
-                  placeholder="Canteen Officer"
-                  value={formData.person}
-                  onChange={(e) => setFormData({ ...formData, person: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-              <div>
-                <label className="form-label">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="urc@station.gov.in"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-              <div>
-                <label className="form-label">
-                  Contact Phone
-                </label>
-                <input
-                  type="text"
-                  placeholder="Canteen Phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="form-label">
-                Station Address
-              </label>
-              <input
-                type="text"
-                placeholder="Military Base / Station Location"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="form-control"
-              />
-            </div>
-
-            <div className="form-grid-2">
-              <div>
-                <label className="form-label">
-                  City
-                </label>
-                <input
-                  type="text"
-                  placeholder="City"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-              <div>
-                <label className="form-label">
-                  State
-                </label>
-                <input
-                  type="text"
-                  placeholder="State"
-                  value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="form-control"
-                />
-              </div>
-            </div>
-
-            <div className="portal-flex-wrap-gap-sm">
-              <input
-                type="checkbox"
-                id="urcActive"
-                checked={formData.active}
-                onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-              />
-              <label htmlFor="urcActive" className="form-label">
-                Operational & Open for Beneficiary Deliveries
-              </label>
-            </div>
-
-            <div className="director-modal-actions">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsAddModalOpen(false);
-                  setSelectedUrcForEdit(null);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary" disabled={isCreating || isUpdating}>
-                {isCreating || isUpdating ? 'Saving...' : selectedUrcForEdit ? 'Update URC' : 'Register URC'}
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
-
-      {/* URC DETAILS INSPECTION MODAL */}
+      {/* URC DETAILS INSPECTION INLINE CARD */}
       {selectedUrcForView && (
-        <Modal
-          title={`URC Station Profile: ${selectedUrcForView.name}`}
-          onClose={() => setSelectedUrcForView(null)}
-        >
+        <Card className="mb-3 border-brand">
+          <div className="card-header between mb-2">
+            <div>
+              <h3 className="card-title">URC Station Profile: {selectedUrcForView.name}</h3>
+              <p className="micro muted">Reviewing URC base details and parent supply depot attachment</p>
+            </div>
+            <Button variant="ghost" size="sm" icon={X} onClick={() => setSelectedUrcForView(null)}>
+              Close
+            </Button>
+          </div>
           <div className="director-modal-form">
             <div className="csd-card-preview-box">
               <div className="csd-card-preview-header">
@@ -490,13 +261,23 @@ export default function CsdUrcs() {
               </div>
             )}
 
-            <div className="director-modal-actions">
-              <Button variant="outline" onClick={() => setSelectedUrcForView(null)}>
-                Close
+            <div className="row gap-1 justify-end mt-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const target = selectedUrcForView;
+                  setSelectedUrcForView(null);
+                  navigate(`/csd/urcs/${target._id || target.id}/edit`);
+                }}
+              >
+                <Edit2 size={13} className="mr-xs" /> Edit URC
+              </Button>
+              <Button variant="primary" onClick={() => setSelectedUrcForView(null)}>
+                Close Dossier
               </Button>
             </div>
           </div>
-        </Modal>
+        </Card>
       )}
     </div>
   );
