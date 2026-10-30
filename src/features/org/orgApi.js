@@ -257,9 +257,9 @@ export const orgApi = api.injectEndpoints({
     }),
 
     getStateProductPrice: builder.query({
-      query: ({ state, productId, quantity = 1 }) => ({
+      query: ({ state, productId, quantity = 1, color }) => ({
         url: `/states/${encodeURIComponent(state)}/price`,
-        params: { productId, quantity },
+        params: { productId, quantity, ...(color ? { color } : {}) },
       }),
       transformResponse: (response) => response?.data || response,
       providesTags: ['ProductPrice'],

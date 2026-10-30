@@ -254,6 +254,8 @@ export default function ProductDetails() {
   // Shared cached list (same request as Home / Catalog) - used only for "Similar products"
   const { products: all } = useStoreProducts();
 
+  const [color, setColor] = useState(""); // selected colour (also drives the colour-wise price)
+
   // CSD AFD Selection states - State -> Dealer -> Depot -> URC cascade
   const [selectedState, setSelectedState] = useState("");
   const [selectedDealerId, setSelectedDealerId] = useState("");
@@ -289,7 +291,7 @@ export default function ProductDetails() {
     isFetching: fetchingStatePrice,
     isError: statePriceError,
   } = useGetStateProductPriceQuery(
-    { state: selectedState, productId: id, quantity: 1 },
+    { state: selectedState, productId: id, quantity: 1, color: color || undefined },
     { skip: !id || !selectedState },
   );
 
@@ -304,11 +306,13 @@ export default function ProductDetails() {
     const catCode =
       prod.categoryId?.code?.toLowerCase() ||
       (prod.afdType === "AFD_II" ? "white-goods" : "car");
-    const colorsList = prod.attributes?.colors
-      ? String(prod.attributes.colors).split(",").map((c) => c.trim()).filter(Boolean)
-      : Array.isArray(prod.colors)
-        ? prod.colors
+    // colours: [{name, hex, price}] (new) | ["Red", ...] | attributes.colors "Red, Blue" (legacy)
+    const colorObjs = Array.isArray(prod.colors) && prod.colors.length
+      ? prod.colors.map((c) => (typeof c === "string" ? { name: c } : c)).filter((c) => c?.name)
+      : prod.attributes?.colors
+        ? String(prod.attributes.colors).split(",").map((c) => ({ name: c.trim() })).filter((c) => c.name)
         : [];
+    const colorsList = colorObjs.map((c) => c.name);
 
     // Feature groups only if the server sends them: ["a","b"] or [{ group, items }]
     const rawFeatures = prod.features || prod.attributes?.features;
@@ -316,8 +320,8 @@ export default function ProductDetails() {
       ? typeof rawFeatures[0] === "string"
         ? [["Features", rawFeatures]]
         : rawFeatures
-          .map((g) => [g.group || g.title || g.name || "Features", g.items || g.features || []])
-          .filter(([, items]) => items.length)
+            .map((g) => [g.group || g.title || g.name || "Features", g.items || g.features || []])
+            .filter(([, items]) => items.length)
       : [];
 
     const price = Number(prod.priceToCustomer || prod.price || 0) || null;
@@ -358,6 +362,7 @@ export default function ProductDetails() {
           ? [prod.image]
           : [],
       colors: colorsList,
+      colorObjs,
       featureGroups,
       engine: prod.engineCapacity
         ? `${prod.engineCapacity} cc`
@@ -384,7 +389,6 @@ export default function ProductDetails() {
     };
   }, [rawProduct]);
 
-  const [color, setColor] = useState("");
   const [fuel, setFuel] = useState("");
   const [drive, setDrive] = useState("");
   const [main, setMain] = useState(0);
@@ -546,8 +550,6 @@ export default function ProductDetails() {
   const w = wish.includes(p.id),
     c = cmp.includes(p.id);
   const gallery = imgs.length ? imgs : [p.image];
-
-  console.log(imgs, p.image);
 
   const highlights = (
     car
@@ -924,28 +926,33 @@ export default function ProductDetails() {
             <div className="pdp-spec-form">
               {/* Color Dropdown (only when the server provides colours) */}
               {p.colors?.length > 0 && (
-                <div>
-                  <label className="form-label font-semibold pdp-form-label">
-                    Color <span className="pdp-req-star">*</span>
-                  </label>
-                  <select
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
-                    className={`select-input pdp-form-select ${checkoutErrors.color ? "has-error" : ""}`}
-                  >
-                    <option value="">-- Select Color --</option>
-                    {p.colors.map((cName) => (
+              <div>
+                <label className="form-label font-semibold pdp-form-label">
+                  Color <span className="pdp-req-star">*</span>
+                </label>
+                <select
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className={`select-input pdp-form-select ${checkoutErrors.color ? "has-error" : ""}`}
+                >
+                  <option value="">-- Select Color --</option>
+                  {p.colors.map((cName) => {
+                    const co = (p.colorObjs || []).find((x) => x.name === cName);
+                    const showPrice = p.colorPricing === "PER_COLOR" && co?.price;
+                    return (
                       <option key={cName} value={cName}>
                         {cName}
+                        {showPrice ? ` - ₹${Number(co.price).toLocaleString("en-IN")}` : ""}
                       </option>
-                    ))}
-                  </select>
-                  {checkoutErrors.color && (
-                    <span className="micro text-danger pdp-error-text">
-                      {checkoutErrors.color}
-                    </span>
-                  )}
-                </div>
+                    );
+                  })}
+                </select>
+                {checkoutErrors.color && (
+                  <span className="micro text-danger pdp-error-text">
+                    {checkoutErrors.color}
+                  </span>
+                )}
+              </div>
               )}
 
               {/* State Dropdown + Dynamic Count */}

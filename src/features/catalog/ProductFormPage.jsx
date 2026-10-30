@@ -16,7 +16,8 @@ import {
   Star,
   Plus,
   Loader2,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Palette,
 } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
 import { Card } from '../../components/common/Card.jsx';
@@ -36,6 +37,17 @@ import {
   useUpdateOemProductMutation,
 } from '../oem/oemApi.js';
 import { useGetOemsQuery } from '../org/orgApi.js';
+import { categoryKind, fieldsFor, KIND_LABEL, COMMON_COLORS } from './categoryFields.js';
+
+// colours saved as objects ({name, hex, price}); old products may only have a comma separated string / string array
+function colorsFromProduct(product) {
+  if (Array.isArray(product.colors) && product.colors.length) {
+    return product.colors.map((c) => (typeof c === 'string' ? { name: c, hex: '#cccccc', price: '' } : { name: c.name || '', hex: c.hex || '#cccccc', price: c.price ?? '' }));
+  }
+  const legacy = product.attributes?.colors;
+  if (legacy) return String(legacy).split(',').map((n) => n.trim()).filter(Boolean).map((name) => ({ name, hex: '#cccccc', price: '' }));
+  return [];
+}
 
 export function ProductFormPage() {
   const { id } = useParams();
@@ -94,6 +106,9 @@ export function ProductFormPage() {
     images: [],
     status: 'ACTIVE',
     description: '',
+    specs: {}, // category specific fields (stored in product.attributes)
+    colors: [], // [{ name, hex, price }]
+    colorPricing: 'SAME', // SAME | PER_COLOR
   });
 
   const [errors, setErrors] = useState({});
@@ -123,6 +138,9 @@ export function ProductFormPage() {
         images: prodImages,
         status: product.status || 'ACTIVE',
         description: product.description || '',
+        specs: { ...(product.attributes || {}) },
+        colors: colorsFromProduct(product),
+        colorPricing: product.colorPricing || 'SAME',
       });
     } else if (!isEdit && categories.length > 0) {
       setFormState((prev) => ({
@@ -132,6 +150,35 @@ export function ProductFormPage() {
       }));
     }
   }, [product, isEdit, categories, oems]);
+
+  const selectedCategory = categories.find((c) => String(c._id || c.code) === String(formState.categoryId));
+  const kind = categoryKind(selectedCategory);
+  const specFields = fieldsFor(kind, formState.specs?.applianceType);
+
+  const getField = (f) => (f.top ? formState[f.key] ?? '' : formState.specs?.[f.key] ?? '');
+  const setField = (f, value) =>
+    setFormState((prev) => (f.top ? { ...prev, [f.key]: value } : { ...prev, specs: { ...prev.specs, [f.key]: value } }));
+
+  const handleCategoryChange = (categoryId) => {
+    const cat = categories.find((c) => String(c._id || c.code) === String(categoryId));
+    const k = categoryKind(cat);
+    setFormState((prev) => ({
+      ...prev,
+      categoryId,
+      afdType: k === 'appliance' ? 'AFD_II' : 'AFD_I',
+      fuelType: k === 'appliance' ? '' : prev.fuelType || 'Petrol',
+    }));
+  };
+
+  // ---- colours ----
+  const addColor = (name = '', hex = '#cccccc') =>
+    setFormState((prev) => {
+      if (name && prev.colors.some((c) => c.name.toLowerCase() === name.toLowerCase())) return prev;
+      return { ...prev, colors: [...prev.colors, { name, hex, price: '' }] };
+    });
+  const updateColor = (i, patch) =>
+    setFormState((prev) => ({ ...prev, colors: prev.colors.map((c, idx) => (idx === i ? { ...c, ...patch } : c)) }));
+  const removeColor = (i) => setFormState((prev) => ({ ...prev, colors: prev.colors.filter((_, idx) => idx !== i) }));
 
   const handleFilesSelected = async (fileList) => {
     if (!fileList || fileList.length === 0) return;
@@ -281,6 +328,11 @@ export function ProductFormPage() {
     if (!formState.name.trim()) newErrors.name = 'Product name is required';
     if (!formState.sku.trim()) newErrors.sku = 'SKU / Index Number is required';
     if (!formState.price) newErrors.price = 'CSD Concessional Price is required';
+    const namedColors = formState.colors.filter((c) => c.name.trim());
+    if (formState.colorPricing === 'PER_COLOR') {
+      if (!namedColors.length) newErrors.colors = 'Add at least one colour, or choose "Same price for all colours".';
+      else if (namedColors.some((c) => c.price === '' || Number(c.price) <= 0)) newErrors.colors = 'Every colour needs its own price.';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -299,15 +351,32 @@ export function ProductFormPage() {
         categoryId: formState.categoryId,
         // OEM login: server uses the logged-in OEM, sending another oemId triggers OEM_SCOPE_VIOLATION
         ...(isOem ? {} : { oemId: formState.oemId }),
-        variant: formState.variant.trim(),
+        // only the fields of the selected category are saved
+        ...(() => {
+          const attributes = {};
+          const top = {};
+          specFields.forEach((f) => {
+            const v = getField(f);
+            if (v === '' || v === undefined || v === null) return;
+            if (f.top) top[f.key] = f.type === 'number' ? Number(v) : String(v).trim();
+            else attributes[f.key] = f.type === 'number' ? Number(v) : String(v).trim();
+          });
+          return { attributes, variant: top.variant || '', engineCapacity: top.engineCapacity, fuelType: top.fuelType };
+        })(),
+        colorPricing: formState.colorPricing,
+        colors: formState.colors
+          .filter((c) => c.name.trim())
+          .map((c) => ({
+            name: c.name.trim(),
+            hex: c.hex || undefined,
+            ...(formState.colorPricing === 'PER_COLOR' && c.price !== '' ? { price: Number(c.price) } : {}),
+          })),
         afdType: formState.afdType,
         price: Number(formState.price),
         priceToCustomer: Number(formState.price),
         mrp: formState.mrp ? Number(formState.mrp) : undefined,
         basicPrice: formState.basicPrice ? Number(formState.basicPrice) : undefined,
         taxPercent: Number(formState.taxPercent),
-        engineCapacity: formState.engineCapacity ? Number(formState.engineCapacity) : undefined,
-        fuelType: formState.fuelType,
         imageUrl: primaryImage,
         images: allImages,
         status: formState.status,
@@ -393,7 +462,7 @@ export function ProductFormPage() {
                 <select
                   className="form-select"
                   value={formState.categoryId}
-                  onChange={(e) => setFormState({ ...formState, categoryId: e.target.value })}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
                 >
                   {categories.map((c) => (
                     <option key={c._id || c.code} value={c._id || c.code}>
@@ -511,52 +580,42 @@ export function ProductFormPage() {
           </div>
         </div>
 
-        {/* Technical Specs Card */}
+        {/* Technical Specs Card - fields change with the selected category */}
         <div className="card mb-2">
           <div className="card-header">
             <h3 className="card-title row align-center gap-1">
               <Layers size={18} />
-              3. Technical Specifications
+              3. {KIND_LABEL[kind]} Specifications
             </h3>
+            <p className="muted fs-xs" style={{ margin: 0 }}>
+              Fields below change with the Product Category selected above.
+            </p>
           </div>
           <div className="card-body">
             <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label">Engine Capacity (cc)</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 2198"
-                  className="form-control font-mono"
-                  value={formState.engineCapacity}
-                  onChange={(e) => setFormState({ ...formState, engineCapacity: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Fuel Type</label>
-                <select
-                  className="form-select"
-                  value={formState.fuelType}
-                  onChange={(e) => setFormState({ ...formState, fuelType: e.target.value })}
-                >
-                  <option value="Petrol">Petrol</option>
-                  <option value="Diesel">Diesel</option>
-                  <option value="CNG">CNG</option>
-                  <option value="Electric">Electric (EV)</option>
-                  <option value="Hybrid">Hybrid</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Variant / Body Style</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Z2 MT / Compact SUV / 7-Seater"
-                  className="form-control"
-                  value={formState.variant}
-                  onChange={(e) => setFormState({ ...formState, variant: e.target.value })}
-                />
-              </div>
+              {specFields.map((f) => (
+                <div className="form-group" key={f.key}>
+                  <label className="form-label">{f.label}</label>
+                  {f.type === 'select' ? (
+                    <select className="form-select" value={getField(f)} onChange={(e) => setField(f, e.target.value)}>
+                      <option value="">-- Select --</option>
+                      {f.options.map((o) => (
+                        <option key={o} value={o}>
+                          {o}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type={f.type}
+                      placeholder={f.placeholder}
+                      className="form-control"
+                      value={getField(f)}
+                      onChange={(e) => setField(f, e.target.value)}
+                    />
+                  )}
+                </div>
+              ))}
 
               <div className="form-group">
                 <label className="form-label">Primary Cover Image URL</label>
@@ -596,6 +655,111 @@ export function ProductFormPage() {
                 />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Colour variants - every category */}
+        <div className="card mb-2">
+          <div className="card-header">
+            <h3 className="card-title row align-center gap-1">
+              <Palette size={18} />
+              Colour Variants
+            </h3>
+            <p className="muted fs-xs" style={{ margin: 0 }}>
+              Car, bike aur home appliance - sab me colours add kar sakte hain.
+            </p>
+          </div>
+          <div className="card-body">
+            <div className="row gap-2 mb-2" style={{ flexWrap: 'wrap' }}>
+              {[
+                ['SAME', 'Same price for all colours', `Product price (₹${formState.price || '—'}) har colour par lagega`],
+                ['PER_COLOR', 'Different price per colour', 'Har colour ka apna price set karo'],
+              ].map(([val, title, hint]) => (
+                <label
+                  key={val}
+                  className="row gap-1"
+                  style={{
+                    cursor: 'pointer',
+                    padding: '10px 14px',
+                    border: `1px solid ${formState.colorPricing === val ? 'var(--color-primary, #1e4fd8)' : '#d0d5dd'}`,
+                    borderRadius: 8,
+                    flex: '1 1 260px',
+                    background: formState.colorPricing === val ? 'var(--color-primary-soft, #eff6ff)' : 'transparent',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="colorPricing"
+                    checked={formState.colorPricing === val}
+                    onChange={() => setFormState({ ...formState, colorPricing: val })}
+                  />
+                  <span>
+                    <strong>{title}</strong>
+                    <br />
+                    <span className="muted fs-xs">{hint}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div className="row gap-1 mb-2" style={{ flexWrap: 'wrap' }}>
+              <span className="muted fs-xs">Quick add:</span>
+              {COMMON_COLORS.map(([name, hex]) => (
+                <button
+                  type="button"
+                  key={name}
+                  className="oem-photo-toggle-btn"
+                  onClick={() => addColor(name, hex)}
+                  disabled={formState.colors.some((c) => c.name.toLowerCase() === name.toLowerCase())}
+                >
+                  <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: 6, background: hex, border: '1px solid #bbb', marginRight: 6 }} />
+                  {name}
+                </button>
+              ))}
+              <button type="button" className="oem-photo-toggle-btn" onClick={() => addColor()}>
+                <Plus size={14} /> Custom colour
+              </button>
+            </div>
+
+            {formState.colors.length === 0 && <p className="muted fs-xs">Abhi koi colour add nahi hua (optional).</p>}
+            {formState.colors.map((c, i) => (
+              <div key={i} className="row gap-2 mb-1 align-center" style={{ flexWrap: 'wrap' }}>
+                <input
+                  type="color"
+                  value={c.hex || '#cccccc'}
+                  onChange={(e) => updateColor(i, { hex: e.target.value })}
+                  style={{ width: 40, height: 36, padding: 0, border: '1px solid #d0d5dd', borderRadius: 6 }}
+                  aria-label="Colour"
+                />
+                <input
+                  className="form-control"
+                  style={{ flex: '1 1 180px' }}
+                  placeholder="Colour name e.g. Pearl White"
+                  value={c.name}
+                  onChange={(e) => updateColor(i, { name: e.target.value })}
+                />
+                {formState.colorPricing === 'PER_COLOR' && (
+                  <input
+                    type="number"
+                    min="0"
+                    className="form-control font-mono"
+                    style={{ flex: '0 1 180px' }}
+                    placeholder="Price (₹)"
+                    value={c.price}
+                    onChange={(e) => updateColor(i, { price: e.target.value })}
+                  />
+                )}
+                <button type="button" className="oem-photo-toggle-btn" onClick={() => removeColor(i)} aria-label="Remove colour">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+            {errors.colors && <span className="form-error">{errors.colors}</span>}
+            {formState.colorPricing === 'PER_COLOR' && (
+              <p className="muted fs-xs mt-1">
+                Colour price = us colour ka national price. State-wise price set ho to state price par (colour price − product price) ka fark jud jaata hai.
+              </p>
+            )}
           </div>
         </div>
 

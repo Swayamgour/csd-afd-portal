@@ -149,7 +149,7 @@ export default function OemPricing() {
   return (
     <div className="oem-pricing-page space-y-6">
       <PageHeader
-        title="State-Wise AFD Rate Schedules"
+        title="State-wise Prices"
         subtitle="Manage state ceiling rates, local road tax offsets, and published rate contracts"
         breadcrumbs={[
           { label: 'OEM Portal', href: '/oem/dashboard' },
@@ -172,7 +172,7 @@ export default function OemPricing() {
               icon={PlusCircle}
               onClick={handleOpenCreate}
             >
-              Publish State Rate
+              Set State Prices
             </Button>
           </div>
         }

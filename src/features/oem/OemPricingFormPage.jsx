@@ -1,16 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  CreditCard,
-  ArrowLeft,
-  Save,
-  CheckCircle2,
-  AlertCircle,
-  Calendar,
-  Building,
-  Calculator,
-  ShieldCheck,
-} from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, CheckCircle2, Search, Wand2 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
@@ -18,6 +8,7 @@ import { LoadingState } from '../../components/common/States.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import {
   useGetOemPricingByIdQuery,
+  useGetOemPricingQuery,
   useCreateOemPricingMutation,
   useUpdateOemPricingMutation,
   useGetOemProductsQuery,
@@ -30,399 +21,366 @@ const INDIAN_STATES = [
   'JHARKHAND', 'KARNATAKA', 'KERALA', 'LADAKH', 'LAKSHADWEEP', 'MADHYA PRADESH',
   'MAHARASHTRA', 'MANIPUR', 'MEGHALAYA', 'MIZORAM', 'NAGALAND', 'ODISHA',
   'PUDUCHERRY', 'PUNJAB', 'RAJASTHAN', 'SIKKIM', 'TAMIL NADU', 'TELANGANA',
-  'TRIPURA', 'UTTAR PRADESH', 'UTTARAKHAND', 'WEST BENGAL'
+  'TRIPURA', 'UTTAR PRADESH', 'UTTARAKHAND', 'WEST BENGAL',
 ];
 
+const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+const baseFromFinal = (final, gst) => round2(Number(final) / (1 + (Number(gst) || 0) / 100));
+const idOf = (x) => String(x?._id || x?.id || x || '');
+
+/**
+ * State price manager - one screen:
+ *   1. pick the product
+ *   2. every state is listed with one price box (final price the beneficiary pays)
+ *   3. type prices (or apply one price to many states) and press Save once.
+ * Base price is calculated automatically from final price and GST.
+ */
 export default function OemPricingFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isEdit = Boolean(id);
 
-  const { data: rawPricing, isLoading: isLoadingPrice } = useGetOemPricingByIdQuery(id, { skip: !isEdit });
-  const { data: productsData, isLoading: isLoadingProducts } = useGetOemProductsQuery({ limit: 100, status: 'ACTIVE' });
-
-  const [createPricing, { isLoading: isCreating }] = useCreateOemPricingMutation();
-  const [updatePricing, { isLoading: isUpdating }] = useUpdateOemPricingMutation();
-
+  const { data: editDoc, isLoading: loadingEditDoc } = useGetOemPricingByIdQuery(id, { skip: !id });
+  const { data: productsData, isLoading: loadingProducts } = useGetOemProductsQuery({ limit: 100, status: 'ACTIVE' });
   const products = productsData?.items || [];
 
-  const [formData, setFormData] = useState({
-    productId: '',
-    state: 'DELHI',
-    basePrice: '',
-    salePrice: '',
-    taxPercent: '',
-    status: 'PUBLISHED',
-    effectiveFrom: new Date().toISOString().slice(0, 10),
-    effectiveTo: '',
+  const [productId, setProductId] = useState('');
+  useEffect(() => {
+    if (productId) return;
+    const fromEdit = editDoc && idOf((editDoc.data || editDoc).productId);
+    if (fromEdit) setProductId(fromEdit);
+  }, [editDoc, productId]);
+
+  const product = useMemo(() => products.find((p) => idOf(p) === productId) || null, [products, productId]);
+
+  const { data: existingData, isFetching: loadingExisting } = useGetOemPricingQuery(
+    { productId, status: 'PUBLISHED', limit: 100 },
+    { skip: !productId }
+  );
+  const existing = useMemo(() => {
+    const map = {};
+    (existingData?.items || []).forEach((r) => {
+      map[String(r.state).toUpperCase()] = r;
+    });
+    return map;
+  }, [existingData]);
+
+  const [createPricing] = useCreateOemPricingMutation();
+  const [updatePricing] = useUpdateOemPricingMutation();
+
+  const defaultGst = product?.taxPercent ?? 18;
+  const [gst, setGst] = useState('18'); // GST used for every row of this screen
+  const [rows, setRows] = useState({}); // state -> price string ('' = not set)
+  const [selected, setSelected] = useState(new Set());
+  const [bulkPrice, setBulkPrice] = useState('');
+  const [search, setSearch] = useState('');
+  const [view, setView] = useState('ALL'); // ALL | SET | UNSET
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  // (re)load rows when the product or its saved prices change
+  useEffect(() => {
+    if (!productId) return;
+    const next = {};
+    INDIAN_STATES.forEach((s) => {
+      next[s] = existing[s] ? String(existing[s].salePrice) : '';
+    });
+    setRows(next);
+    setSelected(new Set());
+    const firstTax = Object.values(existing)[0]?.taxPercent;
+    setGst(String(firstTax ?? defaultGst));
+  }, [productId, existing, defaultGst]);
+
+  const original = (s) => (existing[s] ? String(existing[s].salePrice) : '');
+  const isChanged = (s) => (rows[s] ?? '') !== original(s) || (existing[s] && Number(existing[s].taxPercent) !== Number(gst) && rows[s] !== '');
+
+  const changedStates = INDIAN_STATES.filter((s) => rows[s] !== undefined && isChanged(s));
+  const setCount = INDIAN_STATES.filter((s) => rows[s] !== '' && rows[s] !== undefined).length;
+
+  const visible = INDIAN_STATES.filter((s) => {
+    if (search && !s.toLowerCase().includes(search.toLowerCase())) return false;
+    if (view === 'SET') return rows[s] !== '' && rows[s] !== undefined;
+    if (view === 'UNSET') return !rows[s];
+    return true;
   });
 
-  const [formError, setFormError] = useState('');
+  const toggle = (s) =>
+    setSelected((prev) => {
+      const n = new Set(prev);
+      n.has(s) ? n.delete(s) : n.add(s);
+      return n;
+    });
+  const allVisibleSelected = visible.length > 0 && visible.every((s) => selected.has(s));
+  const toggleAllVisible = () =>
+    setSelected((prev) => {
+      const n = new Set(prev);
+      visible.forEach((s) => (allVisibleSelected ? n.delete(s) : n.add(s)));
+      return n;
+    });
 
-  // Populate data in edit mode
-  useEffect(() => {
-    if (rawPricing) {
-      const p = rawPricing.data || rawPricing;
-      setFormData({
-        productId: p.productId?._id || p.productId || '',
-        state: p.state || 'DELHI',
-        basePrice: p.basePrice !== undefined && p.basePrice !== null ? String(p.basePrice) : '',
-        salePrice: p.salePrice !== undefined && p.salePrice !== null ? String(p.salePrice) : '',
-        taxPercent: p.taxPercent !== undefined && p.taxPercent !== null ? String(p.taxPercent) : '',
-        status: p.status || 'PUBLISHED',
-        effectiveFrom: p.effectiveFrom ? new Date(p.effectiveFrom).toISOString().slice(0, 10) : '',
-        effectiveTo: p.effectiveTo ? new Date(p.effectiveTo).toISOString().slice(0, 10) : '',
-      });
-    } else if (!isEdit && products.length > 0 && !formData.productId) {
-      const defaultProd = products[0];
-      setFormData((prev) => ({
-        ...prev,
-        productId: defaultProd._id || '',
-        basePrice: defaultProd.price ? String(defaultProd.price) : '',
-        taxPercent: defaultProd.taxPercent !== undefined && defaultProd.taxPercent !== null ? String(defaultProd.taxPercent) : '',
-      }));
-    }
-  }, [rawPricing, products, isEdit]);
-
-  const selectedProduct = useMemo(() => {
-    return products.find((p) => p._id === formData.productId) || null;
-  }, [products, formData.productId]);
-
-  const handleProductChange = (e) => {
-    const selectedId = e.target.value;
-    const prod = products.find((p) => p._id === selectedId);
-    setFormData((prev) => ({
-      ...prev,
-      productId: selectedId,
-      basePrice: prod?.price ? String(prod.price) : prev.basePrice,
-      taxPercent: prod?.taxPercent !== undefined && prod?.taxPercent !== null ? String(prod.taxPercent) : prev.taxPercent,
-    }));
-  };
-
-  const calculateSuggestedSalePrice = () => {
-    const base = Number(formData.basePrice) || 0;
-    const tax = Number(formData.taxPercent) || 0;
-    const computed = Math.round(base * (1 + tax / 100));
-    setFormData((prev) => ({
-      ...prev,
-      salePrice: String(computed),
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormError('');
-
-    if (!formData.productId || !formData.state || !formData.basePrice || !formData.salePrice) {
-      setFormError('Please enter all mandatory fields marked with an asterisk (*).');
+  const applyBulk = (targets) => {
+    if (!bulkPrice || Number(bulkPrice) <= 0) {
+      setError('Pehle upar price box me price likho.');
       return;
     }
-
-    if (formData.effectiveFrom && formData.effectiveTo) {
-      if (new Date(formData.effectiveFrom) >= new Date(formData.effectiveTo)) {
-        setFormError('Effective From date must be strictly earlier than Effective To date.');
-        return;
-      }
-    }
-
-    const payload = {
-      productId: formData.productId,
-      state: formData.state.toUpperCase().trim(),
-      basePrice: Number(formData.basePrice),
-      salePrice: Number(formData.salePrice),
-      taxPercent: Number(formData.taxPercent || 0),
-      status: formData.status,
-      effectiveFrom: formData.effectiveFrom ? new Date(formData.effectiveFrom) : undefined,
-      effectiveTo: formData.effectiveTo ? new Date(formData.effectiveTo) : undefined,
-    };
-
-    try {
-      if (isEdit) {
-        await updatePricing({ id, ...payload }).unwrap();
-        navigate('/oem/pricing', {
-          state: { toast: `State rate contract for ${payload.state} updated successfully.` },
-        });
-      } else {
-        await createPricing(payload).unwrap();
-        navigate('/oem/pricing', {
-          state: { toast: `Published state rate contract for ${payload.state} published successfully.` },
-        });
-      }
-    } catch (err) {
-      setFormError(err?.data?.message || err?.message || 'Failed to save state pricing contract.');
-    }
+    setError('');
+    setRows((prev) => {
+      const n = { ...prev };
+      targets.forEach((s) => (n[s] = String(bulkPrice)));
+      return n;
+    });
   };
 
-  if (isEdit && isLoadingPrice) {
+  const fillWithProductPrice = () => {
+    if (!product?.price) return;
+    setRows((prev) => {
+      const n = { ...prev };
+      INDIAN_STATES.forEach((s) => {
+        if (!n[s]) n[s] = String(product.price);
+      });
+      return n;
+    });
+  };
+
+  const handleSave = async () => {
+    setError('');
+    if (!productId) return setError('Pehle product select karo.');
+    if (!changedStates.length) return setError('Koi change nahi hai.');
+    const bad = changedStates.find((s) => rows[s] !== '' && Number(rows[s]) <= 0);
+    if (bad) return setError(`${bad}: price 0 se zyada hona chahiye.`);
+
+    setSaving(true);
+    const failed = [];
+    for (const s of changedStates) {
+      const price = rows[s];
+      try {
+        if (price === '') {
+          // cleared row -> retire the old published price
+          await updatePricing({ id: idOf(existing[s]), status: 'INACTIVE' }).unwrap();
+        } else if (existing[s]) {
+          await updatePricing({
+            id: idOf(existing[s]),
+            salePrice: Number(price),
+            basePrice: baseFromFinal(price, gst),
+            taxPercent: Number(gst) || 0,
+          }).unwrap();
+        } else {
+          await createPricing({
+            productId,
+            state: s,
+            salePrice: Number(price),
+            basePrice: baseFromFinal(price, gst),
+            taxPercent: Number(gst) || 0,
+            status: 'PUBLISHED',
+            effectiveFrom: new Date(),
+          }).unwrap();
+        }
+      } catch (err) {
+        failed.push(`${s}: ${err?.data?.message || err?.message || 'failed'}`);
+      }
+    }
+    setSaving(false);
+
+    if (failed.length) {
+      setError(`${changedStates.length - failed.length} saved, ${failed.length} failed - ${failed.join(' | ')}`);
+      return;
+    }
+    navigate('/oem/pricing', { state: { toast: `✓ ${changedStates.length} state price(s) saved for ${product?.name || 'product'}.` } });
+  };
+
+  if ((id && loadingEditDoc) || loadingProducts) {
     return (
       <div className="py-12">
-        <LoadingState text="Loading rate contract details..." />
+        <LoadingState text="Loading..." />
       </div>
     );
   }
 
+  const chip = (key, label) => (
+    <button
+      type="button"
+      key={key}
+      onClick={() => setView(key)}
+      className="oem-photo-toggle-btn"
+      style={view === key ? { background: 'var(--color-primary-soft, #eff6ff)', borderColor: 'var(--color-primary, #1e4fd8)' } : undefined}
+    >
+      {label}
+    </button>
+  );
+
   return (
-    <div className="oem-pricing-form-page space-y-6 max-w-4xl mx-auto">
+    <div className="oem-pricing-form-page space-y-6 max-w-5xl mx-auto">
       <PageHeader
-        title={isEdit ? 'Update State Rate Contract' : 'Publish State Rate Contract'}
-        subtitle="Manage state ceiling rates, local road tax offsets, and published rate contracts for beneficiary procurement"
+        title="State-wise Price"
+        subtitle="Product chuno, har state ka price likho, ek baar Save karo"
         breadcrumbs={[
           { label: 'OEM Portal', href: '/oem/dashboard' },
           { label: 'State Pricing', href: '/oem/pricing' },
-          { label: isEdit ? 'Update Contract' : 'Publish Rate' },
+          { label: 'Set Prices' },
         ]}
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            icon={ArrowLeft}
-            onClick={() => navigate('/oem/pricing')}
-          >
-            Back to Rate Schedules
+          <Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate('/oem/pricing')}>
+            Back
           </Button>
         }
       />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {formError && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-3 shadow-sm">
-            <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
-            <div>
-              <div className="font-semibold">Validation Error</div>
-              <div>{formError}</div>
-            </div>
-          </div>
-        )}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-2">
+          <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
-        {/* 1. Vehicle Model & Region */}
-        <Card
-          title="Vehicle Model & Regional Jurisdiction"
-          subtitle="Select the empaneled AFD-listed model and the destination State or Union Territory"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-field">
-              <label className="form-label font-medium text-slate-700">
-                Empaneled Vehicle Model <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="form-control"
-                value={formData.productId}
-                onChange={handleProductChange}
-                disabled={isEdit}
-                required
-              >
-                <option value="">-- Choose Empaneled Vehicle --</option>
-                {products.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.name} · SKU: {p.sku} {p.price ? `(₹${p.price.toLocaleString('en-IN')})` : ''}
-                  </option>
-                ))}
-              </select>
-              {isEdit && (
-                <p className="text-xs text-slate-500 mt-1">
-                  Model is immutable once rate contract is established. To change model, create a new contract.
-                </p>
-              )}
-            </div>
-
-            <div className="form-field">
-              <label className="form-label font-medium text-slate-700">
-                State / Union Territory <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="form-control"
-                value={formData.state}
-                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                required
-              >
-                {INDIAN_STATES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+      {/* STEP 1 */}
+      <Card title="Step 1 · Product chuno">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="form-field md:col-span-2">
+            <label className="form-label font-medium">Product</label>
+            <select className="form-control" value={productId} onChange={(e) => setProductId(e.target.value)}>
+              <option value="">-- Select product --</option>
+              {products.map((p) => (
+                <option key={idOf(p)} value={idOf(p)}>
+                  {p.name} · {p.sku}
+                </option>
+              ))}
+            </select>
+            {product && (
               <p className="text-xs text-slate-500 mt-1">
-                Regional ceiling price applies to all depots and dealerships operating in this territory.
+                Standard (national) price: <strong>{formatCurrency(product.price || 0)}</strong> - jis state me price set nahi hoga, wahi lagega.
               </p>
-            </div>
+            )}
           </div>
-
-          {selectedProduct && (
-            <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-wrap items-center justify-between gap-4 text-xs">
-              <div>
-                <span className="text-slate-500">Nomenclature:</span>{' '}
-                <span className="font-semibold text-slate-700">{selectedProduct.nomenclature || selectedProduct.name}</span>
-              </div>
-              <div>
-                <span className="text-slate-500">Category:</span>{' '}
-                <span className="font-semibold text-slate-700">{selectedProduct.afdType || 'AFD-I'}</span>
-              </div>
-              <div>
-                <span className="text-slate-500">Standard Ex-Factory:</span>{' '}
-                <span className="font-mono font-semibold text-slate-900">{formatCurrency(selectedProduct.price || 0)}</span>
-              </div>
-            </div>
-          )}
-        </Card>
-
-        {/* 2. Rate Structure & Taxes */}
-        <Card
-          title="Price Schedule & Tax Computation"
-          subtitle="Specify the base rate ex-factory, applicable GST tax percentage, and authoritative final CSD price"
-          headerAction={
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              icon={Calculator}
-              onClick={calculateSuggestedSalePrice}
-              title="Compute final price from Base + GST"
-            >
-              Auto-Compute CSD Price
-            </Button>
-          }
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="form-field">
-              <label className="form-label font-medium text-slate-700">
-                Base Rate Ex-Factory (₹) <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-slate-400 font-medium">₹</span>
-                <input
-                  type="number"
-                  className="form-control pl-7 font-mono font-medium"
-                  placeholder="e.g. 1000000"
-                  value={formData.basePrice}
-                  onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-              <p className="text-xs text-slate-500 mt-1">Basic price excluding state GST and local levies.</p>
-            </div>
-
-            <div className="form-field">
-              <label className="form-label font-medium text-slate-700">
-                GST Tax Rate (%)
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  className="form-control font-mono font-medium"
-                  placeholder="e.g. 18 or 28"
-                  value={formData.taxPercent}
-                  onChange={(e) => setFormData({ ...formData, taxPercent: e.target.value })}
-                  min="0"
-                  max="100"
-                  step="0.01"
-                />
-                <span className="absolute right-3 top-2.5 text-slate-400 font-medium">%</span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">Concessional CSD GST slab rate.</p>
-            </div>
-
-            <div className="form-field">
-              <label className="form-label font-medium text-slate-700">
-                Final CSD Price (₹) <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-brand font-medium">₹</span>
-                <input
-                  type="number"
-                  className="form-control pl-7 font-mono font-bold text-slate-900 border-brand"
-                  placeholder="e.g. 1180000"
-                  value={formData.salePrice}
-                  onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-              <p className="text-xs text-slate-500 mt-1">Authoritative ceiling price for defense beneficiary demand sanction.</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* 3. Validity & Regulatory Status */}
-        <Card
-          title="Contract Period & Enforcement Status"
-          subtitle="Define the effective date window and regulatory publication status"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="form-field">
-              <label className="form-label font-medium text-slate-700">
-                Effective From Date <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  className="form-control"
-                  value={formData.effectiveFrom}
-                  onChange={(e) => setFormData({ ...formData, effectiveFrom: e.target.value })}
-                  required
-                />
-              </div>
-              <p className="text-xs text-slate-500 mt-1">Date when this rate becomes valid for booking.</p>
-            </div>
-
-            <div className="form-field">
-              <label className="form-label font-medium text-slate-700">
-                Effective To Date (Optional)
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  className="form-control"
-                  value={formData.effectiveTo}
-                  onChange={(e) => setFormData({ ...formData, effectiveTo: e.target.value })}
-                />
-              </div>
-              <p className="text-xs text-slate-500 mt-1">Leave blank for open-ended contract validity.</p>
-            </div>
-
-            <div className="form-field">
-              <label className="form-label font-medium text-slate-700">
-                Contract Publication Status <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="form-control font-medium"
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                required
-              >
-                <option value="PUBLISHED">PUBLISHED (Active Ceiling Rate)</option>
-                <option value="DRAFT">DRAFT (Internal Review)</option>
-                <option value="INACTIVE">INACTIVE (Superseded)</option>
-              </select>
-              <p className="text-xs text-slate-500 mt-1">Published rates immediately govern beneficiary checkout.</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Form Actions Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/oem/pricing')}
-          >
-            Cancel
-          </Button>
-
-          <div className="flex items-center gap-3">
-            <Button
-              type="submit"
-              variant="primary"
-              icon={Save}
-              loading={isCreating || isUpdating}
-            >
-              {isEdit ? 'Save Rate Changes' : 'Publish State Rate Contract'}
-            </Button>
+          <div className="form-field">
+            <label className="form-label font-medium">GST % (sab states ke liye)</label>
+            <input type="number" min="0" max="100" className="form-control font-mono" value={gst} onChange={(e) => setGst(e.target.value)} />
+            <p className="text-xs text-slate-500 mt-1">Base price isi se auto-calculate hota hai.</p>
           </div>
         </div>
-      </form>
+      </Card>
+
+      {!productId ? (
+        <Card>
+          <p className="muted" style={{ textAlign: 'center', padding: '24px 0' }}>
+            Upar se product chuno - phir saare states yahin dikhenge.
+          </p>
+        </Card>
+      ) : (
+        <>
+          {/* STEP 2 */}
+          <Card title="Step 2 · Ek price kai states me lagao (optional shortcut)">
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="form-field" style={{ minWidth: 200 }}>
+                <label className="form-label font-medium">Price (₹)</label>
+                <input
+                  type="number"
+                  min="0"
+                  className="form-control font-mono"
+                  placeholder="e.g. 1180000"
+                  value={bulkPrice}
+                  onChange={(e) => setBulkPrice(e.target.value)}
+                />
+              </div>
+              <Button type="button" variant="outline" size="sm" icon={Wand2} disabled={!selected.size} onClick={() => applyBulk([...selected])}>
+                Selected states ({selected.size}) me lagao
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => applyBulk(INDIAN_STATES)}>
+                Saare states me lagao
+              </Button>
+              <Button type="button" variant="outline" size="sm" disabled={!product?.price} onClick={fillWithProductPrice}>
+                Khaali states me standard price bharo
+              </Button>
+            </div>
+          </Card>
+
+          {/* STEP 3 */}
+          <Card title={`Step 3 · States (${setCount} / ${INDIAN_STATES.length} me price set)`}>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: 300 }}>
+                <Search size={14} style={{ position: 'absolute', left: 10, top: 12, color: '#98a2b3' }} />
+                <input className="form-control" style={{ paddingLeft: 30 }} placeholder="State search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              </div>
+              {chip('ALL', 'Sab')}
+              {chip('SET', 'Price set')}
+              {chip('UNSET', 'Price baki')}
+              {loadingExisting && <span className="muted small">loading saved prices...</span>}
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table className="table" style={{ width: '100%' }}>
+                <thead>
+                  <tr>
+                    <th style={{ width: 36 }}>
+                      <input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} aria-label="Select all visible" />
+                    </th>
+                    <th>State</th>
+                    <th style={{ width: 220 }}>Final price (₹)</th>
+                    <th style={{ width: 150 }}>Base (auto)</th>
+                    <th style={{ width: 140 }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.map((s) => {
+                    const v = rows[s] ?? '';
+                    const changed = isChanged(s);
+                    return (
+                      <tr key={s} style={changed ? { background: '#fffbeb' } : undefined}>
+                        <td>
+                          <input type="checkbox" checked={selected.has(s)} onChange={() => toggle(s)} aria-label={`Select ${s}`} />
+                        </td>
+                        <td className="font-semibold">{s}</td>
+                        <td>
+                          <input
+                            type="number"
+                            min="0"
+                            className="form-control font-mono"
+                            placeholder="—"
+                            value={v}
+                            onChange={(e) => setRows((prev) => ({ ...prev, [s]: e.target.value }))}
+                          />
+                        </td>
+                        <td className="font-mono muted">{v ? formatCurrency(baseFromFinal(v, gst)) : '—'}</td>
+                        <td className="small">
+                          {changed ? (
+                            <span style={{ color: '#b54708' }}>{v === '' ? 'Hatega' : 'Unsaved'}</span>
+                          ) : v ? (
+                            <span style={{ color: '#067647', display: 'inline-flex', gap: 4, alignItems: 'center' }}>
+                              <CheckCircle2 size={14} /> Saved
+                            </span>
+                          ) : (
+                            <span className="muted">Standard price</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {!visible.length && (
+                    <tr>
+                      <td colSpan={5} className="muted" style={{ textAlign: 'center', padding: 16 }}>
+                        Koi state nahi mila.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <div
+            className="flex items-center justify-between pt-3 border-t border-slate-200"
+            style={{ position: 'sticky', bottom: 0, background: 'var(--color-bg, #fff)', padding: '12px 0' }}
+          >
+            <span className="small muted">{changedStates.length ? `${changedStates.length} state(s) me unsaved change` : 'Koi unsaved change nahi'}</span>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => navigate('/oem/pricing')}>
+                Cancel
+              </Button>
+              <Button type="button" variant="primary" icon={Save} loading={saving} disabled={!changedStates.length} onClick={handleSave}>
+                Save {changedStates.length ? `${changedStates.length} price(s)` : ''}
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
