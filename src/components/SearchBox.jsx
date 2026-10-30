@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Search, X, ArrowUpRight, Tag, Layers, TrendingUp } from 'lucide-react'
-import { products as fallbackProducts } from '../data/products.js'
-import { fetchProducts } from '../data/api.js'
+import { Search, X, ArrowUpRight, Tag, Layers } from 'lucide-react'
+import { useStoreProducts } from '../hooks/useStoreProducts.js'
 import { CAT_LABEL, matches, priceFrom, onImgError } from '../data/utils.js'
 
 const MIN = 2
-const POPULAR = ['Nexon', 'Swift', 'Dzire', '68720', 'Royal Enfield', 'Mahindra', '64224', 'Thar', 'Curvv', 'Brezza']
 
 const Mark = ({ text, q }) => {
   const words = q.split(/\s+/).filter(Boolean).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
@@ -15,7 +13,7 @@ const Mark = ({ text, q }) => {
   return text.split(re).map((part, i) => (i % 2 ? <mark key={i}>{part}</mark> : part))
 }
 
-export function buildSuggestions(q, productList = fallbackProducts) {
+export function buildSuggestions(q, productList = []) {
   const s = q.trim().toLowerCase()
   if (s.length < MIN) return []
   const score = p => {
@@ -48,16 +46,12 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
   const loc = useLocation(), go = useNavigate()
   const fromUrl = loc.pathname === '/search' ? new URLSearchParams(loc.search).get('q') || '' : ''
   const [q, setQ] = useState(fromUrl), [open, setOpen] = useState(false), [active, setActive] = useState(-1)
-  const [liveProducts, setLiveProducts] = useState(fallbackProducts)
+  const [wantData, setWantData] = useState(false)
   const box = useRef(null), input = useRef(null)
 
-  useEffect(() => {
-    fetchProducts()
-      .then(prods => {
-        if (Array.isArray(prods) && prods.length > 0) setLiveProducts(prods)
-      })
-      .catch(() => {})
-  }, [])
+  // Shared, cached request - only fires once the user actually touches the search box
+  // (or the products are already cached by Home / Catalog, in which case no new call is made).
+  const { products: liveProducts, isLoading, isError, refetch } = useStoreProducts({ skip: !wantData })
 
   useEffect(() => { setQ(fromUrl) }, [fromUrl])
   useEffect(() => {
@@ -97,8 +91,8 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
           role="combobox" aria-expanded={open} aria-controls={`sg-${variant}`} aria-autocomplete="list"
           aria-activedescendant={active >= 0 ? `sg-${variant}-${active}` : undefined}
           aria-label="Search products, brands or categories"
-          onChange={e => { setQ(e.target.value); setOpen(true); setActive(-1) }}
-          onFocus={() => setOpen(true)} onKeyDown={onKey}
+          onChange={e => { setWantData(true); setQ(e.target.value); setOpen(true); setActive(-1) }}
+          onFocus={() => { setWantData(true); setOpen(true) }} onKeyDown={onKey}
         />
         {q && <button type="button" className="sbox-clear" aria-label="Clear search" onClick={() => { setQ(''); input.current?.focus() }}><X size={16} /></button>}
         <button type="submit" className="sbox-go">Search</button>
@@ -109,11 +103,11 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
           {!ready && (
             <div className="sbox-hint">
               <p>{q.trim() ? `Type ${MIN - q.trim().length} more letter${MIN - q.trim().length > 1 ? 's' : ''} to see suggestions` : `Type at least ${MIN} letters to see suggestions`}</p>
-              <div className="sbox-pop-h"><TrendingUp size={14} aria-hidden /> Popular searches</div>
-              <div className="sbox-tags">{POPULAR.map(t => <button key={t} type="button" onMouseDown={e => e.preventDefault()} onClick={() => run(t)}>{t}</button>)}</div>
             </div>
           )}
-          {ready && !items.length && <p className="sbox-empty">No matches for “{q}”. Try another name or brand.</p>}
+          {ready && isLoading && <p className="sbox-empty">Loading products…</p>}
+          {ready && isError && <p className="sbox-empty">Search suggestions are not available right now. <button type="button" className="link" onMouseDown={e => e.preventDefault()} onClick={refetch}>Retry</button></p>}
+          {ready && !isLoading && !isError && !items.length && <p className="sbox-empty">No matches for “{q}”. Try another name or brand.</p>}
           {items.map((it, i) => (
             <button
               type="button" role="option" key={it.key} id={`sg-${variant}-${i}`} aria-selected={active === i}

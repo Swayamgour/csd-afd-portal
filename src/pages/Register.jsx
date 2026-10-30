@@ -138,6 +138,13 @@ export default function Register() {
     [formErrorList, setFormErrorList] = useState([]),
     [showPw, setShowPw] = useState(false),
     [showPwC, setShowPwC] = useState(false),
+    [showCard, setShowCard] = useState(false),
+    // [showChip, setShowChip] = useState(false),
+    // [showPan, setShowPan] = useState(false),
+    [showCardId, setShowCardId] = useState(false),
+    [showChip, setShowChip] = useState(false),
+    [showPan, setShowPan] = useState(false),
+    [showPanC, setShowPanC] = useState(false),
     [cap, setCap] = useState(makeCaptcha),
     [capIn, setCapIn] = useState(""),
     [isOtpModalOpen, setIsOtpModalOpen] = useState(false),
@@ -199,7 +206,7 @@ export default function Register() {
           [field]: res.conflicts[field],
         }));
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const refreshCaptcha = () => {
@@ -658,10 +665,13 @@ export default function Register() {
               err={errs.cardId}
               hint="( Alphanumeric no. starting with GA/GB/GC/GE/GM/GR like grocery card id GA01052027551000J00. Third last is alphabet not number. )"
             >
-              <div className="fld">
+              <div className="fld has-eye">
                 <CreditCard size={18} aria-hidden />
                 <input
                   id="cardId"
+                  // type={showCard ? "text" : "password"}
+                  autoComplete="off"
+                  type={showCardId ? "text" : "password"}
                   placeholder="(19 digit Alphanumeric)"
                   maxLength={19}
                   value={f.cardId}
@@ -669,6 +679,22 @@ export default function Register() {
                   onBlur={() => checkSingleDuplicate("cardId", f.cardId)}
                   aria-invalid={!!errs.cardId}
                 />
+                <button
+                  type="button"
+                  className="eye"
+                  aria-label={showCard ? "Hide Card ID" : "Show Card ID"}
+                  onClick={() => setShowCard(!showCard)}
+                >
+                  {showCard ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                <button
+                  type="button"
+                  className="eye"
+                  aria-label={showCardId ? "Hide Card ID" : "Show Card ID"}
+                  onClick={() => setShowCardId(!showCardId)}
+                >
+                  {showCardId ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </Field>
             <Field
@@ -678,10 +704,13 @@ export default function Register() {
               err={errs.chip}
               hint="( 16 Digit No. (5312120004689336). Given on reverse of grocery card at bottom right. Also given on grocery bill.)"
             >
-              <div className="fld">
+              <div className="fld has-eye">
                 <IdCard size={18} aria-hidden />
                 <input
                   id="chip"
+                  type={showChip ? "text" : "password"}
+                  autoComplete="off"
+                  // type={showChip ? "text" : "password"}
                   inputMode="numeric"
                   placeholder="(16 digit Numeric)"
                   maxLength={16}
@@ -690,6 +719,22 @@ export default function Register() {
                   onBlur={() => checkSingleDuplicate("chipNumber", f.chip)}
                   aria-invalid={!!errs.chip}
                 />
+                <button
+                  type="button"
+                  className="eye"
+                  aria-label={showChip ? "Hide chip number" : "Show chip number"}
+                  onClick={() => setShowChip(!showChip)}
+                >
+                  {showChip ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                <button
+                  type="button"
+                  className="eye"
+                  aria-label={showChip ? "Hide Chip number" : "Show Chip number"}
+                  onClick={() => setShowChip(!showChip)}
+                >
+                  {showChip ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </Field>
           </div>
@@ -798,16 +843,27 @@ export default function Register() {
         <Section n="3" title="Identity">
           <div className="reg-grid">
             <Field id="pan" label="PAN number" req err={errs.pan}>
-              <div className="fld">
+              <div className="fld has-eye">
                 <IdCard size={18} aria-hidden />
                 <input
                   id="pan"
+                  type={showPan ? "text" : "password"}
+                  autoComplete="off"
+                  // type={showPan ? "text" : "password"}
                   maxLength={10}
                   value={f.pan}
                   onChange={upper("pan")}
                   onBlur={() => checkSingleDuplicate("pan", f.pan)}
                   aria-invalid={!!errs.pan}
                 />
+                <button
+                  type="button"
+                  className="eye"
+                  aria-label={showPan ? "Hide PAN number" : "Show PAN number"}
+                  onClick={() => setShowPan(!showPan)}
+                >
+                  {showPan ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </Field>
             <Field
@@ -816,10 +872,11 @@ export default function Register() {
               err={errs.panC}
               hint="( Copy paste is not allowed )"
             >
-              <div className="fld">
+              <div className="fld has-eye">
                 <IdCard size={18} aria-hidden />
                 <input
                   id="panC"
+                  type={showPanC ? "text" : "password"}
                   maxLength={10}
                   autoComplete="off"
                   value={f.panC}
@@ -828,6 +885,14 @@ export default function Register() {
                   onDrop={noPaste}
                   aria-invalid={!!errs.panC}
                 />
+                <button
+                  type="button"
+                  className="eye"
+                  aria-label={showPanC ? "Hide Confirm PAN number" : "Show Confirm PAN number"}
+                  onClick={() => setShowPanC(!showPanC)}
+                >
+                  {showPanC ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </Field>
           </div>

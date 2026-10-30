@@ -2,10 +2,10 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { X, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useStore } from '../context/Store.jsx';
-import { EmptyState } from '../components/States.jsx';
+import { EmptyState, Loader, UnavailableState } from '../components/States.jsx';
 import { priceText } from '../data/utils.js';
 import { Stars, Img } from '../components/ProductCard.jsx';
-import { useGetProductsQuery } from '../features/catalog/productApi.js';
+import { useStoreProducts } from '../hooks/useStoreProducts.js';
 
 const rows = [
   ['Transmission', 'transmission'],
@@ -19,17 +19,28 @@ const rows = [
 export default function Compare() {
   const { cmp, toggleCmp, addCart } = useStore();
   const back = useNavigate();
-  const { data: productsData, isLoading } = useGetProductsQuery({ limit: 100 });
-  const allProducts = productsData?.items || (Array.isArray(productsData) ? productsData : []);
+  const { products, isLoading, isError, refetch } = useStoreProducts();
 
   const items = cmp
-    .map((id) => allProducts.find((p) => (p._id || p.id) === id))
+    .map((id) => products.find((p) => p.id === id))
     .filter(Boolean);
 
-  if (isLoading) {
+  if (cmp.length && isLoading) {
     return (
       <div className="wrap">
-        <p className="muted">Loading comparison data...</p>
+        <Loader label="Loading comparison data" onRetry={refetch} />
+      </div>
+    );
+  }
+
+  if (cmp.length && isError) {
+    return (
+      <div className="wrap">
+        <UnavailableState
+          title="Comparison not available"
+          text="We could not load product details from the server. Please try again."
+          onRetry={refetch}
+        />
       </div>
     );
   }
@@ -46,11 +57,13 @@ export default function Compare() {
     );
   }
 
+  // values come from the server record (p.raw); anything missing shows "Not available"
   const v = (p, k) => {
-    if (k === 'categoryId' && typeof p[k] === 'object') return p[k]?.name || '-';
-    if (k === 'engineCapacity' && p[k]) return `${p[k]} cc`;
-    if (Array.isArray(p[k])) return p[k].join(' / ');
-    return p[k] || '-';
+    const src = p.raw || p;
+    if (k === 'categoryId' && src[k] && typeof src[k] === 'object') return src[k]?.name || 'Not available';
+    if (k === 'engineCapacity' && src[k]) return `${src[k]} cc`;
+    if (Array.isArray(src[k])) return src[k].join(' / ') || 'Not available';
+    return src[k] || 'Not available';
   };
 
   return (
@@ -63,7 +76,7 @@ export default function Compare() {
       </div>
       <ul className="cmpgrid">
         {items.map((p) => {
-          const pId = p._id || p.id;
+          const pId = p.id;
           return (
             <li key={pId} className="cmpcard">
               <div className="card-img">
@@ -79,7 +92,7 @@ export default function Compare() {
               <div className="cmpbody">
                 <h2>{p.name}</h2>
                 <p className="cprice">{priceText(p)}</p>
-                <Stars v={p.rating || 4.5} n={p.reviews || 0} />
+                <Stars v={p.rating} n={p.reviews} />
                 <dl>
                   {rows.map(([l, k]) => (
                     <div key={k}>

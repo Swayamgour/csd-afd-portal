@@ -32,11 +32,10 @@ import {
 } from "lucide-react";
 import { Stars } from "../components/ProductCard.jsx";
 import ProductCard from "../components/ProductCard.jsx";
-import { Loader, EmptyState, ErrorState } from "../components/States.jsx";
+import { Loader, EmptyState, UnavailableState } from "../components/States.jsx";
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-import { COLOR_HEX } from "../data/art.js";
-import { FEATURES, STEPS } from "../data/details.js";
+import { useStoreProducts } from "../hooks/useStoreProducts.js";
 import {
   CAT_LABEL,
   CAT_PLURAL,
@@ -48,10 +47,16 @@ import {
 } from "../data/utils.js";
 import {
   useGetProductByIdQuery,
-  useGetProductsQuery,
   useCheckProductEligibilityMutation,
   useGetProductOptionsQuery,
 } from "../features/catalog/productApi.js";
+import {
+  useGetAvailableStatesQuery,
+  useGetStateDealersQuery,
+  useGetStateDepotsQuery,
+  useGetDepotUrcsQuery,
+  useGetStateProductPriceQuery,
+} from "../features/org/orgApi.js";
 import { DealerDetailsModal } from "../components/modals/DealerDetailsModal.jsx";
 import { URCDetailsModal } from "../components/modals/URCDetailsModal.jsx";
 import { EligibilityModal } from "../components/modals/EligibilityModal.jsx";
@@ -62,21 +67,55 @@ const val = (v) =>
 /** keep only images that actually load */
 function useGallery(p) {
   const [imgs, setImgs] = useState([]);
+
   useEffect(() => {
-    if (!p) return;
+    if (!p) {
+      setImgs([]);
+      return;
+    }
+
     let live = true;
-    const cands = [...new Set([p.images, ...(p.images || [])].filter(Boolean))];
-    setImgs([cands[0]]);
-    cands.slice(1).forEach((src) => {
-      const i = new Image();
-      i.onload = () =>
-        live && setImgs((x) => (x.includes(src) ? x : [...x, src]));
-      i.src = src;
+
+    const backendImages = Array.isArray(p.images)
+      ? [...new Set(p.images.filter(Boolean))]
+      : [];
+
+    if (!backendImages.length) {
+      setImgs([]);
+      return;
+    }
+
+    // Backend se aayi images ko exactly same order mein use karo.
+    const validImages = [];
+
+    backendImages.forEach((src) => {
+      const img = new Image();
+
+      img.onload = () => {
+        if (!live) return;
+
+        validImages.push(src);
+
+        // Backend array ka order preserve karo
+        const orderedImages = backendImages.filter((image) =>
+          validImages.includes(image),
+        );
+
+        setImgs(orderedImages);
+      };
+
+      img.onerror = () => {
+        // Invalid image ko gallery mein add nahi karna
+      };
+
+      img.src = src;
     });
+
     return () => {
       live = false;
     };
   }, [p]);
+
   return imgs;
 }
 
@@ -134,6 +173,7 @@ function Emi({ p }) {
   const [down, setDown] = useState(20),
     [yrs, setYrs] = useState(5),
     [rate, setRate] = useState(8.5);
+  if (price == null) return null;
   const loan = price * (1 - down / 100),
     r = rate / 12 / 100,
     n = yrs * 12;
@@ -211,41 +251,49 @@ export default function ProductDetails() {
     refetch: load,
   } = useGetProductByIdQuery(id);
 
-  const { data: allProductsData } = useGetProductsQuery({ limit: 20 });
-  const all = allProductsData?.items || [];
+  // Shared cached list (same request as Home / Catalog) - used only for "Similar products"
+  const { products: all } = useStoreProducts();
 
-  // CSD AFD Selection states - Clean MongoDB ObjectIds
-  const [selectedZoneId, setSelectedZoneId] = useState("");
+  // CSD AFD Selection states - State -> Dealer -> Depot -> URC cascade
+  const [selectedState, setSelectedState] = useState("");
   const [selectedDealerId, setSelectedDealerId] = useState("");
   const [selectedDepotId, setSelectedDepotId] = useState("");
   const [selectedUrcId, setSelectedUrcId] = useState("");
+  const [selectedZoneId, setSelectedZoneId] = useState("");
 
-  // Authoritative Backend Options API (strictly implements Branch A & Branch B)
-  const { data: optionsData, isLoading: loadingOptions } =
-    useGetProductOptionsQuery(
-      {
-        id,
-        priceZoneId: selectedZoneId || undefined,
-        depotId: selectedDepotId || undefined,
-      },
-      { skip: !id },
+  // Authoritative State cascade APIs
+  const { data: availableStates = [], isLoading: loadingStates } =
+    useGetAvailableStatesQuery({ productId: id }, { skip: !id });
+
+  const { data: availableDealers = [], isLoading: loadingDealers } =
+    useGetStateDealersQuery(
+      { state: selectedState, productId: id },
+      { skip: !id || !selectedState },
     );
 
-  const priceZonesList = useMemo(() => {
-    return optionsData?.priceZones || optionsData?.eligiblePriceZones || [];
-  }, [optionsData]);
+  const { data: availableDepots = [], isLoading: loadingDepots } =
+    useGetStateDepotsQuery(
+      { state: selectedState, dealerId: selectedDealerId, productId: id },
+      { skip: !id || !selectedState || !selectedDealerId }, // depots only after a dealer is chosen
+    );
 
-  const availableDealers = useMemo(() => {
-    return optionsData?.dealers || optionsData?.eligibleDealers || [];
-  }, [optionsData]);
+  const { data: availableUrcs = [], isLoading: loadingUrcs } =
+    useGetDepotUrcsQuery(
+      { state: selectedState, depotId: selectedDepotId },
+      { skip: !selectedState || !selectedDepotId },
+    );
 
-  const availableDepots = useMemo(() => {
-    return optionsData?.depots || optionsData?.eligibleDepots || [];
-  }, [optionsData]);
+  const {
+    data: statePriceResponse,
+    isLoading: loadingStatePrice,
+    isFetching: fetchingStatePrice,
+    isError: statePriceError,
+  } = useGetStateProductPriceQuery(
+    { state: selectedState, productId: id, quantity: 1 },
+    { skip: !id || !selectedState },
+  );
 
-  const availableUrcs = useMemo(() => {
-    return optionsData?.urcs || optionsData?.eligibleUrcs || [];
-  }, [optionsData]);
+  const statePricing = statePriceResponse?.pricing || null;
 
   const [checkEligibilityMutation, { isLoading: checkingEligibility }] =
     useCheckProductEligibilityMutation();
@@ -257,8 +305,23 @@ export default function ProductDetails() {
       prod.categoryId?.code?.toLowerCase() ||
       (prod.afdType === "AFD_II" ? "white-goods" : "car");
     const colorsList = prod.attributes?.colors
-      ? prod.attributes.colors.split(",").map((c) => c.trim())
-      : prod.colors || ["Solid White", "Silky Silver", "Granite Grey"];
+      ? String(prod.attributes.colors).split(",").map((c) => c.trim()).filter(Boolean)
+      : Array.isArray(prod.colors)
+        ? prod.colors
+        : [];
+
+    // Feature groups only if the server sends them: ["a","b"] or [{ group, items }]
+    const rawFeatures = prod.features || prod.attributes?.features;
+    const featureGroups = Array.isArray(rawFeatures) && rawFeatures.length
+      ? typeof rawFeatures[0] === "string"
+        ? [["Features", rawFeatures]]
+        : rawFeatures
+          .map((g) => [g.group || g.title || g.name || "Features", g.items || g.features || []])
+          .filter(([, items]) => items.length)
+      : [];
+
+    const price = Number(prod.priceToCustomer || prod.price || 0) || null;
+    const mrp = Number(prod.mrp || 0) || null;
 
     return {
       ...prod,
@@ -268,12 +331,12 @@ export default function ProductDetails() {
         : catCode.includes("white")
           ? "white-goods"
           : "car",
-      brand: prod.brandId?.name || prod.brand || "Authorized OEM",
-      price: prod.priceToCustomer || prod.price || 0,
-      lo: prod.priceToCustomer || prod.price || 0,
-      hi: prod.mrp || (prod.price ? Math.round(prod.price * 1.15) : 0),
-      mrp: prod.mrp || (prod.price ? Math.round(prod.price * 1.15) : 0),
-      indexNo: prod.indexNo || prod.sku || "N/A",
+      brand: prod.brandId?.name || prod.brand?.name || (typeof prod.brand === "string" ? prod.brand : "") || "",
+      price,
+      lo: price,
+      hi: mrp,
+      mrp,
+      indexNo: prod.indexNo || prod.sku || "",
       basicPrice: prod.basicPrice,
       csdDiscountPercent: prod.csdDiscountPercent || 0,
       csdDiscountAmount: prod.csdDiscountAmount || 0,
@@ -285,7 +348,7 @@ export default function ProductDetails() {
       csdProfitAmount: prod.csdProfitAmount || 0,
       csdFinalPriceWithConcession: prod.csdFinalPriceWithConcession,
       tcsAmount: prod.tcsAmount || 0,
-      priceToCustomer: prod.priceToCustomer || prod.price || 0,
+      priceToCustomer: price,
       dealerRefName: prod.dealerRefName || "",
       priceListRef: prod.priceListRef || "",
       image: prod.images?.[0] || prod.image || "",
@@ -295,24 +358,29 @@ export default function ProductDetails() {
           ? [prod.image]
           : [],
       colors: colorsList,
+      featureGroups,
       engine: prod.engineCapacity
         ? `${prod.engineCapacity} cc`
-        : prod.attributes?.engine || prod.engine || "1197 cc",
+        : prod.attributes?.engine || prod.engine || "",
       fuel: prod.fuelType
         ? [prod.fuelType]
         : prod.attributes?.fuel
           ? [prod.attributes.fuel]
-          : prod.fuel || ["Petrol"],
-      trans: prod.attributes?.transmission || prod.trans || "Manual",
-      power: prod.attributes?.power || prod.power || "88.5 bhp",
-      mileage: prod.attributes?.mileage || prod.mileage || "22.3 km/l",
-      boot: prod.attributes?.boot || prod.boot || "268 L",
-      airbags: prod.attributes?.airbags || prod.airbags || "2 Airbags",
-      type: prod.variant || prod.attributes?.type || prod.type || "Hatchback",
-      brakes: prod.attributes?.brakes || prod.brakes || "Disc / Drum",
-      rating: 4.5,
-      reviews: 124,
-      sku: prod.indexNo || prod.sku || "64224",
+          : Array.isArray(prod.fuel)
+            ? prod.fuel
+            : prod.fuel
+              ? [prod.fuel]
+              : [],
+      trans: prod.attributes?.transmission || prod.trans || "",
+      power: prod.attributes?.power || prod.power || "",
+      mileage: prod.attributes?.mileage || prod.mileage || "",
+      boot: prod.attributes?.boot || prod.boot || "",
+      airbags: prod.attributes?.airbags || prod.airbags || "",
+      type: prod.variant || prod.attributes?.type || prod.type || "",
+      brakes: prod.attributes?.brakes || prod.brakes || "",
+      rating: Number(prod.rating) || null,
+      reviews: Number(prod.reviews) || null,
+      sku: prod.indexNo || prod.sku || "",
     };
   }, [rawProduct]);
 
@@ -331,45 +399,76 @@ export default function ProductDetails() {
   const [eligibilityResult, setEligibilityResult] = useState(null);
   const [checkoutErrors, setCheckoutErrors] = useState({});
 
-  // Cascading reset handlers strictly following rules:
-  // PriceZone change resets depot and urc
-  const handlePriceZoneChange = (zoneId) => {
-    setSelectedZoneId(zoneId);
+  // Cascading reset handlers strictly following Phase 5-8 rules:
+  // 1. State change resets Dealer, Depot, URC, PriceZone, and state price
+  const handleStateChange = (stateName) => {
+    setSelectedState(stateName);
+    setSelectedDealerId("");
     setSelectedDepotId("");
     setSelectedUrcId("");
+    setSelectedZoneId("");
+    setCheckoutErrors((prev) => ({
+      ...prev,
+      state: null,
+      dealer: null,
+      depot: null,
+      urc: null,
+      price: null,
+    }));
   };
 
-  // Depot change resets urc
+  // 2. Dealer change resets Depot and URC
+  const handleDealerChange = (dealerId) => {
+    setSelectedDealerId(dealerId);
+    setSelectedDepotId("");
+    setSelectedUrcId("");
+    setSelectedZoneId("");
+    setCheckoutErrors((prev) => ({
+      ...prev,
+      dealer: null,
+      depot: null,
+      urc: null,
+    }));
+  };
+
+  // 3. Depot change resets URC and maps internal priceZoneId
   const handleDepotChange = (depotId) => {
     setSelectedDepotId(depotId);
     setSelectedUrcId("");
+    const dep = availableDepots.find((d) => String(d._id) === String(depotId));
+    if (dep?.priceZoneId) {
+      setSelectedZoneId(
+        typeof dep.priceZoneId === "object"
+          ? dep.priceZoneId._id
+          : dep.priceZoneId,
+      );
+    }
+    setCheckoutErrors((prev) => ({
+      ...prev,
+      depot: null,
+      urc: null,
+    }));
   };
 
-  const handleDealerChange = (dealerId) => {
-    setSelectedDealerId(dealerId);
-  };
-
+  // 4. URC change
   const handleUrcChange = (urcId) => {
     setSelectedUrcId(urcId);
+    setCheckoutErrors((prev) => ({
+      ...prev,
+      urc: null,
+    }));
   };
 
   useEffect(() => {
     if (p) {
-      setColor(p.colors?.[0] || "Standard");
-      setFuel(p.fuel?.[0] || "Petrol");
-      setDrive(p.trans ? p.trans.split(" / ")[0] : "Manual");
+      setColor(p.colors?.[0] || "");
+      setFuel(p.fuel?.[0] || "");
+      setDrive(p.trans ? p.trans.split(" / ")[0] : "");
       document.title = `${p.name} - CSD AFD Online Portal`;
     }
   }, [p]);
 
   // Current entity objects resolved strictly against backend option sets
-  const currentZone = useMemo(() => {
-    return (
-      priceZonesList.find((z) => String(z._id) === String(selectedZoneId)) ||
-      null
-    );
-  }, [priceZonesList, selectedZoneId]);
-
   const currentDepot = useMemo(() => {
     return (
       availableDepots.find((d) => String(d._id) === String(selectedDepotId)) ||
@@ -391,57 +490,40 @@ export default function ProductDetails() {
     );
   }, [availableUrcs, selectedUrcId]);
 
-  // Auto-sync valid selections or prune invalid state if server options change
-  useEffect(() => {
-    if (priceZonesList.length > 0 && !selectedZoneId) {
-      setSelectedZoneId(priceZonesList[0]._id);
+  // Internal priceZone mapping (derived from depot's priceZoneId, or first matching zone for state)
+  const currentZone = useMemo(() => {
+    if (currentDepot?.priceZoneId) {
+      if (typeof currentDepot.priceZoneId === "object") return currentDepot.priceZoneId;
+      return { _id: currentDepot.priceZoneId, name: selectedState };
     }
-  }, [priceZonesList, selectedZoneId]);
-
-  useEffect(() => {
-    if (availableDealers.length > 0 && !selectedDealerId) {
-      setSelectedDealerId(availableDealers[0]._id);
-    } else if (
-      selectedDealerId &&
-      !availableDealers.some((d) => String(d._id) === String(selectedDealerId))
-    ) {
-      setSelectedDealerId(availableDealers[0]?._id || "");
+    const stateObj = availableStates.find(
+      (s) => (s.state || s) === selectedState,
+    );
+    if (stateObj?.priceZones?.length) {
+      return stateObj.priceZones[0];
     }
-  }, [availableDealers, selectedDealerId]);
-
-  useEffect(() => {
-    if (availableDepots.length > 0 && !selectedDepotId) {
-      setSelectedDepotId(availableDepots[0]._id);
-    } else if (
-      selectedDepotId &&
-      !availableDepots.some((d) => String(d._id) === String(selectedDepotId))
-    ) {
-      setSelectedDepotId(availableDepots[0]?._id || "");
-      setSelectedUrcId("");
-    }
-  }, [availableDepots, selectedDepotId]);
-
-  useEffect(() => {
-    if (availableUrcs.length > 0 && !selectedUrcId) {
-      setSelectedUrcId(availableUrcs[0]._id);
-    } else if (
-      selectedUrcId &&
-      !availableUrcs.some((u) => String(u._id) === String(selectedUrcId))
-    ) {
-      setSelectedUrcId(availableUrcs[0]?._id || "");
-    }
-  }, [availableUrcs, selectedUrcId]);
+    return null;
+  }, [currentDepot, availableStates, selectedState]);
 
   const imgs = useGallery(p);
 
-  const similar = useMemo(() => p && all.length
-    ? all.filter((x) => (x._id || x.id) !== p.id).slice(0, 4)
-    : [],
+  const similar = useMemo(
+    () =>
+      p && all.length
+        ? all.filter((x) => x.id !== String(p.id) && x.category === p.category).slice(0, 4)
+        : [],
     [all, p],
   );
 
-  if (err) return <ErrorState onRetry={load} />;
-  if (loadingProduct) return <Loader />;
+  if (err)
+    return (
+      <UnavailableState
+        title="Product not available"
+        text="We could not load this product from the server. Please try again."
+        onRetry={load}
+      />
+    );
+  if (loadingProduct) return <Loader label="Loading product" onRetry={load} />;
   if (!p)
     return (
       <EmptyState
@@ -455,8 +537,8 @@ export default function ProductDetails() {
       />
     );
 
-  const skuNumber = p?.sku || p?.indexNo || "64224";
-  const mfgCode = p?.mfrCode || p?.mfgCode || p?.firmCode || "CSD-MFR-01";
+  const skuNumber = p?.sku || p?.indexNo || "Not available";
+  const mfgCode = p?.mfrCode || p?.mfgCode || p?.firmCode || "Not available";
 
   const car = p.category === "car",
     bike = p.category === "bike",
@@ -464,6 +546,8 @@ export default function ProductDetails() {
   const w = wish.includes(p.id),
     c = cmp.includes(p.id);
   const gallery = imgs.length ? imgs : [p.image];
+
+  console.log(imgs, p.image);
 
   const highlights = (
     car
@@ -566,18 +650,25 @@ export default function ProductDetails() {
           [
             ["Offer price", inr(p.lo)],
             ["MRP", p.mrp ? inr(p.mrp) : null],
-            ["You save", p.mrp ? `${inr(p.mrp - p.lo)}` : null],
+            ["You save", p.mrp && p.lo != null && p.mrp > p.lo ? inr(p.mrp - p.lo) : null],
           ],
         ],
       ];
 
-  const about = `${p.name} from ${p.brand}. Available on the CSD AFD portal at concessional price ₹ ${(p.price || 0).toLocaleString("en-IN")} (ex-showroom, subject to supply order terms).`;
+  const about = [
+    p.name,
+    p.brand && `from ${p.brand}`,
+    p.price != null
+      ? `Available on the CSD AFD portal at concessional price ${inr(p.price)} (ex-showroom, subject to supply order terms).`
+      : "Price is not available right now.",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const tabs = [
     ["overview", "Overview"],
     ["specs", "Specifications"],
-    ["features", "Features"],
-    ["buy", "How to buy"],
+    ...(p.featureGroups?.length ? [["features", "Features"]] : []),
   ];
   const copy = () => {
     navigator.clipboard?.writeText(window.location.href);
@@ -601,18 +692,18 @@ export default function ProductDetails() {
     }
 
     const errs = {};
-    if (!color) errs.color = "Please select Color";
-    if (!selectedZoneId) errs.zone = "Please select Price Zone";
+    if (p.colors?.length > 0 && !color) errs.color = "Please select Color";
+    if (!selectedState) errs.state = "Please select State";
     if (!selectedDealerId) {
       errs.dealer =
         availableDealers.length === 0
-          ? "No authorized dealer available for this product."
+          ? `No authorized dealer available in ${selectedState || "the selected state"}.`
           : "Please select Dealer";
     }
     if (!selectedDepotId) {
       errs.depot =
         availableDepots.length === 0
-          ? "No depots available for the selected price zone."
+          ? `No depots available for ${selectedState || "the selected state"}.`
           : "Please select Depot";
     }
     if (!selectedUrcId) {
@@ -620,6 +711,9 @@ export default function ProductDetails() {
         availableUrcs.length === 0
           ? "No URC available for the selected depot."
           : "Please select URC";
+    }
+    if (selectedState && !statePricing) {
+      errs.price = "State price is not available for this product.";
     }
 
     if (Object.keys(errs).length > 0) {
@@ -657,8 +751,6 @@ export default function ProductDetails() {
       return;
     }
 
-    const serverP = optionsData?.pricing;
-
     const checkoutData = {
       productId: p._id || p.id,
       productName: p.name,
@@ -668,36 +760,38 @@ export default function ProductDetails() {
       category: p.category,
       brand: p.brand,
       oemId: p.oemId?._id || p.oemId || p.brandId?.oemId,
-      selectedColor: color || p.colors?.[0] || "Standard",
-      priceZoneId: currentZone?._id || selectedZoneId,
-      selectedZone: currentZone?.name || "",
-      priceZone: currentZone?.name || "",
+      selectedColor: color || p.colors?.[0] || "",
+      selectedState: selectedState,
+      state: selectedState,
+      priceZoneId:
+        currentDepot?.priceZoneId?._id ||
+        currentDepot?.priceZoneId ||
+        currentZone?._id ||
+        selectedZoneId,
+      selectedZone: currentZone?.name || selectedState,
+      priceZone: currentZone?.name || selectedState,
       dealerId: currentDealer?._id || selectedDealerId,
       selectedDealer: currentDealer?.name || "",
       depotId: currentDepot?._id || selectedDepotId,
       selectedDepot: currentDepot?.name || "",
       urcId: currentUrc?._id || selectedUrcId,
       selectedUrc: currentUrc?.name || "",
-      productPrice:
-        serverP?.priceToCustomer ||
-        serverP?.price ||
-        p.priceToCustomer ||
-        p.price ||
-        0,
-      basicPrice: serverP?.basicPrice ?? p.basicPrice,
-      csdDiscountPercent: p.csdDiscountPercent,
-      csdDiscountAmount: serverP?.csdDiscountAmount ?? p.csdDiscountAmount,
-      marketScheme: serverP?.marketScheme ?? p.marketScheme,
+      productPrice: statePricing?.unitPrice || statePricing?.totalAmount || 0,
+      basicPrice: statePricing?.basicPrice ?? p.basicPrice,
+      csdDiscountPercent: p.csdDiscountPercent || 0,
+      csdDiscountAmount: statePricing?.csdDiscountAmount ?? 0,
+      marketScheme: statePricing?.marketScheme ?? 0,
       csdBasicWithDiscount:
-        serverP?.csdBasicWithDiscount ?? p.csdBasicWithDiscount,
-      cgstAmount: serverP?.cgstAmount ?? p.cgstAmount,
-      sgstAmount: serverP?.sgstAmount ?? p.sgstAmount,
+        statePricing?.csdBasicWithDiscount ?? statePricing?.basicPrice,
+      cgstAmount: 0,
+      sgstAmount: 0,
+      taxAmount: statePricing?.taxAmount || 0,
+      taxPercent: statePricing?.taxPercent || 0,
       csdInvoiceAmount: p.csdInvoiceAmount,
-      csdProfitAmount: serverP?.csdProfitAmount ?? p.csdProfitAmount,
+      csdProfitAmount: statePricing?.csdProfitAmount ?? (p.csdProfitAmount || 0),
       csdFinalPriceWithConcession: p.csdFinalPriceWithConcession,
-      tcsAmount: serverP?.tcsAmount ?? p.tcsAmount,
-      priceToCustomer: serverP?.priceToCustomer ?? p.priceToCustomer,
-      taxPercent: serverP?.taxPercent ?? (p.taxPercent || 14),
+      tcsAmount: statePricing?.tcsAmount ?? (p.tcsAmount || 0),
+      priceToCustomer: statePricing?.unitPrice || statePricing?.totalAmount,
       quantity: 1,
       taxClass: currentZone?.taxClass || "tax-class-8",
     };
@@ -828,63 +922,60 @@ export default function ProductDetails() {
             </div>
 
             <div className="pdp-spec-form">
-              {/* Color Dropdown */}
-              <div>
-                <label className="form-label font-semibold pdp-form-label">
-                  Color <span className="pdp-req-star">*</span>
-                </label>
-                <select
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className={`select-input pdp-form-select ${checkoutErrors.color ? "has-error" : ""}`}
-                >
-                  <option value="">-- Select Color --</option>
-                  {(
-                    p.colors || [
-                      "GRANITE GREY",
-                      "METALLIC SIZZLING RED",
-                      "PEARL METALLIC ARCTIC WHITE",
-                      "PREMIUM SILVER",
-                      "PRIME AUTUMN ORANGE",
-                    ]
-                  ).map((cName) => (
-                    <option key={cName} value={cName}>
-                      {cName}
-                    </option>
-                  ))}
-                </select>
-                {checkoutErrors.color && (
-                  <span className="micro text-danger pdp-error-text">
-                    {checkoutErrors.color}
-                  </span>
-                )}
-              </div>
+              {/* Color Dropdown (only when the server provides colours) */}
+              {p.colors?.length > 0 && (
+                <div>
+                  <label className="form-label font-semibold pdp-form-label">
+                    Color <span className="pdp-req-star">*</span>
+                  </label>
+                  <select
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className={`select-input pdp-form-select ${checkoutErrors.color ? "has-error" : ""}`}
+                  >
+                    <option value="">-- Select Color --</option>
+                    {p.colors.map((cName) => (
+                      <option key={cName} value={cName}>
+                        {cName}
+                      </option>
+                    ))}
+                  </select>
+                  {checkoutErrors.color && (
+                    <span className="micro text-danger pdp-error-text">
+                      {checkoutErrors.color}
+                    </span>
+                  )}
+                </div>
+              )}
 
-              {/* Price Zone Dropdown + Dynamic Count */}
+              {/* State Dropdown + Dynamic Count */}
               <div>
                 <div className="between pdp-form-label">
                   <label className="form-label font-semibold pdp-form-label-inline">
-                    Price Zone <span className="pdp-req-star">*</span>
+                    State <span className="pdp-req-star">*</span>
                   </label>
                   <span className="badge pdp-count-badge">
-                    Count: {priceZonesList.length}
+                    Count: {availableStates.length}
                   </span>
                 </div>
                 <select
-                  value={selectedZoneId || ""}
-                  onChange={(e) => handlePriceZoneChange(e.target.value)}
-                  className={`select-input pdp-form-select ${checkoutErrors.zone ? "has-error" : ""}`}
+                  value={selectedState || ""}
+                  onChange={(e) => handleStateChange(e.target.value)}
+                  className={`select-input pdp-form-select ${checkoutErrors.state ? "has-error" : ""}`}
                 >
-                  <option value="">-- Select Price Zone --</option>
-                  {priceZonesList.map((z) => (
-                    <option key={z._id} value={z._id}>
-                      {z.name}
-                    </option>
-                  ))}
+                  <option value="">-- Select State --</option>
+                  {availableStates.map((st) => {
+                    const stName = st.state || st;
+                    return (
+                      <option key={stName} value={stName}>
+                        {stName}
+                      </option>
+                    );
+                  })}
                 </select>
-                {checkoutErrors.zone && (
+                {checkoutErrors.state && (
                   <span className="micro text-danger pdp-error-text">
-                    {checkoutErrors.zone}
+                    {checkoutErrors.state}
                   </span>
                 )}
               </div>
@@ -898,9 +989,12 @@ export default function ProductDetails() {
                   <select
                     value={selectedDealerId || ""}
                     onChange={(e) => handleDealerChange(e.target.value)}
+                    disabled={!selectedState}
                     className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.dealer ? "has-error" : ""}`}
                   >
-                    <option value="">-- Select Dealer --</option>
+                    <option value="">
+                      {!selectedState ? "-- Select State First --" : "-- Select Dealer --"}
+                    </option>
                     {availableDealers.map((d) => (
                       <option key={d._id} value={d._id}>
                         {d.name} ({d.city || d.state || ""})
@@ -916,9 +1010,9 @@ export default function ProductDetails() {
                     View Dealer
                   </button>
                 </div>
-                {availableDealers.length === 0 && (
+                {selectedState && !loadingDealers && availableDealers.length === 0 && (
                   <p className="micro text-danger mt-1">
-                    No authorized dealer available for this product.
+                    No authorized dealer available for this product in {selectedState}.
                   </p>
                 )}
                 {checkoutErrors.dealer && (
@@ -936,18 +1030,25 @@ export default function ProductDetails() {
                 <select
                   value={selectedDepotId || ""}
                   onChange={(e) => handleDepotChange(e.target.value)}
+                  disabled={!selectedState || !selectedDealerId}
                   className={`select-input pdp-form-select ${checkoutErrors.depot ? "has-error" : ""}`}
                 >
-                  <option value="">-- Select Depot --</option>
+                  <option value="">
+                    {!selectedState
+                      ? "-- Select State First --"
+                      : !selectedDealerId
+                        ? "-- Select Dealer First --"
+                        : "-- Select Depot --"}
+                  </option>
                   {availableDepots.map((dep) => (
                     <option key={dep._id} value={dep._id}>
                       {dep.name} ({dep.city || dep.state || ""})
                     </option>
                   ))}
                 </select>
-                {selectedZoneId && availableDepots.length === 0 && (
+                {selectedDealerId && !loadingDepots && availableDepots.length === 0 && (
                   <p className="micro text-danger mt-1">
-                    No depot available for the selected price zone.
+                    No depot is linked to this dealer in {selectedState}.
                   </p>
                 )}
                 {checkoutErrors.depot && (
@@ -966,12 +1067,15 @@ export default function ProductDetails() {
                   <select
                     value={selectedUrcId || ""}
                     onChange={(e) => handleUrcChange(e.target.value)}
+                    disabled={!selectedDepotId}
                     className={`select-input pdp-form-select pdp-input-flex-1 ${checkoutErrors.urc ? "has-error" : ""}`}
                   >
-                    <option value="">-- Select URC --</option>
+                    <option value="">
+                      {!selectedDepotId ? "-- Select Depot First --" : "-- Select URC --"}
+                    </option>
                     {availableUrcs.map((u) => (
                       <option key={u._id} value={u._id}>
-                        {u.name}
+                        {u.name} {u.city ? `(${u.city})` : ""}
                       </option>
                     ))}
                   </select>
@@ -984,7 +1088,7 @@ export default function ProductDetails() {
                     View URC
                   </button>
                 </div>
-                {selectedDepotId && availableUrcs.length === 0 && (
+                {selectedDepotId && !loadingUrcs && availableUrcs.length === 0 && (
                   <p className="micro text-danger mt-1">
                     No URC available for the selected depot.
                   </p>
@@ -996,131 +1100,81 @@ export default function ProductDetails() {
                 )}
               </div>
 
-              {/* Concessional Price Display matching Official CSD Price List */}
+              {/* State-wise Concessional Price Display matching Official CSD Price List */}
               <div className="pdp-price-box pdp-rate-sheet-box">
                 <div className="between align-center mb-1">
                   <span className="small font-bold pdp-rate-customer-label">
-                    Price to Customer (Net CSD Payable):
+                    {selectedState ? `State Price (${selectedState}):` : "State Price:"}
                   </span>
                   <div className="h3 font-bold text-brand pdp-price-amount">
-                    ₹{" "}
-                    {(
-                      optionsData?.pricing?.priceToCustomer ||
-                      optionsData?.pricing?.price ||
-                      p.priceToCustomer ||
-                      p.price ||
-                      0
-                    ).toLocaleString("en-IN")}
+                    {!selectedState ? (
+                      <span className="micro text-muted font-normal">Select State to view price</span>
+                    ) : (loadingStatePrice || fetchingStatePrice) ? (
+                      <span className="micro text-muted font-normal">Loading price...</span>
+                    ) : statePricing ? (
+                      inr(statePricing.unitPrice || statePricing.totalAmount)
+                    ) : (
+                      <span className="micro text-danger font-normal">State price not available</span>
+                    )}
                   </div>
                 </div>
 
-                {optionsData?.pricing?.basicPrice || p.basicPrice ? (
+                {checkoutErrors.price && (
+                  <p className="micro text-danger mb-2">{checkoutErrors.price}</p>
+                )}
+
+                {selectedState && statePricing ? (
                   <div className="csd-official-rate-sheet pdp-official-breakdown">
                     <div className="pdp-breakdown-title">
-                      📋 Official CSD Rate Breakdown (INDEX NO: {p.indexNo})
+                      📋 Official CSD Rate Breakdown (INDEX NO: {p.indexNo || p.sku})
                     </div>
                     <div className="between py-1 pdp-breakdown-row">
                       <span className="muted">
                         Basic Price (incl. Dealer Margin):
                       </span>
                       <span>
-                        ₹{" "}
-                        {Number(
-                          optionsData?.pricing?.basicPrice ?? p.basicPrice,
-                        ).toLocaleString("en-IN")}
+                        ₹ {Number(statePricing.basicPrice || 0).toLocaleString("en-IN")}
                       </span>
                     </div>
-                    {((optionsData?.pricing?.csdDiscountAmount ??
-                      p.csdDiscountAmount) > 0 ||
-                      (optionsData?.pricing?.marketScheme ?? p.marketScheme) >
-                      0) && (
-                        <div className="between py-1 text-green pdp-breakdown-row">
-                          <span>CSD Discount & Schemes:</span>
-                          <span>
-                            - ₹{" "}
-                            {(
-                              Number(
-                                optionsData?.pricing?.csdDiscountAmount ??
-                                p.csdDiscountAmount,
-                              ) +
-                              Number(
-                                optionsData?.pricing?.marketScheme ??
-                                p.marketScheme ??
-                                0,
-                              )
-                            ).toLocaleString("en-IN")}
-                          </span>
-                        </div>
-                      )}
-                    <div className="between py-1 pdp-breakdown-row">
-                      <span className="muted">CSD Basic with Discount:</span>
-                      <span className="font-semibold">
-                        ₹{" "}
-                        {Number(
-                          optionsData?.pricing?.csdBasicWithDiscount ??
-                          p.csdBasicWithDiscount ??
-                          p.basicPrice,
-                        ).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                    <div className="between py-1 pdp-breakdown-row">
-                      <span className="muted">
-                        GST (SGST + CGST with Concession):
-                      </span>
-                      <span>
-                        + ₹{" "}
-                        {(
-                          Number(
-                            optionsData?.pricing?.sgstAmount ??
-                            p.sgstAmount ??
-                            0,
-                          ) +
-                          Number(
-                            optionsData?.pricing?.cgstAmount ??
-                            p.cgstAmount ??
-                            0,
-                          )
-                        ).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                    {Number(
-                      optionsData?.pricing?.csdProfitAmount ??
-                      p.csdProfitAmount,
-                    ) > 0 && (
-                        <div className="between py-1 pdp-breakdown-row">
-                          <span className="muted">
-                            CSD Profit Margin (0.50%):
-                          </span>
-                          <span>
-                            + ₹{" "}
-                            {Number(
-                              optionsData?.pricing?.csdProfitAmount ??
-                              p.csdProfitAmount,
-                            ).toLocaleString("en-IN")}
-                          </span>
-                        </div>
-                      )}
-                    {Number(optionsData?.pricing?.tcsAmount ?? p.tcsAmount) >
-                      0 && (
-                        <div className="between py-1 pdp-breakdown-row">
-                          <span className="muted">TCS @ 1% (Above 10 Lacs):</span>
-                          <span>
-                            + ₹{" "}
-                            {Number(
-                              optionsData?.pricing?.tcsAmount ?? p.tcsAmount,
-                            ).toLocaleString("en-IN")}
-                          </span>
-                        </div>
-                      )}
+                    {Number(statePricing.taxAmount || 0) > 0 && (
+                      <div className="between py-1 pdp-breakdown-row">
+                        <span className="muted">
+                          Concessional Taxes (GST / Statutory):
+                        </span>
+                        <span>
+                          + ₹ {Number(statePricing.taxAmount).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    )}
+                    {Number(statePricing.csdProfitAmount || 0) > 0 && (
+                      <div className="between py-1 pdp-breakdown-row">
+                        <span className="muted">
+                          CSD Profit Margin:
+                        </span>
+                        <span>
+                          + ₹ {Number(statePricing.csdProfitAmount).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    )}
+                    {Number(statePricing.tcsAmount || 0) > 0 && (
+                      <div className="between py-1 pdp-breakdown-row">
+                        <span className="muted">TCS (if applicable):</span>
+                        <span>
+                          + ₹ {Number(statePricing.tcsAmount).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    )}
                     <div className="micro muted mt-1 pt-1 pdp-dealer-ref-note">
-                      Ref Dealer: {p.dealerRefName} | Rate List:{" "}
-                      {p.priceListRef}
+                      State: {selectedState} | Source: {statePricing.priceSource || "STATE"}
                     </div>
                   </div>
-                ) : (
+                ) : !selectedState ? (
                   <div className="micro muted pdp-price-subtext">
-                    Concessional CSD ex-showroom price (Taxes and regional
-                    levies calculated automatically during checkout).
+                    Please select a State to view state-wise concessional CSD ex-showroom price.
+                  </div>
+                ) : (
+                  <div className="micro text-danger pdp-price-subtext">
+                    State price is not available for this product in {selectedState}.
                   </div>
                 )}
               </div>
@@ -1320,7 +1374,7 @@ export default function ProductDetails() {
           </div>
         )}
 
-        {tab === "features" && (
+        {tab === "features" && p.featureGroups?.length > 0 && (
           <div
             role="tabpanel"
             id="pn-features"
@@ -1328,7 +1382,7 @@ export default function ProductDetails() {
             className="tabpanel"
           >
             <div className="feat-grid">
-              {FEATURES[p.category].map(([g, items]) => (
+              {p.featureGroups.map(([g, items]) => (
                 <div key={g} className="feat">
                   <h3>{g}</h3>
                   <ul>
@@ -1342,38 +1396,6 @@ export default function ProductDetails() {
                 </div>
               ))}
             </div>
-            <p className="muted small">
-              Features vary by variant. Indicative list — refer to the
-              manufacturer for exact specifications.
-            </p>
-          </div>
-        )}
-
-        {tab === "buy" && (
-          <div
-            role="tabpanel"
-            id="pn-buy"
-            aria-labelledby="t-buy"
-            className="tabpanel"
-          >
-            <ol className="steps">
-              {STEPS.map(([t, d, to], i) => (
-                <li key={t}>
-                  <span className="n">{i + 1}</span>
-                  <div>
-                    <h3>{t}</h3>
-                    <p>{d}</p>
-                    <Link to={to}>
-                      Learn more <ArrowRight size={14} aria-hidden />
-                    </Link>
-                  </div>
-                </li>
-              ))}
-            </ol>
-            <p className="alertline">
-              <ShieldCheck size={18} aria-hidden /> Services on this portal are
-              free. Never pay anyone for registration or supply order release.
-            </p>
           </div>
         )}
       </section>

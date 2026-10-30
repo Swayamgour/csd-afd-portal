@@ -64,7 +64,7 @@ export default function DemandDetail() {
           remarks,
         }).unwrap();
       }
-      setPaymentModalOpen(false);
+      setShowPaymentForm(false);
       fetchDemand();
     } catch (e) {
       alert(e?.data?.message || e.message || 'Error submitting payment details');
@@ -177,7 +177,7 @@ export default function DemandDetail() {
         <div className="portal-flex-wrap-gap-xs">
           {canMakePayment && (
             <button
-              onClick={() => setPaymentModalOpen(true)}
+              onClick={() => setShowPaymentForm(true)}
               className="btn-action-upload-details flex-align-center-gap-xs"
               style={{ fontWeight: 700, background: '#16a34a', color: '#fff', border: '1px solid #15803d', padding: '0.6rem 1.2rem', cursor: 'pointer' }}
             >

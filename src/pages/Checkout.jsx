@@ -23,7 +23,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { DocumentUpload } from '../components/common/DocumentUpload.jsx';
 import { useCreateDemandMutation } from '../features/demand/demandApi.js';
 import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
-import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery } from '../features/org/orgApi.js';
+import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery, useGetAvailableStatesQuery } from '../features/org/orgApi.js';
 import { INDIAN_STATES, PAY_LEVELS } from '../data/mock/locations.mock.js';
 
 export default function Checkout() {
@@ -35,6 +35,7 @@ export default function Checkout() {
   const [createDemandMutation, { isLoading: isCreatingDemand }] = useCreateDemandMutation();
   const [uploadFileMutation] = useUploadFileMutation();
 
+  const { data: backendStates = [] } = useGetAvailableStatesQuery();
   const { data: priceZonesList = [] } = useGetPriceZonesQuery();
   const { data: depotsList = [] } = useGetDepotsQuery();
   const { data: dealersList = [] } = useGetDealersQuery();
@@ -269,8 +270,9 @@ export default function Checkout() {
         urcId: product.urcId || matchedUrc?._id,
         selectedColor: product.selectedColor || 'Standard',
         dealerPrice: Number(dealerPriceInput) || Number(product.priceToCustomer) || Number(product.productPrice) || 0,
-        priceZone: product.selectedZone || product.priceZone || 'DELHI NCR',
+        priceZone: product.selectedZone || product.priceZone || product.selectedState || 'DELHI NCR',
         priceZoneId: product.priceZoneId || (priceZonesList.find((pz) => pz.name === (product.selectedZone || product.priceZone))?._id) || priceZonesList[0]?._id,
+        state: product.selectedState || product.state || undefined,
         previousPurchase: {
           hasPurchased: prevPurchase === 'Yes',
           purchaseDate: prevPurchase === 'Yes' && prevPurchaseDate ? prevPurchaseDate : null,
@@ -396,10 +398,10 @@ export default function Checkout() {
               <div className="beneficiary-read-only-grid">
                 <div className="beneficiary-field-box">
                   <div className="beneficiary-field-label">
-                    Price Zone <span className="doc-upload-required-star">*</span>
+                    State <span className="doc-upload-required-star">*</span>
                   </div>
                   <div className="beneficiary-field-value">
-                    {beneficiary.priceZone}
+                    {product?.selectedState || product?.state || beneficiary.priceZone}
                   </div>
                 </div>
 
@@ -699,7 +701,7 @@ export default function Checkout() {
                       onChange={(e) => setBillingState(e.target.value)}
                       className={`csd-form-select ${formErrors.billingState ? 'has-error' : ''}`}
                     >
-                      {INDIAN_STATES.map((st) => (
+                      {(backendStates.length > 0 ? backendStates.map((s) => s.state || s) : INDIAN_STATES).map((st) => (
                         <option key={st} value={st}>
                           {st}
                         </option>

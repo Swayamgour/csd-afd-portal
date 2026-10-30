@@ -9,8 +9,9 @@ import {
 } from "lucide-react";
 import { useStore } from "../context/Store.jsx";
 import { CAT_LABEL, priceText, inr, onImgError } from "../data/utils.js";
+import { placeholder } from "../data/art.js";
 
-export const Stars = ({ v, n }) => (
+export const Stars = ({ v, n }) => (typeof v !== "number" || !v) ? null : (
 
   <span
     className="rate"
@@ -18,13 +19,13 @@ export const Stars = ({ v, n }) => (
   >
     <Star size={13} fill="currentColor" aria-hidden />
     <b>{v}</b>
-    {n != null && <small>({n.toLocaleString("en-IN")})</small>}
+    {n != null && <small>({Number(n).toLocaleString("en-IN")})</small>}
   </span>
 );
 
 export const Img = ({ p, ...r }) => (
   <img
-    src={p.image}
+    src={p.image || placeholder(p.name || "Image not available")}
     alt={p.name}
     loading="lazy"
     onError={(e) => onImgError(e, p.name)}
@@ -74,7 +75,7 @@ export default function ProductCard({ p, list }) {
       </div>
       <div className="card-body">
         <p className="brand-l">
-          {p.brand} · {p.type} {p.sku && <span>· SKU: {p.sku}</span>}
+          {[p.brand, p.type].filter(Boolean).join(" · ")} {p.sku && <span>{p.brand || p.type ? "· " : ""}SKU: {p.sku}</span>}
         </p>
         <h3>
           <Link to={`/products/${p.id}`}>{p.name}</Link>

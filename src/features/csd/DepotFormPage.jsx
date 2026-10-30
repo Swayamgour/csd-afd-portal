@@ -1,17 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Warehouse,
-  Building,
-  Save,
-  CheckCircle2,
-  AlertCircle,
-  Phone,
-  Mail,
-  MapPin,
-  ShieldCheck,
-} from 'lucide-react';
+import { ArrowLeft, Warehouse, Save, AlertCircle, Mail, MapPin, Lock } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
@@ -19,10 +8,22 @@ import { LoadingState } from '../../components/common/States.jsx';
 import {
   useGetDepotsQuery,
   useGetDepotByIdQuery,
-  useGetPriceZonesQuery,
-  useCreateDepotMutation,
+  useGetOrgMetaQuery,
+  useCreateOrgAccountMutation,
   useUpdateDepotMutation,
 } from '../org/orgApi.js';
+import OrgLinkFields, {
+  normState,
+  emptyOrgLink,
+  emptyLogin,
+  validateOrgLink,
+  validateLogin,
+  orgLinkPayload,
+  orgErrorMessage,
+  LoginFields,
+} from '../org/OrgLinkFields.jsx';
+
+const ROLE = 'DEPOT_OFFICIAL';
 
 export default function DepotFormPage() {
   const { id } = useParams();
@@ -31,12 +32,12 @@ export default function DepotFormPage() {
 
   const { data: rawDepot, isLoading: isLoadingDepot } = useGetDepotByIdQuery(id, { skip: !isEdit });
   const { data: depotsList } = useGetDepotsQuery({}, { skip: !isEdit || Boolean(rawDepot) });
-  const { data: priceZones = [] } = useGetPriceZonesQuery({ active: true });
+  const { data: meta } = useGetOrgMetaQuery();
 
-  const [createDepot, { isLoading: isCreating }] = useCreateDepotMutation();
+  const [createOrgAccount, { isLoading: isCreating }] = useCreateOrgAccountMutation();
   const [updateDepot, { isLoading: isUpdating }] = useUpdateDepotMutation();
 
-  const depot = React.useMemo(() => {
+  const depot = useMemo(() => {
     if (!isEdit) return null;
     if (rawDepot?.data) return rawDepot.data;
     if (rawDepot?._id || rawDepot?.id) return rawDepot;
@@ -47,88 +48,95 @@ export default function DepotFormPage() {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    priceZoneId: '',
     person: '',
     email: '',
     phone: '',
     address: '',
     city: '',
-    state: '',
     active: true,
   });
-
+  const [link, setLink] = useState(emptyOrgLink());
+  const [login, setLogin] = useState(emptyLogin());
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    if (depot) {
-      setFormData({
-        name: depot.name || '',
-        code: depot.code || '',
-        priceZoneId: depot.priceZoneId?._id || depot.priceZoneId?.id || depot.priceZoneId || '',
-        person: depot.person || depot.contact?.person || '',
-        email: depot.email || depot.contact?.email || '',
-        phone: depot.phone || depot.contact?.phone || '',
-        address: depot.address || depot.contact?.address || '',
-        city: depot.city || '',
-        state: depot.state || '',
-        active: depot.active ?? true,
-      });
-    }
+    if (!depot) return;
+    setFormData({
+      name: depot.name || '',
+      code: depot.code || '',
+      person: depot.person || depot.contact?.person || '',
+      email: depot.email || depot.contact?.email || '',
+      phone: depot.phone || depot.contact?.phone || '',
+      address: depot.address || depot.contact?.address || '',
+      city: depot.city || '',
+      active: depot.active ?? true,
+    });
+    setLink((prev) => ({
+      ...prev,
+      state: normState(depot.state),
+      priceZoneId: depot.priceZoneId?._id || depot.priceZoneId?.id || depot.priceZoneId || '',
+      urcIds: (depot.urcIds || []).map((u) => String(u?._id || u?.id || u)),
+    }));
   }, [depot]);
+
+  const set = (patch) => setFormData((prev) => ({ ...prev, ...patch }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!formData.name.trim()) {
-      setErrorMsg('Depot Name is required.');
-      return;
-    }
-    if (!formData.code.trim()) {
-      setErrorMsg('Depot Code is required.');
-      return;
-    }
+    if (!formData.name.trim()) return setErrorMsg('Depot Name is required.');
+    if (!formData.code.trim()) return setErrorMsg('Depot Code is required.');
+    const linkErr = validateOrgLink(ROLE, link);
+    if (linkErr) return setErrorMsg(linkErr);
+
+    const base = {
+      name: formData.name.trim(),
+      code: formData.code.trim().toUpperCase(),
+      person: formData.person.trim() || undefined,
+      email: formData.email.trim() || undefined,
+      phone: formData.phone.trim() || undefined,
+      address: formData.address.trim() || undefined,
+      city: formData.city.trim() || undefined,
+      active: formData.active,
+    };
 
     try {
       if (isEdit) {
-        await updateDepot({
-          id,
-          ...formData,
-          code: formData.code.trim().toUpperCase(),
-        }).unwrap();
-        navigate('/csd/depots', {
-          state: { toast: `✓ CSD Depot "${formData.name}" updated successfully.` },
-        });
-      } else {
-        await createDepot({
-          ...formData,
-          code: formData.code.trim().toUpperCase(),
-        }).unwrap();
-        navigate('/csd/depots', {
-          state: { toast: `✓ CSD Depot "${formData.name}" registered successfully.` },
-        });
+        // single price zone in the state -> pick it automatically
+        const zones = meta?.states?.find((s) => s.state === normState(link.state))?.priceZones || [];
+        const priceZoneId = link.priceZoneId || (zones.length === 1 ? zones[0]._id : undefined);
+        await updateDepot({ id, ...base, state: link.state, urcIds: link.urcIds || [], ...(priceZoneId ? { priceZoneId } : {}) }).unwrap();
+        navigate('/csd/depots', { state: { toast: `✓ Depot "${base.name}" updated successfully.` } });
+        return;
       }
+
+      const loginErr = validateLogin(login);
+      if (loginErr) return setErrorMsg(loginErr);
+
+      await createOrgAccount({
+        role: ROLE,
+        ...base,
+        username: login.username.trim(),
+        password: login.password,
+        ...orgLinkPayload(ROLE, link),
+      }).unwrap();
+      navigate('/csd/depots', { state: { toast: `✓ Depot "${base.name}" registered with login "${login.username.trim()}".` } });
     } catch (err) {
-      setErrorMsg(
-        err?.data?.message ||
-          err?.message ||
-          'Failed to save Depot record. Please verify depot code uniqueness.'
-      );
+      setErrorMsg(orgErrorMessage(err, 'Failed to save depot record.'));
     }
   };
 
-  if (isEdit && isLoadingDepot) {
-    return <LoadingState text="Loading CSD Depot profile details..." />;
-  }
+  if (isEdit && isLoadingDepot) return <LoadingState text="Loading Depot details..." />;
 
   return (
     <div className="csd-module-page">
       <PageHeader
-        title={isEdit ? `Edit Depot: ${formData.name || depot?.name || 'Loading...'}` : 'Register New CSD Base Depot'}
-        subtitle="Regional nodal depot coordinating stock distribution, demand verification, and dealer supplies"
+        title={isEdit ? `Edit Depot: ${formData.name || depot?.name || 'Loading...'}` : 'Register Depot'}
+        subtitle="Depot, uska state aur depot official ka login ek saath"
         breadcrumbs={[
           { label: 'Catalog Master', href: '/csd/products' },
-          { label: 'Base Depots', href: '/csd/depots' },
+          { label: 'Depots Registry', href: '/csd/depots' },
           { label: isEdit ? 'Edit Depot' : 'Add New Depot' },
         ]}
         actions={
@@ -149,94 +157,59 @@ export default function DepotFormPage() {
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
             <h3 className="card-title d-flex align-items-center gap-2">
-              <Warehouse size={18} className="text-brand" /> Depot Identification & Price Zone
+              <Warehouse size={18} className="text-brand" /> Depot Identification & State
             </h3>
-            <p className="micro muted">Military station base depot nomenclature and assigned pricing cluster</p>
+            <p className="micro muted">Depot name, code aur kis state ka depot hai</p>
           </div>
-
-          <div className="grid-3-col gap-3">
+          <div className="grid-2-col gap-3 mb-3">
             <div>
               <label className="form-label required">Depot Name</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. CSD Depot Delhi Cantt"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="form-control"
-              />
+              <input className="form-control" required value={formData.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Kanpur Depot" />
             </div>
-
             <div>
               <label className="form-label required">Depot Code</label>
               <input
-                type="text"
-                required
-                placeholder="e.g. DEP-DEL-01"
-                value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                 className="form-control font-mono font-bold"
+                required
+                value={formData.code}
+                onChange={(e) => set({ code: e.target.value.toUpperCase() })}
+                placeholder="e.g. DEP-KNP-001"
               />
             </div>
-
-            <div>
-              <label className="form-label">Price Zone Mapping</label>
-              <select
-                value={formData.priceZoneId}
-                onChange={(e) => setFormData({ ...formData, priceZoneId: e.target.value })}
-                className="form-control"
-              >
-                <option value="">-- National Default Zone --</option>
-                {priceZones.map((z) => (
-                  <option key={z._id || z.id} value={z._id || z.id}>
-                    {z.name} ({z.code || 'ZONE'})
-                  </option>
-                ))}
-              </select>
-            </div>
           </div>
+          <OrgLinkFields role={ROLE} value={link} onChange={setLink} />
         </Card>
+
+        {!isEdit && (
+          <Card className="mb-3">
+            <div className="card-header border-bottom pb-2 mb-3">
+              <h3 className="card-title d-flex align-items-center gap-2">
+                <Lock size={18} className="text-brand" /> Depot Login Credentials
+              </h3>
+              <p className="micro muted">Is username/password se depot official login karega (role: Depot Official)</p>
+            </div>
+            <LoginFields value={login} onChange={setLogin} />
+          </Card>
+        )}
 
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
             <h3 className="card-title d-flex align-items-center gap-2">
-              <Mail size={18} className="text-brand" /> Depot Command Officer
+              <Mail size={18} className="text-brand" /> Contact
             </h3>
-            <p className="micro muted">Depot Manager / Commanding Officer details</p>
           </div>
-
           <div className="grid-3-col gap-3">
             <div>
-              <label className="form-label">Commanding Officer / In-charge</label>
-              <input
-                type="text"
-                placeholder="e.g. Col. A. K. Sharma"
-                value={formData.person}
-                onChange={(e) => setFormData({ ...formData, person: e.target.value })}
-                className="form-control"
-              />
+              <label className="form-label">Contact Person</label>
+              <input className="form-control" value={formData.person} onChange={(e) => set({ person: e.target.value })} />
             </div>
-
             <div>
-              <label className="form-label">Official Army Email</label>
-              <input
-                type="email"
-                placeholder="depot.delhi@csd.gov.in"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="form-control"
-              />
+              <label className="form-label">Official Email</label>
+              <input type="email" className="form-control" value={formData.email} onChange={(e) => set({ email: e.target.value })} />
             </div>
-
             <div>
-              <label className="form-label">Official Phone / Mil Exchange</label>
-              <input
-                type="tel"
-                placeholder="011-25691234"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="form-control"
-              />
+              <label className="form-label">Phone (10 digit)</label>
+              <input type="tel" maxLength={10} className="form-control" value={formData.phone} onChange={(e) => set({ phone: e.target.value })} />
             </div>
           </div>
         </Card>
@@ -244,56 +217,29 @@ export default function DepotFormPage() {
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
             <h3 className="card-title d-flex align-items-center gap-2">
-              <MapPin size={18} className="text-brand" /> Depot Premises & Military Station
+              <MapPin size={18} className="text-brand" /> Address
             </h3>
-            <p className="micro muted">Physical garrison location and jurisdictional state</p>
           </div>
-
-          <div className="mb-3">
-            <label className="form-label">Garrison Address</label>
-            <input
-              type="text"
-              placeholder="Full military base address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="form-control"
-            />
-          </div>
-
           <div className="grid-2-col gap-3">
             <div>
-              <label className="form-label">Military Station / City</label>
-              <input
-                type="text"
-                placeholder="e.g. New Delhi"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                className="form-control"
-              />
+              <label className="form-label">City</label>
+              <input className="form-control" value={formData.city} onChange={(e) => set({ city: e.target.value })} />
             </div>
-
             <div>
-              <label className="form-label">State / Command Territory</label>
-              <input
-                type="text"
-                placeholder="e.g. Delhi"
-                value={formData.state}
-                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                className="form-control"
-              />
+              <label className="form-label">Address</label>
+              <input className="form-control" value={formData.address} onChange={(e) => set({ address: e.target.value })} />
             </div>
           </div>
-
           <div className="d-flex align-items-center gap-2 mt-4 p-3 bg-light rounded border">
             <input
               type="checkbox"
-              id="depotActiveStatus"
+              id="depotActive"
               checked={formData.active}
-              onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-              style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              onChange={(e) => set({ active: e.target.checked })}
+              style={{ width: 18, height: 18, cursor: 'pointer' }}
             />
-            <label htmlFor="depotActiveStatus" className="form-label mb-0 cursor-pointer font-medium">
-              Active Regional Depot (Authorizes URCs affiliation and demand approvals)
+            <label htmlFor="depotActive" className="form-label mb-0 font-medium" style={{ cursor: 'pointer' }}>
+              Active Depot
             </label>
           </div>
         </Card>
@@ -302,15 +248,9 @@ export default function DepotFormPage() {
           <Button type="button" variant="outline" onClick={() => navigate('/csd/depots')}>
             Cancel
           </Button>
-
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isCreating || isUpdating}
-            className="d-flex align-items-center gap-2 px-4"
-          >
+          <Button type="submit" variant="primary" disabled={isCreating || isUpdating} className="d-flex align-items-center gap-2 px-4">
             <Save size={16} />
-            {isCreating || isUpdating ? 'Saving...' : isEdit ? 'Update Depot Record' : 'Empanel Depot'}
+            {isCreating || isUpdating ? 'Saving...' : isEdit ? 'Update Depot' : 'Register Depot'}
           </Button>
         </div>
       </form>

@@ -12,8 +12,8 @@ import {
   Check,
 } from "lucide-react";
 import ProductCard from "./ProductCard.jsx";
-import { Loader, EmptyState, ErrorState } from "./States.jsx";
-import { fetchProducts } from "../data/api.js";
+import { Loader, EmptyState, UnavailableState } from "./States.jsx";
+import { useStoreProducts } from "../hooks/useStoreProducts.js";
 import { useStore } from "../context/Store.jsx";
 import { CAT_PLURAL, matches, rupees } from "../data/utils.js";
 
@@ -35,30 +35,6 @@ const CATS = [
 const toggle = (set, v) =>
   set((x) => (x.includes(v) ? x.filter((i) => i !== v) : [...x, v]));
 const lakh = (v) => `₹${+v.toFixed(1)} L`;
-
-const CAR_BRANDS = [
-  "Maruti",
-  "Tata",
-  "Mahindra",
-  "Hyundai",
-  "Toyota",
-  "Honda",
-  "Renault",
-  "Kia",
-  "Skoda",
-  "Volkswagen",
-];
-const BIKE_BRANDS = [
-  "Royal Enfield",
-  "Hero",
-  "Honda",
-  "TVS",
-  "Bajaj",
-  "Yamaha",
-  "Suzuki",
-  "KTM",
-];
-const APPL_BRANDS = ["LG", "Samsung", "Whirlpool", "Haier", "Panasonic"];
 
 function Group({ title, items, sel, set, counts }) {
   if (!items.length) return null;
@@ -100,8 +76,8 @@ export default function Catalog({
   allowAll = false,
 }) {
   const { wish, cmp } = useStore();
-  const [all, setAll] = useState(null),
-    [err, setErr] = useState(false);
+  // One shared request for the whole app (see hooks/useStoreProducts.js)
+  const { products: all, isLoading, isError, isEmpty, refetch } = useStoreProducts();
   const [sort, setSort] = useState("rec"),
     [view, setView] = useState("grid"),
     [drawer, setDrawer] = useState(false);
@@ -111,15 +87,6 @@ export default function Catalog({
   const [trans, setTrans] = useState([]),
     [minRating, setMinRating] = useState(0),
     [pmax, setPmax] = useState(null);
-
-  const load = () => {
-    setErr(false);
-    setAll(null);
-    fetchProducts()
-      .then(setAll)
-      .catch(() => setErr(true));
-  };
-  useEffect(load, []);
 
   const reset = () => {
     setBrands([]);
@@ -149,12 +116,11 @@ export default function Catalog({
       ),
     [all, cat, single, q, onlyWish, wish],
   );
+  const priced = scope.filter((p) => p.lo != null).map((p) => p.lo);
   const hi =
-    single && scope.length
-      ? Math.ceil(
-        Math.max(...scope.map((p) => p.lo)) /
-        (cat === "white-goods" ? 1000 : 1),
-      ) * (cat === "white-goods" ? 1000 : 1)
+    single && priced.length
+      ? Math.ceil(Math.max(...priced) / (cat === "white-goods" ? 1000 : 1)) *
+        (cat === "white-goods" ? 1000 : 1)
       : 0;
   const lim = pmax ?? hi;
   const money = (v) =>
@@ -167,7 +133,7 @@ export default function Catalog({
     (!trans.length ||
       (p.trans || "").split(" / ").some((t) => trans.includes(t))) &&
     (!minRating || p.rating >= minRating) &&
-    (!hi || p.lo <= lim);
+    (!hi || p.lo == null || p.lo <= lim);
 
   const brandCounts = useMemo(() => {
     const m = {};
@@ -179,23 +145,16 @@ export default function Catalog({
     return m;
   }, [scope, types, fuels, trans, minRating, lim]); // eslint-disable-line
 
-  const categoryKnownBrands = useMemo(() => {
-    if (cat === "car") return CAR_BRANDS;
-    if (cat === "bike") return BIKE_BRANDS;
-    if (cat === "white-goods") return APPL_BRANDS;
-    return [...CAR_BRANDS, ...BIKE_BRANDS, ...APPL_BRANDS];
-  }, [cat]);
-
-  const brandList = useMemo(() => {
-    const presentInScope = scope.map((p) => p.brand).filter(Boolean);
-    const combined = [...new Set([...presentInScope, ...categoryKnownBrands])];
-    return combined.sort((a, b) => {
-      const ca = brandCounts[a] || 0;
-      const cb = brandCounts[b] || 0;
-      if (cb !== ca) return cb - ca; // Put brands with products first
-      return a.localeCompare(b);
-    });
-  }, [scope, categoryKnownBrands, brandCounts]);
+  const brandList = useMemo(
+    () =>
+      [...new Set(scope.map((p) => p.brand).filter(Boolean))].sort((a, b) => {
+        const ca = brandCounts[a] || 0;
+        const cb = brandCounts[b] || 0;
+        if (cb !== ca) return cb - ca;
+        return a.localeCompare(b);
+      }),
+    [scope, brandCounts],
+  );
 
   const brandTabs = useMemo(
     () => brandList.filter((b) => (brandCounts[b] || 0) > 0),
@@ -206,11 +165,11 @@ export default function Catalog({
   const list = useMemo(() => {
     let l = scope.filter((p) => passes(p));
     const by = {
-      pa: (a, b) => rupees(a) - rupees(b),
-      pd: (a, b) => rupees(b) - rupees(a),
-      rt: (a, b) => b.rating - a.rating,
+      pa: (a, b) => (rupees(a) ?? Infinity) - (rupees(b) ?? Infinity),
+      pd: (a, b) => (rupees(b) ?? -Infinity) - (rupees(a) ?? -Infinity),
+      rt: (a, b) => (b.rating || 0) - (a.rating || 0),
       dc: (a, b) => (b.discount || 0) - (a.discount || 0),
-      az: (a, b) => a.name.localeCompare(b.name),
+      az: (a, b) => (a.name || "").localeCompare(b.name || ""),
     }[sort];
     return by ? [...l].sort(by) : l;
   }, [scope, brands, types, fuels, trans, minRating, lim, sort]); // eslint-disable-line
@@ -226,17 +185,7 @@ export default function Catalog({
     return m;
   };
 
-  const carBodyTypes = ["Hatchback", "Sedan", "SUV"];
-  const bikeBodyTypes = ["Commuter", "Cruiser", "Roadster", "Sports", "Scooter"];
-  const baseTypes =
-    single
-      ? cat === "car"
-        ? carBodyTypes
-        : cat === "bike"
-          ? bikeBodyTypes
-          : []
-      : [];
-  const typeList = [...new Set([...baseTypes, ...uniq((p) => [p.type])])].filter(Boolean).sort();
+  const typeList = uniq((p) => [p.type]).filter(Boolean);
 
   const fuelList = uniq((p) => p.fuel || []);
   const transList =
@@ -256,7 +205,7 @@ export default function Catalog({
   ];
 
   const related = useMemo(() => {
-    if (!q || !list.length || list.length > 3 || !all) return [];
+    if (!q || !list.length || list.length > 3 || !all.length) return [];
     const bs = new Set(list.map((p) => p.brand)),
       ts = new Set(list.map((p) => p.type)),
       ids = new Set(list.map((p) => p.id));
@@ -450,7 +399,7 @@ export default function Catalog({
                 {title || CAT_PLURAL[cat]}
               </h2>
               <p className="muted" aria-live="polite">
-                {all && `${list.length} product${list.length === 1 ? "" : "s"}`}
+                {!isLoading && !isError && `${list.length} product${list.length === 1 ? "" : "s"}`}
                 {cmp.length > 0 && (
                   <>
                     {" "}
@@ -516,10 +465,20 @@ export default function Catalog({
             </div>
           )}
 
-          {err ? (
-            <ErrorState onRetry={load} />
-          ) : !all ? (
-            <Loader label="Loading products" />
+          {isError ? (
+            <UnavailableState
+              title="Products not available"
+              text="We could not load products from the server right now. Please try again."
+              onRetry={refetch}
+            />
+          ) : isLoading ? (
+            <Loader label="Loading products" onRetry={refetch} />
+          ) : isEmpty ? (
+            <UnavailableState
+              title="No products available"
+              text="No products have been published yet. Please check back later."
+              onRetry={refetch}
+            />
           ) : !list.length ? (
             <EmptyState
               title="No products found"

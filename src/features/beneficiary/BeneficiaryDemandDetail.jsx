@@ -65,7 +65,7 @@ export default function BeneficiaryDemandDetail() {
           remarks,
         }).unwrap();
       }
-      setPaymentModalOpen(false);
+      setShowPaymentForm(false);
       showToast('success', 'Payment details / UTR submitted successfully! Awaiting depot verification.');
       refetch();
     } catch (e) {
@@ -270,7 +270,7 @@ export default function BeneficiaryDemandDetail() {
             variant="primary"
             icon={CreditCard}
             size="sm"
-            onClick={() => setPaymentModalOpen(true)}
+            onClick={() => setShowPaymentForm(true)}
             style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff', fontWeight: 700, flexShrink: 0 }}
           >
             Pay Now / Submit UTR

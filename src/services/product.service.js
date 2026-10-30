@@ -30,7 +30,7 @@ export const productService = {
       return filtered;
     } catch (err) {
       console.error('[productService.getProducts] Error:', err);
-      return [];
+      throw err; // let the caller show "not available" - no fake data
     }
   },
 
@@ -39,7 +39,7 @@ export const productService = {
       return await fetchProduct(id);
     } catch (err) {
       console.error('[productService.getProductById] Error:', err);
-      return null;
+      throw err;
     }
   },
 

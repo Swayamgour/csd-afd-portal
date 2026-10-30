@@ -166,10 +166,12 @@ export default function LoginForm({ onNeedOtp }) {
       }
 
       const registeredEmail = credResult.maskedEmail || credResult.data?.maskedEmail || 'registered email';
-      const userRole = credResult.role || credResult.data?.role || 'beneficiary';
+      const userRole = credResult.role || credResult.data?.role || credResult.data?.user?.role || 'beneficiary';
+      // Depot / URC / Dealer / OEM accounts sign in with username + password only (no OTP step)
+      const requireOtp = (credResult.data?.requireOtp ?? credResult.requireOtp) !== false;
 
       // 2. Transition to OTP Verification step (Backend generated & dispatched OTP securely)
-      if (onNeedOtp) {
+      if (onNeedOtp && requireOtp) {
         onNeedOtp({
           username: cleanUsername,
           password,

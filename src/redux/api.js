@@ -53,6 +53,11 @@ export const api = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
 
+  keepUnusedDataFor: 300,
+  refetchOnFocus: false,
+  refetchOnReconnect: false,
+  refetchOnMountOrArgChange: false,
+
   tagTypes: [
     "Auth",
     "Beneficiary",
@@ -65,6 +70,7 @@ export const api = createApi({
     "Payment",
     "Notification",
     "Banner",
+    "Content",
     "Dashboard",
     "Dealer",
     "Depot",
@@ -85,6 +91,8 @@ export const api = createApi({
     "OemOrder",
     "OemReport",
     "OemProfile",
+    "State",
+    "ProductPrice",
   ],
 
   endpoints: () => ({}),

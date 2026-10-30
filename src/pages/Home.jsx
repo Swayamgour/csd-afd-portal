@@ -5,79 +5,37 @@ import {
   ArrowRight,
   Headset,
   Info,
-  ShieldAlert,
-  BadgePercent,
-  BadgeCheck,
-  Truck,
-  Wallet,
   Car,
   Bike,
   Refrigerator,
-  BookOpen,
-  FileCheck2,
   CircleCheck,
   Phone,
+  FileText,
 } from "lucide-react";
-// import ProductCard from "../components/ProductCard.jsx";
-// import SearchBox from "../components/SearchBox.jsx";
 import Catalog from "../components/Catalog.jsx";
-import { products } from "../data/products.js";
-import { fetchProducts } from "../data/api.js";
-// import { onImgError } from "../data/utils.js";
-import { useGetBannersQuery } from "../features/admin/adminApi.js";
+import { Loader, UnavailableState, InlineNote } from "../components/States.jsx";
+import { useStoreProducts } from "../hooks/useStoreProducts.js";
+import { useGetBannersQuery, useGetContentQuery } from "../features/admin/adminApi.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeRole } from "../permissions/roles.js";
 
-// const perks = [
-//   [BadgePercent, "Concessional prices", "Special CSD rates for the Armed Forces family"],
-//   [BadgeCheck, "100% free service", "No agent or registration fee, ever"],
-//   [Wallet, "Easy online payment", "Pay securely against your supply order"],
-//   [Truck, "Supply order delivery", "Track and verify your order online"],
-// ];
-
-const featured = {
-  to: "/products",
-  tag: "Latest",
-  title: "Browse the full range of cars, bikes and home appliances",
-  text: "Compare models side by side and check price and availability before you order.",
-};
-const notices = [
-  {
-    to: "/info/buying-process",
-    icon: BookOpen,
-    tag: "Guide",
-    title: "How to buy: the step-by-step process",
-    text: "From registration to supply order and delivery, see every step in one place.",
-  },
-  {
-    to: "/info/verify-supply-order",
-    icon: FileCheck2,
-    tag: "Update",
-    title: "Verify your supply order online",
-    text: "Keep your supply order number ready to check its details and status.",
-  },
-  {
-    to: "/info/payments",
-    icon: Wallet,
-    tag: "Guide",
-    title: "How to make online payments",
-    text: "Read the payment steps before you place your order to avoid delays.",
-  },
-  {
-    to: "/info/contact",
-    icon: ShieldAlert,
-    tag: "Advisory",
-    alert: true,
-    title: "Be vigilant: services on this portal are free",
-    text: "If anyone asks for money for registration or supply order release, report it immediately.",
-  },
+// Category tiles: only labels/icons live here (UI). Counts and images come from the server data.
+const CATEGORY_TILES = [
+  { key: "car", group: "Automobiles", label: "Cars", to: "/products?cat=car", cls: "car", Icon: Car },
+  { key: "bike", group: "Automobiles", label: "Bikes", to: "/products?cat=bike", cls: "bike", Icon: Bike },
+  { key: "white-goods", group: "Home & Living", label: "Appliances", to: "/products?cat=white-goods", cls: "app", Icon: Refrigerator },
 ];
 
-const DEFAULT_HERO_BANNERS = [
-  { imageUrl: "/assets/home_page.png", name: "CSD AFD Slide 1" },
-  { imageUrl: "/assets/home_page.png", name: "CSD AFD Slide 2" },
-  { imageUrl: "/assets/home_page.png", name: "CSD AFD Slide 3" },
-];
+const text = (v) => (v && typeof v === "object" ? v.en || Object.values(v)[0] : v) || "";
+const HIDDEN_STATUS = ["DRAFT", "ARCHIVED", "INACTIVE", "EXPIRED"];
+
+/** Link for internal paths, <a> for full URLs, plain <div> when the notice has no link. */
+function NoticeLink({ to, className, children }) {
+  if (!to) return <div className={className}>{children}</div>;
+  if (/^https?:\/\//i.test(to))
+    return <a href={to} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
+  return <Link to={to} className={className}>{children}</Link>;
+}
 
 export const Shop = ({ to = "/products", children = "Shop now" }) => (
   <Link to={to} className="shop">
@@ -90,9 +48,11 @@ export const Shop = ({ to = "/products", children = "Shop now" }) => (
 
 export default function Home() {
   const [cat, setCat] = useState("car");
-  const [allProducts, setAllProducts] = useState(products);
   const { isAuthenticated, role, roleHome, user } = useAuth();
   const navigate = useNavigate();
+
+  // Shared request: Catalog below, Header search and Cart use the SAME cached call.
+  const { products: allProducts, isLoading: productsLoading, isError: productsError, refetch } = useStoreProducts();
 
   // If a departmental officer (Depot, Dealer, CSD HO, URC, Admin) visits the home page, redirect to their operations dashboard
   useEffect(() => {
@@ -104,96 +64,75 @@ export default function Home() {
     }
   }, [isAuthenticated, role, roleHome, user, navigate]);
 
-  useEffect(() => {
-    fetchProducts()
-      .then((res) => {
-        if (Array.isArray(res) && res.length) setAllProducts(res);
-      })
-      .catch(() => { });
-  }, []);
-
+  // Category tiles built from real data (count + first available image); empty categories are not shown
   const cats = useMemo(
-    () => [
-      [
-        "Automobiles",
-        "Cars",
-        "/products?cat=car",
-        "car",
-        "c5",
-        "/assets/maruti1.png",
-        Car,
-        allProducts.filter((p) => p.category === "car").length,
-      ],
-      [
-        "Automobiles",
-        "Bikes",
-        "/products?cat=bike",
-        "bike",
-        "b4",
-        "/assets/bullet1.png",
-        Bike,
-        allProducts.filter((p) => p.category === "bike").length,
-      ],
-      [
-        "Home & Living",
-        "Appliances",
-        "/products?cat=white-goods",
-        "app",
-        "w6",
-        "/assets/white_goods1.png",
-        Refrigerator,
-        allProducts.filter((p) => p.category === "white-goods").length,
-      ],
-    ],
+    () =>
+      CATEGORY_TILES.map((t) => {
+        const inCat = allProducts.filter((p) => p.category === t.key);
+        return { ...t, count: inCat.length, img: inCat.find((p) => p.image)?.image || "" };
+      }).filter((t) => t.count > 0),
     [allProducts],
   );
 
-  const topBrands = useMemo(() => {
-    return Object.entries(
-      allProducts.reduce((m, p) => {
-        if (p.brand) m[p.brand] = (m[p.brand] || 0) + 1;
-        return m;
-      }, {}),
-    )
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 12);
-  }, [allProducts]);
+  // Hero banners (logged-out only) - server only, no default images
+  const { data: heroData, isLoading: heroLoading } = useGetBannersQuery(
+    { position: "home_hero" },
+    { skip: isAuthenticated },
+  );
+  const heroBanners = Array.isArray(heroData) ? heroData.filter((b) => b?.imageUrl) : [];
 
-  const { data: dynamicHeroBanners } = useGetBannersQuery({
-    position: "home_hero",
-  });
-  const heroBanners =
-    dynamicHeroBanners && dynamicHeroBanners.length > 0
-      ? dynamicHeroBanners
-      : DEFAULT_HERO_BANNERS;
+  // News & notices from the server
+  const { data: content, isLoading: newsLoading, isError: newsError, refetch: refetchNews } =
+    useGetContentQuery({ type: "CIRCULAR" });
+  const notices = useMemo(
+    () =>
+      (Array.isArray(content) ? content : [])
+        .filter((c) => !HIDDEN_STATUS.includes(String(c.status || "").toUpperCase()))
+        .sort(
+          (a, b) =>
+            new Date(b.publishAt || b.createdAt || 0) - new Date(a.publishAt || a.createdAt || 0),
+        )
+        .map((c, i) => ({
+          id: c._id || c.id || i,
+          tag: c.position || c.type || "Notice",
+          title: text(c.title),
+          summary: text(c.summary),
+          to: c.url || c.link || "",
+        }))
+        .filter((n) => n.title),
+    [content],
+  );
+  const featured = notices[0];
+  const otherNotices = notices.slice(1, 5);
 
   return (
     <div className="home">
       {!isAuthenticated &&
         (<section className="hero" aria-labelledby="h1">
-          {/* Background Image Slider */}
-          <div className="hero-slider">
-            {heroBanners.map((slide, idx) => {
-              const isSingle = heroBanners.length === 1;
-              const duration = Math.max(heroBanners.length * 5, 10);
-              const delay = idx * 5;
-              return (
-                <img
-                  key={slide._id || slide.id || idx}
-                  src={slide.imageUrl}
-                  alt={slide.name || `Hero Banner ${idx + 1}`}
-                  className={
-                    isSingle
-                      ? "hero-single-slide"
-                      : `hero-slide-duration-${Math.min(30, Math.max(10, Math.round(duration / 5) * 5))} hero-slide-delay-${Math.min(5, idx)}`
-                  }
-                  onError={(e) => {
-                    e.currentTarget.src = "/assets/home_page.png";
-                  }}
-                />
-              );
-            })}
-          </div>
+          {/* Background Image Slider (server banners only) */}
+          {heroBanners.length > 0 && (
+            <div className="hero-slider">
+              {heroBanners.map((slide, idx) => {
+                const isSingle = heroBanners.length === 1;
+                const duration = Math.max(heroBanners.length * 5, 10);
+                return (
+                  <img
+                    key={slide._id || slide.id || idx}
+                    src={slide.imageUrl}
+                    alt={slide.name || `Hero Banner ${idx + 1}`}
+                    className={
+                      isSingle
+                        ? "hero-single-slide"
+                        : `hero-slide-duration-${Math.min(30, Math.max(10, Math.round(duration / 5) * 5))} hero-slide-delay-${Math.min(5, idx)}`
+                    }
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
 
           {/* Dark overlay */}
           <div className="hero-overlay"></div>
@@ -207,38 +146,42 @@ export default function Home() {
             </h1>
 
             <Shop to="/products?cat=car" />
-
-            {/* <p className="ticker" role="note">
-                  <strong>IMPORTANT:</strong> [Official notice to be provided]
-                </p> */}
           </div>
         </section>)
       }
 
       <div className="wrap">
-        {/* <ul className="perks">
-          {perks.map(([Ic, t, s]) => (<li key={t}><span><Ic size={22} aria-hidden /></span><div><strong>{t}</strong><small>{s}</small></div></li>))}
-        </ul> */}
-
         <section aria-labelledby="cats">
           <div className="sec-h">
             <h2 id="cats">Available Products</h2>
           </div>
 
-          <ul className="grid3 cats">
-            {cats.map(([s, t, to, k, im, img], i) => (
-              <li key={t} className={i === 2 ? "wide2" : ""}>
-                <Link className={`cat ${k}`} to={to}>
-                  <small>{s}</small>
-                  <strong>{t}</strong>
-                  <span className="cta">
-                    Explore <ArrowUpRight size={15} aria-hidden />
-                  </span>
-                  <img src={img} alt="" loading="lazy" />
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {productsError ? (
+            <UnavailableState
+              title="Products not available"
+              text="We could not load product categories from the server."
+              onRetry={refetch}
+            />
+          ) : productsLoading ? (
+            <Loader label="Loading categories" onRetry={refetch} />
+          ) : cats.length === 0 ? (
+            <InlineNote>No products are available right now.</InlineNote>
+          ) : (
+            <ul className="grid3 cats">
+              {cats.map((t, i) => (
+                <li key={t.key} className={i === 2 ? "wide2" : ""}>
+                  <Link className={`cat ${t.cls}`} to={t.to}>
+                    <small>{t.group}</small>
+                    <strong>{t.label}</strong>
+                    <span className="cta">
+                      Explore <ArrowUpRight size={15} aria-hidden />
+                    </span>
+                    {t.img && <img src={t.img} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = "none")} />}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section id="shop" aria-labelledby="shop-h" className="shop-sec">
@@ -260,77 +203,61 @@ export default function Home() {
           />
         </section>
 
-        {/* <section aria-labelledby="deals">
-          <div className="sec-h"><h2 id="deals">Top discounts</h2><Link to="/products?cat=white-goods" className="more">All appliances <ArrowRight size={15} aria-hidden /></Link></div>
-          <div className="pgrid five">{deals.map((p) => <ProductCard key={p.id} p={p} />)}</div>
-        </section> */}
-
-        {/* <section aria-labelledby="brands">
-          <div className="sec-h">
-            <h2 id="brands">Popular brands</h2>
-          </div>
-          <ul className="brands">
-            {topBrands.map(([b, n]) => (
-              <li key={b}>
-                <Link to={`/search?q=${encodeURIComponent(b)}`}>
-                  <strong>{b}</strong>
-                  <small>
-                    {n} product{n > 1 ? "s" : ""}
-                  </small>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section> */}
-
         {/* ===================== NEWS & NOTICES ===================== */}
         <section aria-labelledby="news" className="news">
           <div className="sec-h">
             <h2 id="news">News &amp; notices</h2>
           </div>
 
-          <div className="news-grid">
-            {/* Featured story */}
-            <Link to={featured.to} className="news-feature">
-              {/* <img
-                className="news-feature-img"
-                src="/assets/news.jpg"
-                alt=""
-                loading="lazy"
-              /> */}
-              <div className="news-feature-body">
-                <span className="news-chip light">{featured.tag}</span>
-                <h3>{featured.title}</h3>
-                <p>{featured.text}</p>
-                <span className="news-more">
-                  Read more <ArrowRight size={16} aria-hidden />
-                </span>
-              </div>
-            </Link>
+          {newsLoading && <Loader label="Loading notices" />}
+          {newsError && !newsLoading && (
+            <UnavailableState
+              title="Notices not available"
+              text="We could not load news and notices right now."
+              onRetry={refetchNews}
+            />
+          )}
+          {!newsLoading && !newsError && notices.length === 0 && (
+            <InlineNote>No news or notices have been published yet.</InlineNote>
+          )}
 
-            {/* Notices */}
-            <ul className="news-list">
-              {notices.map(({ icon: Ic, ...n }) => (
-                <li key={n.to}>
-                  <Link
-                    to={n.to}
-                    className={`news-item ${n.alert ? "alert" : ""}`}
-                  >
-                    <span className="news-ic" aria-hidden>
-                      <Ic size={20} />
+          <div className="news-grid">
+            {/* Featured story (latest published notice) */}
+            {featured && (
+              <NoticeLink to={featured.to} className="news-feature">
+                <div className="news-feature-body">
+                  <span className="news-chip light">{featured.tag}</span>
+                  <h3>{featured.title}</h3>
+                  {featured.summary && <p>{featured.summary}</p>}
+                  {featured.to && (
+                    <span className="news-more">
+                      Read more <ArrowRight size={16} aria-hidden />
                     </span>
-                    <span className="news-txt">
-                      <span className={`news-chip ${n.alert ? "alert" : ""}`}>
-                        {n.tag}
+                  )}
+                </div>
+              </NoticeLink>
+            )}
+
+            {/* Other notices */}
+            {otherNotices.length > 0 && (
+              <ul className="news-list">
+                {otherNotices.map((n) => (
+                  <li key={n.id}>
+                    <NoticeLink to={n.to} className="news-item">
+                      <span className="news-ic" aria-hidden>
+                        <FileText size={20} />
                       </span>
-                      <strong>{n.title}</strong>
-                      <span className="news-sub">{n.text}</span>
-                    </span>
-                    <ArrowRight className="news-go" size={18} aria-hidden />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+                      <span className="news-txt">
+                        <span className="news-chip">{n.tag}</span>
+                        <strong>{n.title}</strong>
+                        {n.summary && <span className="news-sub">{n.summary}</span>}
+                      </span>
+                      {n.to && <ArrowRight className="news-go" size={18} aria-hidden />}
+                    </NoticeLink>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             {/* Help + notes */}
             <div className="news-cards">

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { ROLES, ROLE_HOMES, getRoleNavigatePath, normalizeRole } from '../permissions/roles.js';
 import { ROLE_PERMISSIONS } from '../permissions/permissions.js';
 import { getCookie, setCookie, deleteCookie } from '../utils/cookie.js';
@@ -14,6 +14,9 @@ export const useAuth = () => {
 };
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+
+// One in-flight GET /auth/me per token (React.StrictMode / re-renders can never double-call it)
+let meInflight = null; // { token, promise }
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => {
@@ -54,6 +57,8 @@ export function AuthProvider({ children }) {
   const [initialized, setInitialized] = useState(false);
 
   // Authenticated user session verification via GET /auth/me
+  const verifiedTokenRef = useRef(null);
+
   const refreshMe = useCallback(async (authToken) => {
     const activeToken = authToken || token;
     if (!activeToken) {
@@ -61,6 +66,8 @@ export function AuthProvider({ children }) {
       setInitialized(true);
       return;
     }
+    if (meInflight && meInflight.token === activeToken) return meInflight.promise;
+    const run = (async () => {
     try {
       const res = await fetch(`${API_BASE}/auth/me`, {
         headers: {
@@ -88,12 +95,20 @@ export function AuthProvider({ children }) {
       console.warn('Failed to fetch /auth/me on init:', e);
     } finally {
       setInitialized(true);
+      meInflight = null;
     }
+    })();
+    meInflight = { token: activeToken, promise: run };
+    return run;
   }, [token]);
 
+  // Verify the session ONCE per token. After login() the fresh user is already known,
+  // so the token change it causes must not trigger another /auth/me call.
   useEffect(() => {
+    if (token && verifiedTokenRef.current === token) return;
+    verifiedTokenRef.current = token;
     refreshMe();
-  }, [refreshMe]);
+  }, [refreshMe, token]);
 
   useEffect(() => {
     if (user) {
@@ -123,6 +138,7 @@ export function AuthProvider({ children }) {
       if (credentials?.authenticatedUser && credentials?.authenticatedToken) {
         const u = credentials.authenticatedUser;
         const t = credentials.authenticatedToken;
+        verifiedTokenRef.current = t;
         setUser(u);
         setToken(t);
         localStorage.setItem('csd_auth_token', t);
@@ -152,6 +168,7 @@ export function AuthProvider({ children }) {
       const accessToken = resData?.data?.token || resData?.data?.accessToken || resData?.token;
       const refreshToken = resData?.data?.refreshToken || resData?.refreshToken;
 
+      verifiedTokenRef.current = accessToken;
       setUser(userObj);
       setToken(accessToken);
       localStorage.setItem('csd_auth_token', accessToken);

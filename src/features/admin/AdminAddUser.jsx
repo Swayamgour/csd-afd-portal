@@ -5,6 +5,8 @@ import { Button } from '../../components/common/Button.jsx';
 import { Input } from '../../components/common/Input.jsx';
 import { WP_ROLES, MASTER_ROLES } from '../../permissions/roles.js';
 import { userService, calculatePasswordScore } from '../../services/user.service.js';
+import OrgLinkFields, { ORG_ROLE_BY_WP, emptyOrgLink, validateOrgLink, orgLinkPayload } from '../org/OrgLinkFields.jsx';
+import { useCreateOrgAccountMutation } from '../org/orgApi.js';
 import {
   User,
   Mail,
@@ -55,6 +57,16 @@ export default function AdminAddUser() {
 
   // Primary Role
   const [role, setRole] = useState('subscriber'); // role
+
+  // Depot / URC / Dealer: organisation + login user are created together (POST /org-accounts)
+  const orgRole = ORG_ROLE_BY_WP[role] || null;
+  const [orgName, setOrgName] = useState('');
+  const [orgCode, setOrgCode] = useState('');
+  const [orgPhone, setOrgPhone] = useState('');
+  const [orgCity, setOrgCity] = useState('');
+  const [orgAddress, setOrgAddress] = useState('');
+  const [orgLink, setOrgLink] = useState(emptyOrgLink());
+  const [createOrgAccount] = useCreateOrgAccountMutation();
 
   // ==========================================
   // 2. USER ADD (ACF)
@@ -239,6 +251,42 @@ export default function AdminAddUser() {
       return;
     }
 
+    if (orgRole) {
+      const orgErr =
+        (!orgName.trim() && 'Organisation name is required.') ||
+        (!orgCode.trim() && 'Organisation code is required.') ||
+        validateOrgLink(orgRole, orgLink);
+      if (orgErr) {
+        setSubmitError(orgErr);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      setLoading(true);
+      try {
+        await createOrgAccount({
+          role: orgRole,
+          name: orgName.trim(),
+          code: orgCode.trim(),
+          username: userLogin.trim(),
+          password: pass1,
+          email: email.trim(),
+          phone: orgPhone.trim() || undefined,
+          city: orgCity.trim() || undefined,
+          address: orgAddress.trim() || undefined,
+          active: true,
+          ...orgLinkPayload(orgRole, orgLink),
+        }).unwrap();
+        setLoading(false);
+        navigate('/admin/users');
+      } catch (err) {
+        setLoading(false);
+        const details = (err?.data?.details || []).map((d) => d.message).join(', ');
+        setSubmitError([err?.data?.message || err?.message || 'Failed to create account', details].filter(Boolean).join(': '));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
@@ -286,6 +334,12 @@ export default function AdminAddUser() {
     setPwWeak(false);
     setSendUserNotification(true);
     setRole('subscriber');
+    setOrgName('');
+    setOrgCode('');
+    setOrgPhone('');
+    setOrgCity('');
+    setOrgAddress('');
+    setOrgLink(emptyOrgLink());
     setCreatedByAdmin('Yes');
     setDefaultPasswordChanged('');
     setDenyReason('');
@@ -653,6 +707,53 @@ export default function AdminAddUser() {
                 </p>
               </div>
             </div>
+
+            {/* =========================================================
+                ORGANISATION (only for OEM / Depot / URC / Dealer roles)
+                ========================================================= */}
+            {orgRole && (
+              <div className="form-section-card">
+                <div className="form-section-header">
+                  <Layers size={18} className="text-brand" />
+                  <h3 className="form-section-title">
+                    {orgRole === 'OEM' ? 'OEM Details' : orgRole === 'DEPOT_OFFICIAL' ? 'Depot Details' : orgRole === 'URC' ? 'URC Details' : 'Dealer Details'}
+                  </h3>
+                </div>
+                <p className="micro muted mb-3">
+                  Is role ke liye organisation aur login user ek saath create honge.
+                </p>
+
+                <div className="grid-3-col gap-3 mb-3">
+                  <div>
+                    <label className="form-label required">Name</label>
+                    <input className="form-control" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder="e.g. Kanpur Depot" />
+                  </div>
+                  <div>
+                    <label className="form-label required">Code</label>
+                    <input
+                      className="form-control font-mono"
+                      value={orgCode}
+                      onChange={(e) => setOrgCode(e.target.value.toUpperCase())}
+                      placeholder="e.g. DEP-KNP-001"
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Phone</label>
+                    <input className="form-control" value={orgPhone} onChange={(e) => setOrgPhone(e.target.value)} placeholder="10 digit mobile" maxLength={10} />
+                  </div>
+                  <div>
+                    <label className="form-label">City</label>
+                    <input className="form-control" value={orgCity} onChange={(e) => setOrgCity(e.target.value)} />
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <label className="form-label">Address</label>
+                    <input className="form-control" value={orgAddress} onChange={(e) => setOrgAddress(e.target.value)} />
+                  </div>
+                </div>
+
+                <OrgLinkFields role={orgRole} value={orgLink} onChange={setOrgLink} disabled={loading} />
+              </div>
+            )}
 
             {/* =========================================================
                 SECTION 2: USER ADD (ACF - created_by_admin)

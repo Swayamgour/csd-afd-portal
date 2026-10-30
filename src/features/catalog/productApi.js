@@ -92,6 +92,8 @@ export const productApi = api.injectEndpoints({
         if (typeof args === 'object' && args !== null) {
           if (args.priceZoneId) params.priceZoneId = args.priceZoneId;
           if (args.depotId) params.depotId = args.depotId;
+          if (args.dealerId) params.dealerId = args.dealerId;
+          if (args.state) params.state = args.state;
         }
         return {
           url: `/products/${id}/options`,
@@ -144,6 +146,15 @@ export const productApi = api.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'Product', id: 'LIST' }, 'Product', 'Dashboard'],
     }),
+
+    uploadFiles: builder.mutation({
+      query: (formData) => ({
+        url: '/files',
+        method: 'POST',
+        body: formData,
+      }),
+      transformResponse: (response) => response?.data || response,
+    }),
   }),
 });
 
@@ -158,4 +169,5 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useUploadFilesMutation,
 } = productApi;

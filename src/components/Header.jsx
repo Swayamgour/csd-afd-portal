@@ -29,27 +29,19 @@ const nav = [
 ];
 import { useGetBannersQuery } from "../features/admin/adminApi.js";
 
-const DEFAULT_FORCES = [
-  { name: "Indian Army", imageUrl: "https://afd.csdindia.gov.in/wp-content/themes/csdafdonline/assets/images/homepage/pics/08/Army.png" },
-  { name: "Indian Navy", imageUrl: "https://afd.csdindia.gov.in/wp-content/themes/csdafdonline/assets/images/homepage/pics/2023/Indian-navy.png" },
-  { name: "Indian Air Force", imageUrl: "https://afd.csdindia.gov.in/wp-content/themes/csdafdonline/assets/images/homepage/pics/2023/Air-force.png" },
-];
-
 export default function Header() {
   const [open, setOpen] = useState(false);
   const loc = useLocation(),
     { cart, wish } = useStore();
   const { isAuthenticated, user, roleHome, role } = useAuth();
+  // Logos come from the server banners only (nothing hard-coded)
   const { data: dynamicBanners } = useGetBannersQuery({ position: 'forces_header' });
 
-  console.log(isAuthenticated)
-
-  // const { data: me } = useGetMeQuery(undefined, { skip: !isAuthenticated });
-
   const { data: notificationsResp } = useGetNotificationsQuery(undefined, { skip: !isAuthenticated });
-  const unreadCount = notificationsResp?.unreadCount ?? (Array.isArray(notificationsResp?.data) ? notificationsResp.data.filter(n => !n.read && !n.isRead).length : 0);
+  const notifItems = Array.isArray(notificationsResp?.items) ? notificationsResp.items : [];
+  const unreadCount = notificationsResp?.unread || notifItems.filter(n => !n.read && !n.isRead).length;
 
-  const forcesList = (dynamicBanners && dynamicBanners.length > 0) ? dynamicBanners : DEFAULT_FORCES;
+  const forcesList = Array.isArray(dynamicBanners) ? dynamicBanners.filter(b => b?.imageUrl) : [];
 
   const cur = loc.pathname + loc.search;
   const isActive = (to) =>
@@ -75,7 +67,7 @@ export default function Header() {
             </Link>
             <span className="forces" aria-hidden>
               {forcesList.map((item, idx) => {
-                const src = item.imageUrl || item;
+                const src = item.imageUrl;
                 const title = item.name || "Armed Forces";
                 return (
                   <img

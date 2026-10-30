@@ -1,17 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Shield,
-  Warehouse,
-  Save,
-  CheckCircle2,
-  AlertCircle,
-  Phone,
-  Mail,
-  MapPin,
-  Building,
-} from 'lucide-react';
+import { ArrowLeft, Shield, Save, AlertCircle, Mail, MapPin, Lock } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
@@ -19,10 +8,21 @@ import { LoadingState } from '../../components/common/States.jsx';
 import {
   useGetUrcsQuery,
   useGetUrcByIdQuery,
-  useGetDepotsQuery,
-  useCreateUrcMutation,
+  useCreateOrgAccountMutation,
   useUpdateUrcMutation,
 } from '../org/orgApi.js';
+import OrgLinkFields, {
+  normState,
+  emptyOrgLink,
+  emptyLogin,
+  validateOrgLink,
+  validateLogin,
+  orgLinkPayload,
+  orgErrorMessage,
+  LoginFields,
+} from '../org/OrgLinkFields.jsx';
+
+const ROLE = 'URC';
 
 export default function UrcFormPage() {
   const { id } = useParams();
@@ -31,12 +31,11 @@ export default function UrcFormPage() {
 
   const { data: rawUrc, isLoading: isLoadingUrc } = useGetUrcByIdQuery(id, { skip: !isEdit });
   const { data: urcsList } = useGetUrcsQuery({}, { skip: !isEdit || Boolean(rawUrc) });
-  const { data: depots = [] } = useGetDepotsQuery({ active: true });
 
-  const [createUrc, { isLoading: isCreating }] = useCreateUrcMutation();
+  const [createOrgAccount, { isLoading: isCreating }] = useCreateOrgAccountMutation();
   const [updateUrc, { isLoading: isUpdating }] = useUpdateUrcMutation();
 
-  const urc = React.useMemo(() => {
+  const urc = useMemo(() => {
     if (!isEdit) return null;
     if (rawUrc?.data) return rawUrc.data;
     if (rawUrc?._id || rawUrc?.id) return rawUrc;
@@ -45,7 +44,6 @@ export default function UrcFormPage() {
   }, [isEdit, rawUrc, urcsList, id]);
 
   const [formData, setFormData] = useState({
-    depotId: '',
     name: '',
     code: '',
     person: '',
@@ -53,79 +51,83 @@ export default function UrcFormPage() {
     phone: '',
     address: '',
     city: '',
-    state: '',
     active: true,
   });
-
+  const [link, setLink] = useState(emptyOrgLink());
+  const [login, setLogin] = useState(emptyLogin());
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    if (urc) {
-      setFormData({
-        depotId: urc.depotId?._id || urc.depotId?.id || urc.depotId || '',
-        name: urc.name || '',
-        code: urc.code || '',
-        person: urc.person || urc.contact?.person || '',
-        email: urc.email || urc.contact?.email || '',
-        phone: urc.phone || urc.contact?.phone || '',
-        address: urc.address || urc.contact?.address || '',
-        city: urc.city || '',
-        state: urc.state || '',
-        active: urc.active ?? true,
-      });
-    }
+    if (!urc) return;
+    setFormData({
+      name: urc.name || '',
+      code: urc.code || '',
+      person: urc.person || urc.contact?.person || '',
+      email: urc.email || urc.contact?.email || '',
+      phone: urc.phone || urc.contact?.phone || '',
+      address: urc.address || urc.contact?.address || '',
+      city: urc.city || '',
+      active: urc.active ?? true,
+    });
+    setLink((prev) => ({
+      ...prev,
+      state: normState(urc.state),
+      depotId: urc.depotId?._id || urc.depotId?.id || urc.depotId || '',
+    }));
   }, [urc]);
+
+  const set = (patch) => setFormData((prev) => ({ ...prev, ...patch }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!formData.name.trim()) {
-      setErrorMsg('URC Canteen Name is required.');
-      return;
-    }
-    if (!formData.code.trim()) {
-      setErrorMsg('URC Code is required.');
-      return;
-    }
+    if (!formData.name.trim()) return setErrorMsg('URC Canteen Name is required.');
+    if (!formData.code.trim()) return setErrorMsg('URC Code is required.');
+    const linkErr = validateOrgLink(ROLE, link);
+    if (linkErr) return setErrorMsg(linkErr);
+
+    const base = {
+      name: formData.name.trim(),
+      code: formData.code.trim().toUpperCase(),
+      person: formData.person.trim() || undefined,
+      email: formData.email.trim() || undefined,
+      phone: formData.phone.trim() || undefined,
+      address: formData.address.trim() || undefined,
+      city: formData.city.trim() || undefined,
+      active: formData.active,
+    };
 
     try {
       if (isEdit) {
-        await updateUrc({
-          id,
-          ...formData,
-          code: formData.code.trim().toUpperCase(),
-        }).unwrap();
-        navigate('/csd/urcs', {
-          state: { toast: `✓ URC Canteen "${formData.name}" updated successfully.` },
-        });
-      } else {
-        await createUrc({
-          ...formData,
-          code: formData.code.trim().toUpperCase(),
-        }).unwrap();
-        navigate('/csd/urcs', {
-          state: { toast: `✓ URC Canteen "${formData.name}" registered successfully.` },
-        });
+        await updateUrc({ id, ...base, depotId: link.depotId }).unwrap();
+        navigate('/csd/urcs', { state: { toast: `✓ URC Canteen "${base.name}" updated successfully.` } });
+        return;
       }
+
+      const loginErr = validateLogin(login);
+      if (loginErr) return setErrorMsg(loginErr);
+
+      await createOrgAccount({
+        role: ROLE,
+        ...base,
+        username: login.username.trim(),
+        password: login.password,
+        ...orgLinkPayload(ROLE, link),
+      }).unwrap();
+      navigate('/csd/urcs', { state: { toast: `✓ URC "${base.name}" registered with login "${login.username.trim()}".` } });
     } catch (err) {
-      setErrorMsg(
-        err?.data?.message ||
-          err?.message ||
-          'Failed to save URC record. Please verify URC code uniqueness.'
-      );
+      setErrorMsg(orgErrorMessage(err, 'Failed to save URC record.'));
     }
   };
 
-  if (isEdit && isLoadingUrc) {
-    return <LoadingState text="Loading URC Canteen profile details..." />;
-  }
+  if (isEdit && isLoadingUrc) return <LoadingState text="Loading URC Canteen profile details..." />;
 
   return (
     <div className="csd-module-page">
       <PageHeader
         title={isEdit ? `Edit URC: ${formData.name || urc?.name || 'Loading...'}` : 'Register Unit Run Canteen (URC)'}
-        subtitle="Regimental military canteens serving Armed Forces units and ESM defense beneficiaries"
+        subtitle="URC, uska parent depot aur URC login ek saath"
         breadcrumbs={[
           { label: 'Catalog Master', href: '/csd/products' },
           { label: 'URCs Registry', href: '/csd/urcs' },
@@ -151,92 +153,57 @@ export default function UrcFormPage() {
             <h3 className="card-title d-flex align-items-center gap-2">
               <Shield size={18} className="text-brand" /> Canteen Identification & Parent Depot
             </h3>
-            <p className="micro muted">Regimental canteen code and affiliated base depot attachment</p>
+            <p className="micro muted">State select karke us state ke depot me se parent depot chuno</p>
           </div>
-
-          <div className="grid-3-col gap-3">
-            <div>
-              <label className="form-label">Affiliated Base Depot</label>
-              <select
-                value={formData.depotId}
-                onChange={(e) => setFormData({ ...formData, depotId: e.target.value })}
-                className="form-control"
-              >
-                <option value="">-- Select Parent Base Depot --</option>
-                {depots.map((d) => (
-                  <option key={d._id || d.id} value={d._id || d.id}>
-                    {d.name} ({d.code})
-                  </option>
-                ))}
-              </select>
-            </div>
-
+          <div className="grid-2-col gap-3 mb-3">
             <div>
               <label className="form-label required">URC Canteen Name</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. 505 ABW Canteen"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="form-control"
-              />
+              <input className="form-control" required value={formData.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Kanpur URC 01" />
             </div>
-
             <div>
               <label className="form-label required">URC Code</label>
               <input
-                type="text"
-                required
-                placeholder="e.g. URC-505-01"
-                value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                 className="form-control font-mono font-bold"
+                required
+                value={formData.code}
+                onChange={(e) => set({ code: e.target.value.toUpperCase() })}
+                placeholder="e.g. URC-KNP-001"
               />
             </div>
           </div>
+          <OrgLinkFields role={ROLE} value={link} onChange={setLink} />
         </Card>
+
+        {!isEdit && (
+          <Card className="mb-3">
+            <div className="card-header border-bottom pb-2 mb-3">
+              <h3 className="card-title d-flex align-items-center gap-2">
+                <Lock size={18} className="text-brand" /> URC Login Credentials
+              </h3>
+              <p className="micro muted">Is username/password se URC login karega (role: URC)</p>
+            </div>
+            <LoginFields value={login} onChange={setLogin} />
+          </Card>
+        )}
 
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
             <h3 className="card-title d-flex align-items-center gap-2">
               <Mail size={18} className="text-brand" /> Canteen Officer / Nodal Contact
             </h3>
-            <p className="micro muted">Canteen Officer / Subedar Major In-charge credentials</p>
           </div>
-
           <div className="grid-3-col gap-3">
             <div>
               <label className="form-label">Canteen Officer / OIC</label>
-              <input
-                type="text"
-                placeholder="e.g. Major S. K. Singh"
-                value={formData.person}
-                onChange={(e) => setFormData({ ...formData, person: e.target.value })}
-                className="form-control"
-              />
+              <input className="form-control" value={formData.person} onChange={(e) => set({ person: e.target.value })} />
             </div>
-
             <div>
               <label className="form-label">Official Email</label>
-              <input
-                type="email"
-                placeholder="urc.505@csd.gov.in"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="form-control"
-              />
+              <input type="email" className="form-control" value={formData.email} onChange={(e) => set({ email: e.target.value })} />
             </div>
-
             <div>
-              <label className="form-label">Official Phone / Mil Ext</label>
-              <input
-                type="tel"
-                placeholder="011-25698765"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="form-control"
-              />
+              <label className="form-label">Phone (10 digit)</label>
+              <input type="tel" maxLength={10} className="form-control" value={formData.phone} onChange={(e) => set({ phone: e.target.value })} />
             </div>
           </div>
         </Card>
@@ -244,56 +211,29 @@ export default function UrcFormPage() {
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
             <h3 className="card-title d-flex align-items-center gap-2">
-              <MapPin size={18} className="text-brand" /> Regimental Location & Station
+              <MapPin size={18} className="text-brand" /> Location
             </h3>
-            <p className="micro muted">Physical canteen premises in military garrison</p>
           </div>
-
-          <div className="mb-3">
-            <label className="form-label">Unit / Station Address</label>
-            <input
-              type="text"
-              placeholder="Full unit garrison address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="form-control"
-            />
-          </div>
-
           <div className="grid-2-col gap-3">
             <div>
               <label className="form-label">Station / City</label>
-              <input
-                type="text"
-                placeholder="e.g. Delhi Cantt"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                className="form-control"
-              />
+              <input className="form-control" value={formData.city} onChange={(e) => set({ city: e.target.value })} />
             </div>
-
             <div>
-              <label className="form-label">State / UT</label>
-              <input
-                type="text"
-                placeholder="e.g. Delhi"
-                value={formData.state}
-                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                className="form-control"
-              />
+              <label className="form-label">Address</label>
+              <input className="form-control" value={formData.address} onChange={(e) => set({ address: e.target.value })} />
             </div>
           </div>
-
           <div className="d-flex align-items-center gap-2 mt-4 p-3 bg-light rounded border">
             <input
               type="checkbox"
               id="urcActiveStatus"
               checked={formData.active}
-              onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-              style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              onChange={(e) => set({ active: e.target.checked })}
+              style={{ width: 18, height: 18, cursor: 'pointer' }}
             />
-            <label htmlFor="urcActiveStatus" className="form-label mb-0 cursor-pointer font-medium">
-              Active Unit Run Canteen (Eligible for AFD indents and beneficiary verification)
+            <label htmlFor="urcActiveStatus" className="form-label mb-0 font-medium" style={{ cursor: 'pointer' }}>
+              Active Unit Run Canteen
             </label>
           </div>
         </Card>
@@ -302,15 +242,9 @@ export default function UrcFormPage() {
           <Button type="button" variant="outline" onClick={() => navigate('/csd/urcs')}>
             Cancel
           </Button>
-
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isCreating || isUpdating}
-            className="d-flex align-items-center gap-2 px-4"
-          >
+          <Button type="submit" variant="primary" disabled={isCreating || isUpdating} className="d-flex align-items-center gap-2 px-4">
             <Save size={16} />
-            {isCreating || isUpdating ? 'Saving...' : isEdit ? 'Update URC Record' : 'Empanel URC'}
+            {isCreating || isUpdating ? 'Saving...' : isEdit ? 'Update URC Record' : 'Register URC'}
           </Button>
         </div>
       </form>
