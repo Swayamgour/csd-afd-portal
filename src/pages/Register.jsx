@@ -75,6 +75,107 @@ function getPasswordStrength(pw) {
   return { label: "Weak", className: "pw-strength-weak" };
 }
 
+// ---- password rules: must match the backend (auth.routes.js) -------------------
+export const PW_RULES = [
+  { key: "len", label: "At least 8 characters", need: "at least 8 characters", test: (p) => p.length >= 8 },
+  { key: "upper", label: "One uppercase letter (A-Z)", need: "an uppercase letter (A-Z)", test: (p) => /[A-Z]/.test(p) },
+  { key: "lower", label: "One lowercase letter (a-z)", need: "a lowercase letter (a-z)", test: (p) => /[a-z]/.test(p) },
+  { key: "digit", label: "One number (0-9)", need: "a number (0-9)", test: (p) => /\d/.test(p) },
+];
+const passwordError = (pw) => {
+  const missing = PW_RULES.filter((r) => !r.test(pw || ""));
+  return missing.length ? `Password needs: ${missing.map((r) => r.need).join(", ")}.` : "";
+};
+
+// Pure validation of the whole form (captcha handled separately). {} => everything is valid.
+function validateForm(f) {
+  const x = {};
+  if (!/^[A-Za-z ]+$/.test(f.name.trim())) {
+    x.name = "Only alphabets are allowed.";
+  }
+
+  if (
+    !/^(GA|GB|GC|GE|GM|GR)\d{14}[A-Za-z]\d{2}$/i.test(
+      f.cardId.trim()
+    )
+  ) {
+    x.cardId =
+      "Enter a valid 19 character Card ID (e.g. GA01052027551000J00).";
+  }
+
+  if (!f.employment) {
+    x.employment = "Select employment status.";
+  }
+
+  if (!/^\d{16}$/.test(f.chip.trim())) {
+    x.chip = "Enter the 16 digit chip number.";
+  }
+
+  if (!f.org) {
+    x.org = "Select organization.";
+  }
+
+  if (!f.dob) {
+    x.dob = "Select date of birth.";
+  }
+
+  if (!f.doe) {
+    x.doe = "Select date of enrollment/commissioning.";
+  }
+
+  if (!f.dor) {
+    x.dor = "Select date of retirement.";
+  }
+
+  if (!f.entitlement) {
+    x.entitlement = "Select entitlement category.";
+  }
+
+  if (!f.payLevel) {
+    x.payLevel = "Select pay level.";
+  }
+
+  if (!/^[A-Za-z]{5}\d{4}[A-Za-z]$/.test(f.pan.trim())) {
+    x.pan = "Enter a valid PAN number.";
+  }
+
+  if (!f.panC || f.panC.trim() !== f.pan.trim()) {
+    x.panC = "PAN numbers do not match.";
+  }
+
+  if (!/^[A-Za-z0-9]{3,}$/.test(f.username)) {
+    x.username =
+      "Use letters and numbers only (min 3).";
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(f.email)) {
+    x.email = "Enter a valid email address.";
+  }
+
+  const pwMsg = passwordError(f.pw);
+  if (pwMsg) {
+    x.pw = pwMsg;
+  }
+
+  if (!f.pwC || f.pwC !== f.pw) {
+    x.pwC = "Passwords do not match.";
+  }
+
+  if (f.mobile && !/^[6-9]\d{9}$/.test(f.mobile)) {
+    x.mobile = "Enter a valid 10 digit mobile number.";
+  }
+
+  if (!f.mobile) {
+    x.mobile = "Mobile number is required.";
+  }
+
+  if (!f.agree) {
+    x.agree =
+      "Please accept the terms of use and privacy.";
+  }
+  return x;
+}
+
 function Field({ id, label, req, hint, err, children }) {
   return (
     <div className="fgrp">
@@ -155,6 +256,21 @@ export default function Register() {
 
   const pwStrength = getPasswordStrength(f.pw);
 
+  // live validation: errors show after a field is left, and the submit button stays disabled until everything is valid
+  const [touched, setTouched] = useState({});
+  const live = validateForm(f);
+  const capOk = capIn.trim() === cap;
+  const missingCount = Object.keys(live).length + (capOk ? 0 : 1);
+  const canSubmit = missingCount === 0;
+  const shown = (k) => errs[k] || (touched[k] ? live[k] : "");
+  const ID_TO_KEY = { ent: "entitlement", pl: "payLevel" };
+  const markTouched = (e) => {
+    const id = e.target?.id;
+    if (!id || id === "cap") return;
+    const k = ID_TO_KEY[id] || id;
+    setTouched((t) => (t[k] ? t : { ...t, [k]: true }));
+  };
+
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const [sendOtpApi] = useSendOtpMutation();
 
@@ -226,90 +342,7 @@ export default function Register() {
   const submit = async (e) => {
     e.preventDefault();
 
-    const x = {};
-
-    if (!/^[A-Za-z ]+$/.test(f.name.trim())) {
-      x.name = "Only alphabets are allowed.";
-    }
-
-    if (
-      !/^(GA|GB|GC|GE|GM|GR)\d{14}[A-Za-z]\d{2}$/i.test(
-        f.cardId.trim()
-      )
-    ) {
-      x.cardId =
-        "Enter a valid 19 character Card ID (e.g. GA01052027551000J00).";
-    }
-
-    if (!f.employment) {
-      x.employment = "Select employment status.";
-    }
-
-    if (!/^\d{16}$/.test(f.chip.trim())) {
-      x.chip = "Enter the 16 digit chip number.";
-    }
-
-    if (!f.org) {
-      x.org = "Select organization.";
-    }
-
-    if (!f.dob) {
-      x.dob = "Select date of birth.";
-    }
-
-    if (!f.doe) {
-      x.doe = "Select date of enrollment/commissioning.";
-    }
-
-    if (!f.dor) {
-      x.dor = "Select date of retirement.";
-    }
-
-    if (!f.entitlement) {
-      x.entitlement = "Select entitlement category.";
-    }
-
-    if (!f.payLevel) {
-      x.payLevel = "Select pay level.";
-    }
-
-    if (!/^[A-Za-z]{5}\d{4}[A-Za-z]$/.test(f.pan.trim())) {
-      x.pan = "Enter a valid PAN number.";
-    }
-
-    if (!f.panC || f.panC.trim() !== f.pan.trim()) {
-      x.panC = "PAN numbers do not match.";
-    }
-
-    if (!/^[A-Za-z0-9]{3,}$/.test(f.username)) {
-      x.username =
-        "Use letters and numbers only (min 3).";
-    }
-
-    if (!/^\S+@\S+\.\S+$/.test(f.email)) {
-      x.email = "Enter a valid email address.";
-    }
-
-    if (f.pw.length < 8) {
-      x.pw = "Password must be at least 8 characters.";
-    }
-
-    if (!f.pwC || f.pwC !== f.pw) {
-      x.pwC = "Passwords do not match.";
-    }
-
-    if (f.mobile && !/^[6-9]\d{9}$/.test(f.mobile)) {
-      x.mobile = "Enter a valid 10 digit mobile number.";
-    }
-
-    if (!f.mobile) {
-      x.mobile = "Mobile number is required.";
-    }
-
-    if (!f.agree) {
-      x.agree =
-        "Please accept the terms of use and privacy.";
-    }
+    const x = validateForm(f);
 
     if (!capIn.trim()) {
       x.cap = "Enter the captcha text.";
@@ -567,6 +600,7 @@ export default function Register() {
       <form
         className="panel logincard authcard"
         onSubmit={submit}
+        onBlurCapture={markTouched}
         noValidate
         aria-labelledby="rh"
       >
@@ -644,7 +678,7 @@ export default function Register() {
             id="name"
             label="Name as printed on front face of grocery canteen card"
             req
-            err={errs.name}
+            err={shown("name")}
           >
             <div className="fld">
               <User size={18} aria-hidden />
@@ -653,7 +687,7 @@ export default function Register() {
                 placeholder="(Only Alphabets allowed)"
                 value={f.name}
                 onChange={set("name")}
-                aria-invalid={!!errs.name}
+                aria-invalid={!!shown("name")}
               />
             </div>
           </Field>
@@ -662,7 +696,7 @@ export default function Register() {
               id="cardId"
               label="Card ID printed on front face of the grocery card"
               req
-              err={errs.cardId}
+              err={shown("cardId")}
               hint="( Alphanumeric no. starting with GA/GB/GC/GE/GM/GR like grocery card id GA01052027551000J00. Third last is alphabet not number. )"
             >
               <div className="fld has-eye">
@@ -677,7 +711,7 @@ export default function Register() {
                   value={f.cardId}
                   onChange={upper("cardId")}
                   onBlur={() => checkSingleDuplicate("cardId", f.cardId)}
-                  aria-invalid={!!errs.cardId}
+                  aria-invalid={!!shown("cardId")}
                 />
                 <button
                   type="button"
@@ -701,7 +735,7 @@ export default function Register() {
               id="chip"
               label="Chip number printed on back of canteen card or printed on the grocery bill"
               req
-              err={errs.chip}
+              err={shown("chip")}
               hint="( 16 Digit No. (5312120004689336). Given on reverse of grocery card at bottom right. Also given on grocery bill.)"
             >
               <div className="fld has-eye">
@@ -717,7 +751,7 @@ export default function Register() {
                   value={f.chip}
                   onChange={set("chip")}
                   onBlur={() => checkSingleDuplicate("chipNumber", f.chip)}
-                  aria-invalid={!!errs.chip}
+                  aria-invalid={!!shown("chip")}
                 />
                 <button
                   type="button"
@@ -746,7 +780,7 @@ export default function Register() {
               id="employment"
               label="Employment status"
               req
-              err={errs.employment}
+              err={shown("employment")}
             >
               <select
                 id="employment"
@@ -759,7 +793,7 @@ export default function Register() {
                 ))}
               </select>
             </Field>
-            <Field id="org" label="Organization" req err={errs.org}>
+            <Field id="org" label="Organization" req err={shown("org")}>
               <select id="org" value={f.org} onChange={set("org")}>
                 <option value="">Select</option>
                 {ORGS.map((o) => (
@@ -767,7 +801,7 @@ export default function Register() {
                 ))}
               </select>
             </Field>
-            <Field id="dob" label="Date of birth" req err={errs.dob}>
+            <Field id="dob" label="Date of birth" req err={shown("dob")}>
               <div className="fld">
                 <Calendar size={18} aria-hidden />
                 <input
@@ -782,7 +816,7 @@ export default function Register() {
               id="doe"
               label="Date of Enrollment/Commissioning"
               req
-              err={errs.doe}
+              err={shown("doe")}
               hint="( It is date of joining service. Not Date of Promotion to JCO. Not Date of Joining DSC/other service. )"
             >
               <div className="fld">
@@ -795,7 +829,7 @@ export default function Register() {
                 />
               </div>
             </Field>
-            <Field id="dor" label="Date of retirement" req err={errs.dor}>
+            <Field id="dor" label="Date of retirement" req err={shown("dor")}>
               <div className="fld">
                 <Calendar size={18} aria-hidden />
                 <input
@@ -810,7 +844,7 @@ export default function Register() {
               id="ent"
               label="Entitlement category* Serving & Retired (Armed Forces/Defence Civilians)"
               req
-              err={errs.entitlement}
+              err={shown("entitlement")}
             >
               <select
                 id="ent"
@@ -823,7 +857,7 @@ export default function Register() {
                 ))}
               </select>
             </Field>
-            <Field id="pl" label="Pay Level" req err={errs.payLevel}>
+            <Field id="pl" label="Pay Level" req err={shown("payLevel")}>
               <select id="pl" value={f.payLevel} onChange={set("payLevel")}>
                 <option value="">Select</option>
                 {PAY_LEVELS.map((o) => (
@@ -842,7 +876,7 @@ export default function Register() {
 
         <Section n="3" title="Identity">
           <div className="reg-grid">
-            <Field id="pan" label="PAN number" req err={errs.pan}>
+            <Field id="pan" label="PAN number" req err={shown("pan")}>
               <div className="fld has-eye">
                 <IdCard size={18} aria-hidden />
                 <input
@@ -854,7 +888,7 @@ export default function Register() {
                   value={f.pan}
                   onChange={upper("pan")}
                   onBlur={() => checkSingleDuplicate("pan", f.pan)}
-                  aria-invalid={!!errs.pan}
+                  aria-invalid={!!shown("pan")}
                 />
                 <button
                   type="button"
@@ -869,7 +903,7 @@ export default function Register() {
             <Field
               id="panC"
               label="Confirm PAN number"
-              err={errs.panC}
+              err={shown("panC")}
               hint="( Copy paste is not allowed )"
             >
               <div className="fld has-eye">
@@ -883,7 +917,7 @@ export default function Register() {
                   onChange={upper("panC")}
                   onPaste={noPaste}
                   onDrop={noPaste}
-                  aria-invalid={!!errs.panC}
+                  aria-invalid={!!shown("panC")}
                 />
                 <button
                   type="button"
@@ -903,7 +937,7 @@ export default function Register() {
             id="username"
             label="Username"
             req
-            err={errs.username}
+            err={shown("username")}
             hint="Please do not use special characters in User Name"
           >
             <div className="fld">
@@ -914,13 +948,13 @@ export default function Register() {
                 value={f.username}
                 onChange={set("username")}
                 onBlur={() => checkSingleDuplicate("username", f.username)}
-                aria-invalid={!!errs.username}
+                aria-invalid={!!shown("username")}
               />
             </div>
           </Field>
 
           <div className="reg-grid">
-            <Field id="email" label="Email" req err={errs.email} hint="A 6-digit OTP will be sent to this email via EmailJS upon submission.">
+            <Field id="email" label="Email" req err={shown("email")} hint="A 6-digit OTP will be sent to this email via EmailJS upon submission.">
               <div className="fld">
                 <Mail size={18} aria-hidden />
                 <input
@@ -931,12 +965,12 @@ export default function Register() {
                   value={f.email}
                   onChange={set("email")}
                   onBlur={() => checkSingleDuplicate("email", f.email)}
-                  aria-invalid={!!errs.email}
+                  aria-invalid={!!shown("email")}
                 />
               </div>
             </Field>
 
-            <Field id="mobile" label="Mobile number" req err={errs.mobile}>
+            <Field id="mobile" label="Mobile number" req err={shown("mobile")}>
               <div className="fld">
                 <Phone size={18} aria-hidden />
                 <input
@@ -948,14 +982,14 @@ export default function Register() {
                   value={f.mobile}
                   onChange={set("mobile")}
                   onBlur={() => checkSingleDuplicate("mobile", f.mobile)}
-                  aria-invalid={!!errs.mobile}
+                  aria-invalid={!!shown("mobile")}
                 />
               </div>
             </Field>
           </div>
 
           <div className="reg-grid">
-            <Field id="pw" label="Password" req err={errs.pw}>
+            <Field id="pw" label="Password" req err={shown("pw")}>
               <div className="fld has-eye">
                 <Lock size={18} aria-hidden />
                 <input
@@ -964,7 +998,7 @@ export default function Register() {
                   autoComplete="new-password"
                   value={f.pw}
                   onChange={set("pw")}
-                  aria-invalid={!!errs.pw}
+                  aria-invalid={!!shown("pw")}
                   className={pwStrength?.label === "Strong" ? "input-valid-strong" : ""}
                 />
                 <button
@@ -976,13 +1010,36 @@ export default function Register() {
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {pwStrength && (
-                <div className={`pw-strength-badge ${pwStrength.className}`}>
-                  {pwStrength.label}
-                </div>
+              {(f.pw || touched.pw) && (
+                <>
+                  <div className="pw-meter" aria-hidden>
+                    {[0, 1, 2, 3].map((i) => (
+                      <span
+                        key={i}
+                        className={i < PW_RULES.filter((r) => r.test(f.pw)).length ? `on ${pwStrength?.className || ""}` : ""}
+                      />
+                    ))}
+                  </div>
+                  <ul className="pw-rules" aria-label="Password requirements">
+                    {PW_RULES.map((r) => {
+                      const ok = r.test(f.pw);
+                      return (
+                        <li key={r.key} className={ok ? "ok" : "bad"}>
+                          {ok ? <CheckCircle2 size={14} aria-hidden /> : <AlertCircle size={14} aria-hidden />} {r.label}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {pwStrength && (
+                    <div className={`pw-strength-badge ${pwStrength.className}`}>
+                      {pwStrength.label}
+                      {pwStrength.label !== "Strong" && " · add @ # $ ! to make it stronger"}
+                    </div>
+                  )}
+                </>
               )}
             </Field>
-            <Field id="pwC" label="Confirm password" req err={errs.pwC}>
+            <Field id="pwC" label="Confirm password" req err={shown("pwC")}>
               <div className="fld has-eye">
                 <Lock size={18} aria-hidden />
                 <input
@@ -991,7 +1048,7 @@ export default function Register() {
                   autoComplete="new-password"
                   value={f.pwC}
                   onChange={set("pwC")}
-                  aria-invalid={!!errs.pwC}
+                  aria-invalid={!!shown("pwC")}
                   className={f.pwC && f.pwC === f.pw ? "input-valid-strong" : ""}
                 />
                 <button
@@ -1060,7 +1117,8 @@ export default function Register() {
         <button
           className="btn big wide row align-center justify-center gap-1"
           type="submit"
-          disabled={isRegistering || isDispatchingOtp}
+          disabled={!canSubmit || isRegistering || isDispatchingOtp}
+          title={!canSubmit ? `${missingCount} required item(s) still pending` : undefined}
           style={{ display: "flex" }}
         >
           {(isDispatchingOtp || isRegistering) && <Loader2 size={18} className="spin" />}
@@ -1072,6 +1130,11 @@ export default function Register() {
                 : "Register & Verify Email via OTP"}
           </span>
         </button>
+        {!canSubmit && (
+          <p className="reg-submit-hint" role="status">
+            <AlertCircle size={14} aria-hidden /> Complete all required fields correctly ({missingCount} pending) to enable registration.
+          </p>
+        )}
       </form>
 
       {/* Dedicated EmailJS OTP Verification Modal */}

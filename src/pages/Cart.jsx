@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../context/Store.jsx';
 import { EmptyState, Loader, UnavailableState } from '../components/States.jsx';
 import { priceText } from '../data/utils.js';
+import PriceLock, { useCanSeePrice } from '../components/PriceLock.jsx';
 import { useStoreProducts } from '../hooks/useStoreProducts.js';
 
 export default function Cart() {
   const { cart, removeCart } = useStore();
+  const canSeePrice = useCanSeePrice();
   const { products, isLoading, isError, refetch } = useStoreProducts();
 
   const items = cart
@@ -66,7 +68,7 @@ export default function Cart() {
             <span>
               <strong>{p.name}</strong>
               <br />
-              {priceText(p)}
+              {canSeePrice ? priceText(p) : <PriceLock />}
             </span>
             <button className="btn sm ghost" onClick={() => removeCart(p.id)}>
               Remove {p.name}

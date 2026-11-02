@@ -15,6 +15,7 @@ import ProductCard from "./ProductCard.jsx";
 import { Loader, EmptyState, UnavailableState } from "./States.jsx";
 import { useStoreProducts } from "../hooks/useStoreProducts.js";
 import { useStore } from "../context/Store.jsx";
+import { useCanSeePrice } from "./PriceLock.jsx";
 import { CAT_PLURAL, matches, rupees } from "../data/utils.js";
 
 const SORTS = [
@@ -76,6 +77,7 @@ export default function Catalog({
   allowAll = false,
 }) {
   const { wish, cmp } = useStore();
+  const canSeePrice = useCanSeePrice(); // visitors get no price filter / price sort / discount sort
   // One shared request for the whole app (see hooks/useStoreProducts.js)
   const { products: all, isLoading, isError, isEmpty, refetch } = useStoreProducts();
   const [sort, setSort] = useState("rec"),
@@ -235,7 +237,9 @@ export default function Catalog({
       <fieldset className="fgroup">
         <legend>Sort by</legend>
         {SORTS.filter(
-          ([k]) => k !== "dc" || (cat !== "car" && cat !== "bike"),
+          ([k]) =>
+            (k !== "dc" || (cat !== "car" && cat !== "bike")) &&
+            (canSeePrice || !["pa", "pd", "dc"].includes(k)),
         ).map(([k, l]) => (
           <label key={k} className="rad">
             <input
@@ -285,7 +289,7 @@ export default function Catalog({
         />
       )}
 
-      {hi > 0 && (
+      {canSeePrice && hi > 0 && (
         <fieldset className="fgroup">
           <legend>Price</legend>
           <div className="range">

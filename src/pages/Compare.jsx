@@ -4,6 +4,7 @@ import { X, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useStore } from '../context/Store.jsx';
 import { EmptyState, Loader, UnavailableState } from '../components/States.jsx';
 import { priceText } from '../data/utils.js';
+import PriceLock, { useCanSeePrice } from '../components/PriceLock.jsx';
 import { Stars, Img } from '../components/ProductCard.jsx';
 import { useStoreProducts } from '../hooks/useStoreProducts.js';
 
@@ -19,6 +20,7 @@ const rows = [
 export default function Compare() {
   const { cmp, toggleCmp, addCart } = useStore();
   const back = useNavigate();
+  const canSeePrice = useCanSeePrice();
   const { products, isLoading, isError, refetch } = useStoreProducts();
 
   const items = cmp
@@ -91,7 +93,7 @@ export default function Compare() {
               </div>
               <div className="cmpbody">
                 <h2>{p.name}</h2>
-                <p className="cprice">{priceText(p)}</p>
+                <p className="cprice">{canSeePrice ? priceText(p) : <PriceLock />}</p>
                 <Stars v={p.rating} n={p.reviews} />
                 <dl>
                   {rows.map(([l, k]) => (

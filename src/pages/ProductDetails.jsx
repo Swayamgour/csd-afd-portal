@@ -35,6 +35,7 @@ import ProductCard from "../components/ProductCard.jsx";
 import { Loader, EmptyState, UnavailableState } from "../components/States.jsx";
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import PriceLock from "../components/PriceLock.jsx";
 import { useStoreProducts } from "../hooks/useStoreProducts.js";
 import {
   CAT_LABEL,
@@ -65,57 +66,26 @@ const val = (v) =>
   Array.isArray(v) ? v.join(" / ") : v && v !== "-" ? v : null;
 
 /** keep only images that actually load */
-function useGallery(p) {
+function useGallery(p, colorImages) {
   const [imgs, setImgs] = useState([]);
-
+  // selected colour's own photos win; no photos for that colour => product gallery
+  const key = (colorImages || []).join("|");
   useEffect(() => {
-    if (!p) {
-      setImgs([]);
-      return;
-    }
-
+    if (!p) return;
     let live = true;
-
-    const backendImages = Array.isArray(p.images)
-      ? [...new Set(p.images.filter(Boolean))]
-      : [];
-
-    if (!backendImages.length) {
-      setImgs([]);
-      return;
-    }
-
-    // Backend se aayi images ko exactly same order mein use karo.
-    const validImages = [];
-
-    backendImages.forEach((src) => {
-      const img = new Image();
-
-      img.onload = () => {
-        if (!live) return;
-
-        validImages.push(src);
-
-        // Backend array ka order preserve karo
-        const orderedImages = backendImages.filter((image) =>
-          validImages.includes(image),
-        );
-
-        setImgs(orderedImages);
-      };
-
-      img.onerror = () => {
-        // Invalid image ko gallery mein add nahi karna
-      };
-
-      img.src = src;
+    const list = colorImages?.length ? colorImages : p.images || [];
+    const cands = [...new Set(list.filter(Boolean))];
+    setImgs(cands.length ? [cands[0]] : []);
+    cands.slice(1).forEach((src) => {
+      const i = new Image();
+      i.onload = () =>
+        live && setImgs((x) => (x.includes(src) ? x : [...x, src]));
+      i.src = src;
     });
-
     return () => {
       live = false;
     };
-  }, [p]);
-
+  }, [p, key]);
   return imgs;
 }
 
@@ -292,7 +262,7 @@ export default function ProductDetails() {
     isError: statePriceError,
   } = useGetStateProductPriceQuery(
     { state: selectedState, productId: id, quantity: 1, color: color || undefined },
-    { skip: !id || !selectedState },
+    { skip: !id || !selectedState || !isAuthenticated }, // no price request for visitors
   );
 
   const statePricing = statePriceResponse?.pricing || null;
@@ -509,7 +479,14 @@ export default function ProductDetails() {
     return null;
   }, [currentDepot, availableStates, selectedState]);
 
-  const imgs = useGallery(p);
+  const colorImages = useMemo(
+    () => (p?.colorObjs || []).find((c) => c.name === color)?.images || [],
+    [p, color],
+  );
+  const imgs = useGallery(p, colorImages);
+  useEffect(() => {
+    setMain(0); // colour changed -> start from its first photo
+  }, [color]);
 
   const similar = useMemo(
     () =>
@@ -579,7 +556,7 @@ export default function ProductDetails() {
             "Discount",
             p.discount ? `${p.discount}% off` : null,
           ],
-          [CircleDollarSign, "MRP", p.mrp ? inr(p.mrp) : null],
+          [CircleDollarSign, "MRP", isAuthenticated && p.mrp ? inr(p.mrp) : null],
           [BadgeCheck, "Brand", p.brand],
         ]
   ).filter((h) => h[2]);
@@ -650,9 +627,9 @@ export default function ProductDetails() {
         [
           "Pricing",
           [
-            ["Offer price", inr(p.lo)],
-            ["MRP", p.mrp ? inr(p.mrp) : null],
-            ["You save", p.mrp && p.lo != null && p.mrp > p.lo ? inr(p.mrp - p.lo) : null],
+            ["Offer price", isAuthenticated ? inr(p.lo) : "Login to view"],
+            ["MRP", isAuthenticated ? (p.mrp ? inr(p.mrp) : null) : "Login to view"],
+            ["You save", isAuthenticated && p.mrp && p.lo != null && p.mrp > p.lo ? inr(p.mrp - p.lo) : null],
           ],
         ],
       ];
@@ -660,9 +637,11 @@ export default function ProductDetails() {
   const about = [
     p.name,
     p.brand && `from ${p.brand}`,
-    p.price != null
-      ? `Available on the CSD AFD portal at concessional price ${inr(p.price)} (ex-showroom, subject to supply order terms).`
-      : "Price is not available right now.",
+    !isAuthenticated
+      ? "Log in to view the concessional price."
+      : p.price != null
+        ? `Available on the CSD AFD portal at concessional price ${inr(p.price)} (ex-showroom, subject to supply order terms).`
+        : "Price is not available right now.",
   ]
     .filter(Boolean)
     .join(" ");
@@ -938,7 +917,7 @@ export default function ProductDetails() {
                   <option value="">-- Select Color --</option>
                   {p.colors.map((cName) => {
                     const co = (p.colorObjs || []).find((x) => x.name === cName);
-                    const showPrice = p.colorPricing === "PER_COLOR" && co?.price;
+                    const showPrice = isAuthenticated && p.colorPricing === "PER_COLOR" && co?.price;
                     return (
                       <option key={cName} value={cName}>
                         {cName}
@@ -1108,6 +1087,9 @@ export default function ProductDetails() {
               </div>
 
               {/* State-wise Concessional Price Display matching Official CSD Price List */}
+              {!isAuthenticated ? (
+                <PriceLock block />
+              ) : (
               <div className="pdp-price-box pdp-rate-sheet-box">
                 <div className="between align-center mb-1">
                   <span className="small font-bold pdp-rate-customer-label">
@@ -1185,6 +1167,7 @@ export default function ProductDetails() {
                   </div>
                 )}
               </div>
+              )}
 
               {/* Login Required Notice */}
               {!isAuthenticated && (
@@ -1427,7 +1410,7 @@ export default function ProductDetails() {
       <div className="mbar">
         <div>
           <small>{appl ? "Price" : "Starting at"}</small>
-          <strong>{priceFrom(p)}</strong>
+          <strong>{isAuthenticated ? priceFrom(p) : "Login to view"}</strong>
         </div>
         <button
           className={`btn ${!isAuthenticated ? "btn-disabled-login" : ""}`}

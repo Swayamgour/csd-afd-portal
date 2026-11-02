@@ -42,10 +42,10 @@ import { categoryKind, fieldsFor, KIND_LABEL, COMMON_COLORS } from './categoryFi
 // colours saved as objects ({name, hex, price}); old products may only have a comma separated string / string array
 function colorsFromProduct(product) {
   if (Array.isArray(product.colors) && product.colors.length) {
-    return product.colors.map((c) => (typeof c === 'string' ? { name: c, hex: '#cccccc', price: '' } : { name: c.name || '', hex: c.hex || '#cccccc', price: c.price ?? '' }));
+    return product.colors.map((c) => (typeof c === 'string' ? { name: c, hex: '#cccccc', price: '', images: [] } : { name: c.name || '', hex: c.hex || '#cccccc', price: c.price ?? '', images: Array.isArray(c.images) ? c.images : [] }));
   }
   const legacy = product.attributes?.colors;
-  if (legacy) return String(legacy).split(',').map((n) => n.trim()).filter(Boolean).map((name) => ({ name, hex: '#cccccc', price: '' }));
+  if (legacy) return String(legacy).split(',').map((n) => n.trim()).filter(Boolean).map((name) => ({ name, hex: '#cccccc', price: '', images: [] }));
   return [];
 }
 
@@ -174,10 +174,56 @@ export function ProductFormPage() {
   const addColor = (name = '', hex = '#cccccc') =>
     setFormState((prev) => {
       if (name && prev.colors.some((c) => c.name.toLowerCase() === name.toLowerCase())) return prev;
-      return { ...prev, colors: [...prev.colors, { name, hex, price: '' }] };
+      return { ...prev, colors: [...prev.colors, { name, hex, price: '', images: [] }] };
     });
   const updateColor = (i, patch) =>
     setFormState((prev) => ({ ...prev, colors: prev.colors.map((c, idx) => (idx === i ? { ...c, ...patch } : c)) }));
+  // ---- per-colour images ----
+  const [colorUploading, setColorUploading] = useState(-1);
+  const [colorUrlInput, setColorUrlInput] = useState({});
+  const addColorImages = (i, urls) =>
+    setFormState((prev) => ({
+      ...prev,
+      colors: prev.colors.map((c, idx) => (idx === i ? { ...c, images: [...new Set([...(c.images || []), ...urls])] } : c)),
+    }));
+  const removeColorImage = (i, url) =>
+    setFormState((prev) => ({
+      ...prev,
+      colors: prev.colors.map((c, idx) => (idx === i ? { ...c, images: (c.images || []).filter((u) => u !== url) } : c)),
+    }));
+  const uploadColorImages = async (i, fileList) => {
+    const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/') && f.size <= 10 * 1024 * 1024);
+    if (!files.length) {
+      setUploadError('Sirf image files (max 10MB) upload hongi.');
+      setTimeout(() => setUploadError(''), 5000);
+      return;
+    }
+    try {
+      setColorUploading(i);
+      const fd = new FormData();
+      files.forEach((f) => fd.append('files', f));
+      const res = await uploadFiles(fd).unwrap();
+      const items = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+      addColorImages(i, items.map((it) => it.url).filter(Boolean));
+    } catch (err) {
+      setUploadError(err?.data?.message || err?.message || 'Colour image upload failed');
+      setTimeout(() => setUploadError(''), 6000);
+    } finally {
+      setColorUploading(-1);
+    }
+  };
+  const addColorImageUrl = (i) => {
+    const url = (colorUrlInput[i] || '').trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url) && !url.startsWith('/api/v1/files/')) {
+      setUploadError('Valid HTTP/HTTPS image URL daalo');
+      setTimeout(() => setUploadError(''), 4000);
+      return;
+    }
+    addColorImages(i, [url]);
+    setColorUrlInput((prev) => ({ ...prev, [i]: '' }));
+  };
+
   const removeColor = (i) => setFormState((prev) => ({ ...prev, colors: prev.colors.filter((_, idx) => idx !== i) }));
 
   const handleFilesSelected = async (fileList) => {
@@ -369,6 +415,7 @@ export function ProductFormPage() {
           .map((c) => ({
             name: c.name.trim(),
             hex: c.hex || undefined,
+            images: (c.images || []).filter(Boolean),
             ...(formState.colorPricing === 'PER_COLOR' && c.price !== '' ? { price: Number(c.price) } : {}),
           })),
         afdType: formState.afdType,
@@ -723,35 +770,70 @@ export function ProductFormPage() {
 
             {formState.colors.length === 0 && <p className="muted fs-xs">Abhi koi colour add nahi hua (optional).</p>}
             {formState.colors.map((c, i) => (
-              <div key={i} className="row gap-2 mb-1 align-center" style={{ flexWrap: 'wrap' }}>
-                <input
-                  type="color"
-                  value={c.hex || '#cccccc'}
-                  onChange={(e) => updateColor(i, { hex: e.target.value })}
-                  style={{ width: 40, height: 36, padding: 0, border: '1px solid #d0d5dd', borderRadius: 6 }}
-                  aria-label="Colour"
-                />
-                <input
-                  className="form-control"
-                  style={{ flex: '1 1 180px' }}
-                  placeholder="Colour name e.g. Pearl White"
-                  value={c.name}
-                  onChange={(e) => updateColor(i, { name: e.target.value })}
-                />
-                {formState.colorPricing === 'PER_COLOR' && (
+              <div key={i} className="mb-2" style={{ border: '1px solid #e4e7ec', borderRadius: 8, padding: 10 }}>
+                <div className="row gap-2 align-center" style={{ flexWrap: 'wrap' }}>
                   <input
-                    type="number"
-                    min="0"
-                    className="form-control font-mono"
-                    style={{ flex: '0 1 180px' }}
-                    placeholder="Price (₹)"
-                    value={c.price}
-                    onChange={(e) => updateColor(i, { price: e.target.value })}
+                    type="color"
+                    value={c.hex || '#cccccc'}
+                    onChange={(e) => updateColor(i, { hex: e.target.value })}
+                    style={{ width: 40, height: 36, padding: 0, border: '1px solid #d0d5dd', borderRadius: 6 }}
+                    aria-label="Colour"
                   />
-                )}
-                <button type="button" className="oem-photo-toggle-btn" onClick={() => removeColor(i)} aria-label="Remove colour">
-                  <Trash2 size={14} />
-                </button>
+                  <input
+                    className="form-control"
+                    style={{ flex: '1 1 180px' }}
+                    placeholder="Colour name e.g. Pearl White"
+                    value={c.name}
+                    onChange={(e) => updateColor(i, { name: e.target.value })}
+                  />
+                  {formState.colorPricing === 'PER_COLOR' && (
+                    <input
+                      type="number"
+                      min="0"
+                      className="form-control font-mono"
+                      style={{ flex: '0 1 180px' }}
+                      placeholder="Price (₹)"
+                      value={c.price}
+                      onChange={(e) => updateColor(i, { price: e.target.value })}
+                    />
+                  )}
+                  <button type="button" className="oem-photo-toggle-btn" onClick={() => removeColor(i)} aria-label="Remove colour">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+
+                {/* images of this colour */}
+                <div className="row gap-1 mt-1 align-center" style={{ flexWrap: 'wrap' }}>
+                  {(c.images || []).map((url) => (
+                    <div key={url} style={{ position: 'relative', width: 64, height: 64 }}>
+                      <img src={url} alt={c.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 6, border: '1px solid #d0d5dd' }} />
+                      <button
+                        type="button"
+                        onClick={() => removeColorImage(i, url)}
+                        aria-label="Remove image"
+                        style={{ position: 'absolute', top: -6, right: -6, width: 18, height: 18, borderRadius: 9, border: 0, background: '#b42318', color: '#fff', fontSize: 11, cursor: 'pointer', lineHeight: '18px', padding: 0 }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <label className="oem-photo-toggle-btn" style={{ cursor: 'pointer' }}>
+                    {colorUploading === i ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} Upload {c.name || 'colour'} photos
+                    <input type="file" accept="image/*" multiple hidden onChange={(e) => { uploadColorImages(i, e.target.files); e.target.value = ''; }} />
+                  </label>
+                  <input
+                    className="form-control font-mono"
+                    style={{ flex: '1 1 200px', maxWidth: 280 }}
+                    placeholder="ya image URL paste karo"
+                    value={colorUrlInput[i] || ''}
+                    onChange={(e) => setColorUrlInput((prev) => ({ ...prev, [i]: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addColorImageUrl(i); } }}
+                  />
+                  <button type="button" className="oem-photo-toggle-btn" onClick={() => addColorImageUrl(i)}>
+                    <Plus size={14} /> Add
+                  </button>
+                </div>
+                {!(c.images || []).length && <p className="muted fs-xs mt-1">Is colour ki photo nahi di to product ki main gallery dikhegi.</p>}
               </div>
             ))}
             {errors.colors && <span className="form-error">{errors.colors}</span>}

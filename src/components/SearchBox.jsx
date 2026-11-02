@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Search, X, ArrowUpRight, Tag, Layers } from 'lucide-react'
 import { useStoreProducts } from '../hooks/useStoreProducts.js'
+import { useCanSeePrice } from './PriceLock.jsx'
 import { CAT_LABEL, matches, priceFrom, onImgError } from '../data/utils.js'
 
 const MIN = 2
@@ -13,7 +14,7 @@ const Mark = ({ text, q }) => {
   return text.split(re).map((part, i) => (i % 2 ? <mark key={i}>{part}</mark> : part))
 }
 
-export function buildSuggestions(q, productList = []) {
+export function buildSuggestions(q, productList = [], showPrice = false) {
   const s = q.trim().toLowerCase()
   if (s.length < MIN) return []
   const score = p => {
@@ -32,7 +33,7 @@ export function buildSuggestions(q, productList = []) {
     kind: 'product',
     key: p.id || p._id,
     label: p.name,
-    sub: `${p.sku ? `SKU: ${p.sku} ` : ''}${p.mfrCode ? `· Mfr: ${p.mfrCode} ` : ''}· ${CAT_LABEL[p.category] || 'Vehicle'} · ${p.brand} · ${priceFrom(p)}`,
+    sub: `${p.sku ? `SKU: ${p.sku} ` : ''}${p.mfrCode ? `· Mfr: ${p.mfrCode} ` : ''}· ${CAT_LABEL[p.category] || 'Vehicle'} · ${p.brand}${showPrice ? ` · ${priceFrom(p)}` : ''}`,
     p
   }))
   const brands = [...new Set((productList || []).filter(p => (p.brand || '').toLowerCase().includes(s)).map(p => p.brand))].slice(0, 2)
@@ -48,6 +49,7 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
   const [q, setQ] = useState(fromUrl), [open, setOpen] = useState(false), [active, setActive] = useState(-1)
   const [wantData, setWantData] = useState(false)
   const box = useRef(null), input = useRef(null)
+  const canSeePrice = useCanSeePrice()
 
   // Shared, cached request - only fires once the user actually touches the search box
   // (or the products are already cached by Home / Catalog, in which case no new call is made).
@@ -60,7 +62,7 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
     return () => document.removeEventListener('mousedown', away)
   }, [])
 
-  const items = useMemo(() => buildSuggestions(q, liveProducts), [q, liveProducts])
+  const items = useMemo(() => buildSuggestions(q, liveProducts, canSeePrice), [q, liveProducts, canSeePrice])
   const ready = q.trim().length >= MIN
   const total = items.length + (ready ? 1 : 0)
 
