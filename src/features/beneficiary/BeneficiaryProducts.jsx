@@ -123,7 +123,7 @@ export const BeneficiaryProducts = () => {
               </h4>
               {user?.isEmailVerified && (
                 <span className="beneficiary-verified-tag">
-                  <ShieldCheck size={11} /> Email Verified ✓
+                  <ShieldCheck size={11} /> Email Verified
                 </span>
               )}
             </div>

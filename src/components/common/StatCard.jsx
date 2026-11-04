@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
 
 export function StatCard({
   title,
@@ -9,6 +9,7 @@ export function StatCard({
   change,
   isPositive,
   icon: Icon,
+  iconNode,
   trend,
   variant = 'default',
   className = '',
@@ -16,24 +17,36 @@ export function StatCard({
 }) {
   const trendObj = trend || (change ? { value: change, isUp: isPositive !== false } : null);
   const displaySub = subtext || subtitle;
+  const clickable = typeof onClick === 'function';
+
+  const handleKeyDown = (e) => {
+    if (!clickable) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick(e);
+    }
+  };
 
   return (
     <div
-      className={`panel stat-card stat-${variant} ${onClick ? 'cursor-pointer hover-lift' : ''} ${className}`}
+      className={`panel stat-card stat-${variant} ${clickable ? 'cursor-pointer hover-lift' : ''} ${className}`}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
     >
       <div className="stat-top between stat-top-between">
         <span className="stat-title muted small">{title}</span>
-        {Icon && (
+        {(Icon || iconNode) && (
           <div className="stat-icon-wrap" aria-hidden="true">
-            <Icon size={20} />
+            {Icon ? <Icon size={20} /> : iconNode}
           </div>
         )}
       </div>
 
       <div className="stat-value stat-value-large">{value}</div>
 
-      {(displaySub || trendObj) && (
+      {(displaySub || trendObj || clickable) && (
         <div className="stat-footer small stat-footer-flex">
           {trendObj && (
             <span
@@ -44,6 +57,7 @@ export function StatCard({
             </span>
           )}
           {displaySub && <span className="stat-subtext muted">{displaySub}</span>}
+          {clickable && <ChevronRight size={16} className="stat-go" aria-hidden="true" />}
         </div>
       )}
     </div>

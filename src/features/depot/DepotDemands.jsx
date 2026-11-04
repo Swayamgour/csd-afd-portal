@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ShieldCheck, CheckCircle2, AlertCircle, FileText, Upload, Check, X, Eye, FileDown } from 'lucide-react';
+import { Search, ShieldCheck, CheckCircle2, AlertCircle, FileText, Upload, Check, X, Eye, FileDown, Clock, XCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import {
   useGetDemandsQuery,
@@ -207,21 +207,21 @@ export default function DepotDemands() {
           onClick={() => setStatusTab('pending')}
           className={`depot-tab-btn ${statusTab === 'pending' ? 'active-pending' : ''}`}
         >
-          ⏳ Pending Scrutiny ({pendingCount})
+          <Clock size={15} aria-hidden="true" /> Pending Scrutiny ({pendingCount})
         </button>
         <button
           type="button"
           onClick={() => setStatusTab('approved')}
           className={`depot-tab-btn ${statusTab === 'approved' ? 'active-approved' : ''}`}
         >
-          ✓ Supply Orders Issued ({approvedCount})
+          <CheckCircle2 size={15} aria-hidden="true" /> Supply Orders Issued ({approvedCount})
         </button>
         <button
           type="button"
           onClick={() => setStatusTab('rejected')}
           className={`depot-tab-btn ${statusTab === 'rejected' ? 'active-rejected' : ''}`}
         >
-          ✗ Rejected ({rejectedCount})
+          <XCircle size={15} aria-hidden="true" /> Rejected ({rejectedCount})
         </button>
       </div>
 
@@ -546,7 +546,7 @@ export default function DepotDemands() {
                             onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
                             title="Scrutinize documents and approve demand to enable payment option for beneficiary"
                           >
-                            ✓ Approve Demand (Grant Sanction)
+                            <span className="ic-inline"><CheckCircle2 size={14} /> Approve Demand (Grant Sanction)</span>
                           </button>
                         ) : demand.status === 'APPROVED' ? (
                           <>
@@ -554,7 +554,7 @@ export default function DepotDemands() {
                               className="checkout-spec-pill"
                               style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '6px 8px', fontSize: '11px', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}
                             >
-                              ✓ Sanction Granted<br />
+                              <span className="ic-inline"><CheckCircle2 size={13} /> Sanction Granted</span><br />
                               <span style={{ fontSize: '10px', color: '#059669', fontWeight: 500 }}>Awaiting Beneficiary Payment / UTR</span>
                             </div>
 
@@ -599,7 +599,7 @@ export default function DepotDemands() {
                               style={!isProcessed ? { background: '#2563eb', color: '#fff', fontWeight: 700 } : {}}
                               title="Issue Local Supply Order after verifying payment"
                             >
-                              {isProcessed ? 'Supply Order Issued' : '✓ Verify Payment & Issue Supply Order'}
+                              {isProcessed ? 'Supply Order Issued' : (<span className="ic-inline"><CheckCircle2 size={14} /> Verify Payment & Issue Supply Order</span>)}
                             </button>
                           </>
                         )}

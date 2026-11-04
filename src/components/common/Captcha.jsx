@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, KeyRound } from 'lucide-react';
+import { RefreshCw, KeyRound, AlertCircle } from 'lucide-react';
 import { makeCaptcha } from '../../utils/captcha.js';
 
 export { makeCaptcha };
@@ -73,8 +73,13 @@ export default function Captcha({
           aria-invalid={!!error}
         />
       </div>
-      <p className="err" role={error ? 'alert' : undefined}>
-        {error && `⚠ ${error}`}
+      <p className={`err ${error ? 'err-with-icon' : ''}`} role={error ? 'alert' : undefined}>
+        {error && (
+          <>
+            <AlertCircle size={14} aria-hidden="true" />
+            <span>{error}</span>
+          </>
+        )}
       </p>
     </div>
   );

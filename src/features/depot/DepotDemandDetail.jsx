@@ -458,7 +458,7 @@ export function DepotDemandDetail() {
             3. Depot Payment Accounting & Challan Register
           </h3>
           {demand.paymentDetails?.transactionRef && (
-            <span className="badge badge-success">✓ Payment Details Verified</span>
+            <span className="badge badge-success ic-inline"><CheckCircle2 size={13} /> Payment Details Verified</span>
           )}
         </div>
         <form onSubmit={handleSavePayment} className="card-body">

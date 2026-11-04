@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertCircle } from 'lucide-react';
 
 export function Input({
   id,
@@ -38,8 +39,9 @@ export function Input({
         />
       </div>
       {error ? (
-        <p id={`${id}-error`} className="err" role="alert">
-          ⚠ {error}
+        <p id={`${id}-error`} className="err err-with-icon" role="alert">
+          <AlertCircle size={14} aria-hidden="true" />
+          <span>{error}</span>
         </p>
       ) : helperText ? (
         <p id={`${id}-helper`} className="form-helper muted small">

@@ -21,7 +21,8 @@ import {
   AlertTriangle,
   Building,
   CreditCard,
-  FileCheck
+  FileCheck,
+  Check,
 } from 'lucide-react';
 
 export function DirectorApprovals({ defaultTab = 'PENDING' }) {
@@ -271,7 +272,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
                 onClick={() => handleApprove(u)}
                 title="Approve Beneficiary Registration and Authorize AFD Purchase"
               >
-                {isLoading ? '...' : '✓ Approve'}
+                {isLoading ? '...' : (<span className="ic-inline"><Check size={14} /> Approve</span>)}
               </Button>
             )}
 
@@ -298,7 +299,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
                 onClick={() => handleApprove(u)}
                 title="Re-evaluate & Approve"
               >
-                ✓ Re-Approve
+                <span className="ic-inline"><Check size={14} /> Re-Approve</span>
               </Button>
             )}
 

@@ -14,6 +14,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
+import QuickActions from '../../components/common/QuickActions.jsx';
+import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import StatCard from '../../components/common/StatCard.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
@@ -163,7 +165,7 @@ export default function DepotDashboard() {
   ];
 
   return (
-    <div className="depot-dashboard-page depot-page-pad">
+    <div className="dashboard-page depot-dashboard-page depot-page-pad">
       <PageHeader
         title={`Regional Depot Directorate · ${depotTitle}`}
         subtitle={`Commanding Officer: ${user?.name || 'Depot Official'} · Area Jurisdictional Operations & Demand Processing Desk`}
@@ -193,12 +195,14 @@ export default function DepotDashboard() {
         }
       />
 
+      <QuickActions actions={DASHBOARD_ACTIONS.depot} />
+
       {/* 10 SCOPED DEPOT SUMMARY CARDS */}
-      <div className="depot-section-mb">
-        <h3 className="depot-section-heading">
+      <div className="dashboard-section">
+        <h3 className="dashboard-section-title">
           Depot Demand Sanction & Verification Stages
         </h3>
-        <div className="depot-kpi-grid">
+        <div className="kpi-grid">
           <StatCard
             title="New Demands"
             value={String(newDemandsCount)}

@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   FileText,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  Palette,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
@@ -141,8 +142,8 @@ export function BeneficiaryDemands() {
               <div className="row gap-0-5 align-center mt-0-25 flex-nowrap">
                 {sku && <span className="micro muted font-mono whitespace-nowrap">SKU: {sku}</span>}
                 {row.selectedColor && (
-                  <span className="badge micro info whitespace-nowrap">
-                    🎨 {row.selectedColor}
+                  <span className="badge micro info whitespace-nowrap ic-inline">
+                    <Palette size={12} /> {row.selectedColor}
                   </span>
                 )}
               </div>
@@ -161,8 +162,8 @@ export function BeneficiaryDemands() {
             <span className="font-bold text-navy block font-mono">
               ₹ {Number(price).toLocaleString('en-IN')}
             </span>
-            <span className="micro text-success font-semibold">
-              ✓ Matches CSD Quota
+            <span className="micro text-success font-semibold ic-inline">
+              <CheckCircle2 size={12} /> Matches CSD Quota
             </span>
           </div>
         );

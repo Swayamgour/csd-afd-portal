@@ -10,6 +10,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
+import QuickActions from '../../components/common/QuickActions.jsx';
+import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import StatCard from '../../components/common/StatCard.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
@@ -131,7 +133,7 @@ export default function UrcDashboard() {
   ];
 
   return (
-    <div className="urc-dashboard-page pb-3xl">
+    <div className="dashboard-page urc-dashboard-page pb-3xl">
       <PageHeader
         title={`Unit Run Canteen (URC) Operations · ${user?.urc || 'Delhi Cantt Station URC'}`}
         subtitle={`Officer-in-Charge: ${user?.name || 'URC Official'} · Local Station Delivery & Handover Desk`}
@@ -161,8 +163,10 @@ export default function UrcDashboard() {
         }
       />
 
+      <QuickActions actions={DASHBOARD_ACTIONS.urc} />
+
       {/* 5 SCOPED URC SUMMARY CARDS */}
-      <div className="csd-kpi-grid">
+      <div className="kpi-grid">
         <StatCard
           title="Received Orders"
           value={String(receivedOrdersCount)}

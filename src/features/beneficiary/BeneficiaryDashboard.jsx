@@ -14,6 +14,8 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
+import QuickActions from '../../components/common/QuickActions.jsx';
+import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import StatCard from '../../components/common/StatCard.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
@@ -170,7 +172,7 @@ export function BeneficiaryDashboard() {
   }
 
   return (
-    <div className="beneficiary-dashboard-page">
+    <div className="dashboard-page beneficiary-dashboard-page">
       {/* Verification / Approval Alert Banner */}
       {isPendingApproval && (
         <div className="beneficiary-pending-card">
@@ -184,7 +186,7 @@ export function BeneficiaryDashboard() {
               </h3>
               {user?.isEmailVerified && (
                 <span className="beneficiary-verified-tag">
-                  <ShieldCheck size={12} /> Email Verified ✓
+                  <ShieldCheck size={12} /> Email Verified
                 </span>
               )}
             </div>
@@ -279,8 +281,10 @@ export function BeneficiaryDashboard() {
         </div>
       </div>
 
+      <QuickActions actions={DASHBOARD_ACTIONS.beneficiary} />
+
       {/* Dynamic 6-Card Section 21 KPI Stat Grid */}
-      <div className="beneficiary-kpi-grid">
+      <div className="kpi-grid">
         <StatCard
           title="My Demands"
           value={dashboardData?.totalDemands ?? recentDemands.length}

@@ -9,6 +9,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
+import QuickActions from '../../components/common/QuickActions.jsx';
+import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import StatCard from '../../components/common/StatCard.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
@@ -97,7 +99,7 @@ export default function HelpdeskDashboard() {
   ];
 
   return (
-    <div className="helpdesk-dashboard-page">
+    <div className="dashboard-page helpdesk-dashboard-page">
       <PageHeader
         title="CSD AFD National Service Desk Operations"
         subtitle={`Agent Console: ${user?.name || 'Helpdesk Nodal Officer'} · Multi-Tier SLA & Escalation Management`}
@@ -119,7 +121,9 @@ export default function HelpdeskDashboard() {
         }
       />
 
-      <div className="kpi-grid mb-3">
+      <QuickActions actions={DASHBOARD_ACTIONS.helpdesk} />
+
+      <div className="kpi-grid">
         <StatCard
           title="Open Tickets"
           value={openTicketsCount}

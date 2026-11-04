@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
+import StatCard from '../../components/common/StatCard.jsx';
+import QuickActions from '../../components/common/QuickActions.jsx';
+import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import { Card } from '../../components/common/Card.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import {
@@ -171,7 +174,7 @@ export const AdminDashboard = () => {
   const isRefreshing = isSummaryFetching || isAnalyticsFetching;
 
   return (
-    <div className="admin-dashboard-page">
+    <div className="dashboard-page admin-dashboard-page">
       {/* Toast Feedback */}
       {toastMessage && (
         <div className="admin-toast-success">
@@ -213,17 +216,19 @@ export const AdminDashboard = () => {
         }
       />
 
+      <QuickActions actions={DASHBOARD_ACTIONS.admin} />
+
       {/* SECTION 1: 18 DYNAMIC SUMMARY CARDS (Grouped) */}
-      <div className="mb-2xl">
+      <div className="dashboard-section">
         {/* GROUP A: DEMANDS & TRANSACTIONS */}
-        <div className="mb-lg">
-          <div className="dashboard-group-header">
+        <div className="dashboard-section">
+          <div className="dashboard-section-head">
             <ShoppingBag size={18} className="text-blue-dark" />
-            <h3 className="dashboard-group-title">
+            <h3 className="dashboard-section-title">
               Operational Demand & Fulfillment Lifecycle
             </h3>
           </div>
-          <div className="dashboard-kpi-grid-6">
+          <div className="kpi-grid">
             <SummaryStatCard
               title="Total Demands"
               count={totalDemands}
@@ -264,14 +269,14 @@ export const AdminDashboard = () => {
         </div>
 
         {/* GROUP B: MASTER DATA (OEM, DEALER, DEPOT, URC, PRODUCTS) */}
-        <div className="mb-lg">
-          <div className="dashboard-group-header">
+        <div className="dashboard-section">
+          <div className="dashboard-section-head">
             <Layers size={18} className="text-teal" />
-            <h3 className="dashboard-group-title">
+            <h3 className="dashboard-section-title">
               Catalog & Organizational Master Entities
             </h3>
           </div>
-          <div className="dashboard-kpi-grid-6">
+          <div className="kpi-grid">
             <SummaryStatCard
               title="Total Products"
               count={totalProducts}
@@ -312,9 +317,9 @@ export const AdminDashboard = () => {
 
         {/* GROUP C: BENEFICIARY DIRECTORY COUNTS */}
         <div>
-          <div className="dashboard-group-header">
+          <div className="dashboard-section-head">
             <Users size={18} className="text-slate-600" />
-            <h3 className="dashboard-group-title">
+            <h3 className="dashboard-section-title">
               Beneficiary Entitlement & Registrations
             </h3>
           </div>
@@ -355,7 +360,7 @@ export const AdminDashboard = () => {
       {/* SECTION 2: DYNAMIC ANALYTICS & CHARTS WITH TIMEFRAME FILTERS */}
       <Card
         title="Enterprise Analytics & Supply Chain Insights"
-        className="mb-2xl"
+        className="dashboard-section"
         actions={
           <div className="portal-period-container">
             <span className="portal-period-label">
@@ -554,25 +559,25 @@ export const AdminDashboard = () => {
   );
 };
 
-// Reusable Summary Stat Card Component
-const SummaryStatCard = ({ title, count, subtext, icon, variant = 'slate', highlight = false }) => {
+// Summary cards use the same shared StatCard as every other role dashboard
+const SUMMARY_VARIANT = {
+  blue: 'primary', indigo: 'primary', sky: 'info', teal: 'info',
+  green: 'success', emerald: 'success', amber: 'warning', orange: 'warning',
+  red: 'danger', purple: 'default', slate: 'default',
+};
+
+const SummaryStatCard = ({ title, count, subtext, icon, variant = 'slate' }) => {
+  const iconNode = React.isValidElement(icon)
+    ? React.cloneElement(icon, { className: undefined, size: 20 })
+    : icon;
   return (
-    <div className={`summary-stat-card variant-${variant} ${highlight ? 'highlight' : ''}`}>
-      <div className="stat-card-header">
-        <span className="stat-card-title">{title}</span>
-        <div className="stat-card-icon-box">{icon}</div>
-      </div>
-      <div>
-        <div className="stat-card-count">
-          {count}
-        </div>
-        {subtext && (
-          <div className="stat-card-subtext">
-            {subtext}
-          </div>
-        )}
-      </div>
-    </div>
+    <StatCard
+      title={title}
+      value={count}
+      subtext={subtext}
+      iconNode={iconNode}
+      variant={SUMMARY_VARIANT[variant] || 'default'}
+    />
   );
 };
 

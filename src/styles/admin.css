@@ -6964,3 +6964,375 @@
       z-index: 2;
    }
 }
+
+/* ===== Portal polish: dashboards, stat cards, quick actions, tables, icon alignment ===== */
+/* =====================================================================
+   portal-polish.css — dashboards, stat cards, quick actions, icon fixes
+   for the signed-in portal. Imported in AppShell.jsx AFTER admin.css so
+   it wins on equal specificity. Every rule is scoped to .app-shell-root.
+   Palette: navy #0b2559 · brand #1e4fd8 · saffron #ff8a1f
+   ===================================================================== */
+.app-shell-root {
+  --pp-navy: #0b2559;
+  --pp-navy-2: #123a8a;
+  --pp-brand: #1e4fd8;
+  --pp-brand-soft: #e8eeff;
+  --pp-saffron: #ff8a1f;
+  --pp-ink: #0c1a3a;
+  --pp-muted: #5a6785;
+  --pp-line: #e3e8f3;
+  --pp-ok: #12805c;
+  --pp-ok-soft: #e3f6ec;
+  --pp-warn: #b54708;
+  --pp-warn-soft: #fff4e0;
+  --pp-bad: #d92d20;
+  --pp-bad-soft: #fef3f2;
+  --pp-info: #0e7490;
+  --pp-info-soft: #e0f4f8;
+}
+
+/* ---------- 1. Icon alignment inside the portal ---------- */
+.app-shell-root .sidebar-nav-link { align-items: center; }
+.app-shell-root .sidebar-nav-icon { width: 20px; height: 20px; flex: 0 0 20px; }
+.app-shell-root .app-sidebar.collapsed .sidebar-nav-link { padding-inline: 0; }
+.app-shell-root .sidebar-footer a,
+.app-shell-root .sidebar-public-link { display: inline-flex; align-items: center; gap: .5rem; }
+
+.app-shell-root .header-icon-btn,
+.app-shell-root .header-menu-btn {
+  width: 40px;
+  height: 40px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 12px;
+  color: var(--pp-ink);
+}
+
+.app-shell-root .header-branding-badge { display: inline-flex; align-items: center; gap: .5rem; }
+.app-shell-root .header-right { display: flex; align-items: center; gap: .5rem; }
+
+.app-shell-root .btn,
+.app-shell-root a.btn,
+.app-shell-root button.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  line-height: 1.2;
+}
+
+.app-shell-root .badge,
+.app-shell-root .badge-pill,
+.app-shell-root .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.app-shell-root .card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+.app-shell-root .card-actions { display: inline-flex; align-items: center; gap: .6rem; }
+.app-shell-root .card-actions .link { display: inline-flex; align-items: center; gap: .3rem; }
+
+/* ---------- 2. Dashboard banner (page header on every role dashboard) ---------- */
+.app-shell-root .dashboard-page > .page-header-box {
+  position: relative;
+  margin-bottom: 1.25rem !important;
+  padding: 1.35rem 1.5rem;
+  border-radius: 18px;
+  color: #fff;
+  background-color: var(--pp-navy);
+  background-image: radial-gradient(circle at 104% 120%, transparent 0 120px, rgba(255, 255, 255, .07) 121px 122px, transparent 123px 180px, rgba(255, 255, 255, .07) 181px 182px, transparent 183px);
+  box-shadow: 0 10px 26px rgba(11, 37, 89, .22);
+  border: 0;
+}
+
+.app-shell-root .dashboard-page > .page-header-box .page-header-title { color: #fff; }
+.app-shell-root .dashboard-page > .page-header-box .page-header-subtitle { color: #c9d6f5; max-width: 64ch; }
+.app-shell-root .dashboard-page > .page-header-box .page-header-bc-list,
+.app-shell-root .dashboard-page > .page-header-box .page-header-bc-current { color: #b9c7ee; }
+.app-shell-root .dashboard-page > .page-header-box .page-header-bc-link { color: #fff; }
+
+/* Buttons on the navy banner: primary = saffron, outline = glass */
+.app-shell-root .dashboard-page > .page-header-box .btn:not(.out):not(.ghost) {
+  background: var(--pp-saffron);
+  border-color: var(--pp-saffron);
+  color: #1d1200;
+}
+.app-shell-root .dashboard-page > .page-header-box .btn:not(.out):not(.ghost):hover { background: #ffa04d; border-color: #ffa04d; box-shadow: none; }
+.app-shell-root .dashboard-page > .page-header-box .btn.out,
+.app-shell-root .dashboard-page > .page-header-box .btn.ghost {
+  background: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .35);
+  color: #fff;
+}
+.app-shell-root .dashboard-page > .page-header-box .btn.out:hover { background: rgba(255, 255, 255, .2); box-shadow: none; }
+
+/* ---------- 3. Quick actions ---------- */
+.app-shell-root .quick-actions { margin-bottom: 1.5rem; }
+
+.app-shell-root .quick-actions-title {
+  margin: 0 0 .75rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--pp-ink);
+}
+
+.app-shell-root .quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: .9rem;
+}
+
+.app-shell-root .quick-action {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  padding: .9rem 1rem;
+  background: #fff;
+  border: 1px solid var(--pp-line);
+  border-radius: 14px;
+  color: var(--pp-ink);
+  text-decoration: none;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+
+.app-shell-root .quick-action:hover {
+  border-color: var(--pp-brand);
+  box-shadow: 0 8px 20px rgba(12, 26, 58, .1);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.app-shell-root .quick-action:focus-visible { outline: 3px solid rgba(30, 79, 216, .4); outline-offset: 2px; }
+
+.app-shell-root .quick-action-icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: var(--pp-brand-soft);
+  color: var(--pp-brand);
+}
+
+.app-shell-root .quick-action-success .quick-action-icon { background: var(--pp-ok-soft); color: var(--pp-ok); }
+.app-shell-root .quick-action-warning .quick-action-icon { background: var(--pp-warn-soft); color: var(--pp-warn); }
+.app-shell-root .quick-action-danger .quick-action-icon { background: var(--pp-bad-soft); color: var(--pp-bad); }
+.app-shell-root .quick-action-info .quick-action-icon { background: var(--pp-info-soft); color: var(--pp-info); }
+
+.app-shell-root .quick-action-text { display: flex; flex-direction: column; gap: .15rem; min-width: 0; flex: 1; }
+.app-shell-root .quick-action-label { font-size: .98rem; font-weight: 600; line-height: 1.25; }
+.app-shell-root .quick-action-hint { font-size: .82rem; line-height: 1.3; color: var(--pp-muted); }
+.app-shell-root .quick-action-go { color: #9aa6c3; transition: transform .15s, color .15s; }
+.app-shell-root .quick-action:hover .quick-action-go { color: var(--pp-brand); transform: translateX(3px); }
+
+/* ---------- 4. Stat cards ---------- */
+.app-shell-root .stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--pp-line);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(12, 26, 58, .04);
+}
+
+.app-shell-root .stat-card.hover-lift { transition: box-shadow .15s, transform .15s, border-color .15s; }
+.app-shell-root .stat-card.hover-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(12, 26, 58, .12); }
+.app-shell-root .stat-card:focus-visible { outline: 3px solid rgba(30, 79, 216, .4); outline-offset: 2px; }
+
+.app-shell-root .stat-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+
+.app-shell-root .stat-title {
+  font-size: .86rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--pp-muted);
+}
+
+.app-shell-root .stat-icon-wrap {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.app-shell-root .stat-card.stat-default .stat-icon-wrap { background: var(--pp-brand-soft); color: var(--pp-brand); }
+.app-shell-root .stat-card.stat-primary { border-left-color: var(--pp-brand); }
+.app-shell-root .stat-card.stat-success { border-left-color: var(--pp-ok); }
+.app-shell-root .stat-card.stat-warning { border-left-color: #f59e0b; }
+.app-shell-root .stat-card.stat-danger { border-left-color: var(--pp-bad); }
+.app-shell-root .stat-card.stat-info { border-left-color: var(--pp-info); }
+
+.app-shell-root .stat-value { margin-top: .1rem; font-size: 1.9rem; font-weight: 700; line-height: 1.1; color: var(--pp-ink); }
+
+.app-shell-root .stat-footer { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .6rem; margin-top: .15rem; }
+.app-shell-root .stat-trend { display: inline-flex; align-items: center; gap: .3rem; font-weight: 600; }
+.app-shell-root .stat-go { margin-left: auto; color: #9aa6c3; }
+.app-shell-root .stat-card:hover .stat-go { color: var(--pp-brand); }
+
+.app-shell-root .kpi-grid { gap: 1rem !important; }
+
+/* ---------- 5. Cards & inline status text (replaces ✓ ⚠ glyphs) ---------- */
+.app-shell-root .enterprise-card { border-radius: 16px; }
+.app-shell-root .enterprise-card .card-title { font-size: 1.02rem; font-weight: 700; color: var(--pp-ink); }
+
+.app-shell-root .ic-ok,
+.app-shell-root .ic-warn,
+.app-shell-root .ic-bad,
+.app-shell-root .ic-muted {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-weight: 600;
+}
+.app-shell-root .ic-ok { color: var(--pp-ok); }
+.app-shell-root .ic-warn { color: var(--pp-warn); }
+.app-shell-root .ic-bad { color: var(--pp-bad); }
+.app-shell-root .ic-muted { color: var(--pp-muted); }
+
+@media (max-width: 640px) {
+  .app-shell-root .dashboard-page > .page-header-box { padding: 1.1rem 1rem; border-radius: 14px; }
+  .app-shell-root .quick-actions-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell-root .quick-action,
+  .app-shell-root .stat-card.hover-lift,
+  .app-shell-root .quick-action-go { transition: none; transform: none !important; }
+}
+
+/* ---------- 6. Small alignment fixes for icon + text controls ---------- */
+.app-shell-root .depot-tab-btn,
+.app-shell-root .beneficiary-verified-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+
+/* =====================================================================
+   ONE DASHBOARD LAYOUT for every role (class: .dashboard-page)
+   Header banner -> Quick actions -> KPI grid -> Cards / Tables
+   ===================================================================== */
+.app-shell-root .dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 100%;
+  padding-bottom: 1rem;
+}
+
+/* every direct block uses the same gap, so utility margins are neutralised */
+.app-shell-root .dashboard-page > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+
+/* Beneficiary welcome banner + Dealer header card look exactly like the page-header banner */
+.app-shell-root .dashboard-page > :is(.welcome-banner, .dealer-header-card) {
+  position: relative;
+  padding: 1.35rem 1.5rem;
+  border: 0;
+  border-radius: 18px;
+  color: #fff;
+  background-color: var(--pp-navy);
+  background-image: radial-gradient(circle at 104% 120%, transparent 0 120px, rgba(255, 255, 255, .07) 121px 122px, transparent 123px 180px, rgba(255, 255, 255, .07) 181px 182px, transparent 183px);
+  box-shadow: 0 10px 26px rgba(11, 37, 89, .22);
+}
+
+.app-shell-root .dashboard-page > .dealer-header-card :is(h1, .text-navy, .text-brand) { color: #fff; }
+.app-shell-root .dashboard-page > .dealer-header-card :is(.text-muted, .muted, .small) { color: #c9d6f5; }
+.app-shell-root .dashboard-page > .dealer-header-card .btn.out { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .35); color: #fff; }
+.app-shell-root .dashboard-page > :is(.welcome-banner, .dealer-header-card) h1 { margin: 0 0 .35rem; font-size: clamp(1.25rem, 1rem + 1vw, 1.65rem); line-height: 1.25; }
+.app-shell-root .dashboard-page > .welcome-banner .btn.out { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .35); color: #fff; }
+
+/* Section titles (Depot / Admin groups) */
+.app-shell-root .dashboard-section { display: flex; flex-direction: column; gap: 1.25rem; }
+.app-shell-root .dashboard-section-head { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; }
+.app-shell-root .dashboard-section-title { margin: 0 0 .75rem; font-size: 1.05rem; font-weight: 700; color: var(--pp-ink); }
+.app-shell-root .dashboard-section-head .dashboard-section-title { margin: 0; }
+
+/* KPI cards: same width on every dashboard, whether the role has 4, 5, 6 or 10 */
+.app-shell-root .kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  gap: 1rem !important;
+  margin: 0 !important;
+}
+
+/* Two / three column card rows */
+.app-shell-root .dashboard-page :is(.grid-2-col, .grid-3-col) { display: grid; gap: 1.5rem; margin: 0 !important; }
+.app-shell-root .dashboard-page .grid-2-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.app-shell-root .dashboard-page .grid-3-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .app-shell-root .dashboard-page .grid-3-col { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 800px) { .app-shell-root .dashboard-page :is(.grid-2-col, .grid-3-col) { grid-template-columns: 1fr; } }
+
+/* =====================================================================
+   ONE TABLE STYLE for every DataTable in the portal
+   ===================================================================== */
+.app-shell-root .data-table-container { background: transparent; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
+
+.app-shell-root .data-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--pp-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.app-shell-root .data-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .88rem;
+  text-align: left;
+  table-layout: auto;
+}
+
+.app-shell-root .data-table th {
+  position: static;
+  padding: .75rem 1rem;
+  background: #f5f7fc;
+  border-bottom: 1px solid var(--pp-line);
+  color: var(--pp-muted);
+  font-size: .76rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.app-shell-root .data-table td {
+  padding: .8rem 1rem;
+  border-bottom: 1px solid #edf0f6;
+  color: var(--pp-ink);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.app-shell-root .data-table :is(th, td).text-right { text-align: right; }
+.app-shell-root .data-table :is(th, td).text-center { text-align: center; }
+.app-shell-root .data-table tbody tr:last-child td { border-bottom: 0; }
+.app-shell-root .data-table tbody tr:hover { background: #f7f9ff; }
+.app-shell-root .data-table .btn { white-space: nowrap; }
+.app-shell-root .data-table .status-badge { white-space: nowrap; }
+.app-shell-root .data-table :is(.block, .micro) { line-height: 1.35; }
+
+.app-shell-root .table-pagination-footer { padding: .75rem .25rem 0; border-top: 0; background: transparent; }
+.app-shell-root .enterprise-card .card-header { margin-bottom: 1rem; }

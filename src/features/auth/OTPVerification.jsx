@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, ArrowLeft, Mail, CheckCircle2, Clock } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Mail, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath, isPathAllowedForRole } from '../../permissions/roles.js';
 import { useLoginMutation, useSendOtpMutation } from './authApi.js';
@@ -153,11 +153,14 @@ export default function OTPVerification({ sessionData, onBack }) {
   return (
     <form className="panel logincard authcard" onSubmit={handleVerify} noValidate aria-labelledby="oh">
       <div className="between">
-        <button type="button" className="otp-link-btn" onClick={onBack}>
-          ← Change credentials
-        </button>
-        <button type="button" className="circle" aria-label="Go back" onClick={onBack}>
-          <ArrowLeft />
+        <button
+          type="button"
+          className="otp-link-btn"
+          onClick={onBack}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '.4rem' }}
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          <span>Change credentials</span>
         </button>
       </div>
 
@@ -185,7 +188,8 @@ export default function OTPVerification({ sessionData, onBack }) {
 
       {error && (
         <div className="alert-banner danger small mb-3" role="alert">
-          <span>⚠ {error}</span>
+          <AlertCircle size={16} aria-hidden="true" />
+          <span>{error}</span>
         </div>
       )}
 

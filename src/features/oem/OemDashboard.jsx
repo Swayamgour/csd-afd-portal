@@ -13,6 +13,8 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
+import QuickActions from '../../components/common/QuickActions.jsx';
+import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import StatCard from '../../components/common/StatCard.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
@@ -37,7 +39,7 @@ export default function OemDashboard() {
 
   if (isLoading) {
     return (
-      <div className="oem-dashboard-page">
+      <div className="dashboard-page oem-dashboard-page">
         <PageHeader
           title="OEM Institutional Directorate"
           subtitle="Loading manufacturer production, dealer allocations, and order pipelines..."
@@ -146,8 +148,10 @@ export default function OemDashboard() {
         }
       />
 
+      <QuickActions actions={DASHBOARD_ACTIONS.oem} />
+
       {/* Main KPI Row */}
-      <div className="kpi-grid mb-3">
+      <div className="kpi-grid">
         <StatCard
           title="Empaneled Models"
           value={`${d.activeProducts ?? 0} Active`}

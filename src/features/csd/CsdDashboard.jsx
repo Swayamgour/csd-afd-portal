@@ -8,6 +8,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
+import QuickActions from '../../components/common/QuickActions.jsx';
+import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import StatCard from '../../components/common/StatCard.jsx';
 import Card from '../../components/common/Card.jsx';
 import ChartCard from '../../components/common/ChartCard.jsx';
@@ -103,7 +105,7 @@ export default function CsdDashboard() {
   ];
 
   return (
-    <div className="csd-dashboard-page">
+    <div className="dashboard-page csd-dashboard-page">
       <PageHeader
         title="CSD HO  Admin Dashboard"
         subtitle="National procurement oversight, policy enforcement, depot sanctions, and institutional dealer governance."
@@ -125,8 +127,10 @@ export default function CsdDashboard() {
         }
       />
 
+      <QuickActions actions={DASHBOARD_ACTIONS.csd} />
+
       {/* Top Oversight KPIs */}
-      <div className="kpi-grid mb-3">
+      <div className="kpi-grid">
         <StatCard
           title="Total Registered Beneficiaries"
           value={(summary.totalBeneficiaries ?? 0).toLocaleString('en-IN')}

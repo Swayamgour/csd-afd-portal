@@ -23,9 +23,12 @@ import {
   Sparkles,
   RefreshCw,
   Building2,
-  ShieldAlert
+  ShieldAlert,
+  Palette,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
+import QuickActions from '../../components/common/QuickActions.jsx';
+import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import StatCard from '../../components/common/StatCard.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
@@ -256,8 +259,8 @@ export default function DealerDashboard() {
               {b.rank && <span className="micro muted whitespace-nowrap">{b.rank}</span>}
             </div>
             {(b.mobile || u.mobile) && (
-              <span className="micro text-brand block mt-0-25">
-                📞 {b.mobile || u.mobile}
+              <span className="micro text-brand mt-0-25 ic-inline">
+                <Phone size={12} /> {b.mobile || u.mobile}
               </span>
             )}
           </div>
@@ -277,7 +280,7 @@ export default function DealerDashboard() {
             <div className="row gap-0-5 align-center mt-0-25 flex-nowrap">
               <span className="micro muted font-mono whitespace-nowrap">SKU: {p.sku || 'CSD-SKU'}</span>
               {r.selectedColor && (
-                <span className="badge micro info whitespace-nowrap">🎨 {r.selectedColor}</span>
+                <span className="badge micro info whitespace-nowrap ic-inline"><Palette size={12} /> {r.selectedColor}</span>
               )}
             </div>
           </div>
@@ -294,8 +297,8 @@ export default function DealerDashboard() {
             <span className="font-bold text-navy block font-mono">
               {inr(price)}
             </span>
-            <span className="micro text-success font-semibold">
-              ✓ Matches CSD Quota
+            <span className="micro text-success font-semibold ic-inline">
+              <CheckCircle2 size={12} /> Matches CSD Quota
             </span>
           </div>
         );
@@ -427,7 +430,7 @@ export default function DealerDashboard() {
       accessor: '_id',
       render: (r) =>
         r.status === 'DELIVERED' ? (
-          <span className="small text-green font-semibold">✓ Handed Over</span>
+          <span className="small text-green font-semibold ic-inline"><CheckCircle2 size={14} /> Handed Over</span>
         ) : (
           <Button
             size="sm"
@@ -442,7 +445,7 @@ export default function DealerDashboard() {
   ];
 
   return (
-    <div className="dealer-dashboard-page">
+    <div className="dashboard-page dealer-dashboard-page">
       {/* Dealership Operations Header */}
       <div className="dealer-header-card panel mb-3 p-3">
         <div className="between align-start flex-wrap gap-2">
@@ -481,12 +484,14 @@ export default function DealerDashboard() {
               <RefreshCw size={14} className={fetchingDemands || fetchingOrders ? 'spin' : ''} />
               <span>Sync Portal</span>
             </button>
-            <div className="badge success px-3 py-1 font-semibold text-center">
-              ✓ Nodal Officer Active
+            <div className="badge success px-3 py-1 font-semibold text-center ic-inline">
+              <CheckCircle2 size={14} /> Nodal Officer Active
             </div>
           </div>
         </div>
       </div>
+
+      <QuickActions actions={DASHBOARD_ACTIONS.dealer} />
 
       {/* Alert toast if action taken */}
       {feedbackMsg && (
@@ -507,7 +512,7 @@ export default function DealerDashboard() {
       )}
 
       {/* KPI Cards */}
-      <div className="kpi-grid mb-3">
+      <div className="kpi-grid">
         <StatCard
           title="Pending Demand Verification"
           value={`${pendingCount} Demands`}
@@ -753,7 +758,7 @@ export default function DealerDashboard() {
                       <FileText size={28} className="text-brand" />
                       <div>
                         <span className="font-semibold block small">{cert.name || 'Availability_Certificate.pdf'}</span>
-                        <span className="micro text-success">✓ Scanned Signed Document</span>
+                        <span className="micro text-success ic-inline"><CheckCircle2 size={12} /> Scanned Signed Document</span>
                       </div>
                     </div>
                     <a

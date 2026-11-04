@@ -13,7 +13,6 @@ export function DataTable({
   className = ''
 }) {
 
-  console.log('DataTable render', { columns, data, loading, pagination });2
   return (
     <div className={`data-table-container ${className}`}>
       <div className="data-table-wrapper">

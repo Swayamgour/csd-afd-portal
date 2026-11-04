@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertCircle } from 'lucide-react';
 
 export function Select({
   id,
@@ -44,8 +45,9 @@ export function Select({
         </select>
       </div>
       {error && (
-        <p className="err" role="alert">
-          ⚠ {error}
+        <p className="err err-with-icon" role="alert">
+          <AlertCircle size={14} aria-hidden="true" />
+          <span>{error}</span>
         </p>
       )}
     </div>

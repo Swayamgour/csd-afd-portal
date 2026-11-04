@@ -71,7 +71,7 @@ export default function DealerOrders() {
       accessor: '_id',
       render: (r) =>
         r.status === 'DELIVERED' ? (
-          <span className="small text-green font-semibold">✓ Delivered & Gatepass Issued</span>
+          <span className="small text-green font-semibold ic-inline"><CheckCircle2 size={14} /> Delivered & Gatepass Issued</span>
         ) : (
           <Button
             size="sm"

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { UploadCloud, FileText, CheckCircle2, Trash2 } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, Trash2, AlertCircle } from 'lucide-react';
 
 export default function FileUpload({
   label,
@@ -85,7 +85,12 @@ export default function FileUpload({
         </div>
       )}
 
-      {error && <p className="err small mt-1">⚠ {error}</p>}
+      {error && (
+        <p className="err err-with-icon small mt-1" role="alert">
+          <AlertCircle size={14} aria-hidden="true" />
+          <span>{error}</span>
+        </p>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { Store, ShieldCheck, MapPin, Phone, Mail, FileText } from 'lucide-react';
+import { Store, ShieldCheck, MapPin, Phone, Mail, FileText, CheckCircle2 } from 'lucide-react';
 
 export default function DealerProfile() {
   const { user } = useAuth();
@@ -67,7 +67,7 @@ export default function DealerProfile() {
             </p>
             <div className="p-2 bg-white rounded border">
               <span className="micro muted block">Statutory Compliance Status</span>
-              <span className="small font-semibold text-brand">✓ All CSD Rate Concessions Strictly Applied</span>
+              <span className="small font-semibold text-brand ic-inline"><CheckCircle2 size={14} /> All CSD Rate Concessions Strictly Applied</span>
             </div>
           </div>
         </Card>
