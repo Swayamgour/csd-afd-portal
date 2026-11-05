@@ -27,6 +27,8 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
+import { isPayable } from '../../utils/demandStatus.js';
+const isAwaitingApproval = (d) => (d.status || '').toUpperCase() === 'CREATED';
 
 export function BeneficiaryDemands() {
   const navigate = useNavigate();
@@ -48,14 +50,12 @@ export function BeneficiaryDemands() {
 
   // Summary Metrics
   const sanctionedCount = useMemo(() => {
-    return allDemands.filter((d) =>
-      ['APPROVED', 'PAYMENT_PENDING'].includes((d.status || '').toUpperCase())
-    ).length;
+    return allDemands.filter(isPayable).length;
   }, [allDemands]);
 
   const underReviewCount = useMemo(() => {
     return allDemands.filter((d) =>
-      ['CREATED', 'SUBMITTED', 'DEPOT_PROCESSING', 'PROCESSING', 'DEALER_VERIFICATION'].includes(
+      ['CREATED', 'PROCESSING', 'DEPOT_PROCESSING', 'DEALER_VERIFICATION'].includes(
         (d.status || '').toUpperCase()
       )
     ).length;
@@ -194,9 +194,7 @@ export function BeneficiaryDemands() {
       accessor: '_id',
       render: (row) => {
         const norm = (row.status || '').toUpperCase();
-        const isApprovedAndPayable =
-          ['APPROVED', 'PAYMENT_PENDING'].includes(norm) &&
-          row.paymentStatus !== 'PAID';
+        const isApprovedAndPayable = isPayable(row);
 
         return (
           <div className="flex items-center gap-2">
@@ -222,10 +220,10 @@ export function BeneficiaryDemands() {
                   alignItems: 'center',
                   gap: '4px'
                 }}
-                title="Depot sanction granted! Complete payment or upload UTR"
+                title="Demand is on hold. Complete payment"
               >
                 <CreditCard size={13} />
-                <span>Pay / UTR</span>
+                <span>Pay Now</span>
               </Link>
             )}
           </div>
@@ -273,31 +271,31 @@ export function BeneficiaryDemands() {
 
         <div className="panel p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
           <div className="row between align-center mb-1">
-            <span className="small muted font-medium">Sanctioned & Ready to Pay</span>
+            <span className="small muted font-medium">Approved · Payment Due</span>
             <CreditCard size={18} className="text-emerald-600" />
           </div>
           <div className="h2 text-emerald-600 font-bold">{sanctionedCount}</div>
           <span className="micro text-emerald-700 font-medium">
-            {sanctionedCount > 0 ? 'Action Required · Pay via Cyber Treasury' : 'All approved demands settled'}
+            {sanctionedCount > 0 ? 'Action Required · Complete payment' : 'No payment due'}
           </span>
         </div>
 
         <div className="panel p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
           <div className="row between align-center mb-1">
-            <span className="small muted font-medium">Under Depot Scrutiny</span>
+            <span className="small muted font-medium">Pending at Depot</span>
             <Clock size={18} className="text-amber-500" />
           </div>
           <div className="h2 text-ink font-bold">{underReviewCount}</div>
-          <span className="micro muted">Depot Official Verification Stage</span>
+          <span className="micro muted">Payment done · depot verifying</span>
         </div>
 
         <div className="panel p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
           <div className="row between align-center mb-1">
-            <span className="small muted font-medium">Supply Orders Released</span>
+            <span className="small muted font-medium">Supply Orders / Delivered</span>
             <CheckCircle2 size={18} className="text-indigo-600" />
           </div>
           <div className="h2 text-ink font-bold">{completedCount}</div>
-          <span className="micro muted">Authority Orders Ready for Handover</span>
+          <span className="micro muted">Supply order issued to URC or delivered</span>
         </div>
       </div>
 
@@ -308,15 +306,15 @@ export function BeneficiaryDemands() {
             <ShieldCheck size={24} className="text-emerald-600 flex-shrink-0" />
             <div>
               <span className="font-bold text-emerald-900 block small">
-                {sanctionedCount} Demand{sanctionedCount > 1 ? 's' : ''} Sanctioned by CSD Depot!
+                {sanctionedCount} Demand{sanctionedCount > 1 ? 's' : ''} approved by depot — payment enabled
               </span>
               <span className="micro text-emerald-800">
-                Depot scrutiny approved. Click "Pay / UTR" to complete direct bank transfer or online treasury payment.
+                Click "Pay Now" to pay online or submit direct bank transfer details. The depot will then verify the payment and issue the Supply Order.
               </span>
             </div>
           </div>
           <Link
-            to={`/beneficiary/demands/${allDemands.find(d => ['APPROVED', 'PAYMENT_PENDING'].includes((d.status || '').toUpperCase()))?._id}`}
+            to={`/beneficiary/demands/${allDemands.find(isPayable)?._id}`}
             className="btn sm"
             style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff' }}
           >
@@ -357,14 +355,14 @@ export function BeneficiaryDemands() {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="All">All Statuses ({allDemands.length})</option>
-            <option value="CREATED">Created / Awaiting Depot</option>
-            <option value="APPROVED">Approved (Payment Enabled)</option>
-            <option value="PAYMENT_PENDING">Payment Pending Verification</option>
-            <option value="PAID">Paid</option>
-            <option value="SUPPLY_ORDER_ISSUED">Supply Order Issued</option>
-            <option value="DELIVERED">Delivered / Handed Over</option>
+            <option value="CREATED">Pending depot approval</option>
+            <option value="APPROVED">Approved (payment enabled)</option>
+            <option value="PROCESSING">Pending at depot (payment verification)</option>
+            <option value="SUPPLY_ORDER_ISSUED">Supply order issued (URC)</option>
+            <option value="COMPLETED">Delivery completed</option>
             <option value="CANCELLED">Cancelled</option>
             <option value="REJECTED">Rejected</option>
+            <option value="REFUNDED">Refunded</option>
           </select>
 
           {(statusFilter !== 'All' || searchTerm) && (

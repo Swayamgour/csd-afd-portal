@@ -109,9 +109,12 @@ export default function Checkout() {
   const [canteenCardFile, setCanteenCardFile] = useState(null);
   const [panCopyFile, setPanCopyFile] = useState(null);
   const [availabilityCertFile, setAvailabilityCertFile] = useState(null);
-  const [dealerPriceInput, setDealerPriceInput] = useState(netPrice.toString());
+  const [dealerPriceInput, setDealerPriceInput] = useState('');
   const [ppoDocFile, setPpoDocFile] = useState(null);
   const [pensionSlipFile, setPensionSlipFile] = useState(null);
+
+  // Payment mode (manual: Online Payment only when no loan; Direct Bank Transfer otherwise)
+  const [paymentMode, setPaymentMode] = useState('DIRECT_BANK_TRANSFER');
 
   // Loan Section
   const [hasLoan, setHasLoan] = useState('No');
@@ -184,6 +187,7 @@ export default function Checkout() {
     if (!canteenCardFile) errs.canteenCard = 'Canteen Card copy upload is required.';
     if (!panCopyFile) errs.panCopy = 'PAN copy upload is required.';
     if (!availabilityCertFile) errs.availabilityCert = 'Availability certificate upload is required.';
+    if (!['DIRECT_BANK_TRANSFER', 'ONLINE_PAYMENT'].includes(paymentMode)) errs.paymentMode = 'Select a payment mode.';
 
     // Dealer Price Validation (Fig. 16 & 18)
     if (!dealerPriceInput || enteredDealerPrice === 0) {
@@ -197,6 +201,7 @@ export default function Checkout() {
       const lAmt = Number(loanAmount) || 0;
       if (lAmt <= 0) errs.loanAmount = 'Please enter valid loan sanctioned amount.';
       if (lAmt > netPrice) errs.loanAmount = 'Loan amount cannot exceed total net payable price.';
+      if (paymentMode !== 'DIRECT_BANK_TRANSFER') errs.paymentMode = 'With a loan, payment must be made by Direct Bank Transfer.';
       if (!loanSanctionFile) errs.loanSanction = 'Bank loan sanction letter upload is required.';
     }
 
@@ -232,9 +237,9 @@ export default function Checkout() {
             };
           }
         } catch (e) {
-          console.warn(`Upload failed for ${docType}:`, e);
+          throw new Error(`Upload failed for ${fileObj.name || docType}. Please retry.`);
         }
-        return null;
+        throw new Error(`Upload failed for ${fileObj.name || docType}. Please retry.`);
       };
 
       const uploadedDocs = [];
@@ -244,13 +249,13 @@ export default function Checkout() {
       const availDoc = await uploadSingleFile(availabilityCertFile, 'AVAILABILITY_CERTIFICATE');
       if (availDoc) uploadedDocs.push(availDoc);
 
-      const panDoc = await uploadSingleFile(panCopyFile, 'PAN_CARD');
+      const panDoc = await uploadSingleFile(panCopyFile, 'PAN_COPY');
       if (panDoc) uploadedDocs.push(panDoc);
 
       const ppoDoc = await uploadSingleFile(ppoDocFile, 'PPO_DISCHARGE_BOOK');
       if (ppoDoc) uploadedDocs.push(ppoDoc);
 
-      const pensionDoc = await uploadSingleFile(pensionSlipFile, 'PENSION_SLIP');
+      const pensionDoc = await uploadSingleFile(pensionSlipFile, 'LAST_PENSION_SLIP');
       if (pensionDoc) uploadedDocs.push(pensionDoc);
 
       let sanctionLetterUrl = '';
@@ -269,7 +274,8 @@ export default function Checkout() {
         dealerId: product.dealerId || matchedDealer?._id,
         urcId: product.urcId || matchedUrc?._id,
         selectedColor: product.selectedColor || 'Standard',
-        dealerPrice: Number(dealerPriceInput) || Number(product.priceToCustomer) || Number(product.productPrice) || 0,
+        dealerPrice: Number(dealerPriceInput),
+        payLevel,
         priceZone: product.selectedZone || product.priceZone || product.selectedState || 'DELHI NCR',
         priceZoneId: product.priceZoneId || (priceZonesList.find((pz) => pz.name === (product.selectedZone || product.priceZone))?._id) || priceZonesList[0]?._id,
         state: product.selectedState || product.state || undefined,
@@ -279,12 +285,14 @@ export default function Checkout() {
           registrationNo: '',
         },
         deliveryAddress: {
-          address: `${addressLine}${townCity ? ', ' + townCity : ''}`,
-          state: billingState || 'Delhi',
-          pinCode: pincode || '110010',
+          address: addressLine.trim(),
+          city: townCity.trim(),
+          state: billingState,
+          pinCode: pincode.trim(),
+          country,
           mobile: userAccount.mobile || user?.mobile || '',
         },
-        paymentMethod: 'Pending Depot Approval',
+        paymentMethod: hasLoan === 'Yes' ? 'DIRECT_BANK_TRANSFER' : paymentMode,
         documents: uploadedDocs,
         loan: {
           isLoan: hasLoan === 'Yes',
@@ -292,7 +300,7 @@ export default function Checkout() {
           bankName: hasLoan === 'Yes' ? 'Nationalized / Armed Forces Bank' : '',
           sanctionLetterUrl,
         },
-        remarks: remarks || 'AFD Demand generated via Online Portal (Pending Depot Approval)',
+        remarks: remarks || undefined,
       };
 
       const result = await createDemandMutation(demandPayload).unwrap();
@@ -304,7 +312,7 @@ export default function Checkout() {
         ...createdDemand,
         id: createdDemand.demandNo || createdDemand._id,
         demandNo: createdDemand.demandNo || createdDemand._id?.slice(-8).toUpperCase(),
-        csdPrice: createdDemand.totalPrice || netPrice,
+        csdPrice: createdDemand.totalAmount || createdDemand.totalPrice || netPrice,
         subtotal,
         additionalCost,
         cess,
@@ -312,16 +320,16 @@ export default function Checkout() {
         productName: product.productName,
         dealerName: dealerInfo.name,
         dealerAddress: dealerInfo.address,
-        paymentMethod: 'Pending Depot Approval',
-        status: 'CREATED',
-        paymentStatus: 'UNPAID',
+        paymentMethod: demandPayload.paymentMethod,
+        status: createdDemand.status || 'CREATED',
+        paymentStatus: createdDemand.paymentStatus || 'UNPAID',
       };
 
       sessionStorage.setItem('csd_last_created_demand', JSON.stringify(finalDemandData));
       navigate('/checkout/success', { state: { demand: finalDemandData } });
     } catch (err) {
       setSubmitting(false);
-      alert(err?.data?.message || err?.message || 'Failed to submit demand.');
+      alert(err?.data?.error?.message || err?.data?.message || err?.message || 'Failed to submit demand.');
     }
   };
 
@@ -838,7 +846,7 @@ export default function Checkout() {
                         checked={hasLoan === 'Yes'}
                         onChange={() => {
                           setHasLoan('Yes');
-                          setPaymentMode('Direct Bank Transfer'); // Auto enforce direct bank transfer for loan
+                          setPaymentMode('DIRECT_BANK_TRANSFER'); // Manual: loan => direct bank transfer only
                         }}
                       />
                       <span className="checkout-radio-card-title">Yes</span>
@@ -895,62 +903,80 @@ export default function Checkout() {
                   <div className="checkout-workflow-header">
                     <h4>
                       <ShieldCheck size={18} color="#1e4fd8" />
-                      4. Depot Scrutiny & Post-Approval Payment Workflow
+                      4. Payment Mode & Demand Workflow
                     </h4>
-                    <span className="checkout-workflow-badge">
-                      No Upfront Payment Required
-                    </span>
+                    <span className="checkout-workflow-badge">Payment opens after depot approval</span>
                   </div>
 
-                  <p className="checkout-workflow-desc">
-                    Under statutory CSD guidelines, <strong>no payment is collected at checkout</strong>. Your demand will first be submitted to the Sanctioning Depot for document and entitlement scrutiny. Once approved by Depot Officials, the payment option will be enabled on your demand dashboard.
-                  </p>
+                  <label className="csd-form-label">
+                    Preferred payment mode (used once the depot approves) <span className="doc-upload-required-star">*</span>
+                  </label>
+                  <div className="checkout-radio-card-group">
+                    <label className={`checkout-radio-card ${paymentMode === 'DIRECT_BANK_TRANSFER' ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="paymentMode"
+                        value="DIRECT_BANK_TRANSFER"
+                        checked={paymentMode === 'DIRECT_BANK_TRANSFER'}
+                        onChange={() => setPaymentMode('DIRECT_BANK_TRANSFER')}
+                      />
+                      <span className="checkout-radio-card-title">Direct Bank Transfer (NEFT/RTGS)</span>
+                    </label>
+                    <label className={`checkout-radio-card ${paymentMode === 'ONLINE_PAYMENT' ? 'active' : ''}`} style={hasLoan === 'Yes' ? { opacity: 0.5 } : undefined}>
+                      <input
+                        type="radio"
+                        name="paymentMode"
+                        value="ONLINE_PAYMENT"
+                        disabled={hasLoan === 'Yes'}
+                        checked={paymentMode === 'ONLINE_PAYMENT'}
+                        onChange={() => setPaymentMode('ONLINE_PAYMENT')}
+                      />
+                      <span className="checkout-radio-card-title">Online Payment</span>
+                    </label>
+                  </div>
+                  {hasLoan === 'Yes' && (
+                    <p className="small muted">Online payment is not available when a loan is taken; use Direct Bank Transfer.</p>
+                  )}
+                  {formErrors.paymentMode && (
+                    <span className="csd-form-error"><AlertCircle size={14} /> {formErrors.paymentMode}</span>
+                  )}
 
                   <div className="checkout-workflow-timeline">
                     <div className="checkout-workflow-step active">
                       <div className="checkout-workflow-step-num">1</div>
                       <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Demand Generation (Current Step)</div>
-                        <div className="checkout-workflow-step-sub">Lodging demand with availability certificate & KYC documents.</div>
+                        <div className="checkout-workflow-step-title">Demand generated (pending depot approval)</div>
+                        <div className="checkout-workflow-step-sub">Demand is lodged with KYC documents and availability certificate.</div>
                       </div>
                     </div>
-
                     <div className="checkout-workflow-step">
                       <div className="checkout-workflow-step-num">2</div>
                       <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Depot Review & Approval</div>
-                        <div className="checkout-workflow-step-sub">Depot Officer scrutinizes application and grants sanction.</div>
+                        <div className="checkout-workflow-step-title">Depot approval</div>
+                        <div className="checkout-workflow-step-sub">Depot scrutinises your documents and eligibility. Once approved, the payment button is enabled for you.</div>
                       </div>
                     </div>
-
                     <div className="checkout-workflow-step">
                       <div className="checkout-workflow-step-num">3</div>
                       <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Payment Unlocked & UTR Upload</div>
-                        <div className="checkout-workflow-step-sub">Payment button activates. Pay online or deposit via NEFT/RTGS and upload UTR.</div>
+                        <div className="checkout-workflow-step-title">Payment & depot verification</div>
+                        <div className="checkout-workflow-step-sub">You pay online, or by NEFT/RTGS with receipt upload. The depot verifies the payment, records it and prepares the Local Supply Order.</div>
                       </div>
                     </div>
-
                     <div className="checkout-workflow-step">
                       <div className="checkout-workflow-step-num">4</div>
                       <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Depot Payment Verification</div>
-                        <div className="checkout-workflow-step-sub">Depot verifies payment and generates Official CSD Receipt.</div>
+                        <div className="checkout-workflow-step-title">Final approval — Supply order issued (URC)</div>
+                        <div className="checkout-workflow-step-sub">Depot approves again after checking the payment; the Supply Order goes to the URC. If rejected after payment, the amount is refunded.</div>
                       </div>
                     </div>
-
                     <div className="checkout-workflow-step">
                       <div className="checkout-workflow-step-num">5</div>
                       <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Local Supply Order Issued</div>
-                        <div className="checkout-workflow-step-sub">Supply Order dispatched to parent URC for vehicle/item delivery.</div>
+                        <div className="checkout-workflow-step-title">Delivery completed</div>
+                        <div className="checkout-workflow-step-sub">Item is delivered by the dealer against the Supply Order.</div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="checkout-no-payment-callout">
-                    <CheckCircle2 size={16} />
-                    <span>You will receive an SMS & Email notification once the Depot approves your demand to initiate payment.</span>
                   </div>
                 </div>
 

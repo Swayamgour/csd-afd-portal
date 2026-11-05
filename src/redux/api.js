@@ -66,6 +66,7 @@ export const api = createApi({
     "Category",
     "Brand",
     "Demand",
+    "DemandNotes",
     "Order",
     "Payment",
     "Notification",

@@ -6,7 +6,9 @@ import { useSubmitDirectTransferMutation } from '../../features/payment/paymentA
 
 export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel }) {
   const isLoan = Boolean(demand?.hasLoan || demand?.loan?.isLoan);
+  const demandLoanAmount = Number(demand?.loan?.loanAmount || demand?.loanAmount || 0);
   const totalAmount = Number(
+    demand?.totalAmount ||
     demand?.totalAmount ||
     demand?.totalPrice ||
     demand?.csdPrice ||
@@ -16,14 +18,14 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
     0
   );
 
-  const [selfBank, setSelfBank] = useState('State Bank of India');
+  const [selfBank, setSelfBank] = useState('');
   const [selfHolder, setSelfHolder] = useState(demand?.beneficiaryName || demand?.customerName || '');
   const [selfAccount, setSelfAccount] = useState('');
   const [selfIfsc, setSelfIfsc] = useState('');
   const [selfUtr, setSelfUtr] = useState('');
   const [selfAmount, setSelfAmount] = useState(
-    isLoan && demand?.loanAmount
-      ? (totalAmount - Number(demand.loanAmount)).toString()
+    isLoan && demandLoanAmount
+      ? (totalAmount - demandLoanAmount).toString()
       : totalAmount.toString()
   );
   const [selfDate, setSelfDate] = useState(new Date().toISOString().split('T')[0]);
@@ -34,7 +36,7 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
   const [loanAccount, setLoanAccount] = useState('');
   const [loanIfsc, setLoanIfsc] = useState('');
   const [loanUtr, setLoanUtr] = useState('');
-  const [loanAmount, setLoanAmount] = useState(demand?.loanAmount ? String(demand.loanAmount) : '');
+  const [loanAmount, setLoanAmount] = useState(demandLoanAmount ? String(demandLoanAmount) : '');
   const [loanDate, setLoanDate] = useState(new Date().toISOString().split('T')[0]);
 
   // Payment Receipt Document
@@ -60,44 +62,50 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
       return;
     }
 
-    if (!selfBank || !selfUtr) {
-      setErrorAlert('Please fill all mandatory banking fields (Bank Name and UTR Number).');
+    const ifscRe = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+    if (!selfBank.trim() || !selfHolder.trim() || selfAccount.trim().length < 5 || !ifscRe.test(selfIfsc.trim()) || selfUtr.trim().length < 5) {
+      setErrorAlert('Please fill all your bank details: Bank Name, Account Holder, Account Number, valid IFSC and UTR Number.');
       return;
     }
 
-    if (isLoan && (!loanBank || !loanUtr)) {
-      setErrorAlert('Please fill all required loan banking fields (Bank Name and Loan UTR Number).');
+    if (isLoan && (!loanBank.trim() || !loanHolder.trim() || loanAccount.trim().length < 5 || !ifscRe.test(loanIfsc.trim()) || loanUtr.trim().length < 5 || !loanAmount)) {
+      setErrorAlert('Please fill all loan account details: Bank, Account Holder, Account Number, valid IFSC, UTR and Amount.');
+      return;
+    }
+
+    if (!receiptFile) {
+      setErrorAlert('Payment receipt upload is mandatory.');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      let receiptUrl = '';
-      if (receiptFile) {
-        try {
-          const fd = new FormData();
-          fd.append('files', receiptFile);
-          const upRes = await uploadFileMutation(fd).unwrap();
-          const item = Array.isArray(upRes) ? upRes[0] : upRes?.data?.[0];
-          receiptUrl = item?.url || '';
-        } catch (upErr) {
-          console.warn('Receipt upload fallback:', upErr);
-        }
-      }
+      const fd = new FormData();
+      fd.append('files', receiptFile);
+      const upRes = await uploadFileMutation(fd).unwrap();
+      const item = Array.isArray(upRes) ? upRes[0] : upRes?.data?.[0] || upRes?.[0];
+      const receiptUrl = item?.url;
+      if (!receiptUrl) throw new Error('Receipt upload failed. Please try again.');
 
       const targetDemandId = demand._id || demand.id;
-      const remarks = `Direct Bank Transfer UTR: ${selfUtr} (${selfBank}) - ₹${paidSelf}${isLoan ? ` | Loan UTR: ${loanUtr} (${loanBank}) - ₹${paidLoan}` : ''}`;
+      const account = (bank, holder, acc, ifsc, utr, amt, date) => ({
+        bankName: bank.trim(),
+        accountHolder: holder.trim(),
+        accountNumber: acc.trim(),
+        ifsc: ifsc.trim().toUpperCase(),
+        utrNumber: utr.trim(),
+        amountPaid: Number(amt),
+        paymentDate: date,
+      });
 
       await submitDirectTransfer({
         demandId: targetDemandId,
-        utrNumber: selfUtr,
-        bankName: selfBank,
-        depositDate: selfDate,
-        remarks,
-        receiptUrl: receiptUrl || undefined,
+        receiptUrl,
+        self: account(selfBank, selfHolder, selfAccount, selfIfsc, selfUtr, selfAmount, selfDate),
+        ...(isLoan ? { loan: account(loanBank, loanHolder, loanAccount, loanIfsc, loanUtr, loanAmount, loanDate) } : {}),
       }).unwrap();
 
-      setSuccessMsg('Payment details successfully recorded. CSD Depot accounts will verify against bank statement.');
+      setSuccessMsg('Payment details submitted. The depot will now verify the payment.');
       if (onPaymentSubmitted) {
         onPaymentSubmitted({
           demandId: targetDemandId,
@@ -107,7 +115,7 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
         });
       }
     } catch (err) {
-      setErrorAlert(err?.data?.message || err?.message || 'Failed to submit payment details.');
+      setErrorAlert(err?.data?.error?.message || err?.data?.message || err?.message || 'Failed to submit payment details.');
     } finally {
       setIsSubmitting(false);
     }
@@ -167,7 +175,7 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
               </div>
 
               <div className="form-group">
-                <label className="form-label">Beneficiary Account Name</label>
+                <label className="form-label">Name of First Account Holder *</label>
                 <input
                   type="text"
                   placeholder="Account holder name"
@@ -178,7 +186,7 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
               </div>
 
               <div className="form-group">
-                <label className="form-label">Debit Account Number</label>
+                <label className="form-label">Bank Account Number *</label>
                 <input
                   type="text"
                   placeholder="e.g. 10293847561"
@@ -189,7 +197,7 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
               </div>
 
               <div className="form-group">
-                <label className="form-label">Bank IFSC Code</label>
+                <label className="form-label">Bank IFSC Code *</label>
                 <input
                   type="text"
                   placeholder="e.g. SBIN0001234"
@@ -259,7 +267,17 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Loan Account No.</label>
+                  <label className="form-label">Account Holder Name *</label>
+                  <input type="text" className="form-control" value={loanHolder} onChange={(e) => setLoanHolder(e.target.value)} />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Loan Bank IFSC *</label>
+                  <input type="text" className="form-control font-mono uppercase" placeholder="e.g. PUNB0123456" value={loanIfsc} onChange={(e) => setLoanIfsc(e.target.value.toUpperCase())} />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Loan Account No. *</label>
                   <input
                     type="text"
                     placeholder="e.g. LA-9876543210"
@@ -294,7 +312,7 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Disbursement Date</label>
+                  <label className="form-label">Disbursement Date *</label>
                   <input
                     type="date"
                     className="form-control"
@@ -309,7 +327,7 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
           {/* Payment Challan Receipt Upload */}
           <div className="section mb-4 pt-3 border-t">
             <h3 className="section-title text-sm uppercase tracking-wider text-slate-700 font-semibold mb-2">
-              3. Bank Counterfoil / Transfer Receipt
+              3. Bank Transfer Receipt *
             </h3>
             <p className="text-xs text-muted mb-2">
               Upload stamped bank deposit counterfoil or electronic RTGS/NEFT confirmation slip (PDF, JPG, PNG up to 5MB).
@@ -318,6 +336,7 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
+                required
                 onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
                 className="form-control text-sm"
               />

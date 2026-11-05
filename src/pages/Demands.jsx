@@ -22,6 +22,7 @@ import {
 import { useGetDemandsQuery, useCancelDemandMutation } from '../features/demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { isPayable, canCancel, getStatusLabel } from '../utils/demandStatus.js';
 
 export default function Demands() {
   const { user } = useAuth();
@@ -50,27 +51,26 @@ export default function Demands() {
     const s = (status || '').toUpperCase().replace(/\s+/g, '_');
     switch (s) {
       case 'COMPLETED':
-        return { className: 'status-badge-delivered', label: 'Completed' };
-      case 'APPROVED':
-        return { className: 'status-badge-issued', label: 'Approved (Payment Enabled)' };
+        return { className: 'status-badge-delivered', label: 'Delivery completed' };
       case 'SUPPLY_ORDER_ISSUED':
-        return { className: 'status-badge-issued', label: 'Supply Order Issued' };
+        return { className: 'status-badge-issued', label: 'Supply order issued (URC)' };
+      case 'PROCESSING':
       case 'DEPOT_PROCESSING':
-        return { className: 'status-badge-processing', label: 'Depot Processing' };
+        return { className: 'status-badge-processing', label: 'Pending at depot (payment verification)' };
       case 'DEALER_VERIFICATION':
         return { className: 'status-badge-processing', label: 'Dealer Verification' };
-      case 'PROCESSING':
-        return { className: 'status-badge-processing', label: 'Processing' };
-      case 'PAID':
-        return { className: 'status-badge-issued', label: 'Paid' };
-      case 'PAYMENT_PENDING':
-        return { className: 'status-badge-pending', label: 'Payment Verification' };
       case 'CREATED':
-        return { className: 'status-badge-onhold', label: 'Pending Depot Approval' };
+        return { className: 'status-badge-onhold', label: 'Pending depot approval' };
+      case 'APPROVED':
+        return { className: 'status-badge-issued', label: 'Approved (payment enabled)' };
+      case 'PAYMENT_PENDING':
+        return { className: 'status-badge-pending', label: 'Payment pending' };
+      case 'REFUNDED':
+        return { className: 'status-badge-onhold', label: 'Refunded' };
       case 'REJECTED':
       case 'CANCELLED':
       case 'EXPIRED':
-        return { className: 'status-badge-onhold', label: status };
+        return { className: 'status-badge-onhold', label: s.charAt(0) + s.slice(1).toLowerCase() };
       default:
         return { className: 'status-badge-default', label: status || 'Submitted' };
     }
@@ -269,45 +269,36 @@ export default function Demands() {
 
                           {/* Summary Sheet Button */}
                           <button
-                            onClick={() => alert(`Summary Sheet for demand ${d.demandNo || d._id || d.id} is being generated.`)}
+                            onClick={() => navigate(`/demands/${encodeURIComponent(d._id || d.id)}`)}
                             className="btn-action-summary"
                           >
                             Summary Sheet
                           </button>
 
-                          {/* Payment / UTR upload (enabled once Depot approves) */}
-                          {(['APPROVED', 'PAYMENT_PENDING', 'ON HOLD'].includes((d.status || '').toUpperCase()) && d.paymentStatus !== 'PAID') && (
+                          {/* Payment opens after the depot approves the demand */}
+                          {isPayable(d) && (
                             <button
                               onClick={() => navigate(`/demands/${encodeURIComponent(d._id || d.id)}`)}
                               className="btn-action-upload-details"
                               style={{ fontWeight: 700, background: '#16a34a', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px', border: '1px solid #15803d' }}
                             >
-                              <CreditCard size={13} /> Pay Now / Upload UTR
+                              <CreditCard size={13} /> Pay Now
                             </button>
                           )}
 
-                          {/* Pre-payment waiting indicator */}
-                          {(d.status || '').toUpperCase() === 'CREATED' && (
-                            <span
-                              className="checkout-spec-pill"
-                              style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
-                              title="Payment link opens once Depot approves this demand"
-                            >
-                              <Clock size={12} /> Awaiting Depot Sanction
-                            </span>
-                          )}
-
                           {/* Cancel Demand */}
-                          <button
-                            onClick={() => handleCancelDemand(d._id || d.id)}
-                            className="btn-action-cancel"
-                          >
-                            Cancel Demand
-                          </button>
+                          {canCancel(d) && (
+                            <button
+                              onClick={() => handleCancelDemand(d._id || d.id)}
+                              className="btn-action-cancel"
+                            >
+                              Cancel Demand
+                            </button>
+                          )}
 
                           {/* Notes */}
                           <button
-                            onClick={() => alert(`Notes for Demand ${d.id}:\n- Beneficiary: ${d.beneficiaryName || 'DEMO'}\n- Product: ${d.productName}\n- Dealer: ${d.dealer || d.dealerName || 'Assigned Dealer'}`)}
+                            onClick={() => navigate(`/demands/${encodeURIComponent(d._id || d.id)}`)}
                             className="btn-action-notes"
                           >
                             Notes

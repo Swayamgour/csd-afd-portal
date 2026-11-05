@@ -28,6 +28,7 @@ import {
 import { useGetDemandByIdQuery } from '../features/demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import InlinePaymentCard from '../components/common/InlinePaymentCard.jsx';
+import { isPayable, getStatusLabel, isAwaitingDepotApproval } from '../utils/demandStatus.js';
 
 export default function DemandDetail() {
   const { id } = useParams();
@@ -106,33 +107,22 @@ export default function DemandDetail() {
 
   // Canonical lifecycle steps matching Depot Approval before Payment
   const canonicalTimeline = [
-    { key: 'CREATED', label: '1. Demand Lodged', sub: 'Demand lodged without upfront payment' },
-    { key: 'APPROVED', label: '2. Depot Approval', sub: 'Eligibility & documents sanctioned by Depot' },
-    { key: 'PAYMENT_PENDING', label: '3. Payment & UTR', sub: 'Beneficiary payment submitted for verification' },
-    { key: 'SUPPLY_ORDER_ISSUED', label: '4. Supply Order Issued', sub: 'Supply Order dispatched to parent URC' },
-    { key: 'COMPLETED', label: '5. Delivered', sub: 'Vehicle delivered to beneficiary' },
+    { key: 'CREATED', label: '1. Demand Lodged', sub: 'Demand lodged with documents; depot scrutiny pending' },
+    { key: 'APPROVED', label: '2. Depot Approval', sub: 'Approved by depot — payment enabled' },
+    { key: 'PROCESSING', label: '3. Payment & Depot Verification', sub: 'Payment made; depot verifies it and prepares Supply Order' },
+    { key: 'SUPPLY_ORDER_ISSUED', label: '4. Supply Order Issued (URC)', sub: 'Supply Order handed over to URC' },
+    { key: 'COMPLETED', label: '5. Delivery Completed', sub: 'Item delivered to beneficiary' },
   ];
 
-  const statusOrder = [
-    'CREATED',
-    'APPROVED',
-    'PAYMENT_PENDING',
-    'PAID',
-    'SUPPLY_ORDER_ISSUED',
-    'PROCESSING',
-    'COMPLETED'
-  ];
+  const statusOrder = ['CREATED', 'APPROVED', 'PAYMENT_PENDING', 'PROCESSING', 'SUPPLY_ORDER_ISSUED', 'COMPLETED'];
 
   const currentStatus = (demand.status || 'CREATED').toUpperCase();
   const currentStepIndex = Math.max(0, statusOrder.indexOf(currentStatus));
   const isTerminated = currentStatus === 'CANCELLED' || currentStatus === 'REJECTED' || currentStatus === 'EXPIRED';
 
   const normStatus = (demand.status || '').toUpperCase();
-  // Payment is unlocked ONLY after Depot has approved (status APPROVED, PAYMENT_PENDING, or ON HOLD)
-  const canMakePayment =
-    !isTerminated &&
-    demand.paymentStatus !== 'PAID' &&
-    ['APPROVED', 'PAYMENT_PENDING', 'ON HOLD'].includes(normStatus);
+  // Payment is open while the demand is on hold and unpaid (manual: payment comes before the depot sees the demand)
+  const canMakePayment = !isTerminated && isPayable(demand);
 
   return (
     <div className="demand-detail-container">
@@ -158,7 +148,7 @@ export default function DemandDetail() {
               Demand #{demandId}
             </h1>
             <span className={`checkout-spec-pill ${
-              currentStatus === 'APPROVED' || currentStatus === 'COMPLETED' || currentStatus === 'PAID'
+              ['SUPPLY_ORDER_ISSUED', 'COMPLETED'].includes(currentStatus)
                 ? 'badge-verified-pill'
                 : isTerminated
                 ? 'status-onhold text-danger'
@@ -166,7 +156,7 @@ export default function DemandDetail() {
                 ? 'status-onhold'
                 : 'status-processing'
             }`}>
-              {currentStatus === 'CREATED' ? 'PENDING DEPOT APPROVAL' : currentStatus}
+              {getStatusLabel(demand).toUpperCase()}
             </span>
           </div>
           <div className="csd-form-helper-text mt-xs">
@@ -182,18 +172,8 @@ export default function DemandDetail() {
               style={{ fontWeight: 700, background: '#16a34a', color: '#fff', border: '1px solid #15803d', padding: '0.6rem 1.2rem', cursor: 'pointer' }}
             >
               <CreditCard size={16} />
-              {demand.paymentStatus === 'PENDING_VERIFICATION' ? 'Update Payment UTR' : 'Pay Now / Submit Bank Transfer (UTR)'}
+              Pay Now / Submit Bank Transfer
             </button>
-          )}
-
-          {currentStatus === 'CREATED' && (
-            <span
-              className="checkout-spec-pill"
-              style={{ background: '#f1f5f9', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-              title="Payment link opens once Depot approves this demand"
-            >
-              <Lock size={12} /> Payment Unlocks Post-Depot Approval
-            </span>
           )}
 
           <button
@@ -207,14 +187,12 @@ export default function DemandDetail() {
       </div>
 
       {/* Workflow Phase Notification Banners */}
-      {currentStatus === 'CREATED' && (
+      {isAwaitingDepotApproval(demand) && (
         <div className="csd-alert-banner info mb-4">
           <Clock size={20} className="alert-banner-icon" color="#1e4fd8" />
           <div>
-            <strong>Demand Under Scrutiny by Sanctioning Depot (Pre-Payment Stage)</strong>
-            <p className="mb-0 text-xs">
-              This demand was lodged directly without upfront payment. Depot Officials are currently verifying your availability certificate, canteen card, and rank entitlement. Once the Depot grants approval, the payment button will be unlocked right here to allow online payment or UTR upload.
-            </p>
+            <strong>Pending depot approval</strong>
+            <p className="mb-0 text-xs">The depot is verifying your documents and entitlement. The payment button will be enabled here once the demand is approved.</p>
           </div>
         </div>
       )}
@@ -223,9 +201,9 @@ export default function DemandDetail() {
         <div className="csd-alert-banner warning mb-4" style={{ background: '#ecfdf5', borderColor: '#86efac' }}>
           <CheckCircle2 size={20} className="alert-banner-icon" color="#15803d" />
           <div style={{ flex: 1 }}>
-            <strong style={{ color: '#15803d' }}>✓ Demand Approved by Depot! Payment Unlocked</strong>
+            <strong style={{ color: '#15803d' }}>Approved by Depot — payment enabled</strong>
             <p className="mb-0 text-xs" style={{ color: '#166534', marginTop: '2px' }}>
-              Your demand has been approved by the Depot. Please complete payment via Direct Bank Transfer (NEFT/RTGS) and enter your UTR reference, or pay online to proceed to Supply Order issuance.
+              Your demand is approved by the depot. Pay by Direct Bank Transfer (NEFT/RTGS) with receipt upload, or pay online if no loan is taken. The depot will then verify the payment and issue the Supply Order.
             </p>
           </div>
           <button
@@ -234,7 +212,7 @@ export default function DemandDetail() {
             style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}
           >
             <CreditCard size={15} />
-            {showPaymentForm ? 'Hide Payment Form' : 'Pay Now / Submit UTR'}
+            {showPaymentForm ? 'Hide Payment Form' : 'Submit Bank Transfer'}
           </button>
         </div>
       )}

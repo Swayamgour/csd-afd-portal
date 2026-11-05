@@ -75,7 +75,7 @@ export default function CheckoutSuccess() {
         </h1>
 
         <p className="success-description">
-          Your demand has been lodged in the CSD AFD procurement system without upfront payment. It has been routed to your Sanctioning CSD Depot for document scrutiny.
+          Your demand has been sent to your CSD Depot for scrutiny. Payment will be enabled once the depot approves it.
         </p>
 
         {/* Highlighted Demand Number Box */}
@@ -92,11 +92,11 @@ export default function CheckoutSuccess() {
         <div className="csd-alert-banner info alert-banner-max-w" style={{ textAlign: 'left', marginTop: '1.25rem' }}>
           <ShieldCheck size={22} className="alert-banner-icon" color="#1e4fd8" />
           <div>
-            <strong style={{ fontSize: '0.95rem' }}>Next Steps: Depot Approval & Payment Activation</strong>
+            <strong style={{ fontSize: '0.95rem' }}>Next Steps</strong>
             <p className="mb-0 text-xs" style={{ marginTop: '0.35rem', lineHeight: 1.6, color: '#334155' }}>
-              1. <strong>Depot Review:</strong> Depot Officials will verify your availability certificate, rank entitlement, and canteen card.<br />
-              2. <strong>Payment Link Activation:</strong> As soon as the Depot approves, a <strong>"Pay Now / Submit Bank Transfer (UTR)"</strong> button will be enabled on your demand page.<br />
-              3. <strong>Payment Verification & Supply Order:</strong> Upon receiving your payment/UTR, the Depot will verify the transaction and issue your Local Supply Order to the URC.
+              1. <strong>Depot approval:</strong> the depot verifies your documents and entitlement.<br />
+              2. <strong>Payment:</strong> after approval the payment button is enabled — pay online, or by NEFT/RTGS and upload the receipt.<br />
+              3. <strong>Depot verification & Supply Order:</strong> the depot verifies the payment and approves again; the Local Supply Order then goes to the URC.
             </p>
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function CheckoutSuccess() {
             <span>Demand Particulars</span>
           </h2>
           <span className="checkout-spec-pill" style={{ background: '#eff6ff', color: '#1e40af', fontWeight: 600 }}>
-            Status: {demand.status || 'CREATED'} (Pending Depot Approval)
+            Status: {demand.statusLabel || 'Pending depot approval'}
           </span>
         </div>
 

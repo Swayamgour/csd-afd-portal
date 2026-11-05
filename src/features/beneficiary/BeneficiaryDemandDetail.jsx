@@ -25,6 +25,7 @@ import { useGetDemandByIdQuery, useCancelDemandMutation } from '../demand/demand
 import { useSubmitDirectTransferMutation } from '../payment/paymentApi.js';
 import InlinePaymentCard from '../../components/common/InlinePaymentCard.jsx';
 import { getErrorMessage } from '../../utils/apiError.js';
+import { isPayable, canCancel, getStatusLabel } from '../../utils/demandStatus.js';
 
 export default function BeneficiaryDemandDetail() {
   const { id } = useParams();
@@ -106,10 +107,10 @@ export default function BeneficiaryDemandDetail() {
   }
 
   const normStatus = (demand.status || '').toUpperCase();
-  const isApprovedAndPayable =
-    ['APPROVED', 'PAYMENT_PENDING', 'ON HOLD'].includes(normStatus) &&
-    demand.paymentStatus !== 'PAID';
-  const isAwaitingDepotApproval = normStatus === 'CREATED';
+  const isApprovedAndPayable = isPayable(demand);
+  const isPaymentPending = isApprovedAndPayable;
+  const isAwaitingDepotApproval = ['CREATED', 'PROCESSING'].includes(normStatus);
+  const paymentDone = ['PAID', 'PENDING_VERIFICATION'].includes((demand.paymentStatus || '').toUpperCase());
 
   const product = demand.productId || {};
   const depot = demand.depotId || {};
@@ -133,9 +134,9 @@ export default function BeneficiaryDemandDetail() {
         },
         {
           step: 'Treasury Payment',
-          date: demand.status === 'PAID' ? 'Verified' : 'Pending',
-          status: demand.status === 'PAID' ? 'completed' : isPaymentPending ? 'current' : 'pending',
-          note: demand.status === 'PAID' ? 'Payment verified & recorded' : 'Awaiting payment confirmation',
+          date: paymentDone ? 'Received' : 'Pending',
+          status: paymentDone ? 'completed' : isPaymentPending ? 'current' : 'pending',
+          note: paymentDone ? 'Payment received' : 'Awaiting payment',
         },
         {
           step: 'Depot Allocation & Supply Order',
@@ -145,8 +146,8 @@ export default function BeneficiaryDemandDetail() {
         },
         {
           step: 'Dealer Handover & Delivery',
-          date: demand.status === 'DELIVERED' ? 'Completed' : 'Pending',
-          status: demand.status === 'DELIVERED' ? 'completed' : 'pending',
+          date: demand.status === 'COMPLETED' ? 'Completed' : 'Pending',
+          status: demand.status === 'COMPLETED' ? 'completed' : 'pending',
           note: 'Final physical delivery',
         },
       ];
@@ -176,19 +177,10 @@ export default function BeneficiaryDemandDetail() {
                 onClick={() => setShowPaymentForm(!showPaymentForm)}
                 style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff', fontWeight: 700 }}
               >
-                {demand.paymentStatus === 'PENDING_VERIFICATION' ? 'Update Payment UTR' : 'Pay Now / Submit Bank UTR'}
+                Pay Now / Submit Bank Transfer
               </Button>
             )}
-            {isAwaitingDepotApproval && (
-              <span
-                className="checkout-spec-pill"
-                style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', fontSize: '11px', padding: '6px 10px', borderRadius: '4px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                title="Payment link opens once Depot approves this demand"
-              >
-                <Clock size={12} /> Under Scrutiny (Payment Unlocks Post-Sanction)
-              </span>
-            )}
-            {demand.status !== 'CANCELLED' && demand.status !== 'DELIVERED' && demand.status !== 'REJECTED' && (
+            {canCancel(demand) && (
               <Button
                 variant="ghost"
                 className="text-danger"
@@ -249,9 +241,9 @@ export default function BeneficiaryDemandDetail() {
         <div className="alert-banner info mb-3" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e3a8a', padding: '12px 16px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Clock size={20} color="#2563eb" className="flex-shrink-0" />
           <div style={{ flex: 1 }}>
-            <strong style={{ display: 'block', fontSize: '13px' }}>Demand Under Scrutiny by Sanctioning Depot (Pre-Payment Stage)</strong>
+            <strong style={{ display: 'block', fontSize: '13px' }}>{normStatus === 'CREATED' ? 'Pending depot approval' : 'Pending at Depot (payment verification)'}</strong>
             <span style={{ fontSize: '12px', color: '#3b82f6', marginTop: '2px', display: 'block' }}>
-              This demand was lodged directly without upfront payment. Depot Officials are verifying your documents and quota limits. Once approved, the payment button will be unlocked right here to allow online payment or UTR upload.
+              {normStatus === 'CREATED' ? 'The depot is verifying your documents and entitlement. The payment button will be enabled once the demand is approved.' : 'Payment is received. The depot is verifying it and will issue the Local Supply Order to the URC. If the demand is rejected, your payment will be refunded.'}
             </span>
           </div>
         </div>
@@ -261,9 +253,9 @@ export default function BeneficiaryDemandDetail() {
         <div className="alert-banner success mb-3" style={{ background: '#ecfdf5', border: '1px solid #86efac', color: '#065f46', padding: '12px 16px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <CheckCircle2 size={20} color="#16a34a" className="flex-shrink-0" />
           <div style={{ flex: 1 }}>
-            <strong style={{ display: 'block', fontSize: '13px', color: '#15803d' }}>✓ Demand Approved by Depot! Payment Unlocked</strong>
+            <strong style={{ display: 'block', fontSize: '13px', color: '#15803d' }}>Approved by Depot — payment enabled</strong>
             <span style={{ fontSize: '12px', color: '#166534', marginTop: '2px', display: 'block' }}>
-              Your demand has received Depot Sanction. Please complete payment via Direct Bank Transfer (NEFT/RTGS) and submit your UTR reference number.
+              Your demand is approved. Pay via Direct Bank Transfer (NEFT/RTGS) with receipt upload, or online from the Payments page (only if no loan).
             </span>
           </div>
           <Button
@@ -273,7 +265,7 @@ export default function BeneficiaryDemandDetail() {
             onClick={() => setShowPaymentForm(true)}
             style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff', fontWeight: 700, flexShrink: 0 }}
           >
-            Pay Now / Submit UTR
+            Pay Now / Submit Bank Transfer
           </Button>
         </div>
       )}
@@ -353,8 +345,8 @@ export default function BeneficiaryDemandDetail() {
               )}
               <div className="kv-row between small py-1">
                 <span className="muted">Payment Status:</span>
-                <span className={`font-semibold ${demand.status === 'PAID' ? 'text-green' : 'text-saffron'}`}>
-                  ● {demand.status?.replace(/_/g, ' ')}
+                <span className={`font-semibold ${demand.paymentStatus === 'PAID' ? 'text-green' : 'text-saffron'}`}>
+                  ● {(demand.paymentStatus || 'UNPAID').replace(/_/g, ' ')}
                 </span>
               </div>
             </div>

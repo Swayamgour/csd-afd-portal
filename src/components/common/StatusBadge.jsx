@@ -14,10 +14,15 @@ export function StatusBadge({ status }) {
     case 'approved':
       variant = 'success';
       Icon = CheckCircle2;
-      label = 'Approved (Payment Enabled)';
+      label = 'Approved (payment enabled)';
       break;
 
     case 'completed':
+      variant = 'success';
+      Icon = CheckCircle2;
+      label = 'Delivery completed';
+      break;
+
     case 'verified':
     case 'delivered':
     case 'active':
@@ -30,7 +35,19 @@ export function StatusBadge({ status }) {
     case 'created':
       variant = 'warning';
       Icon = Clock;
-      label = 'Pending Depot Approval';
+      label = 'Pending depot approval';
+      break;
+
+    case 'processing':
+      variant = 'info';
+      Icon = Clock;
+      label = 'Pending at depot (payment verification)';
+      break;
+
+    case 'refunded':
+      variant = 'neutral';
+      Icon = XCircle;
+      label = 'Refunded';
       break;
 
     case 'submitted':
@@ -48,7 +65,7 @@ export function StatusBadge({ status }) {
     case 'payment_pending':
       variant = 'warning';
       Icon = Clock;
-      label = 'Payment Verification Pending';
+      label = 'Payment pending';
       break;
 
     case 'pending':
@@ -64,7 +81,7 @@ export function StatusBadge({ status }) {
     case 'supply_order_issued':
       variant = 'primary';
       Icon = Truck;
-      label = 'Supply Order Issued';
+      label = 'Supply order issued (URC)';
       break;
 
     case 'rejected':

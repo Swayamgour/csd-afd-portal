@@ -1,638 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, ShieldCheck, CheckCircle2, AlertCircle, FileText, Upload, Check, X, Eye, FileDown, Clock, XCircle } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext.jsx';
-import {
-  useGetDemandsQuery,
-  useApproveDemandMutation,
-  useRejectDemandMutation,
-  useRecordPaymentDetailsMutation
-} from '../demand/demandApi.js';
+import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { RefreshCw, Search, Eye } from 'lucide-react';
+import PageHeader from '../../components/common/PageHeader.jsx';
+import Card from '../../components/common/Card.jsx';
+import DataTable from '../../components/common/DataTable.jsx';
+import StatusBadge from '../../components/common/StatusBadge.jsx';
+import DepotDemandActions from './DepotDemandActions.jsx';
+import { useGetDemandsQuery } from '../demand/demandApi.js';
+import { getStatusLabel, fmtINR, upper, hasPaymentDetails, hasSupplyOrderDocs } from '../../utils/demandStatus.js';
 
-const DOC_LABELS = {
-  CANTEEN_CARD: 'Canteen Card',
-  AVAILABILITY_CERTIFICATE: 'Avail Cert',
-  PAN_CARD: 'PAN Card',
-  PPO_DISCHARGE_BOOK: 'PPO Book',
-  PENSION_SLIP: 'Pension Slip',
-  OTHER: 'Doc'
-};
+const TABS = [
+  { key: 'approval', label: 'Awaiting approval', test: (d) => upper(d.status) === 'CREATED' },
+  { key: 'payment', label: 'Approved – awaiting payment', test: (d) => upper(d.status) === 'APPROVED' },
+  { key: 'pending', label: 'Payment done – verify', test: (d) => upper(d.status) === 'PROCESSING' },
+  { key: 'issued', label: 'Supply order issued', test: (d) => ['SUPPLY_ORDER_ISSUED', 'COMPLETED'].includes(upper(d.status)) },
+  { key: 'rejected', label: 'Rejected / Refunded', test: (d) => ['REJECTED', 'REFUNDED'].includes(upper(d.status)) },
+  { key: 'all', label: 'All', test: () => true },
+];
 
 export default function DepotDemands() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { data: demandsData, isLoading: loading, refetch: loadDemands } = useGetDemandsQuery();
-  const [approveDemand] = useApproveDemandMutation();
-  const [rejectDemand] = useRejectDemandMutation();
-  const [recordPaymentDetails] = useRecordPaymentDetailsMutation();
+  const { data, isLoading, isFetching, refetch } = useGetDemandsQuery();
+  const [tab, setTab] = useState('approval');
+  const [q, setQ] = useState('');
+  const [sort, setSort] = useState('newest');
 
-  const demands = Array.isArray(demandsData?.items)
-    ? demandsData.items
-    : Array.isArray(demandsData)
-    ? demandsData
-    : [];
+  const demands = data?.items || [];
 
-  const [toast, setToast] = useState('');
+  const rows = useMemo(() => {
+    const t = TABS.find((x) => x.key === tab) || TABS[0];
+    const needle = q.trim().toLowerCase();
+    return demands
+      .filter(t.test)
+      .filter((d) => {
+        if (!needle) return true;
+        return [d.demandNo, d.productSnapshot?.name, d.userId?.name, d.beneficiaryId?.cardId, d.dealerId?.name]
+          .some((v) => String(v || '').toLowerCase().includes(needle));
+      })
+      .sort((a, b) => {
+        const diff = new Date(b.createdAt) - new Date(a.createdAt);
+        return sort === 'newest' ? diff : -diff;
+      });
+  }, [demands, tab, q, sort]);
 
-  // Manual Filters (Fig. 3)
-  const [sortBy, setSortBy] = useState('newest');
-  const [searchBy, setSearchBy] = useState('demandNumber');
-  const [searchInput, setSearchInput] = useState('');
-  const [previewDoc, setPreviewDoc] = useState(null);
-
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(''), 6000);
-  };
-
-  // Tab Filter State
-  const [statusTab, setStatusTab] = useState('all'); // 'all' | 'pending' | 'approved' | 'rejected'
-
-  // Filter & Sort Logic
-  const filteredDemands = demands
-    .filter((d) => {
-      // 1. Tab filter
-      const isAppr = ['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued', 'APPROVED', 'Approved'].includes(d.status);
-      const isRej = ['REJECTED', 'Rejected'].includes(d.status);
-      if (statusTab === 'pending' && (isAppr || isRej)) return false;
-      if (statusTab === 'approved' && !isAppr) return false;
-      if (statusTab === 'rejected' && !isRej) return false;
-
-      // 2. Search query filter
-      if (!searchInput.trim()) return true;
-      const q = searchInput.toLowerCase().trim();
-      const dNo = String(d.demandNo || d.id || d._id || '').toLowerCase();
-      const uName = String(d.userId?.username || d.username || d.beneficiaryId?.fullName || d.beneficiaryName || '').toLowerCase();
-      const pName = String(d.productId?.name || d.productSnapshot?.name || d.productName || '').toLowerCase();
-      const skuVal = String(d.productId?.sku || d.productSnapshot?.sku || d.sku || '').toLowerCase();
-      const utrVal = String(d.utrNumber || d.beneficiaryPayment?.utr || '').toLowerCase();
-
-      switch (searchBy) {
-        case 'demandNumber':
-          return dNo.includes(q);
-        case 'username':
-          return uName.includes(q);
-        case 'sku':
-          return skuVal.includes(q);
-        case 'item':
-          return pName.includes(q);
-        case 'utr':
-          return utrVal.includes(q);
-        default:
-          return dNo.includes(q) || uName.includes(q) || pName.includes(q);
-      }
-    })
-    .sort((a, b) => {
-      if (sortBy === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-      if (sortBy === 'oldest') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
-      if (sortBy === 'amountHigh') return (Number(b.totalAmount || b.pricing?.totalPrice || b.csdPrice || 0)) - (Number(a.totalAmount || a.pricing?.totalPrice || a.csdPrice || 0));
-      if (sortBy === 'id') return String(a.demandNo || a.id).localeCompare(String(b.demandNo || b.id));
-      return 0;
-    });
-
-  // Dynamic KPI Metrics calculated from live demands
-  const totalCount = demands.length;
-  const pendingCount = demands.filter(d => !['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued', 'APPROVED', 'Approved', 'REJECTED', 'Rejected'].includes(d.status)).length;
-  const approvedCount = demands.filter(d => ['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued', 'APPROVED', 'Approved'].includes(d.status)).length;
-  const rejectedCount = demands.filter(d => ['REJECTED', 'Rejected'].includes(d.status)).length;
-  const totalSanctionValueNum = demands.reduce((acc, d) => acc + Number(d.totalAmount || d.pricing?.totalPrice || d.csdPrice || 0), 0);
-  const totalSanctionValueFormatted = totalSanctionValueNum >= 10000000
-    ? `₹ ${(totalSanctionValueNum / 10000000).toFixed(2)} Cr`
-    : (totalSanctionValueNum >= 100000 ? `₹ ${(totalSanctionValueNum / 100000).toFixed(2)} Lakh` : `₹ ${totalSanctionValueNum.toLocaleString('en-IN')}`);
-
-  const depotDisplayName = user?.depot || user?.depotName || (demands[0]?.depotId?.name) || (demands[0]?.depot) || 'Regional Depot';
+  const columns = [
+    { header: 'Demand No.', render: (d) => <Link className="font-mono font-bold link" to={`/depot/demands/${d._id || d.id}`}>{d.demandNo || String(d._id).slice(-8).toUpperCase()}</Link> },
+    { header: 'Date', render: (d) => (d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-GB') : '—') },
+    { header: 'Item', render: (d) => d.productSnapshot?.name || d.productId?.name || '—' },
+    { header: 'Beneficiary', render: (d) => d.userId?.name || d.beneficiaryId?.cardId || '—' },
+    { header: 'Amount', render: (d) => fmtINR(d.totalAmount) },
+    { header: 'Status', render: (d) => <StatusBadge status={d.status} /> },
+    {
+      header: 'Progress',
+      render: (d) => (
+        <div className="small">
+          <div>{`Payment: ${String(d.paymentStatus || 'UNPAID').replace(/_/g, ' ')}`}</div>
+          <div className="muted">{hasPaymentDetails(d) ? '✓ OR recorded' : '• OR pending'} · {hasSupplyOrderDocs(d) ? '✓ SO uploaded' : '• SO pending'}</div>
+        </div>
+      ),
+    },
+    { header: 'Actions', render: (d) => <DepotDemandActions demand={d} onChanged={refetch} /> },
+  ];
 
   return (
-    <div className="depot-manual-page">
-      {/* Toast feedback */}
-      {toast && (
-        <div className="depot-manual-toast alert-banner success" role="alert">
-          <CheckCircle2 size={16} />
-          <span>{toast}</span>
-        </div>
-      )}
+    <div className="depot-demands-page">
+      <PageHeader
+        title="Demands"
+        subtitle="Step 1: scrutinise a new demand and approve it to enable payment. Step 2: after the beneficiary pays, record the payment, upload the Local Supply Order and approve again."
+        actions={
+          <button className="btn sm out" onClick={refetch} disabled={isFetching} title="Refresh"><RefreshCw size={14} /></button>
+        }
+      />
 
-      {/* Dynamic Depot KPI Summary Bar */}
-      <div className="depot-kpi-banner-grid mb-2 depot-kpi-grid">
-        <div className="panel p-2 shadow-sm depot-kpi-card depot-kpi-blue">
-          <span className="small muted font-semibold block">Total Received Demands</span>
-          <strong className="text-brand font-bold depot-kpi-val">{totalCount}</strong>
-          <span className="micro muted block mt-05">All registered indents</span>
-        </div>
-        <div className="panel p-2 shadow-sm depot-kpi-card depot-kpi-amber">
-          <span className="small muted font-semibold block">Action Required (Pending)</span>
-          <strong className="text-warning font-bold depot-kpi-val-amber">{pendingCount}</strong>
-          <span className="micro muted block mt-05">Awaiting Step 4 verification</span>
-        </div>
-        <div className="panel p-2 shadow-sm depot-kpi-card depot-kpi-green">
-          <span className="small muted font-semibold block">Supply Orders Issued</span>
-          <strong className="text-green font-bold depot-kpi-val-green">{approvedCount}</strong>
-          <span className="micro muted block mt-05">Handed over to URC & Dealers</span>
-        </div>
-        <div className="panel p-2 shadow-sm depot-kpi-card depot-kpi-purple">
-          <span className="small muted font-semibold block">Total Indent Realization</span>
-          <strong className="text-brand font-bold depot-kpi-val-purple">{totalSanctionValueFormatted}</strong>
-          <span className="micro muted block mt-05">Matched with CSD Treasury</span>
-        </div>
-      </div>
-
-      {/* Top Header Row matching Fig. 3 */}
-      <div className="depot-manual-header-row between">
-        <div>
-          <h2 className="depot-manual-page-title">
-            Depot - {depotDisplayName}
-          </h2>
-          <span className="depot-manual-count-badge">
-            Showing: <strong>{filteredDemands.length}</strong> of <strong>{demands.length}</strong> Demands
-          </span>
-        </div>
-
-        {/* Filter Controls (Fig. 3: Sort By, Search By, Search Input) */}
-        <div className="depot-manual-filter-group row align-center gap-1">
-          <div className="row align-center gap-05">
-            <label className="form-label">Sort By:</label>
-            <select
-              className="form-control"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="newest">Indent Date (Newest)</option>
-              <option value="oldest">Indent Date (Oldest)</option>
-              <option value="amountHigh">Total Amount (High to Low)</option>
-              <option value="id">Demand Number</option>
-            </select>
-          </div>
-
-          <div className="row align-center gap-05">
-            <label className="form-label">Search By:</label>
-            <select
-              className="form-control"
-              value={searchBy}
-              onChange={(e) => setSearchBy(e.target.value)}
-            >
-              <option value="demandNumber">Demand Number</option>
-              <option value="username">Username / Customer</option>
-              <option value="item">Vehicle / Item</option>
-              <option value="sku">SKU Index</option>
-              <option value="utr">Payment UTR</option>
-            </select>
-          </div>
-
-          <div className="depot-search-input-wrap">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search demands..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-            <button type="button" className="depot-search-btn" title="Search Demands">
-              <Search size={14} />
+      <Card>
+        <div className="row gap-1 flex-wrap align-center mb-2">
+          {TABS.map((t) => (
+            <button key={t.key} className={`btn sm ${tab === t.key ? '' : 'out'}`} onClick={() => setTab(t.key)}>
+              {t.label} ({demands.filter(t.test).length})
             </button>
+          ))}
+          <div className="row align-center gap-1" style={{ marginLeft: 'auto' }}>
+            <Search size={14} />
+            <input className="form-control" placeholder="Search demand no., item, beneficiary" value={q} onChange={(e) => setQ(e.target.value)} />
+            <select className="form-control" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
           </div>
         </div>
-      </div>
-
-      {/* Quick Status Tabs Filter */}
-      <div className="depot-status-tabs-row row gap-05 mb-1 depot-tabs-wrap">
-        <button
-          type="button"
-          onClick={() => setStatusTab('all')}
-          className={`depot-tab-btn ${statusTab === 'all' ? 'active-all' : ''}`}
-        >
-          All Demands ({totalCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setStatusTab('pending')}
-          className={`depot-tab-btn ${statusTab === 'pending' ? 'active-pending' : ''}`}
-        >
-          <Clock size={15} aria-hidden="true" /> Pending Scrutiny ({pendingCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setStatusTab('approved')}
-          className={`depot-tab-btn ${statusTab === 'approved' ? 'active-approved' : ''}`}
-        >
-          <CheckCircle2 size={15} aria-hidden="true" /> Supply Orders Issued ({approvedCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setStatusTab('rejected')}
-          className={`depot-tab-btn ${statusTab === 'rejected' ? 'active-rejected' : ''}`}
-        >
-          <XCircle size={15} aria-hidden="true" /> Rejected ({rejectedCount})
-        </button>
-      </div>
-
-      {/* Step 4 Offline Process Instruction Banner (from page 3 of Manual) */}
-      <div className="depot-step4-instruction-bar">
-        <ShieldCheck size={18} className="text-brand flex-shrink-0" />
-        <div>
-          <strong>Step 4: Check the following (Offline process):</strong>
-          <span className="depot-step4-checks">
-            1. If the payment has been received from the user · 2. Purchase history · 3. Generation of Local Supply Order from existing ICDS software used in Depots.
-          </span>
-        </div>
-      </div>
-
-      {/* Received Demands Table (Fig. 3) */}
-      <div className="depot-table-container">
-        {loading ? (
-          <div className="p-3 text-center muted">Loading Received Demands...</div>
-        ) : filteredDemands.length === 0 ? (
-          <div className="p-3 text-center muted">
-            No demands found matching criteria for Depot {depotDisplayName}.
-          </div>
-        ) : (
-          <div className="data-table-wrapper"><table className="data-table">
-            <thead>
-              <tr>
-                <th>Demand Number</th>
-                <th>PO details</th>
-                <th>Payment from Beneficiary</th>
-                <th>Payment Received</th>
-                <th>Demand Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredDemands.map((demand) => {
-                const benName = demand.beneficiaryId?.fullName || demand.userId?.name || demand.beneficiaryName || demand.username || 'Applicant';
-                const uName = demand.userId?.username || demand.username || demand.beneficiaryName || 'beneficiary';
-                const dNumber = demand.demandNo || demand.id || demand._id;
-                const iDate = demand.createdAt ? new Date(demand.createdAt).toLocaleDateString('en-GB') : (demand.indentDate || demand.displayDate || 'Recent');
-                const pZone = demand.priceZone || 'DELHI NCR';
-                const dName = demand.dealerId?.name || (typeof demand.dealerId === 'string' ? demand.dealerId : null) || demand.dealer || 'Authorized Dealership';
-                const depName = demand.depotId?.name || (typeof demand.depotId === 'string' ? demand.depotId : null) || demand.depot || user?.depot || user?.depotName || 'Regional Depot';
-                const uCanteen = demand.urcId?.name || (typeof demand.urcId === 'string' ? demand.urcId : null) || demand.urc || 'Assigned CSD URC';
-                const prName = demand.productId?.name || demand.productSnapshot?.name || demand.productName || 'AFD Product Item';
-                const skuCode = demand.productId?.sku || demand.productSnapshot?.sku || demand.sku || 'AFD-INDEX';
-                const colr = demand.selectedColor || demand.color || 'Standard';
-                const amt = Number(demand.totalAmount || demand.pricing?.totalPrice || demand.csdPrice || 0);
-
-                const benPay = demand.beneficiaryPayment || {
-                  bank: demand.loan?.bankName || (demand.loan?.isLoan ? 'Bank Loan / Sanction' : 'Direct bank transfer (SBI)'),
-                  firstAccountHolder: benName,
-                  accountNumber: demand.beneficiaryId?.cardId ? `XXXX-XXXX-${demand.beneficiaryId.cardId.slice(-4)}` : 'XXXX-XXXX-9842',
-                  ifsc: 'SBIN0000691',
-                  utr: demand.utrNumber || demand.paymentDetails?.utr || ('UTR-SBI-' + (demand.demandNo ? demand.demandNo.replace(/\D/g, '') : '984210')),
-                  amountPaid: amt,
-                  dateOfPayment: iDate
-                };
-
-                const isProcessed = ['SUPPLY_ORDER_ISSUED', 'Supply Order Issued.', 'Supply_Order_Issued'].includes(demand.status);
-                const isRejected = ['REJECTED', 'Rejected'].includes(demand.status);
-
-                return (
-                  <tr key={demand._id || demand.id || dNumber}>
-                    {/* 1. Demand Number */}
-                    <td>
-                      <strong className="depot-demand-id-link">
-                        {dNumber}
-                      </strong>
-                      <span className="depot-indent-date">
-                        Indent {iDate}
-                      </span>
-                    </td>
-
-                    {/* 2. PO details */}
-                    <td>
-                      <div className="depot-po-customer-header">
-                        <span className="depot-customer-link">
-                          {benName} &gt;
-                        </span>
-                        <button
-                          type="button"
-                          className="btn-depot-view-customer"
-                          onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                        >
-                          View Customer
-                        </button>
-                      </div>
-
-                      <div className="depot-po-metadata-list">
-                        <div className="depot-po-meta-item">
-                          <span className="meta-key">Username:</span>
-                          <span className="meta-val">{uName}</span>
-                        </div>
-                        <div className="depot-po-meta-item">
-                          <span className="meta-key">Price Zone:</span>
-                          <span className="meta-val">{pZone}</span>
-                        </div>
-                        <div className="depot-po-meta-item">
-                          <span className="meta-key">Dealer:</span>
-                          <span className="meta-val font-semibold">{dName}</span>
-                        </div>
-                        <div className="depot-po-meta-item">
-                          <span className="meta-key">Depot:</span>
-                          <span className="meta-val">{depName}</span>
-                        </div>
-                        <div className="depot-po-meta-item">
-                          <span className="meta-key">URC:</span>
-                          <span className="meta-val">{uCanteen}</span>
-                        </div>
-                        <div className="depot-po-meta-item">
-                          <span className="meta-key">Item:</span>
-                          <span className="meta-val font-semibold text-brand">{prName}</span>
-                        </div>
-                        <div className="depot-po-meta-item">
-                          <span className="meta-key">SKU:</span>
-                          <span className="meta-val">{skuCode}</span>
-                        </div>
-                        <div className="depot-po-meta-item">
-                          <span className="meta-key">Color:</span>
-                          <span className="meta-val">{colr}</span>
-                        </div>
-                        <div className="depot-po-meta-item highlight-price">
-                          <span className="meta-key">Total Amount:</span>
-                          <span className="meta-val font-bold text-green">
-                            ₹{amt.toLocaleString('en-IN')}
-                          </span>
-                        </div>
-                        {Array.isArray(demand.documents) && demand.documents.length > 0 && (
-                          <div className="depot-po-meta-item mt-05" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
-                            <div className="row align-center gap-05">
-                              <span className="meta-key">Verification Docs ({demand.documents.length}):</span>
-                              <button
-                                type="button"
-                                className="small text-brand font-semibold underline"
-                                onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                                title="View detailed summary and documents list"
-                                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '11px' }}
-                              >
-                                View All
-                              </button>
-                            </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
-                              {demand.documents.map((d, dIdx) => {
-                                const docLabel = DOC_LABELS[d.type] || d.type || 'Doc';
-                                return (
-                                  <button
-                                    key={d._id || dIdx}
-                                    type="button"
-                                    onClick={() => setPreviewDoc({ ...d, label: docLabel })}
-                                    className="depot-doc-pill-btn"
-                                    title={`Click to preview ${docLabel} inside portal`}
-                                    style={{
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      gap: '4px',
-                                      background: '#f0fdf4',
-                                      border: '1px solid #86efac',
-                                      color: '#15803d',
-                                      padding: '2px 7px',
-                                      borderRadius: '4px',
-                                      fontSize: '11px',
-                                      fontWeight: 600,
-                                      cursor: 'pointer'
-                                    }}
-                                  >
-                                    <Eye size={11} />
-                                    <span>{docLabel}</span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* 3. Payment from Beneficiary */}
-                    <td>
-                      <div className="depot-beneficiary-payment-box">
-                        <p className="depot-pay-method-header">
-                          Payment status: <span className="font-semibold">{demand.paymentStatus || 'UNPAID'}</span>
-                        </p>
-
-                        {(demand.status === 'CREATED' && (!demand.paymentStatus || demand.paymentStatus === 'UNPAID')) ? (
-                          <div className="depot-beneficiary-card" style={{ background: '#f8fafc', borderColor: '#e2e8f0', textAlign: 'center', padding: '12px 8px' }}>
-                            <span className="checkout-spec-pill" style={{ background: '#fef3c7', color: '#92400e', marginBottom: '6px', display: 'inline-block' }}>
-                              Pre-Payment Approval Stage
-                            </span>
-                            <div className="micro muted" style={{ lineHeight: 1.4 }}>
-                              Demand lodged without upfront payment.<br />
-                              Click <strong>Approve Demand</strong> to grant sanction and enable payment for beneficiary.
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="depot-beneficiary-card">
-                              <div className="depot-pay-card-title">Payment from Beneficiary</div>
-                              <div className="depot-pay-row">
-                                <span>Bank</span>
-                                <span>{benPay.bank}</span>
-                              </div>
-                              <div className="depot-pay-row">
-                                <span>Account Holder</span>
-                                <span>{benPay.firstAccountHolder}</span>
-                              </div>
-                              <div className="depot-pay-row">
-                                <span>UTR</span>
-                                <strong className="text-brand">{benPay.utr}</strong>
-                              </div>
-                              <div className="depot-pay-row">
-                                <span>Amount Paid</span>
-                                <span className="font-bold">₹{Number(benPay.amountPaid || 0).toLocaleString('en-IN')}</span>
-                              </div>
-                              <div className="depot-pay-row">
-                                <span>Date of Payment</span>
-                                <span>{benPay.dateOfPayment}</span>
-                              </div>
-                            </div>
-
-                            <button
-                              type="button"
-                              className="btn-depot-payment-receipt"
-                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                            >
-                              Payment Receipt
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* 4. Payment Received */}
-                    <td>
-                      {demand.csdPayment ? (
-                        <div className="depot-csd-payment-entered-box">
-                          <div className="depot-csd-pay-tag">
-                            <CheckCircle2 size={12} className="text-green" /> CSD Treasury Receipt
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>OR number:</span>
-                            <strong className="text-brand">{demand.csdPayment.orNumber}</strong>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>Total Received:</span>
-                            <strong className="text-green">₹{Number(demand.csdPayment.totalAmountReceived).toLocaleString('en-IN')}</strong>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>OR Date:</span>
-                            <span>{demand.csdPayment.orDate}</span>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>CSD Bank Ref:</span>
-                            <span>{demand.csdPayment.csdBankRef}</span>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>PO Number:</span>
-                            <span>{demand.csdPayment.poNumber}</span>
-                          </div>
-                          <div className="depot-pay-row">
-                            <span>PO Date:</span>
-                            <span>{demand.csdPayment.poDate}</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="depot-csd-payment-empty">
-                          <span className="small muted">
-                            {demand.status === 'CREATED' ? 'Awaiting initial demand approval.' : 'Payment details not recorded by CSD yet.'}
-                          </span>
-                          {demand.status !== 'CREATED' && (
-                            <span className="micro muted block mt-05">
-                              Click <strong>"Payment Received By CSD"</strong> under Action to fill.
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* 5. Demand Status */}
-                    <td>
-                      <div className="depot-status-col-wrap">
-                        {isProcessed ? (
-                          <span className="depot-status-pill status-supply-issued depot-pill-issued">
-                            Supply Order Issued
-                          </span>
-                        ) : isRejected ? (
-                          <span className="depot-status-pill status-rejected depot-pill-rejected">
-                            Rejected
-                          </span>
-                        ) : demand.status === 'CREATED' ? (
-                          <span className="depot-status-pill status-onhold depot-pill-processing" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}>
-                            Pending Scrutiny
-                          </span>
-                        ) : demand.status === 'APPROVED' ? (
-                          <span className="depot-status-pill badge-verified-pill depot-pill-processing" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}>
-                            Approved (Awaiting Payment)
-                          </span>
-                        ) : (
-                          <span className="depot-status-pill status-processing depot-pill-processing">
-                            {demand.status === 'PAYMENT_PENDING' ? 'Payment Verification' : demand.status}
-                          </span>
-                        )}
-
-                        <button
-                          type="button"
-                          className="btn-depot-status-view"
-                          onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                        >
-                          View
-                        </button>
-                      </div>
-                    </td>
-
-                    {/* 6. Action Column */}
-                    <td>
-                      <div className="depot-action-btn-stack">
-                        {demand.status === 'CREATED' ? (
-                          <button
-                            type="button"
-                            className="btn-depot-action btn-action-approve"
-                            style={{ background: '#16a34a', color: '#fff', fontWeight: 700 }}
-                            onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                            title="Scrutinize documents and approve demand to enable payment option for beneficiary"
-                          >
-                            <span className="ic-inline"><CheckCircle2 size={14} /> Approve Demand (Grant Sanction)</span>
-                          </button>
-                        ) : demand.status === 'APPROVED' ? (
-                          <>
-                            <div
-                              className="checkout-spec-pill"
-                              style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '6px 8px', fontSize: '11px', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}
-                            >
-                              <span className="ic-inline"><CheckCircle2 size={13} /> Sanction Granted</span><br />
-                              <span style={{ fontSize: '10px', color: '#059669', fontWeight: 500 }}>Awaiting Beneficiary Payment / UTR</span>
-                            </div>
-
-                            <button
-                              type="button"
-                              className="btn-depot-action btn-action-payment-received"
-                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                              title="Enter Payment details received directly by CSD (Fig. 5)"
-                              style={{ marginTop: '4px' }}
-                            >
-                              Record Payment Received By CSD
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            {/* 1. Payment Received By CSD (Fig. 5) */}
-                            <button
-                              type="button"
-                              className="btn-depot-action btn-action-payment-received"
-                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                              title="Enter Payment details, received by CSD (Fig. 5)"
-                            >
-                              Payment Received By CSD
-                            </button>
-
-                            {/* 2. Upload Local Supply Order (Fig. 6) */}
-                            <button
-                              type="button"
-                              className="btn-depot-action btn-action-upload-supply"
-                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                              title="Upload Official Receipt, Supply Order, and Authority Letter (Fig. 6)"
-                            >
-                              Upload Local Supply Order
-                            </button>
-
-                            {/* 3. Approve & Issue Supply Order */}
-                            <button
-                              type="button"
-                              className="btn-depot-action btn-action-approve"
-                              onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                              disabled={isProcessed}
-                              style={!isProcessed ? { background: '#2563eb', color: '#fff', fontWeight: 700 } : {}}
-                              title="Issue Local Supply Order after verifying payment"
-                            >
-                              {isProcessed ? 'Supply Order Issued' : (<span className="ic-inline"><CheckCircle2 size={14} /> Verify Payment & Issue Supply Order</span>)}
-                            </button>
-                          </>
-                        )}
-
-                        {/* 4. Reject */}
-                        <button
-                          type="button"
-                          className="btn-depot-action btn-action-reject"
-                          onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                          disabled={isProcessed || isRejected}
-                          title="Reject order and refund payment"
-                        >
-                          Reject
-                        </button>
-
-                        {/* 5. Process & Details */}
-                        <button
-                          type="button"
-                          className="btn-depot-action btn-action-summary"
-                          onClick={() => navigate(`/depot/demands/${demand._id || demand.id}`)}
-                          title="View order summary and file"
-                        >
-                          Process File
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table></div>
-        )}
-      </div>
+        <DataTable columns={columns} data={rows} loading={isLoading} emptyTitle="No demands" emptyText="No demands match this view." />
+      </Card>
     </div>
   );
 }
+export { DepotDemands };

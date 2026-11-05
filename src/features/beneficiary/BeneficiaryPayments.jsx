@@ -27,10 +27,11 @@ import {
   useGetPaymentsQuery,
   useCreatePaymentMutation,
   useVerifyPaymentMutation,
-  useSubmitDirectTransferMutation,
 } from '../payment/paymentApi.js';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
+import { openRazorpayCheckout } from '../../utils/razorpay.js';
+import { isPayable, demandAmount } from '../../utils/demandStatus.js';
 
 export default function BeneficiaryPayments() {
   const { user } = useAuth();
@@ -38,7 +39,6 @@ export default function BeneficiaryPayments() {
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [utrModalOpen, setUtrModalOpen] = useState(false);
   const [selectedDemand, setSelectedDemand] = useState(null);
-  const [paymentMode, setPaymentMode] = useState('sbi_epay');
   const [processing, setProcessing] = useState(false);
   const [toast, setToast] = useState({ type: '', message: '' });
 
@@ -60,17 +60,13 @@ export default function BeneficiaryPayments() {
 
   const [createPayment] = useCreatePaymentMutation();
   const [verifyPayment] = useVerifyPaymentMutation();
-  const [submitDirectTransfer] = useSubmitDirectTransferMutation();
 
   const payments = paymentsData?.items || [];
   const allDemands = demandsData?.items || [];
 
-  // Demands that have Depot approval and are awaiting payment
-  const pendingDemands = allDemands.filter(
-    (d) =>
-      ['APPROVED', 'PAYMENT_PENDING', 'ON HOLD'].includes((d.status || '').toUpperCase()) &&
-      d.paymentStatus !== 'PAID'
-  );
+  // Demands on hold that still need payment (online, or direct bank transfer with receipt)
+  const pendingDemands = allDemands.filter(isPayable);
+  const isLoanDemand = (d) => Boolean(d?.loan?.isLoan);
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -91,60 +87,29 @@ export default function BeneficiaryPayments() {
     if (!selectedDemand) return;
     setProcessing(true);
     try {
-      const amount = selectedDemand.totalAmount || selectedDemand.totalPrice || selectedDemand.netPayable || 10000;
-      const method = paymentMode === 'sbi_epay' ? 'DIRECT_TRANSFER' : 'GATEWAY';
-
-      const payRes = await createPayment({
-        demandId: selectedDemand._id || selectedDemand.id,
-        amount,
-        method,
-        gateway: method === 'GATEWAY' ? 'BHARATKOSH' : undefined,
-        utr: method === 'DIRECT_TRANSFER' ? `SBI-EPAY-${Date.now().toString().slice(-8)}` : undefined,
-        bankName: 'State Bank of India',
-      }).unwrap();
-
-      const payDoc = payRes?.data || payRes;
-
+      const id = selectedDemand._id || selectedDemand.id;
+      const init = await createPayment({ demandId: id }).unwrap();
+      const resp = await openRazorpayCheckout({
+        checkout: init.checkout,
+        prefill: { name: user?.name, email: user?.email, contact: user?.mobile },
+      });
       await verifyPayment({
-        paymentId: payDoc._id,
-        demandId: selectedDemand._id || selectedDemand.id,
-        gatewayPaymentId: `TXN-${Date.now()}`,
+        demandId: id,
+        paymentNo: init.paymentNo,
+        gatewayOrderId: resp.razorpay_order_id || init.gatewayOrderId,
+        gatewayPaymentId: resp.razorpay_payment_id,
+        gatewaySignature: resp.razorpay_signature,
       }).unwrap();
 
       setPayModalOpen(false);
-      showToast('success', 'Treasury payment verified successfully. Demand updated to PAID.');
-      refetchPayments();
-      refetchDemands();
+      setSelectedDemand(null);
+      showToast('success', 'Payment successful. The depot will now verify it.');
     } catch (err) {
-      showToast('error', getErrorMessage(err, 'Failed to complete payment.'));
+      showToast('error', getErrorMessage(err, err?.message || 'Failed to complete payment.'));
     } finally {
       setProcessing(false);
-    }
-  };
-
-  const handleUtrSubmitSuccess = async (paymentPayload) => {
-    try {
-      if (paymentPayload && (paymentPayload.selfAccount?.utr || paymentPayload.utrNumber)) {
-        const targetDemandId = selectedDemand?._id || selectedDemand?.id;
-        const utr = paymentPayload.selfAccount?.utr || paymentPayload.utrNumber;
-        const bank = paymentPayload.selfAccount?.bank || paymentPayload.bankName || 'State Bank of India';
-        const date = paymentPayload.selfAccount?.date || paymentPayload.depositDate || new Date().toISOString();
-        const remarks = `Bank Transfer UTR: ${utr} (${bank}). Amount: ₹${paymentPayload.totalPaid || selectedDemand?.totalAmount}`;
-
-        await submitDirectTransfer({
-          demandId: targetDemandId,
-          utrNumber: utr,
-          bankName: bank,
-          depositDate: date,
-          remarks,
-        }).unwrap();
-      }
-      setUtrModalOpen(false);
-      showToast('success', 'Bank Transfer UTR details submitted successfully! Awaiting depot verification.');
-      refetchDemands();
       refetchPayments();
-    } catch (e) {
-      showToast('error', e?.data?.message || e.message || 'Error submitting payment details');
+      refetchDemands();
     }
   };
 
@@ -368,8 +333,8 @@ export default function BeneficiaryPayments() {
       {/* 5. Sanctioned Demands Awaiting Payment Card (Post-Depot Approval Flow) */}
       {pendingDemands.length > 0 && (
         <Card
-          title="Sanctioned Demands Awaiting Payment"
-          subtitle="Your demands have been scrutinized and approved by the Depot. Please complete payment or submit your UTR to trigger Local Supply Order release."
+          title="Approved Demands Awaiting Payment"
+          subtitle="The depot has approved these demands. Pay online, or transfer by NEFT/RTGS and upload the receipt; the depot will then verify the payment and issue the Supply Order."
           className="mb-4"
           headerClassName="border-b pb-2"
         >
@@ -386,22 +351,22 @@ export default function BeneficiaryPayments() {
                     </span>
                     <span className="status-badge status-success" style={{ fontSize: '11px', padding: '2px 8px' }}>
                       <CheckCircle2 size={12} />
-                      <span>Sanction Granted</span>
+                      <span>Approved</span>
                     </span>
                   </div>
                   <h4 className="font-bold text-slate-900 m-0">
                     {dem.productId?.name || dem.productSnapshot?.name || dem.productName || 'AFD Item'}
                   </h4>
                   <p className="small muted mb-0 mt-05">
-                    Sanctioning Depot: <strong>{dem.depotId?.name || 'Regional Depot'}</strong> • Dealer: <strong>{dem.dealerId?.name || 'Authorized Dealership'}</strong>
+                    Depot: <strong>{dem.depotId?.name || 'Regional Depot'}</strong> • Dealer: <strong>{dem.dealerId?.name || 'Authorized Dealership'}</strong>
                   </p>
                 </div>
 
                 <div className="row align-center gap-2 flex-wrap">
                   <div className="text-right">
-                    <span className="micro muted block uppercase tracking-wider">Payable Sanction Amount</span>
+                    <span className="micro muted block uppercase tracking-wider">Net Amount Payable</span>
                     <span className="h3 font-bold text-green block m-0">
-                      ₹ {(Number(dem.totalAmount || dem.totalPrice || dem.netPayable || 0)).toLocaleString('en-IN')}
+                      ₹ {demandAmount(dem).toLocaleString('en-IN')}
                     </span>
                   </div>
 
@@ -412,15 +377,17 @@ export default function BeneficiaryPayments() {
                       onClick={() => initiateUtrUpload(dem)}
                       style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff', fontWeight: 600 }}
                     >
-                      Submit Bank UTR
+                      Bank Transfer Details
                     </Button>
-                    <Button
-                      variant="outline"
-                      icon={CreditCard}
-                      onClick={() => initiateOnlinePayment(dem)}
-                    >
-                      Pay via SBI e-Pay
-                    </Button>
+                    {!isLoanDemand(dem) && (
+                      <Button
+                        variant="outline"
+                        icon={CreditCard}
+                        onClick={() => initiateOnlinePayment(dem)}
+                      >
+                        Pay Online
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -455,7 +422,7 @@ export default function BeneficiaryPayments() {
             onPaymentSubmitted={() => {
               setUtrModalOpen(false);
               setSelectedDemand(null);
-              showToast('success', 'Bank Transfer UTR details submitted successfully! Awaiting depot verification.');
+              showToast('success', 'Bank transfer details submitted. The depot will now verify the payment.');
               refetchDemands();
               refetchPayments();
             }}
@@ -467,8 +434,8 @@ export default function BeneficiaryPayments() {
       {payModalOpen && selectedDemand && (
         <Card
           className="mt-4 border-2 border-brand"
-          title="CSD AFD Secure Cyber Treasury Gateway"
-          subtitle={`Sanctioned Demand: ${selectedDemand?.demandNo || selectedDemand?._id} · ${selectedDemand?.productId?.name || selectedDemand?.productName || 'AFD Item'}`}
+          title="Online Payment (Razorpay)"
+          subtitle={`Demand: ${selectedDemand?.demandNo || selectedDemand?._id} · ${selectedDemand?.productId?.name || selectedDemand?.productName || 'AFD Item'}`}
           headerActions={
             <Button
               variant="outline"
@@ -485,36 +452,15 @@ export default function BeneficiaryPayments() {
         >
           <div className="payment-modal-body">
             <div className="panel p-3 bg-slate-50 border border-slate-200 rounded text-center mb-3">
-              <span className="small muted block">Total Sanctioned Net Price</span>
+              <span className="small muted block">Net Amount Payable</span>
               <p className="h2 text-brand font-bold my-1">
-                ₹ {(Number(selectedDemand?.totalAmount || selectedDemand?.totalPrice || selectedDemand?.netPayable || 0)).toLocaleString('en-IN')}
+                ₹ {demandAmount(selectedDemand).toLocaleString('en-IN')}
               </p>
-              <span className="small text-green font-semibold">● Official Zero-Surcharge Gateway for Defence Personnel</span>
-            </div>
-
-            <label className="form-label">Choose Payment Gateway Channel</label>
-            <div className="payment-modes-grid row gap-1 mb-3">
-              <button
-                type="button"
-                className={`panel p-2 flex-1 text-left ${paymentMode === 'sbi_epay' ? 'border-brand bg-brand-soft' : ''}`}
-                onClick={() => setPaymentMode('sbi_epay')}
-              >
-                <span className="font-semibold small block">SBI Cyber Treasury (e-Pay)</span>
-                <span className="micro muted">Net Banking / Direct Bank Debit</span>
-              </button>
-
-              <button
-                type="button"
-                className={`panel p-2 flex-1 text-left ${paymentMode === 'bharatkosh' ? 'border-brand bg-brand-soft' : ''}`}
-                onClick={() => setPaymentMode('bharatkosh')}
-              >
-                <span className="font-semibold small block">Bharatkosh Portal</span>
-                <span className="micro muted">Govt. Non-Tax Receipt Portal</span>
-              </button>
+              
             </div>
 
             <p className="micro muted mb-3">
-              *Security Directive: Transactions are processed through NIC/SBI Cyber Treasury servers with 256-bit encryption. Never share your OTP with anyone.
+              Payment is processed securely by Razorpay. Never share your OTP with anyone.
             </p>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
@@ -529,7 +475,7 @@ export default function BeneficiaryPayments() {
                 Cancel
               </Button>
               <Button variant="primary" loading={processing} onClick={handleCompletePayment}>
-                Authorize &amp; Pay ₹ {(Number(selectedDemand?.totalAmount || selectedDemand?.totalPrice || selectedDemand?.netPayable || 0)).toLocaleString('en-IN')}
+                Authorize &amp; Pay ₹ {demandAmount(selectedDemand).toLocaleString('en-IN')}
               </Button>
             </div>
           </div>

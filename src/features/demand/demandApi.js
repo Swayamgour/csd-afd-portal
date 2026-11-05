@@ -109,10 +109,10 @@ export const demandApi = api.injectEndpoints({
     }),
 
     approveDemand: builder.mutation({
-      query: ({ id, remarks, note, supplyOrderNo }) => ({
+      query: ({ id, remarks, note }) => ({
         url: `/demands/${id}/approve`,
         method: 'PATCH',
-        body: { note: note || remarks, remarks: remarks || note, supplyOrderNo },
+        body: { note: note || remarks, remarks: remarks || note },
       }),
       transformResponse: (response) => response?.data || response,
       invalidatesTags: ['Demand', 'Dashboard', 'Order'],
@@ -137,10 +137,49 @@ export const demandApi = api.injectEndpoints({
       transformResponse: (response) => response?.data || response,
       invalidatesTags: ['Demand', 'Dashboard', 'Order'],
     }),
+
+    uploadSupplyOrder: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/demands/${id}/supply-order`,
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Demand', 'Dashboard', 'Order'],
+    }),
+
+    getDemandSummary: builder.query({
+      query: (id) => `/demands/${id}/summary`,
+      transformResponse: (response) => response?.data || response,
+      providesTags: (_r, _e, id) => [{ type: 'Demand', id }, 'Demand'],
+    }),
+
+    getDemandNotes: builder.query({
+      query: (id) => `/demands/${id}/notes`,
+      transformResponse: (response) => {
+        const d = response?.data ?? response;
+        return Array.isArray(d) ? d : d?.items || [];
+      },
+      providesTags: (_r, _e, id) => [{ type: 'DemandNotes', id }],
+    }),
+
+    addDemandNote: builder.mutation({
+      query: ({ id, text }) => ({
+        url: `/demands/${id}/notes`,
+        method: 'POST',
+        body: { text },
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: (_r, _e, { id }) => [{ type: 'DemandNotes', id }],
+    }),
   }),
 });
 
 export const {
+  useUploadSupplyOrderMutation,
+  useGetDemandSummaryQuery,
+  useGetDemandNotesQuery,
+  useAddDemandNoteMutation,
   useCheckDemandEligibilityMutation,
   useCreateDemandMutation,
   useGetDemandsQuery,

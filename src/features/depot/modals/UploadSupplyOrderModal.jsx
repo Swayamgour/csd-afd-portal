@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { X, Upload, FileCheck, AlertCircle } from 'lucide-react';
+import { X, Upload, AlertCircle } from 'lucide-react';
+import { useUploadFileMutation } from '../../beneficiary/beneficiaryApi.js';
+import { useUploadSupplyOrderMutation } from '../../demand/demandApi.js';
+import { getErrorMessage } from '../../../utils/apiError.js';
 
 /**
  * UploadSupplyOrderModal (Fig. 6 in CSD Depot Manual)
@@ -8,16 +11,15 @@ import { X, Upload, FileCheck, AlertCircle } from 'lucide-react';
  * 2. Supply Order
  * 3. Authority Letter
  */
-export default function UploadSupplyOrderModal({ isOpen, onClose, demand, onSave }) {
-  if (!isOpen || !demand) return null;
-
-  const [files, setFiles] = useState({
-    officialReceipt: null,
-    supplyOrder: null,
-    authorityLetter: null
-  });
-
+export default function UploadSupplyOrderModal({ isOpen, onClose, demand, onSaved }) {
+  const [files, setFiles] = useState({ officialReceipt: null, supplyOrder: null, authorityLetter: null });
   const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [serverError, setServerError] = useState('');
+  const [uploadFile] = useUploadFileMutation();
+  const [uploadSupplyOrder] = useUploadSupplyOrderMutation();
+
+  if (!isOpen || !demand) return null;
 
   const handleFileChange = (field, file) => {
     setFiles((prev) => ({ ...prev, [field]: file }));
@@ -26,24 +28,39 @@ export default function UploadSupplyOrderModal({ isOpen, onClose, demand, onSave
     }
   };
 
-  const handleUpload = (e) => {
+  const upOne = async (f) => {
+    const fd = new FormData();
+    fd.append('files', f);
+    const r = await uploadFile(fd).unwrap();
+    const item = Array.isArray(r) ? r[0] : r?.data?.[0] || r?.[0];
+    if (!item?.url) throw new Error(`Upload failed for ${f.name}`);
+    return item.url;
+  };
+
+  const handleUpload = async (e) => {
     e.preventDefault();
     const errs = {};
     if (!files.officialReceipt) errs.officialReceipt = 'Official Receipt file is required';
     if (!files.supplyOrder) errs.supplyOrder = 'Supply Order file is required';
     if (!files.authorityLetter) errs.authorityLetter = 'Authority letter file is required';
-
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
-
-    onSave({
-      officialReceiptName: files.officialReceipt.name,
-      supplyOrderName: files.supplyOrder.name,
-      authorityLetterName: files.authorityLetter.name,
-      uploadedDate: new Date().toLocaleDateString('en-GB')
-    });
+    setBusy(true);
+    setServerError('');
+    try {
+      const officialReceiptUrl = await upOne(files.officialReceipt);
+      const supplyOrderUrl = await upOne(files.supplyOrder);
+      const authorityLetterUrl = await upOne(files.authorityLetter);
+      await uploadSupplyOrder({ id: demand._id || demand.id, officialReceiptUrl, supplyOrderUrl, authorityLetterUrl }).unwrap();
+      if (onSaved) onSaved();
+      onClose();
+    } catch (err) {
+      setServerError(getErrorMessage(err, err?.message || 'Upload failed'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -61,6 +78,7 @@ export default function UploadSupplyOrderModal({ isOpen, onClose, demand, onSave
 
         <form onSubmit={handleUpload}>
           <div className="csd-modal-body">
+            {serverError && <div className="alert-banner error mb-2">{serverError}</div>}
             <div className="depot-upload-guideline-note">
               <AlertCircle size={16} className="text-brand flex-shrink-0" />
               <span>
@@ -150,8 +168,8 @@ export default function UploadSupplyOrderModal({ isOpen, onClose, demand, onSave
             <button type="button" className="btn-depot-manual-close" onClick={onClose}>
               CLOSE
             </button>
-            <button type="submit" className="btn-depot-manual-submit btn-gradient-red">
-              UPLOAD
+            <button type="submit" className="btn-depot-manual-submit btn-gradient-red" disabled={busy}>
+              {busy ? "UPLOADING..." : "UPLOAD"}
             </button>
           </div>
         </form>
