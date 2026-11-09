@@ -22,7 +22,7 @@ import {
 import { useGetDemandsQuery, useCancelDemandMutation } from '../features/demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { isPayable, canCancel, getStatusLabel } from '../utils/demandStatus.js';
+import { isPayable, canCancel, getStatusLabel, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
 
 export default function Demands() {
   const { user } = useAuth();
@@ -41,7 +41,13 @@ export default function Demands() {
   const [cancelDemand] = useCancelDemandMutation();
   const [submitDirectTransfer] = useSubmitDirectTransferMutation();
 
-  const demands = demandsData?.items || [];
+  const demands = (demandsData?.items || []).map((d) => ({
+    ...d,
+    id: d._id || d.id,
+    demandNo: d.demandNo,
+    productName: d.productName || d.productSnapshot?.name || d.productId?.name || '',
+    username: d.username || d.userId?.username || d.userId?.name,
+  }));
 
   // Status explanation toggle
   const [showStatusLegend, setShowStatusLegend] = useState(true);
@@ -56,7 +62,7 @@ export default function Demands() {
         return { className: 'status-badge-issued', label: 'Supply order issued (URC)' };
       case 'PROCESSING':
       case 'DEPOT_PROCESSING':
-        return { className: 'status-badge-processing', label: 'Pending at depot (payment verification)' };
+        return { className: 'status-badge-processing', label: 'Pending at depot' };
       case 'DEALER_VERIFICATION':
         return { className: 'status-badge-processing', label: 'Dealer Verification' };
       case 'CREATED':
@@ -207,7 +213,7 @@ export default function Demands() {
                           to={`/demands/${encodeURIComponent(d.id)}`}
                           className="demand-id-link"
                         >
-                          {d.id}
+                          {d.demandNo || d.id}
                         </Link>
                         <div className="csd-form-helper-text">
                           Username: <strong>{d.username || d.beneficiaryName || 'DEMO'}</strong>
@@ -238,7 +244,8 @@ export default function Demands() {
 
                       {/* Payment Details */}
                       <td className="demand-payment-cell">
-                        <div>{d.paymentDetailsText || `Payment method ${d.paymentMethod || 'Direct bank transfer'}`}</div>
+                        <div><strong>{paymentMethodLabel(d.paymentMethod)}</strong></div>
+                        <div className="csd-form-helper-text">{paymentStatusLabel(d.paymentStatus)}</div>
                         {d.razorpayId && (
                           <div className="demand-razorpay-id">
                             Razorpay ID: {d.razorpayId}

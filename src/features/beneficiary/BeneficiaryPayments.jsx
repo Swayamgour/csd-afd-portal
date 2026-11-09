@@ -31,6 +31,7 @@ import {
 import { useGetDemandsQuery } from '../demand/demandApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { openRazorpayCheckout } from '../../utils/razorpay.js';
+import { paymentMethodLabel } from '../../utils/demandStatus.js';
 import { isPayable, demandAmount } from '../../utils/demandStatus.js';
 
 export default function BeneficiaryPayments() {
@@ -146,7 +147,7 @@ export default function BeneficiaryPayments() {
 
   const columns = [
     {
-      header: 'Receipt ID',
+      header: 'Payment ID',
       accessor: '_id',
       render: (row) => (
         <span className="font-semibold text-brand font-mono">
@@ -155,7 +156,7 @@ export default function BeneficiaryPayments() {
       ),
     },
     {
-      header: 'Demand Ref',
+      header: 'Demand',
       accessor: 'demandId',
       render: (row) => (
         <span className="font-mono text-slate-700">
@@ -164,21 +165,21 @@ export default function BeneficiaryPayments() {
       ),
     },
     {
-      header: 'Amount Paid',
+      header: 'Amount',
       accessor: 'amount',
       render: (row) => <span className="font-bold text-slate-900">₹ {(row.amount || 0).toLocaleString('en-IN')}</span>,
     },
     {
-      header: 'Channel / Method',
+      header: 'Method',
       accessor: 'method',
       render: (row) => (
-        <span className="capitalize">{row.method?.replace(/_/g, ' ') || 'Treasury e-Pay'}</span>
+        <span>{paymentMethodLabel(row.method)}</span>
       ),
     },
     {
-      header: 'UTR / Ref No',
+      header: 'UTR / reference',
       accessor: 'utr',
-      render: (row) => <span className="font-mono small text-slate-700">{row.utr || row.gatewayPaymentId || 'N/A'}</span>,
+      render: (row) => <span className="font-mono small text-slate-700">{row.transferDetails?.self?.utrNumber || row.utr || row.gatewayTxnId || row.gatewayPaymentId || '—'}</span>,
     },
     {
       header: 'Date',
@@ -188,20 +189,20 @@ export default function BeneficiaryPayments() {
     {
       header: 'Status',
       accessor: 'status',
-      render: (row) => <StatusBadge status={row.status} />,
+      render: (row) => <StatusBadge status={row.status === 'INITIATED' ? 'PENDING' : row.status === 'SUCCESS' ? 'VERIFIED' : row.status} />,
     },
     {
       header: 'Action',
       accessor: '_id',
       render: (row) => (
-        <button
-          type="button"
-          className="btn sm out"
-          onClick={() => alert(`Certified Treasury Receipt: ${row.paymentNo || 'RCP-' + row._id?.slice(-8).toUpperCase()}\nAmount: ₹${Number(row.amount || 0).toLocaleString('en-IN')}\nStatus: ${row.status || 'Verified'}`)}
-        >
-          <Download size={13} />
-          <span>Receipt</span>
-        </button>
+        row.transferDetails?.receiptUrl ? (
+          <a className="btn sm out" href={row.transferDetails.receiptUrl} target="_blank" rel="noreferrer">
+            <Download size={13} />
+            <span>View receipt</span>
+          </a>
+        ) : (
+          <span className="muted small">—</span>
+        )
       ),
     },
   ];
@@ -212,8 +213,8 @@ export default function BeneficiaryPayments() {
     <div className="beneficiary-payments-page">
       {/* 1. Header with Breadcrumbs matching BeneficiaryProducts.jsx */}
       <PageHeader
-        title="AFD Payments & Treasury Challans"
-        subtitle="Track payments, initiate SBI Cyber Treasury transfers, or submit Direct Bank UTR references"
+        title="Payments"
+        subtitle="Pay for demands approved by the depot and track every payment you have made."
         breadcrumbs={[
           { label: 'Beneficiary', href: '/beneficiary/dashboard' },
           { label: 'Payments' },
@@ -263,7 +264,7 @@ export default function BeneficiaryPayments() {
           <div className="h2 text-brand font-bold">
             ₹ {totalPaidAmount.toLocaleString('en-IN')}
           </div>
-          <span className="micro muted">Reconciled with CSD Treasury</span>
+          <span className="micro muted">Verified by the depot</span>
         </div>
 
         <div className="panel p-3 bg-white border border-slate-200 rounded-lg">
@@ -281,13 +282,13 @@ export default function BeneficiaryPayments() {
 
         <div className="panel p-3 bg-white border border-slate-200 rounded-lg">
           <div className="row between align-center mb-1">
-            <span className="small muted font-medium">Treasury Receipts Generated</span>
+            <span className="small muted font-medium">Payments made</span>
             <Landmark size={18} className="text-blue-500" />
           </div>
           <div className="h2 text-ink font-bold">
             {payments.length}
           </div>
-          <span className="micro muted">Official Cyber Treasury Challans</span>
+          <span className="micro muted">All payment records</span>
         </div>
       </div>
 
@@ -398,15 +399,15 @@ export default function BeneficiaryPayments() {
 
       {/* 6. Payment & Cyber Treasury History Table */}
       <Card
-        title="Payment & Cyber Treasury History"
-        subtitle="Certified records of transactions reconciled with CSD Treasury database"
+        title="Payment history"
+        subtitle="Bank transfers and online payments for your demands"
       >
         <DataTable
           columns={columns}
           data={filteredPayments}
           loading={loading}
-          emptyTitle="No payments found"
-          emptyText="No completed transactions match the search criteria. Completed cyber treasury challans and bank transfers will be displayed here."
+          emptyTitle="No payments yet"
+          emptyText="Payments you make for approved demands will be listed here."
         />
       </Card>
 

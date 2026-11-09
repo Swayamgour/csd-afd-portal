@@ -5,12 +5,11 @@ import {
   Lock,
   Eye,
   EyeOff,
-  ShieldAlert,
   AlertCircle,
   Loader2,
   RefreshCw,
   KeyRound,
-  ArrowRight,
+  ArrowLeft,
   ChevronDown,
   Settings,
   Landmark,
@@ -21,7 +20,6 @@ import {
   Car,
   Medal,
   Hourglass,
-  UserPlus,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath, isPathAllowedForRole } from '../../permissions/roles.js';
@@ -43,26 +41,23 @@ const TEST_ACCOUNTS = [
   { role: 'BENEFICIARY', label: 'Beneficiary (Pending)', tag: 'Pending', icon: Hourglass, username: 'pending_beneficiary', password: 'Pending@123456' },
 ];
 
-function Field({ id, label, error, children }) {
+// Same Field markup as the Register page
+function Field({ id, label, req, err, children }) {
   return (
-    <div className="av2-field">
-      <label htmlFor={id} className="av2-label">{label}</label>
+    <div className="fgrp">
+      <label htmlFor={id}>
+        {label}
+        {req && (
+          <span className="req-star" aria-hidden>
+            {' '}
+            *
+          </span>
+        )}
+      </label>
       {children}
-      {error && (
-        <p className="av2-field-err" role="alert">
-          <AlertCircle size={14} aria-hidden="true" />
-          <span>{error}</span>
-        </p>
-      )}
-    </div>
-  );
-}
-
-function Banner({ tone = 'danger', icon: Icon = ShieldAlert, children }) {
-  return (
-    <div className={`av2-banner av2-banner-${tone}`} role="alert">
-      <Icon size={18} aria-hidden="true" />
-      <div>{children}</div>
+      <p className="err" role={err ? 'alert' : undefined}>
+        {err && `⚠ ${err}`}
+      </p>
     </div>
   );
 }
@@ -170,26 +165,56 @@ export default function LoginForm({ onNeedOtp }) {
   const ActiveIcon = active?.icon;
 
   return (
-    <form className="av2-form" onSubmit={handleSubmit} noValidate aria-labelledby="lh">
-      <header className="av2-form-head">
-        <h1 id="lh">Sign in</h1>
-        <p>Use the User ID and password of your CSD AFD account.</p>
-      </header>
+    <form
+      className="panel logincard authcard"
+      onSubmit={handleSubmit}
+      noValidate
+      aria-labelledby="lh"
+    >
+      <div className="between">
+        <Link to="/register" className="vli">
+          New to the portal? Create an account
+        </Link>
+        <button
+          type="button"
+          className="circle"
+          aria-label="Go back"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft />
+        </button>
+      </div>
+
+      <h1 id="lh">Sign in</h1>
+      <p className="reg-warn">
+        Use the User ID and password of your CSD AFD account. For most accounts, a 6-digit code
+        will be sent to your registered email to finish signing in.
+      </p>
 
       {reason === 'session-expired' && (
-        <Banner tone="warning">Your session expired due to inactivity. Please sign in again.</Banner>
+        <div className="alert-banner warning small mb-3 row align-center gap-1" role="alert">
+          <AlertCircle size={18} className="flex-shrink-0" />
+          <span>Your session expired due to inactivity. Please sign in again.</span>
+        </div>
       )}
       {reason === 'auth-required' && (
-        <Banner tone="warning">
-          <strong>Sign in required.</strong> Please sign in to open that page.
-        </Banner>
+        <div className="alert-banner warning small mb-3 row align-center gap-1" role="alert">
+          <AlertCircle size={18} className="flex-shrink-0" />
+          <span><strong>Sign in required.</strong> Please sign in to open that page.</span>
+        </div>
       )}
       {reason === 'role-unauthorized' && (
-        <Banner tone="danger">
-          <strong>Access denied.</strong> Please sign in with an account that has permission for that page.
-        </Banner>
+        <div className="alert-banner danger small mb-3 row align-center gap-1" role="alert">
+          <AlertCircle size={18} className="flex-shrink-0" />
+          <span><strong>Access denied.</strong> Please sign in with an account that has permission for that page.</span>
+        </div>
       )}
-      {errors.form && <Banner tone="danger">{errors.form}</Banner>}
+      {errors.form && (
+        <div className="alert-banner danger small mb-3 row align-center gap-1" role="alert">
+          <AlertCircle size={18} className="flex-shrink-0" />
+          <span>{errors.form}</span>
+        </div>
+      )}
 
       {active && (
         <div className="av2-role-chip">
@@ -202,9 +227,9 @@ export default function LoginForm({ onNeedOtp }) {
         </div>
       )}
 
-      <Field id="username" label="User ID" error={errors.username}>
-        <div className={`av2-input ${errors.username ? 'has-error' : ''}`}>
-          <User size={18} aria-hidden="true" className="av2-input-icon" />
+      <Field id="username" label="User ID" req err={errors.username}>
+        <div className="fld">
+          <User size={18} aria-hidden />
           <input
             id="username"
             autoComplete="username"
@@ -219,14 +244,14 @@ export default function LoginForm({ onNeedOtp }) {
             aria-invalid={!!errors.username}
           />
         </div>
-        <div className="av2-link-row">
+        <p className="small hint">
           <Link to="/forgot-username">Forgot User ID?</Link>
-        </div>
+        </p>
       </Field>
 
-      <Field id="passwordInput" label="Password" error={errors.password}>
-        <div className={`av2-input ${errors.password ? 'has-error' : ''}`}>
-          <Lock size={18} aria-hidden="true" className="av2-input-icon" />
+      <Field id="passwordInput" label="Password" req err={errors.password}>
+        <div className="fld has-eye">
+          <Lock size={18} aria-hidden />
           <input
             id="passwordInput"
             type={showPassword ? 'text' : 'password'}
@@ -242,74 +267,72 @@ export default function LoginForm({ onNeedOtp }) {
           />
           <button
             type="button"
-            className="av2-input-action"
+            className="eye"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
             onClick={() => setShowPassword((v) => !v)}
             disabled={loading}
           >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
-        <div className="av2-link-row">
+        <p className="small hint">
           <Link to="/forgot-password">Forgot password?</Link>
-        </div>
+        </p>
       </Field>
 
-      <Field id="cap" label="Captcha" error={errors.cap}>
-        <div className="av2-captcha">
-          <span className="av2-captcha-code" aria-label={`Captcha ${cap.split('').join(' ')}`}>
-            {cap}
-          </span>
-          <button
-            type="button"
-            className="av2-captcha-refresh"
-            aria-label="Get a new captcha"
-            title="Get a new captcha"
-            onClick={refreshCaptcha}
-            disabled={loading}
-          >
-            <RefreshCw size={18} />
-          </button>
-          <div className={`av2-input av2-captcha-input ${errors.cap ? 'has-error' : ''}`}>
-            <KeyRound size={18} aria-hidden="true" className="av2-input-icon" />
-            <input
-              id="cap"
-              autoComplete="off"
-              maxLength={5}
-              placeholder="Type captcha"
-              value={capIn}
-              onChange={(e) => {
-                setCapIn(e.target.value);
-                if (errors.cap || errors.form) {
-                  setErrors((prev) => {
-                    const next = { ...prev };
-                    delete next.cap;
-                    delete next.form;
-                    return next;
-                  });
-                }
-              }}
-              disabled={loading}
-              aria-invalid={!!errors.cap}
-            />
-          </div>
-        </div>
-      </Field>
-
-      <button className="av2-submit" type="submit" disabled={isSubmitDisabled}>
-        {loading ? <Loader2 size={18} className="spin" aria-hidden="true" /> : null}
-        <span>{loading ? 'Checking your details…' : 'Sign in'}</span>
-        {!loading && <ArrowRight size={18} aria-hidden="true" />}
-      </button>
-      <p className="av2-hint">
-        For most accounts, a 6-digit code is sent to your registered email to finish signing in.
+      <label htmlFor="cap">
+        Captcha <span aria-hidden>*</span>
+      </label>
+      <div className="captcha-row">
+        <span className="captcha-img" aria-label={`Captcha ${cap.split('').join(' ')}`}>
+          {cap}
+        </span>
+        <button
+          type="button"
+          className="icon sm"
+          aria-label="Refresh captcha"
+          onClick={refreshCaptcha}
+          disabled={loading}
+        >
+          <RefreshCw size={18} />
+        </button>
+      </div>
+      <div className="fld">
+        <KeyRound size={18} aria-hidden />
+        <input
+          id="cap"
+          autoComplete="off"
+          maxLength={5}
+          placeholder="Type the captcha text displayed above"
+          value={capIn}
+          onChange={(e) => {
+            setCapIn(e.target.value);
+            if (errors.cap || errors.form) {
+              setErrors((prev) => {
+                const next = { ...prev };
+                delete next.cap;
+                delete next.form;
+                return next;
+              });
+            }
+          }}
+          disabled={loading}
+          aria-invalid={!!errors.cap}
+        />
+      </div>
+      <p className="err" role={errors.cap ? 'alert' : undefined}>
+        {errors.cap && `⚠ ${errors.cap}`}
       </p>
 
-      <div className="av2-register">
-        <UserPlus size={18} aria-hidden="true" />
-        <span>New to the portal?</span>
-        <Link to="/register">Create an account</Link>
-      </div>
+      <button
+        className="btn big wide row align-center justify-center gap-1"
+        type="submit"
+        disabled={isSubmitDisabled}
+        style={{ display: 'flex' }}
+      >
+        {loading && <Loader2 size={18} className="spin" />}
+        <span>{loading ? 'Checking your details…' : 'Sign in'}</span>
+      </button>
 
       {SHOW_DEMO_ACCOUNTS && (
         <details className="av2-demo">

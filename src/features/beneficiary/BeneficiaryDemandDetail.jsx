@@ -25,7 +25,7 @@ import { useGetDemandByIdQuery, useCancelDemandMutation } from '../demand/demand
 import { useSubmitDirectTransferMutation } from '../payment/paymentApi.js';
 import InlinePaymentCard from '../../components/common/InlinePaymentCard.jsx';
 import { getErrorMessage } from '../../utils/apiError.js';
-import { isPayable, canCancel, getStatusLabel } from '../../utils/demandStatus.js';
+import { isPayable, canCancel, getStatusLabel, paymentStatusLabel, paymentMethodLabel } from '../../utils/demandStatus.js';
 
 export default function BeneficiaryDemandDetail() {
   const { id } = useParams();
@@ -346,7 +346,7 @@ export default function BeneficiaryDemandDetail() {
               <div className="kv-row between small py-1">
                 <span className="muted">Payment Status:</span>
                 <span className={`font-semibold ${demand.paymentStatus === 'PAID' ? 'text-green' : 'text-saffron'}`}>
-                  ● {(demand.paymentStatus || 'UNPAID').replace(/_/g, ' ')}
+                  ● {paymentStatusLabel(demand.paymentStatus)}
                 </span>
               </div>
             </div>

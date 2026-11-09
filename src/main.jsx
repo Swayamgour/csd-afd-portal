@@ -20,6 +20,7 @@ import { StoreProvider } from './context/Store.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 
 import './index.css'
+import './styles/theme.css'
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

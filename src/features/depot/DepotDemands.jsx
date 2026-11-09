@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RefreshCw, Search, Eye } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
-import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import DepotDemandActions from './DepotDemandActions.jsx';
@@ -10,9 +9,9 @@ import { useGetDemandsQuery } from '../demand/demandApi.js';
 import { getStatusLabel, fmtINR, upper, hasPaymentDetails, hasSupplyOrderDocs } from '../../utils/demandStatus.js';
 
 const TABS = [
-  { key: 'approval', label: 'Awaiting approval', test: (d) => upper(d.status) === 'CREATED' },
-  { key: 'payment', label: 'Approved – awaiting payment', test: (d) => upper(d.status) === 'APPROVED' },
-  { key: 'pending', label: 'Payment done – verify', test: (d) => upper(d.status) === 'PROCESSING' },
+  { key: 'approval', label: 'To approve', test: (d) => upper(d.status) === 'CREATED' },
+  { key: 'payment', label: 'Awaiting payment', test: (d) => upper(d.status) === 'APPROVED' },
+  { key: 'pending', label: 'To verify', test: (d) => upper(d.status) === 'PROCESSING' },
   { key: 'issued', label: 'Supply order issued', test: (d) => ['SUPPLY_ORDER_ISSUED', 'COMPLETED'].includes(upper(d.status)) },
   { key: 'rejected', label: 'Rejected / Refunded', test: (d) => ['REJECTED', 'REFUNDED'].includes(upper(d.status)) },
   { key: 'all', label: 'All', test: () => true },
@@ -43,19 +42,38 @@ export default function DepotDemands() {
   }, [demands, tab, q, sort]);
 
   const columns = [
-    { header: 'Demand No.', render: (d) => <Link className="font-mono font-bold link" to={`/depot/demands/${d._id || d.id}`}>{d.demandNo || String(d._id).slice(-8).toUpperCase()}</Link> },
-    { header: 'Date', render: (d) => (d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-GB') : '—') },
-    { header: 'Item', render: (d) => d.productSnapshot?.name || d.productId?.name || '—' },
-    { header: 'Beneficiary', render: (d) => d.userId?.name || d.beneficiaryId?.cardId || '—' },
-    { header: 'Amount', render: (d) => fmtINR(d.totalAmount) },
+    {
+      header: 'Demand',
+      render: (d) => (
+        <div className="cell-stack">
+          <Link className="link nowrap" style={{ fontWeight: 700 }} to={`/depot/demands/${d._id || d.id}`}>
+            {d.demandNo || String(d._id).slice(-8).toUpperCase()}
+          </Link>
+          <small>{d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-GB') : '—'}</small>
+        </div>
+      ),
+    },
+    {
+      header: 'Item',
+      render: (d) => (
+        <div className="cell-stack" style={{ minWidth: 150 }}>
+          <strong>{d.productSnapshot?.name || d.productId?.name || '—'}</strong>
+          <small>{d.userId?.name || d.beneficiaryId?.cardId || '—'}</small>
+        </div>
+      ),
+    },
+    { header: 'Amount', render: (d) => <span className="nowrap" style={{ fontWeight: 600 }}>{fmtINR(d.totalAmount)}</span> },
     { header: 'Status', render: (d) => <StatusBadge status={d.status} /> },
     {
-      header: 'Progress',
+      header: 'Checklist',
       render: (d) => (
-        <div className="small">
-          <div>{`Payment: ${String(d.paymentStatus || 'UNPAID').replace(/_/g, ' ')}`}</div>
-          <div className="muted">{hasPaymentDetails(d) ? '✓ OR recorded' : '• OR pending'} · {hasSupplyOrderDocs(d) ? '✓ SO uploaded' : '• SO pending'}</div>
-        </div>
+        <ul className="pill-steps nowrap">
+          <li className={['PAID', 'PENDING_VERIFICATION'].includes(upper(d.paymentStatus)) ? 'ok' : ''}>
+            {['PAID', 'PENDING_VERIFICATION'].includes(upper(d.paymentStatus)) ? '✓' : '○'} Payment
+          </li>
+          <li className={hasPaymentDetails(d) ? 'ok' : ''}>{hasPaymentDetails(d) ? '✓' : '○'} Receipt recorded</li>
+          <li className={hasSupplyOrderDocs(d) ? 'ok' : ''}>{hasSupplyOrderDocs(d) ? '✓' : '○'} Supply order</li>
+        </ul>
       ),
     },
     { header: 'Actions', render: (d) => <DepotDemandActions demand={d} onChanged={refetch} /> },
@@ -64,31 +82,35 @@ export default function DepotDemands() {
   return (
     <div className="depot-demands-page">
       <PageHeader
-        title="Demands"
-        subtitle="Step 1: scrutinise a new demand and approve it to enable payment. Step 2: after the beneficiary pays, record the payment, upload the Local Supply Order and approve again."
+        title="Received demands"
+        subtitle="First scrutinise a new demand and approve it to open payment. After the beneficiary pays, record the payment, upload the Local Supply Order and approve again."
         actions={
-          <button className="btn sm out" onClick={refetch} disabled={isFetching} title="Refresh"><RefreshCw size={14} /></button>
+          <button className="btn out sm" onClick={refetch} disabled={isFetching} title="Refresh">
+            <RefreshCw size={14} /> Refresh
+          </button>
         }
       />
 
-      <Card>
-        <div className="row gap-1 flex-wrap align-center mb-2">
+      <div className="toolbar">
+        <div className="seg" role="tablist">
           {TABS.map((t) => (
-            <button key={t.key} className={`btn sm ${tab === t.key ? '' : 'out'}`} onClick={() => setTab(t.key)}>
-              {t.label} ({demands.filter(t.test).length})
+            <button key={t.key} role="tab" aria-selected={tab === t.key} className={tab === t.key ? 'on' : ''} onClick={() => setTab(t.key)}>
+              {t.label}<span className="n">{demands.filter(t.test).length}</span>
             </button>
           ))}
-          <div className="row align-center gap-1" style={{ marginLeft: 'auto' }}>
-            <Search size={14} />
-            <input className="form-control" placeholder="Search demand no., item, beneficiary" value={q} onChange={(e) => setQ(e.target.value)} />
-            <select className="form-control" value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-            </select>
-          </div>
         </div>
-        <DataTable columns={columns} data={rows} loading={isLoading} emptyTitle="No demands" emptyText="No demands match this view." />
-      </Card>
+        <span className="spacer" />
+        <label className="field-inline">
+          <Search size={15} />
+          <input className="form-control" placeholder="Search demand, item or beneficiary" value={q} onChange={(e) => setQ(e.target.value)} />
+        </label>
+        <select className="form-control" style={{ width: 'auto' }} value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
+
+      <DataTable columns={columns} data={rows} loading={isLoading} emptyTitle="No demands here" emptyText="Demands in this stage will appear here." />
     </div>
   );
 }

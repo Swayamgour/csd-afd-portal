@@ -5,7 +5,7 @@
 export const STATUS_LABELS = {
   CREATED: 'Pending depot approval',
   PAYMENT_PENDING: 'Payment pending',
-  PROCESSING: 'Pending at depot (payment verification)',
+  PROCESSING: 'Pending at depot',
   SUPPLY_ORDER_ISSUED: 'Supply order issued (URC)',
   COMPLETED: 'Delivery completed',
   REJECTED: 'Rejected',
@@ -57,3 +57,21 @@ export const PAYMENT_MODES = {
 };
 
 export const fmtINR = (n) => `₹ ${Number(n || 0).toLocaleString('en-IN')}`;
+
+export function paymentMethodLabel(m) {
+  const k = upper(m);
+  if (k === 'DIRECT_BANK_TRANSFER' || k === 'DIRECT_TRANSFER') return 'Direct bank transfer (NEFT/RTGS)';
+  if (k === 'ONLINE_PAYMENT' || k === 'GATEWAY' || k === 'RAZORPAY_ONLINE') return 'Online payment';
+  return 'Not selected yet'; // legacy values such as "Pending Depot Approval"
+}
+
+export const PAYMENT_STATUS_LABELS = {
+  UNPAID: 'Not paid',
+  PENDING: 'Payment in progress',
+  PENDING_VERIFICATION: 'Paid, awaiting depot verification',
+  PAID: 'Paid and verified',
+  FAILED: 'Payment failed',
+  REFUND_PENDING: 'Refund in progress',
+  REFUNDED: 'Refunded',
+};
+export const paymentStatusLabel = (s) => PAYMENT_STATUS_LABELS[upper(s)] || PAYMENT_STATUS_LABELS.UNPAID;

@@ -46,29 +46,29 @@ export default function DepotDemandActions({ demand, onChanged }) {
   const btn = { display: 'inline-flex', alignItems: 'center', gap: 4 };
   return (
     <>
-      <div className="row gap-1 flex-wrap">
-        <button className="btn sm out" style={btn} onClick={() => setModal('summary')}><Eye size={13} /> Summary</button>
-        <button className="btn sm out" style={btn} onClick={() => setModal('notes')}><MessageSquare size={13} /> Notes</button>
+      <div className="row-actions">
+        <button className="btn out" style={btn} onClick={() => setModal('summary')}><Eye size={13} /> Summary</button>
+        <button className="btn out" style={btn} onClick={() => setModal('notes')}><MessageSquare size={13} /> Notes</button>
         {depotCanRecordPayment(demand) && !hasPaymentDetails(demand) && (
-          <button className="btn sm" style={btn} onClick={() => setModal('payment')}><Banknote size={13} /> Payment Received By CSD</button>
+          <button className="btn" style={btn} onClick={() => setModal('payment')}><Banknote size={13} /> Record payment</button>
         )}
         {depotCanUploadSupplyOrder(demand) && (
-          <button className="btn sm out" style={btn} onClick={() => setModal('upload')}>
-            <Upload size={13} /> {hasSupplyOrderDocs(demand) ? 'Re-upload Supply Order' : 'Upload Local Supply Order'}
+          <button className="btn out" style={btn} onClick={() => setModal('upload')}>
+            <Upload size={13} /> {hasSupplyOrderDocs(demand) ? 'Replace supply order' : 'Upload supply order'}
           </button>
         )}
         {(depotCanStage1Approve(demand) || depotCanRecordPayment(demand)) && (
           <button
-            className="btn sm"
-            style={{ ...btn, background: '#16a34a', borderColor: '#16a34a', color: '#fff' }}
+            className="btn approve"
+            style={btn}
             title={depotCanApprove(demand) ? '' : 'Record payment details and upload supply order first'}
             onClick={() => setModal('approve')}
           >
-            <CheckCircle2 size={13} /> {depotCanStage1Approve(demand) ? 'Approve (enable payment)' : 'Approve (issue supply order)'}
+            <CheckCircle2 size={13} /> {depotCanStage1Approve(demand) ? 'Approve' : 'Approve & issue'}
           </button>
         )}
         {depotCanReject(demand) && (
-          <button className="btn sm out text-danger" style={btn} onClick={() => setModal('reject')}><XCircle size={13} /> Reject</button>
+          <button className="btn reject" style={btn} onClick={() => setModal('reject')}><XCircle size={13} /> Reject</button>
         )}
       </div>
 

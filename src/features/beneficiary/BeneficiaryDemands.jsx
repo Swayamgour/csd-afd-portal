@@ -159,11 +159,8 @@ export function BeneficiaryDemands() {
         const price = row.totalAmount ?? row.totalPrice ?? 0;
         return (
           <div>
-            <span className="font-bold text-navy block font-mono">
+            <span className="font-bold text-navy block" style={{ whiteSpace: 'nowrap' }}>
               ₹ {Number(price).toLocaleString('en-IN')}
-            </span>
-            <span className="micro text-success font-semibold ic-inline">
-              <CheckCircle2 size={12} /> Matches CSD Quota
             </span>
           </div>
         );
@@ -237,7 +234,7 @@ export function BeneficiaryDemands() {
       {/* 1. Header Bar */}
       <PageHeader
         title="My AFD Demands"
-        subtitle="Track submitted vehicle demands, depot sanctions, treasury payments, and supply order releases."
+        subtitle="Track your demands from depot approval and payment to supply order and delivery."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -398,7 +395,7 @@ export function BeneficiaryDemands() {
       {/* 6. DataTable Register Card */}
       <Card
         title="Demands Register"
-        subtitle={`Showing ${filteredDemands.length} of ${allDemands.length} demands registered against Depot database`}
+        subtitle={`Showing ${filteredDemands.length} of ${allDemands.length} demands with the depot`}
       >
         <DataTable
           columns={columns}

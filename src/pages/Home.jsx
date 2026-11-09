@@ -20,10 +20,10 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeRole } from "../permissions/roles.js";
 
 // Category tiles: only labels/icons live here (UI). Counts and images come from the server data.
-const cats = [
-  { key: "car", group: "Automobiles", label: "Cars", to: "/products?cat=car", cls: "car", Icon: Car, image: "/assets/maruti1.png" },
-  { key: "bike", group: "Automobiles", label: "Bikes", to: "/products?cat=bike", cls: "bike", Icon: Bike, image: "/assets/bullet1.png" },
-  { key: "white-goods", group: "Home & Living", label: "Appliances", to: "/products?cat=white-goods", cls: "app", Icon: Refrigerator, image: "/assets/white_goods1.png" },
+const CATEGORY_TILES = [
+  { key: "car", group: "Automobiles", label: "Cars", to: "/products?cat=car", cls: "car", Icon: Car },
+  { key: "bike", group: "Automobiles", label: "Bikes", to: "/products?cat=bike", cls: "bike", Icon: Bike },
+  { key: "white-goods", group: "Home & Living", label: "Appliances", to: "/products?cat=white-goods", cls: "app", Icon: Refrigerator },
 ];
 
 const text = (v) => (v && typeof v === "object" ? v.en || Object.values(v)[0] : v) || "";
@@ -65,7 +65,14 @@ export default function Home() {
   }, [isAuthenticated, role, roleHome, user, navigate]);
 
   // Category tiles built from real data (count + first available image); empty categories are not shown
-
+  const cats = useMemo(
+    () =>
+      CATEGORY_TILES.map((t) => {
+        const inCat = allProducts.filter((p) => p.category === t.key);
+        return { ...t, count: inCat.length, img: inCat.find((p) => p.image)?.image || "" };
+      }).filter((t) => t.count > 0),
+    [allProducts],
+  );
 
   // Hero banners (logged-out only) - server only, no default images
   const { data: heroData, isLoading: heroLoading } = useGetBannersQuery(
@@ -169,7 +176,7 @@ export default function Home() {
                     <span className="cta">
                       Explore <ArrowUpRight size={15} aria-hidden />
                     </span>
-                    {t.image && <img src={t.image} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = "none")} />}
+                    {t.img && <img src={t.img} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = "none")} />}
                   </Link>
                 </li>
               ))}
@@ -301,7 +308,7 @@ export default function Home() {
                     <CircleCheck size={18} aria-hidden />
                     <span>Never share your password or OTP with anyone.</span>
                   </li>
-
+                 
                 </ul>
               </article>
             </div>

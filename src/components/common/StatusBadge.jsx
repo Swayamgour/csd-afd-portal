@@ -41,7 +41,7 @@ export function StatusBadge({ status }) {
     case 'processing':
       variant = 'info';
       Icon = Clock;
-      label = 'Pending at depot (payment verification)';
+      label = 'Pending at depot';
       break;
 
     case 'refunded':

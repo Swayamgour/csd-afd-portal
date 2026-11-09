@@ -28,7 +28,7 @@ import {
 import { useGetDemandByIdQuery } from '../features/demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import InlinePaymentCard from '../components/common/InlinePaymentCard.jsx';
-import { isPayable, getStatusLabel, isAwaitingDepotApproval } from '../utils/demandStatus.js';
+import { isPayable, getStatusLabel, isAwaitingDepotApproval, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
 
 export default function DemandDetail() {
   const { id } = useParams();
@@ -117,7 +117,8 @@ export default function DemandDetail() {
   const statusOrder = ['CREATED', 'APPROVED', 'PAYMENT_PENDING', 'PROCESSING', 'SUPPLY_ORDER_ISSUED', 'COMPLETED'];
 
   const currentStatus = (demand.status || 'CREATED').toUpperCase();
-  const currentStepIndex = Math.max(0, statusOrder.indexOf(currentStatus));
+  const stepKey = currentStatus === 'PAYMENT_PENDING' ? 'APPROVED' : ['PAID', 'DEPOT_PROCESSING', 'DEALER_VERIFICATION'].includes(currentStatus) ? 'PROCESSING' : currentStatus;
+  const currentStepIndex = Math.max(0, canonicalTimeline.findIndex((st) => st.key === stepKey));
   const isTerminated = currentStatus === 'CANCELLED' || currentStatus === 'REJECTED' || currentStatus === 'EXPIRED';
 
   const normStatus = (demand.status || '').toUpperCase();
@@ -444,17 +445,17 @@ export default function DemandDetail() {
         <div className="demand-detail-section">
           <h3 className="demand-detail-section-title">
             <Landmark size={17} color="#1e4fd8" />
-            <span>7. Payment State</span>
+            <span>7. Payment</span>
           </h3>
           <div className="beneficiary-read-only-grid">
             <div className="beneficiary-field-box">
               <div className="beneficiary-field-label">Payment Mode</div>
-              <div className="beneficiary-field-value">{demand.paymentMethod || 'Direct Bank Transfer'}</div>
+              <div className="beneficiary-field-value">{paymentMethodLabel(demand.paymentMethod)}</div>
             </div>
             <div className="beneficiary-field-box">
               <div className="beneficiary-field-label">Payment Status</div>
               <div className="beneficiary-field-value font-semibold">
-                {demand.paymentStatus || 'UNPAID'}
+                {paymentStatusLabel(demand.paymentStatus)}
               </div>
             </div>
             {demand.remarks && (
@@ -468,9 +469,9 @@ export default function DemandDetail() {
                 <div className="beneficiary-field-label">Payment Records on Ledger</div>
                 <div className="portal-flex-col-gap-xs mt-1">
                   {paymentsList.map((p, idx) => (
-                    <div key={idx} className="between py-1 border-b text-xs">
-                      <span>Receipt: <strong>{p.paymentNo}</strong> ({p.method})</span>
-                      <span>₹ {Number(p.amount).toLocaleString('en-IN')} • <strong className="text-success">{p.status}</strong></span>
+                    <div key={idx} className="ledger-row">
+                      <span>Receipt <strong>{p.paymentNo}</strong> · {paymentMethodLabel(p.method)}</span>
+                      <span className="nowrap"><strong>₹ {Number(p.amount).toLocaleString('en-IN')}</strong> · {p.status === 'SUCCESS' ? 'Received' : p.status === 'INITIATED' ? 'Awaiting verification' : p.status}</span>
                     </div>
                   ))}
                 </div>
