@@ -24,6 +24,7 @@ import {
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath, isPathAllowedForRole } from '../../permissions/roles.js';
 import { makeCaptcha } from '../../utils/captcha.js';
+import DigiLockerButton from '../../components/common/DigiLockerButton.jsx';
 
 // Test / demo accounts. Set to false to hide the "Demo accounts" box in production.
 const SHOW_DEMO_ACCOUNTS = true;
@@ -95,7 +96,7 @@ export default function LoginForm({ onNeedOtp }) {
     const newErrors = {};
 
     const cleanUsername = username.trim();
-    if (!cleanUsername) newErrors.username = 'Enter your User ID, email or service number.';
+    if (!cleanUsername) newErrors.username = 'Enter your User ID ';
     if (!password) newErrors.password = 'Enter your password.';
     if (!capIn.trim()) {
       newErrors.cap = 'Type the captcha text shown above.';
@@ -186,7 +187,7 @@ export default function LoginForm({ onNeedOtp }) {
       </div>
 
       <h1 id="lh">Sign in</h1>
-      <p className="reg-warn">
+      <p className="reg-note">
         Use the User ID and password of your CSD AFD account. For most accounts, a 6-digit code
         will be sent to your registered email to finish signing in.
       </p>
@@ -233,7 +234,7 @@ export default function LoginForm({ onNeedOtp }) {
           <input
             id="username"
             autoComplete="username"
-            placeholder="User ID, email or service number"
+            placeholder="User ID"
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);
@@ -333,6 +334,16 @@ export default function LoginForm({ onNeedOtp }) {
         {loading && <Loader2 size={18} className="spin" />}
         <span>{loading ? 'Checking your details…' : 'Sign in'}</span>
       </button>
+
+      <div className="row align-center gap-1 my-2" aria-hidden>
+        <hr style={{ flex: 1, border: 0, borderTop: '1px solid var(--color-border, #d1d5db)' }} />
+        <span className="small muted">or</span>
+        <hr style={{ flex: 1, border: 0, borderTop: '1px solid var(--color-border, #d1d5db)' }} />
+      </div>
+      <DigiLockerButton mode="LOGIN" disabled={loading} />
+      <p className="small hint" style={{ textAlign: 'center', marginTop: '.4rem' }}>
+        DigiLocker sign-in is for beneficiaries. No password or OTP needed.
+      </p>
 
       {SHOW_DEMO_ACCOUNTS && (
         <details className="av2-demo">

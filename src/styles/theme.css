@@ -38,7 +38,7 @@ h1 { font-size: clamp(1.55rem, 1.2rem + 1vw, 2.05rem); line-height: 1.15; }
 .csd-modal-title { font-size: 1.15rem; }
 .card-title { font-size: 1.12rem; }
 .muted, .card-subtitle, .page-header-subtitle { color: var(--muted); }
-.font-mono, .mono, code { font-variant-numeric: tabular-nums; }
+.font-mono, code { font-variant-numeric: tabular-nums; }
 td, th, .stat-value, .h2, .h3 { font-variant-numeric: tabular-nums; }
 :focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 
@@ -165,11 +165,6 @@ td, th, .stat-value, .h2, .h3 { font-variant-numeric: tabular-nums; }
 .btn.approve:hover { background: #0f6339; border-color: #0f6339; }
 .btn.reject { background: #fff; color: #b42318; border: 1px solid #f1c3be; }
 .btn.reject:hover { background: #fff1f0; border-color: #e8958d; }
-.kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem; }
-.kv { background: #f7f9fd; border: 1px solid #e6ebf5; border-radius: 10px; padding: .75rem .9rem; min-width: 0; }
-.kv .k { font-size: .78rem; color: var(--muted); font-weight: 600; margin-bottom: .2rem; }
-.kv .v { font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
-.kv .v.big { font-family: var(--fd); font-size: 1.15rem; }
 
 @media (max-width: 720px) {
   .field-inline .form-control { min-width: 0; width: 100%; }
@@ -268,7 +263,6 @@ body .demands-action-stack .btn-action-cancel { color: #b42318; border-color: #f
 body .demands-action-stack .btn-action-cancel:hover { background: #fff1f0; border-color: #e8958d; color: #b42318; }
 
 /* status legend */
-body .demands-status-legend, body .demand-legend-card { border-radius: 14px; }
 
 /* beneficiary workspace stat cards */
 body .beneficiary-demands-page .panel, body .beneficiary-payments-page .panel { border-radius: 14px; }
@@ -307,7 +301,6 @@ body .app-shell-root .card .flex.flex-col.md\:flex-row select.form-control { wid
   body .md\:flex-row { flex-direction: row !important; }
   body .md\:w-80 { width: 20rem; }
   body .md\:w-auto { width: auto; }
-  body .md\:items-center { align-items: center; }
 }
 body .app-shell-root .card .relative > svg { pointer-events: none; }
 body .app-shell-root .card .relative > svg.absolute { top: 50%; transform: translateY(-50%); }
@@ -317,3 +310,41 @@ body .app-shell-root .toolbar input[type="search"], body .app-shell-root .toolba
 body .app-shell-root .toolbar .field-inline { display: flex; align-items: center; gap: .4rem; flex: 1 1 260px; max-width: 380px; }
 body .app-shell-root .toolbar .field-inline .form-control { width: 100%; min-width: 0; }
 body .app-shell-root .toolbar .spacer { flex: 1 1 0; }
+
+/* login: calm intro note + demo accounts chevron */
+.reg-note { color: var(--muted); font-size: .92rem; line-height: 1.55; margin: .35rem 0 1.1rem; }
+.av2-demo summary svg { width: 18px; height: 18px; flex: 0 0 18px; }
+.av2-demo-tile.is-selected { box-shadow: 0 0 0 2px rgba(184,134,31,.35); border-color: var(--brass); }
+.av2-demo { margin-top: 1rem; }
+
+/* auth screens: link-style buttons + dev OTP helper (no tailwind in this project) */
+.authcard .otp-link-btn { color: var(--brand); }
+.dev-otp { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .7rem 1rem; margin-bottom: 1rem;
+  background: #fff8e6; border: 1px dashed #e3c06b; border-radius: 10px; font-size: .9rem; color: #5c4510; }
+.dev-otp .otp-link-btn { color: var(--brand); }
+
+/* ---------- OTP step: aligned icons, balanced spacing ---------- */
+.authcard .otp-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .35rem; margin: .4rem 0 1.4rem; }
+.authcard .otp-head .shield-icon-circle {
+  width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; margin: 0 0 .5rem;
+  background: linear-gradient(145deg, #eaf0fb, #fff); color: var(--brand);
+  box-shadow: 0 0 0 6px rgba(26,63,143,.06), inset 0 0 0 1px #d3def3;
+}
+.authcard .otp-head h1 { margin: 0; font-size: 1.75rem; line-height: 1.2; }
+.authcard .otp-subtext { margin: .35rem 0 0; max-width: 34ch; color: var(--muted); line-height: 1.55; }
+.authcard .otp-email-text {
+  display: inline-flex; align-items: center; gap: .45rem; margin-top: .6rem; padding: .32rem .8rem;
+  background: var(--brand-soft); border: 1px solid #d3def3; border-radius: 999px; font-size: .9rem; color: var(--brand);
+}
+.authcard .otp-email-text svg { flex: 0 0 15px; display: block; }
+.authcard .otp-inputs-row { display: flex; justify-content: center; gap: .6rem; margin: .4rem 0 1rem; }
+.authcard .otp-timer-info {
+  display: flex; align-items: center; justify-content: center; gap: .4rem; margin: 0 auto 1.25rem; width: fit-content;
+  padding: .3rem .8rem; border-radius: 999px; background: #f4f6fb; color: var(--muted); font-size: .85rem;
+}
+.authcard .otp-timer-info svg { flex: 0 0 14px; display: block; }
+.authcard .otp-resend-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .35rem; margin: 1.1rem 0 0; text-align: center; }
+.authcard .otp-cooldown-text { font-weight: 600; color: var(--brand); font-variant-numeric: tabular-nums; }
+.authcard > .between { margin-bottom: .6rem; }
+.authcard .otp-link-btn svg { flex: 0 0 16px; display: block; }
+.authcard .btn.big.wide { margin-top: .25rem; }

@@ -1860,23 +1860,6 @@
   opacity: 0.7;
 }
 
-.pdp-footer-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.78rem;
-  color: var(--color-slate-500);
-}
-
-.btn-copy-link {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  color: var(--color-primary);
-  font-size: inherit;
-}
-
 .pdp-subrow-mt {
   margin-top: 1rem;
 }
@@ -2364,13 +2347,6 @@
   letter-spacing: 0.03em;
 }
 
-.checkout-workflow-desc {
-  font-size: 0.86rem;
-  color: #334155;
-  line-height: 1.5;
-  margin: 0 0 1rem 0;
-}
-
 .checkout-workflow-timeline {
   display: flex;
   flex-direction: column;
@@ -2429,18 +2405,4 @@
   font-size: 0.78rem;
   color: #64748b;
   margin: 0;
-}
-
-.checkout-no-payment-callout {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  color: #065f46;
-  padding: 0.65rem 0.85rem;
-  border-radius: 6px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  margin-top: 0.75rem;
 }

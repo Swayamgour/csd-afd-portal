@@ -22,6 +22,8 @@ const Checkout = lazy(() => import('./pages/Checkout.jsx'));
 const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess.jsx'));
 const Demands = lazy(() => import('./pages/Demands.jsx'));
 const DemandDetail = lazy(() => import('./pages/DemandDetail.jsx'));
+const DigiLockerCallback = lazy(() => import('./features/auth/DigiLockerCallback.jsx'));
+const PaymentResult = lazy(() => import('./features/payment/PaymentResult.jsx'));
 
 // Failsafe lazy-import helper supporting default exports, named exports, and mixed bundlers
 const lazyImport = (importFn, name) =>
@@ -202,6 +204,7 @@ export default function App() {
           <Route path="/reset-password" element={<PasswordReset />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/session-expired" element={<SessionExpired />} />
+          <Route path="/auth/digilocker/callback" element={<DigiLockerCallback />} />
 
         </Route>
 
@@ -221,6 +224,8 @@ export default function App() {
           <Route path="/beneficiary/orders" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiaryOrders /></RoleRoute>} />
           <Route path="/beneficiary/orders/:id" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiaryOrderDetail /></RoleRoute>} />
           <Route path="/beneficiary/payments" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiaryPayments /></RoleRoute>} />
+          {/* SBIePay / NDML return here (backend PAYMENT_RESULT_URL = <frontend>/payments/result) */}
+          <Route path="/payments/result" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><PaymentResult /></RoleRoute>} />
           <Route path="/beneficiary/notifications" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiaryNotifications /></RoleRoute>} />
           <Route path="/beneficiary/documents" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiaryDocuments /></RoleRoute>} />
           <Route path="/beneficiary/support" element={<RoleRoute allowedRoles={[ROLES.BENEFICIARY]}><BeneficiaryTickets /></RoleRoute>} />

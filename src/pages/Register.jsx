@@ -28,6 +28,7 @@ import {
 import EmailOtpModal from "../components/modals/EmailOtpModal.jsx";
 import { userService } from "../services/user.service.js";
 import { makeCaptcha } from "../utils/captcha.js";
+import DigiLockerButton from "../components/common/DigiLockerButton.jsx";
 
 const EMPLOYMENT = ["Serving", "Retired", "Defence Civilian"];
 const ORGS = ["Army", "Navy", "Air Force", "Defence Civilian / Other"];
@@ -625,6 +626,15 @@ export default function Register() {
           check out forms. Your login/AFD Demand will be rejected/cancelled if
           service particulars are used.
         </p>
+
+        {/* Faster route: identity verified through DigiLocker, then only card & service details */}
+        <div className="reg-digilocker mb-3">
+          <DigiLockerButton mode="REGISTER" />
+          <p className="small hint" style={{ textAlign: "center", marginTop: ".4rem" }}>
+            Verify your identity with DigiLocker, then add your card details. Your Aadhaar number is not stored.
+            Or fill the form below.
+          </p>
+        </div>
 
         {/* Top Validation & Submission Error Banner */}
         {topErrorBanner && (

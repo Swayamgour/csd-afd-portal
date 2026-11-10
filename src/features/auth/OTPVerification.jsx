@@ -173,7 +173,7 @@ export default function OTPVerification({ sessionData, onBack }) {
           Please enter the 6-digit authentication code sent to your registered email address:
           <br />
           <b className="text-brand otp-email-text">
-            <Mail size={15} className="inline mr-1" />
+            <Mail size={15} aria-hidden="true" />
             {maskEmail(sessionData?.maskedEmail || sessionData?.email)}
           </b>
         </p>

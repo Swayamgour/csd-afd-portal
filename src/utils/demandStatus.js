@@ -53,7 +53,7 @@ export const depotCanReject = (d) => ['CREATED', 'APPROVED', 'PROCESSING'].inclu
 
 export const PAYMENT_MODES = {
   DIRECT_BANK_TRANSFER: 'Direct Bank Transfer (NEFT/RTGS)',
-  ONLINE_PAYMENT: 'Online Payment (Razorpay)',
+  ONLINE_PAYMENT: 'Online Payment (SBIePay / NDML)',
 };
 
 export const fmtINR = (n) => `₹ ${Number(n || 0).toLocaleString('en-IN')}`;
@@ -61,7 +61,7 @@ export const fmtINR = (n) => `₹ ${Number(n || 0).toLocaleString('en-IN')}`;
 export function paymentMethodLabel(m) {
   const k = upper(m);
   if (k === 'DIRECT_BANK_TRANSFER' || k === 'DIRECT_TRANSFER') return 'Direct bank transfer (NEFT/RTGS)';
-  if (k === 'ONLINE_PAYMENT' || k === 'GATEWAY' || k === 'RAZORPAY_ONLINE') return 'Online payment';
+  if (['ONLINE_PAYMENT', 'GATEWAY', 'RAZORPAY_ONLINE', 'SBIEPAY', 'NDML'].includes(k)) return 'Online payment';
   return 'Not selected yet'; // legacy values such as "Pending Depot Approval"
 }
 

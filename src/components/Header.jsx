@@ -17,6 +17,16 @@ import SearchBox from "./SearchBox.jsx";
 import FontSizeResizer from "./common/FontSizeResizer.jsx";
 import { normalizeRole } from "../permissions/roles.js";
 
+const AUTH_PATHS = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/forgot-username",
+  "/reset-password",
+  "/unauthorized",
+  "/session-expired",
+];
+
 const nav = [
   ["/", "Home"],
   ["/products?cat=car", "Cars"],
@@ -42,6 +52,10 @@ export default function Header() {
   const unreadCount = notificationsResp?.unread || notifItems.filter(n => !n.read && !n.isRead).length;
 
   const forcesList = Array.isArray(dynamicBanners) ? dynamicBanners.filter(b => b?.imageUrl) : [];
+
+  // Pre-login screens (sign in, register, password/username recovery, session pages):
+  // hide search, wishlist/cart and the storefront menu, same as /login.
+  const isAuthPage = AUTH_PATHS.includes(loc.pathname);
 
   const cur = loc.pathname + loc.search;
   const isActive = (to) =>
@@ -105,11 +119,11 @@ export default function Header() {
           <span className="brand-mark" aria-hidden>CSD</span>
           <span className="brand-txt"><strong>AFD Online</strong><small>Canteen Stores Department</small></span>
         </Link> */}
-        {loc.pathname !== "/login" && loc.pathname !== "/register" && (
+        {!isAuthPage && (
           <SearchBox variant="header" placeholder="Search cars, bikes, SKU, Mfr code..." />
         )}
         <div className="actions">
-          {loc.pathname !== "/login" && loc.pathname !== "/register" && isAuthenticated && (
+          {!isAuthPage && isAuthenticated && (
             <>
               <Link
                 to="/products?wish=1"
@@ -176,7 +190,7 @@ export default function Header() {
         </div>
       </div>
 
-      {loc.pathname !== "/login" && loc.pathname !== "/register" && (
+      {!isAuthPage && (
         <nav
           id="mainnav"
           aria-label="Main"

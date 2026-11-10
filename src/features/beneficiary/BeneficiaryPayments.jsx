@@ -22,25 +22,17 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import InlinePaymentCard from '../../components/common/InlinePaymentCard.jsx';
-import { useAuth } from '../../context/AuthContext.jsx';
-import {
-  useGetPaymentsQuery,
-  useCreatePaymentMutation,
-  useVerifyPaymentMutation,
-} from '../payment/paymentApi.js';
+import OnlinePaymentCard from '../../components/common/OnlinePaymentCard.jsx';
+import { useGetPaymentsQuery } from '../payment/paymentApi.js';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
-import { getErrorMessage } from '../../utils/apiError.js';
-import { openRazorpayCheckout } from '../../utils/razorpay.js';
+import { gatewayLabel } from '../../utils/gatewayCheckout.js';
 import { paymentMethodLabel } from '../../utils/demandStatus.js';
 import { isPayable, demandAmount } from '../../utils/demandStatus.js';
 
 export default function BeneficiaryPayments() {
-  const { user } = useAuth();
-
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [utrModalOpen, setUtrModalOpen] = useState(false);
   const [selectedDemand, setSelectedDemand] = useState(null);
-  const [processing, setProcessing] = useState(false);
   const [toast, setToast] = useState({ type: '', message: '' });
 
   // Search & Filter State (identical to BeneficiaryProducts.jsx)
@@ -58,9 +50,6 @@ export default function BeneficiaryPayments() {
     isLoading: loadingDemands,
     refetch: refetchDemands,
   } = useGetDemandsQuery();
-
-  const [createPayment] = useCreatePaymentMutation();
-  const [verifyPayment] = useVerifyPaymentMutation();
 
   const payments = paymentsData?.items || [];
   const allDemands = demandsData?.items || [];
@@ -84,36 +73,6 @@ export default function BeneficiaryPayments() {
     setUtrModalOpen(true);
   };
 
-  const handleCompletePayment = async () => {
-    if (!selectedDemand) return;
-    setProcessing(true);
-    try {
-      const id = selectedDemand._id || selectedDemand.id;
-      const init = await createPayment({ demandId: id }).unwrap();
-      const resp = await openRazorpayCheckout({
-        checkout: init.checkout,
-        prefill: { name: user?.name, email: user?.email, contact: user?.mobile },
-      });
-      await verifyPayment({
-        demandId: id,
-        paymentNo: init.paymentNo,
-        gatewayOrderId: resp.razorpay_order_id || init.gatewayOrderId,
-        gatewayPaymentId: resp.razorpay_payment_id,
-        gatewaySignature: resp.razorpay_signature,
-      }).unwrap();
-
-      setPayModalOpen(false);
-      setSelectedDemand(null);
-      showToast('success', 'Payment successful. The depot will now verify it.');
-    } catch (err) {
-      showToast('error', getErrorMessage(err, err?.message || 'Failed to complete payment.'));
-    } finally {
-      setProcessing(false);
-      refetchPayments();
-      refetchDemands();
-    }
-  };
-
   // Filtered Payments List
   const filteredPayments = useMemo(() => {
     return payments.filter((p) => {
@@ -123,6 +82,7 @@ export default function BeneficiaryPayments() {
         if (statusFilter === 'SUCCESS' && pStatus !== 'SUCCESS') return false;
         if (statusFilter === 'INITIATED' && pStatus !== 'INITIATED') return false;
         if (statusFilter === 'FAILED' && pStatus !== 'FAILED') return false;
+        if (statusFilter === 'REFUNDED' && !['REFUNDED', 'PARTIALLY_REFUNDED'].includes(pStatus)) return false;
       }
 
       // 2. Search Query
@@ -173,7 +133,12 @@ export default function BeneficiaryPayments() {
       header: 'Method',
       accessor: 'method',
       render: (row) => (
-        <span>{paymentMethodLabel(row.method)}</span>
+        <span>
+          {paymentMethodLabel(row.method)}
+          {['SBIEPAY', 'NDML'].includes(String(row.provider || '').toUpperCase()) && (
+            <span className="muted small"> · {gatewayLabel(row.provider)}</span>
+          )}
+        </span>
       ),
     },
     {
@@ -316,6 +281,7 @@ export default function BeneficiaryPayments() {
             <option value="SUCCESS">Success / Paid</option>
             <option value="INITIATED">Initiated / Pending</option>
             <option value="FAILED">Failed</option>
+            <option value="REFUNDED">Refunded</option>
           </select>
           <button
             type="button"
@@ -431,56 +397,24 @@ export default function BeneficiaryPayments() {
         </div>
       )}
 
-      {/* 8. Inline Section: Online Cyber Treasury Gateway */}
+      {/* 8. Inline Section: Online payment (SBIePay / NDML) */}
       {payModalOpen && selectedDemand && (
-        <Card
-          className="mt-4 border-2 border-brand"
-          title="Online Payment (Razorpay)"
-          subtitle={`Demand: ${selectedDemand?.demandNo || selectedDemand?._id} · ${selectedDemand?.productId?.name || selectedDemand?.productName || 'AFD Item'}`}
-          headerActions={
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setPayModalOpen(false);
-                setSelectedDemand(null);
-              }}
-              disabled={processing}
-            >
-              Cancel
-            </Button>
-          }
-        >
-          <div className="payment-modal-body">
-            <div className="panel p-3 bg-slate-50 border border-slate-200 rounded text-center mb-3">
-              <span className="small muted block">Net Amount Payable</span>
-              <p className="h2 text-brand font-bold my-1">
-                ₹ {demandAmount(selectedDemand).toLocaleString('en-IN')}
-              </p>
-              
-            </div>
-
-            <p className="micro muted mb-3">
-              Payment is processed securely by Razorpay. Never share your OTP with anyone.
-            </p>
-
-            <div className="flex justify-end gap-2 pt-2 border-t">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setPayModalOpen(false);
-                  setSelectedDemand(null);
-                }}
-                disabled={processing}
-              >
-                Cancel
-              </Button>
-              <Button variant="primary" loading={processing} onClick={handleCompletePayment}>
-                Authorize &amp; Pay ₹ {demandAmount(selectedDemand).toLocaleString('en-IN')}
-              </Button>
-            </div>
-          </div>
-        </Card>
+        <div className="mt-4">
+          <OnlinePaymentCard
+            demand={selectedDemand}
+            onCancel={() => {
+              setPayModalOpen(false);
+              setSelectedDemand(null);
+            }}
+            onPaid={() => {
+              setPayModalOpen(false);
+              setSelectedDemand(null);
+              showToast('success', 'Payment successful. The depot will now verify it.');
+              refetchPayments();
+              refetchDemands();
+            }}
+          />
+        </div>
       )}
     </div>
   );

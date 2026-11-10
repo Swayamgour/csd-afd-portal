@@ -312,7 +312,7 @@ export default function ForgotUsername() {
           <div className="between">
             <button
               type="button"
-              className="text-brand font-semibold text-xs hover:underline cursor-pointer bg-transparent border-0 p-0"
+              className="otp-link-btn"
               onClick={() => {
                 setStep('request');
                 setOtp(['', '', '', '', '', '']);
@@ -339,13 +339,13 @@ export default function ForgotUsername() {
 
           {/* DEV OTP HELPER FOR EASY TESTING */}
           {devOtp && (
-            <div className="p-2 mb-3 bg-blue-50 border border-blue-200 rounded text-blue-800 text-xs flex items-center justify-between" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="dev-otp" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>
                 <strong>Dev OTP:</strong> {devOtp}
               </span>
               <button
                 type="button"
-                className="text-blue-600 underline font-semibold cursor-pointer"
+                className="otp-link-btn"
                 onClick={() => {
                   setOtp(devOtp.split(''));
                   setErrors({});
@@ -407,7 +407,7 @@ export default function ForgotUsername() {
               </span>
               <button
                 type="button"
-                className="text-brand font-semibold hover:underline cursor-pointer disabled:opacity-50"
+                className="otp-link-btn"
                 onClick={handleResendOtp}
                 disabled={cooldown > 0 || resending}
               >

@@ -28,6 +28,7 @@ import {
 import { useGetDemandByIdQuery } from '../features/demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import InlinePaymentCard from '../components/common/InlinePaymentCard.jsx';
+import OnlinePaymentCard from '../components/common/OnlinePaymentCard.jsx';
 import { isPayable, getStatusLabel, isAwaitingDepotApproval, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
 
 export default function DemandDetail() {
@@ -47,6 +48,7 @@ export default function DemandDetail() {
 
   // Inline payment form toggle
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showOnlineForm, setShowOnlineForm] = useState(false);
 
   const handlePaymentSubmitSuccess = async (paymentPayload) => {
     try {
@@ -215,6 +217,29 @@ export default function DemandDetail() {
             <CreditCard size={15} />
             {showPaymentForm ? 'Hide Payment Form' : 'Submit Bank Transfer'}
           </button>
+          {!demand?.loan?.isLoan && (
+            <button
+              onClick={() => { setShowOnlineForm(true); setShowPaymentForm(false); }}
+              className="btn-secondary-action flex-align-center-gap-xs"
+              style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}
+            >
+              <CreditCard size={15} />
+              Pay Online
+            </button>
+          )}
+        </div>
+      )}
+
+      {showOnlineForm && canMakePayment && (
+        <div className="mb-4">
+          <OnlinePaymentCard
+            demand={demand}
+            onCancel={() => setShowOnlineForm(false)}
+            onPaid={() => {
+              setShowOnlineForm(false);
+              fetchDemand();
+            }}
+          />
         </div>
       )}
 

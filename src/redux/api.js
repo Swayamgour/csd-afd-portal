@@ -33,7 +33,8 @@ const baseQueryWithReauth = async (args, apiInstance, extraOptions) => {
       url &&
       !url.includes("/auth/login") &&
       !url.includes("/auth/verify-credentials") &&
-      !url.includes("/auth/send-otp")
+      !url.includes("/auth/send-otp") &&
+      !url.includes("/auth/digilocker/complete-")
     ) {
       localStorage.removeItem("csd_auth_token");
       localStorage.removeItem("csd_auth_user");

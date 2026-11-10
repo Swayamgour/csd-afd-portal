@@ -18,12 +18,13 @@ import { useStoreProducts } from "../hooks/useStoreProducts.js";
 import { useGetBannersQuery, useGetContentQuery } from "../features/admin/adminApi.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeRole } from "../permissions/roles.js";
+import "../styles/home-notice.css";
 
 // Category tiles: only labels/icons live here (UI). Counts and images come from the server data.
 const CATEGORY_TILES = [
-  { key: "car", group: "Automobiles", label: "Cars", to: "/products?cat=car", cls: "car", Icon: Car },
-  { key: "bike", group: "Automobiles", label: "Bikes", to: "/products?cat=bike", cls: "bike", Icon: Bike },
-  { key: "white-goods", group: "Home & Living", label: "Appliances", to: "/products?cat=white-goods", cls: "app", Icon: Refrigerator },
+  { key: "car", group: "Automobiles", label: "Cars", to: "/products?cat=car", cls: "car", Icon: Car, image: '/assets/maruti1.png' },
+  { key: "bike", group: "Automobiles", label: "Bikes", to: "/products?cat=bike", cls: "bike", Icon: Bike, image: '/assets/bullet1.png' },
+  { key: "white-goods", group: "Home & Living", label: "Appliances", to: "/products?cat=white-goods", cls: "app", Icon: Refrigerator, image: '/assets/white_goods1.png' },
 ];
 
 const text = (v) => (v && typeof v === "object" ? v.en || Object.values(v)[0] : v) || "";
@@ -73,6 +74,8 @@ export default function Home() {
       }).filter((t) => t.count > 0),
     [allProducts],
   );
+
+  console.log(cats);
 
   // Hero banners (logged-out only) - server only, no default images
   const { data: heroData, isLoading: heroLoading } = useGetBannersQuery(
@@ -176,7 +179,7 @@ export default function Home() {
                     <span className="cta">
                       Explore <ArrowUpRight size={15} aria-hidden />
                     </span>
-                    {t.img && <img src={t.img} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = "none")} />}
+                    {t.image && <img src={t.image} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = "none")} />}
                   </Link>
                 </li>
               ))}
@@ -205,11 +208,11 @@ export default function Home() {
 
         {/* ===================== NEWS & NOTICES ===================== */}
         <section aria-labelledby="news" className="news">
-          <div className="sec-h">
+          {/* <div className="sec-h">
             <h2 id="news">News &amp; notices</h2>
-          </div>
+          </div> */}
 
-          {newsLoading && <Loader label="Loading notices" />}
+          {/* {newsLoading && <Loader label="Loading notices" />}
           {newsError && !newsLoading && (
             <UnavailableState
               title="Notices not available"
@@ -219,7 +222,7 @@ export default function Home() {
           )}
           {!newsLoading && !newsError && notices.length === 0 && (
             <InlineNote>No news or notices have been published yet.</InlineNote>
-          )}
+          )} */}
 
           <div className="news-grid">
             {/* Featured story (latest published notice) */}
@@ -279,6 +282,47 @@ export default function Home() {
                       <Phone size={16} aria-hidden /> Contact us
                     </Link>
                   </div>
+
+                  <ul className="help-lines">
+                    <li>
+                      <span className="hl-ic" aria-hidden><Headset size={18} /></span>
+                      <div>
+                        <small>AFD Help Desk</small>
+                        <a href="tel:01204768100">0120-4768100</a>
+                        <em>09:00 to 18:00 hrs, Monday to Sunday</em>
+                      </div>
+                    </li>
+                    <li>
+                      <span className="hl-ic" aria-hidden><Phone size={18} /></span>
+                      <div>
+                        <small>SCPL Helpdesk</small>
+                        <a href="tel:01204699923">0120-4699923</a>
+                        <em>
+                          WhatsApp: <a href="https://wa.me/919582250281" target="_blank" rel="noopener noreferrer">9582250281</a>
+                          {" "}for User Registration, User Admin Approval and Login issues
+                        </em>
+                      </div>
+                    </li>
+                    <li>
+                      <span className="hl-ic" aria-hidden><Info size={18} /></span>
+                      <div>
+                        <small>CS Dte Helpline</small>
+                        <a href="tel:01126181892">011-26181892</a>
+                        <em>For all other queries related to policy issues</em>
+                      </div>
+                    </li>
+                  </ul>
+
+                  <div className="help-alert">
+                    <CircleCheck size={18} aria-hidden />
+                    <span>
+                      Availing services on the CSD-AFD online Portal is absolutely
+                      free. If anyone asks for money for registration, filling the
+                      form or getting a supply order released, report it
+                      immediately to{" "}
+                      <a href="mailto:afd.ddgcs@csdindia.gov.in">afd.ddgcs@csdindia.gov.in</a>.
+                    </span>
+                  </div>
                 </div>
               </article>
 
@@ -308,8 +352,49 @@ export default function Home() {
                     <CircleCheck size={18} aria-hidden />
                     <span>Never share your password or OTP with anyone.</span>
                   </li>
-                 
+
                 </ul>
+
+                {/* ---- Important notice for CSD beneficiaries ---- */}
+                <div className="notice-block">
+                  <h4 className="notice-title">Important Notice for CSD Beneficiaries:</h4>
+
+                  <p>
+                    Esteemed Beneficiaries, The SMS OTP service on the AFD Portal
+                    has been restored. Beneficiaries can now use SMS OTP for both
+                    Portal Login and New Beneficiary Registration. Thank you for
+                    your patience and cooperation.
+                  </p>
+
+                  <a
+                    className="notice-link"
+                    href="https://afd.csdindia.gov.in/wp-content/uploads/media/2025/09/Advisory_for_GST_Slab_Revision_on_AFD_Portal.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FileText size={16} aria-hidden />
+                    Click here to read the Advisory for GST Slab Revision on AFD Portal
+                  </a>
+
+                  <p>
+                    Beneficiaries who have already made payment are advised{" "}
+                    <strong>NOT</strong> to make a duplicate payment. Payment
+                    status will be updated automatically on the AFD Portal within
+                    2-3 days. Please await status updation before taking any
+                    further action. Thank you for your cooperation.
+                  </p>
+
+                  <p>
+                    In case you experience any difficulty in Login or Slow loading
+                    of Webpages or Captcha, you may try refreshing the page or
+                    clearing cache memory from the browser settings
+                    (Ctrl+Shift+R). If this does not resolve the problem please
+                    send registered username, registered email id, registered
+                    phone number and error message on email to{" "}
+                    <a href="mailto:afdcsdindiahelp@zohomail.in">afdcsdindiahelp@zohomail.in</a>{" "}
+                    or call on <a href="tel:01204768100">0120-4768100</a>.
+                  </p>
+                </div>
               </article>
             </div>
           </div>

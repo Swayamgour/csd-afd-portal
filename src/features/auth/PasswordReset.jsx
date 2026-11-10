@@ -261,7 +261,7 @@ export default function PasswordReset() {
           </div>
 
           <h1 id="rh">Forgot Password</h1>
-          <p className="reg-warn">
+          <p className="reg-note">
             Enter your registered email address or mobile number to receive a 6-digit OTP verification code.
           </p>
 
@@ -388,11 +388,11 @@ export default function PasswordReset() {
           </div>
 
           {devOtp && (
-            <div className="p-2 mb-3 bg-blue-50 border border-blue-200 rounded text-blue-800 text-xs flex items-center justify-between">
+            <div className="dev-otp">
               <span><b>Development OTP:</b> <span className="font-mono tracking-widest text-sm font-bold">{devOtp}</span></span>
               <button
                 type="button"
-                className="text-blue-600 underline text-xs font-semibold"
+                className="otp-link-btn"
                 onClick={() => {
                   setOtp(devOtp.split(''));
                   setErrors({});
@@ -455,7 +455,7 @@ export default function PasswordReset() {
               </span>
               <button
                 type="button"
-                className="text-brand font-semibold hover:underline cursor-pointer disabled:opacity-50"
+                className="otp-link-btn"
                 onClick={handleResendOtp}
                 disabled={cooldown > 0 || resending}
               >

@@ -24,6 +24,7 @@ import { LoadingState, EmptyState } from '../../components/common/States.jsx';
 import { useGetDemandByIdQuery, useCancelDemandMutation } from '../demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../payment/paymentApi.js';
 import InlinePaymentCard from '../../components/common/InlinePaymentCard.jsx';
+import OnlinePaymentCard from '../../components/common/OnlinePaymentCard.jsx';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { isPayable, canCancel, getStatusLabel, paymentStatusLabel, paymentMethodLabel } from '../../utils/demandStatus.js';
 
@@ -34,6 +35,7 @@ export default function BeneficiaryDemandDetail() {
   const [showCancelPrompt, setShowCancelPrompt] = useState(false);
   const [cancelReason, setCancelReason] = useState('Beneficiary request');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showOnlineForm, setShowOnlineForm] = useState(false);
   const [toast, setToast] = useState({ type: '', message: '' });
 
   const {
@@ -174,7 +176,7 @@ export default function BeneficiaryDemandDetail() {
               <Button
                 variant="primary"
                 icon={CreditCard}
-                onClick={() => setShowPaymentForm(!showPaymentForm)}
+                onClick={() => { setShowPaymentForm(!showPaymentForm); setShowOnlineForm(false); }}
                 style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff', fontWeight: 700 }}
               >
                 Pay Now / Submit Bank Transfer
@@ -209,6 +211,20 @@ export default function BeneficiaryDemandDetail() {
               Confirm Cancellation
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* Online payment (SBIePay / NDML) */}
+      {showOnlineForm && isApprovedAndPayable && (
+        <div className="mb-4">
+          <OnlinePaymentCard
+            demand={demand}
+            onCancel={() => setShowOnlineForm(false)}
+            onPaid={() => {
+              setShowOnlineForm(false);
+              refetch();
+            }}
+          />
         </div>
       )}
 
@@ -262,11 +278,22 @@ export default function BeneficiaryDemandDetail() {
             variant="primary"
             icon={CreditCard}
             size="sm"
-            onClick={() => setShowPaymentForm(true)}
+            onClick={() => { setShowPaymentForm(true); setShowOnlineForm(false); }}
             style={{ background: '#16a34a', borderColor: '#16a34a', color: '#fff', fontWeight: 700, flexShrink: 0 }}
           >
             Pay Now / Submit Bank Transfer
           </Button>
+          {!demand?.loan?.isLoan && (
+            <Button
+              variant="outline"
+              icon={CreditCard}
+              size="sm"
+              onClick={() => { setShowOnlineForm(true); setShowPaymentForm(false); }}
+              style={{ flexShrink: 0 }}
+            >
+              Pay Online
+            </Button>
+          )}
         </div>
       )}
 
