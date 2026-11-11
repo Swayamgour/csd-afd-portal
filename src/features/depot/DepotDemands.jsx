@@ -9,12 +9,12 @@ import { useGetDemandsQuery } from '../demand/demandApi.js';
 import { getStatusLabel, fmtINR, upper, hasPaymentDetails, hasSupplyOrderDocs } from '../../utils/demandStatus.js';
 
 const TABS = [
+  { key: 'all', label: 'All', test: () => true },
   { key: 'approval', label: 'To approve', test: (d) => upper(d.status) === 'CREATED' },
   { key: 'payment', label: 'Awaiting payment', test: (d) => upper(d.status) === 'APPROVED' },
   { key: 'pending', label: 'To verify', test: (d) => upper(d.status) === 'PROCESSING' },
   { key: 'issued', label: 'Supply order issued', test: (d) => ['SUPPLY_ORDER_ISSUED', 'COMPLETED'].includes(upper(d.status)) },
   { key: 'rejected', label: 'Rejected / Refunded', test: (d) => ['REJECTED', 'REFUNDED'].includes(upper(d.status)) },
-  { key: 'all', label: 'All', test: () => true },
 ];
 
 export default function DepotDemands() {

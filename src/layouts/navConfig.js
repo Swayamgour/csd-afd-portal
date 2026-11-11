@@ -23,7 +23,9 @@ import {
   BookOpen,
   KeyRound,
   Image,
-  UserCheck
+  UserCheck,
+  Upload,
+  Download
 } from 'lucide-react';
 import { ROLES } from '../permissions/roles.js';
 
@@ -71,12 +73,14 @@ export const ROLE_SIDEBAR_NAV = {
   [ROLES.DEPOT]: [
     { title: 'Depot Dashboard', to: '/depot/dashboard', icon: LayoutDashboard },
     { title: 'Received Demands', to: '/depot/demands', icon: FileText },
-    { title: 'Supply Orders', to: '/depot/orders', icon: Truck },
-    { title: 'Allocated Products', to: '/depot/products', icon: Package },
-    { title: 'Transactions', to: '/depot/transactions', icon: CreditCard },
-    { title: 'Depot Reports', to: '/depot/reports', icon: FileSpreadsheet },
-    { title: 'Notifications', to: '/depot/notifications', icon: Bell },
-    { title: 'Support Desk', to: '/depot/support', icon: HelpCircle },
+    { title: 'Order Import', to: '/depot/order-import', icon: Upload },
+    { title: 'Order Export', to: '/depot/order-export', icon: Download },
+    // { title: 'Supply Orders', to: '/depot/orders', icon: Truck },
+    // { title: 'Allocated Products', to: '/depot/products', icon: Package },
+    // { title: 'Transactions', to: '/depot/transactions', icon: CreditCard },
+    // { title: 'Depot Reports', to: '/depot/reports', icon: FileSpreadsheet },
+    // { title: 'Notifications', to: '/depot/notifications', icon: Bell },
+    // { title: 'Support Desk', to: '/depot/support', icon: HelpCircle },
     { title: 'Depot Profile', to: '/depot/profile', icon: Warehouse }
   ],
 

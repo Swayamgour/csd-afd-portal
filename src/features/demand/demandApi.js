@@ -148,6 +148,14 @@ export const demandApi = api.injectEndpoints({
       invalidatesTags: ['Demand', 'Dashboard', 'Order'],
     }),
 
+    // Depot Order Import: items = [{ demandId, officialReceiptUrl, supplyOrderUrl, authorityLetterUrl }] (max 100)
+    // -> { total, imported, failed, results: [{ demandId, demandNo, ok, code?, message? }] }
+    bulkUploadSupplyOrders: builder.mutation({
+      query: (items) => ({ url: '/demands/bulk/supply-order', method: 'POST', body: { items } }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Demand', 'Dashboard', 'Order'],
+    }),
+
     getDemandSummary: builder.query({
       query: (id) => `/demands/${id}/summary`,
       transformResponse: (response) => response?.data || response,
@@ -177,6 +185,7 @@ export const demandApi = api.injectEndpoints({
 
 export const {
   useUploadSupplyOrderMutation,
+  useBulkUploadSupplyOrdersMutation,
   useGetDemandSummaryQuery,
   useGetDemandNotesQuery,
   useAddDemandNoteMutation,

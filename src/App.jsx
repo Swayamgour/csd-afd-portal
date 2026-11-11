@@ -86,6 +86,8 @@ const CsdSettings = lazyImport(() => import('./features/csd/CsdSettings.jsx'), '
 // 3. Depot Pages
 const DepotDashboard = lazyImport(() => import('./features/depot/DepotDashboard.jsx'), 'DepotDashboard');
 const DepotDemands = lazyImport(() => import('./features/depot/DepotDemands.jsx'), 'DepotDemands');
+const DepotOrderImport = lazyImport(() => import('./features/depot/DepotOrderImport.jsx'), 'default');
+const DepotOrderExport = lazyImport(() => import('./features/depot/DepotOrderExport.jsx'), 'default');
 const DepotOrders = lazyImport(() => import('./features/depot/DepotOrders.jsx'), 'DepotOrders');
 const DepotProducts = lazyImport(() => import('./features/depot/DepotProducts.jsx'), 'DepotProducts');
 const DepotTransactions = lazyImport(() => import('./features/depot/DepotTransactions.jsx'), 'DepotTransactions');
@@ -93,6 +95,7 @@ const DepotReports = lazyImport(() => import('./features/depot/DepotReports.jsx'
 const DepotNotifications = lazyImport(() => import('./features/depot/DepotNotifications.jsx'), 'DepotNotifications');
 const DepotSupport = lazyImport(() => import('./features/depot/DepotSupport.jsx'), 'DepotSupport');
 const DepotProfile = lazyImport(() => import('./features/depot/DepotProfile.jsx'), 'DepotProfile');
+
 
 // 4. URC Pages
 const UrcDashboard = lazyImport(() => import('./features/urc/UrcDashboard.jsx'), 'UrcDashboard');
@@ -269,6 +272,8 @@ export default function App() {
           <Route path="/depot/dashboard" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotDashboard /></RoleRoute>} />
           <Route path="/depot/demands" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotDemands /></RoleRoute>} />
           <Route path="/depot/demands/:id" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotDemandDetail /></RoleRoute>} />
+          <Route path="/depot/order-import" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotOrderImport /></RoleRoute>} />
+          <Route path="/depot/order-export" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotOrderExport /></RoleRoute>} />
           <Route path="/depot/orders" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotOrders /></RoleRoute>} />
           <Route path="/depot/products" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotProducts /></RoleRoute>} />
           <Route path="/depot/transactions" element={<RoleRoute allowedRoles={[ROLES.DEPOT_OFFICIAL]}><DepotTransactions /></RoleRoute>} />
