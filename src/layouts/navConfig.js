@@ -55,7 +55,7 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'Supply Orders', to: '/csd/orders', icon: Truck },
     { title: 'Treasury Payments', to: '/csd/payments', icon: CreditCard },
     { title: 'Beneficiary Registry', to: '/csd/beneficiaries', icon: Users },
-    { title: 'User Management', to: '/csd/users', icon: User },
+    // { title: 'User Management', to: '/csd/users', icon: User },
     { title: 'Product Catalogue', to: '/csd/products', icon: Package },
     { title: 'Categories & Quotas', to: '/csd/categories', icon: Layers },
     { title: 'OEM Partners', to: '/csd/oems', icon: Building2 },
@@ -65,9 +65,9 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'Reports & MIS', to: '/csd/reports', icon: FileSpreadsheet },
     { title: 'Audit Logs', to: '/csd/audit-logs', icon: ShieldAlert },
     { title: 'Login History', to: '/csd/login-history', icon: History },
-    { title: 'Content & Circulars', to: '/csd/content', icon: FileCheck },
-    { title: 'Helpdesk Oversight', to: '/csd/support', icon: HelpCircle },
-    { title: 'Settings', to: '/csd/settings', icon: Settings }
+    // { title: 'Content & Circulars', to: '/csd/content', icon: FileCheck },
+    // { title: 'Helpdesk Oversight', to: '/csd/support', icon: HelpCircle },
+    // { title: 'Settings', to: '/csd/settings', icon: Settings }
   ],
 
   [ROLES.DEPOT]: [
@@ -87,11 +87,11 @@ export const ROLE_SIDEBAR_NAV = {
   [ROLES.URC]: [
     { title: 'URC Dashboard', to: '/urc/dashboard', icon: LayoutDashboard },
     { title: 'Local Demands', to: '/urc/demands', icon: FileText },
-    { title: 'Supply Orders', to: '/urc/orders', icon: Truck },
-    { title: 'Entitled Products', to: '/urc/products', icon: Package },
-    { title: 'URC Reports', to: '/urc/reports', icon: FileSpreadsheet },
-    { title: 'Notifications', to: '/urc/notifications', icon: Bell },
-    { title: 'Support', to: '/urc/support', icon: HelpCircle },
+    // { title: 'Supply Orders', to: '/urc/orders', icon: Truck },
+    // { title: 'Entitled Products', to: '/urc/products', icon: Package },
+    // { title: 'URC Reports', to: '/urc/reports', icon: FileSpreadsheet },
+    // { title: 'Notifications', to: '/urc/notifications', icon: Bell },
+    // { title: 'Support', to: '/urc/support', icon: HelpCircle },
     { title: 'URC Profile', to: '/urc/profile', icon: Store }
   ],
 
@@ -103,7 +103,7 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'State Pricing', to: '/oem/pricing', icon: CreditCard },
     { title: 'AFD Demands', to: '/oem/demands', icon: FileText },
     { title: 'Supply Orders', to: '/oem/orders', icon: Truck },
-    { title: 'Reports & MIS', to: '/oem/reports', icon: FileSpreadsheet },
+    // { title: 'Reports & MIS', to: '/oem/reports', icon: FileSpreadsheet },
     { title: 'OEM Profile', to: '/oem/profile', icon: Building2 }
   ],
 

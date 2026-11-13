@@ -34,6 +34,8 @@ export const Img = ({ p, ...r }) => (
 );
 
 export default function ProductCard({ p, list }) {
+
+  console.log(p, list)
   const { wish, cmp, toggleWish, toggleCmp, addCart } = useStore(),
     w = wish.includes(p.id),
     c = cmp.includes(p.id),

@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getCookie } from "../utils/cookie.js";
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
@@ -25,6 +25,32 @@ const rawBaseQuery = fetchBaseQuery({
   },
 });
 
+// Public storefront pages must stay reachable WITHOUT login.
+// A 401 on these pages (guest, or an expired token) must never bounce the visitor to /login.
+const PUBLIC_PATHS = [
+  "/",
+  "/products",
+  "/search",
+  "/compare",
+  "/cart",
+  "/categories",
+  "/register",
+  "/info",
+  "/checkout",
+  "/demands",
+  "/payment",
+  "/login",
+  "/forgot-password",
+  "/forgot-username",
+  "/reset-password",
+  "/unauthorized",
+  "/session-expired",
+  "/auth",
+];
+
+const isPublicPath = (pathname = "/") =>
+  PUBLIC_PATHS.some((p) => (p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(p + "/")));
+
 const baseQueryWithReauth = async (args, apiInstance, extraOptions) => {
   const result = await rawBaseQuery(args, apiInstance, extraOptions);
   if (result?.error && result.error.status === 401) {
@@ -36,13 +62,14 @@ const baseQueryWithReauth = async (args, apiInstance, extraOptions) => {
       !url.includes("/auth/send-otp") &&
       !url.includes("/auth/digilocker/complete-")
     ) {
+      // Drop the stale session either way
       localStorage.removeItem("csd_auth_token");
       localStorage.removeItem("csd_auth_user");
       localStorage.removeItem("csd_auth_role");
-      if (
-        typeof window !== "undefined" &&
-        !window.location.pathname.includes("/login")
-      ) {
+
+      // Redirect ONLY when the user is inside the protected portal (dashboards etc.).
+      // Home and the other public storefront pages stay open for guests.
+      if (typeof window !== "undefined" && !isPublicPath(window.location.pathname)) {
         window.location.href = "/login";
       }
     }

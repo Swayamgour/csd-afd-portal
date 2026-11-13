@@ -312,7 +312,9 @@ export default function App() {
           <Route path="/oem/profile" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemProfile /></RoleRoute>} />
 
           {/* 6. DEALER PORTAL */}
-          <Route path="/dealer/dashboard" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerDashboard /></RoleRoute>} />
+          <Route path="/dealer/dashboard" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}>
+            <DealerDashboard />
+            </RoleRoute>} />
           <Route path="/dealer/demands" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerDashboard /></RoleRoute>} />
           <Route path="/dealer/products" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER, ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><DealerProducts /></RoleRoute>} />
           <Route path="/dealer/orders" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}><DealerOrders /></RoleRoute>} />
