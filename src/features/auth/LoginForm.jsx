@@ -245,7 +245,7 @@ export default function LoginForm({ onNeedOtp }) {
             aria-invalid={!!errors.username}
           />
         </div>
-        <p className="small hint">
+        <p className="small hint flex justify-end">
           <Link to="/forgot-username">Forgot User ID?</Link>
         </p>
       </Field>
@@ -276,7 +276,7 @@ export default function LoginForm({ onNeedOtp }) {
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
-        <p className="small hint">
+        <p className="small hint flex justify-end">
           <Link to="/forgot-password">Forgot password?</Link>
         </p>
       </Field>
@@ -341,7 +341,7 @@ export default function LoginForm({ onNeedOtp }) {
         <hr style={{ flex: 1, border: 0, borderTop: '1px solid var(--color-border, #d1d5db)' }} />
       </div>
       <DigiLockerButton mode="LOGIN" disabled={loading} />
-      <p className="small hint" style={{ textAlign: 'center', marginTop: '.4rem' }}>
+      <p className="small hint" style={{ marginTop: '.4rem' }}>
         DigiLocker sign-in is for beneficiaries. No password or OTP needed.
       </p>
 

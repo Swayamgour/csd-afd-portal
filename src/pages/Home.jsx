@@ -75,7 +75,7 @@ export default function Home() {
     [allProducts],
   );
 
-  console.log(cats);
+  // console.log(cats);
 
   // Hero banners (logged-out only) - server only, no default images
   const { data: heroData, isLoading: heroLoading } = useGetBannersQuery(

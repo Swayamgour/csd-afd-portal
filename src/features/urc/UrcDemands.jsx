@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { RefreshCw, Download, CheckCircle2, AlertCircle } from 'lucide-react';
+import { RefreshCw, Download, CheckCircle2, AlertCircle, Phone, Eye } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
+import Modal from '../../components/common/Modal.jsx';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
 import { apiClient } from '../../services/apiClient.js';
 
@@ -21,11 +22,46 @@ const extOf = (url = '') => {
   return m ? m[0] : '.pdf';
 };
 
+const fmtMoney = (n) => `₹ ${Number(n || 0).toLocaleString('en-IN')}`;
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+const fmtDateTime = (d) =>
+  d
+    ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : '—';
+const pretty = (v) => (v ? String(v).replace(/_/g, ' ') : '—');
+
+// Beneficiary details: name/phone/email come from the user (userId), card/category from beneficiaryId
+const personOf = (r) => ({
+  name: r.userId?.name || r.beneficiaryId?.fullName || 'Applicant',
+  mobile: r.userId?.mobile || r.deliveryAddress?.mobile || '',
+  email: r.userId?.email || '',
+  cardId: r.beneficiaryId?.cardId || r.beneficiaryId?.serviceNumber || '',
+  category: r.beneficiaryId?.category || '',
+});
+
+const Field = ({ label, children }) => (
+  <div style={{ minWidth: 0 }}>
+    <div className="micro muted">{label}</div>
+    <div className="font-semibold" style={{ wordBreak: 'break-word' }}>{children || '—'}</div>
+  </div>
+);
+
+const Section = ({ title, children }) => (
+  <section style={{ marginBottom: 16 }}>
+    <h4 style={{ margin: '0 0 8px', fontSize: 14 }}>{title}</h4>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+      {children}
+    </div>
+  </section>
+);
+
 export default function UrcDemands() {
   const { data: demandsData, isLoading: loading, isFetching, refetch } = useGetDemandsQuery();
 
   const [busyKey, setBusyKey] = useState(null); // `${demandId}:${docKey|all}`
   const [msg, setMsg] = useState(null);
+  const [selected, setSelected] = useState(null); // demand shown in the detail modal
 
   const demands = Array.isArray(demandsData?.items)
     ? demandsData.items
@@ -79,23 +115,72 @@ export default function UrcDemands() {
     },
     {
       header: 'Beneficiary',
-      accessor: 'beneficiaryId',
-      render: (r) => (
-        <div>
-          <span className="font-semibold block">{r.beneficiaryId?.fullName || 'Applicant'}</span>
-          <span className="micro muted">{r.beneficiaryId?.serviceNumber || ''}</span>
-        </div>
-      ),
+      accessor: 'userId',
+      render: (r) => {
+        const p = personOf(r);
+        return (
+          <div>
+            <span className="font-semibold block">{p.name}</span>
+            {p.mobile && (
+              <span className="micro muted row align-center gap-1">
+                <Phone size={12} aria-hidden /> {p.mobile}
+              </span>
+            )}
+            {p.cardId && <span className="micro muted block">Card: {p.cardId}</span>}
+          </div>
+        );
+      },
     },
     {
       header: 'Vehicle / Item',
       accessor: 'productSnapshot',
-      render: (r) => r.productSnapshot?.name || r.productId?.name || 'AFD Product',
+      render: (r) => (
+        <div>
+          <span className="font-semibold block">{r.productSnapshot?.name || r.productId?.name || 'AFD Product'}</span>
+          <span className="micro muted">
+            Qty: {r.quantity || 1}
+            {r.selectedColor ? ` · ${r.selectedColor}` : ''}
+          </span>
+        </div>
+      ),
+    },
+    {
+      header: 'Delivery / Depot',
+      accessor: 'deliveryAddress',
+      render: (r) => (
+        <div>
+          <span className="block">
+            {[r.deliveryAddress?.city, r.deliveryAddress?.state || r.state].filter(Boolean).join(', ') || '—'}
+          </span>
+          <span className="micro muted block">Depot: {r.depotId?.name || '—'}</span>
+          <span className="micro muted block">Dealer: {r.dealerId?.name || '—'}</span>
+        </div>
+      ),
     },
     {
       header: 'Sanction Price',
       accessor: 'totalAmount',
-      render: (r) => `₹ ${(r.totalAmount || 0).toLocaleString('en-IN')}`,
+      render: (r) => fmtMoney(r.totalAmount),
+    },
+    {
+      header: 'Payment',
+      accessor: 'paymentStatus',
+      render: (r) => (
+        <div>
+          <span className="font-semibold block">{pretty(r.paymentStatus)}</span>
+          <span className="micro muted">{pretty(r.paymentMethod)}</span>
+        </div>
+      ),
+    },
+    {
+      header: 'Supply Order / Date',
+      accessor: 'supplyOrderNo',
+      render: (r) => (
+        <div>
+          <span className="font-semibold block">{r.supplyOrderNo || '—'}</span>
+          <span className="micro muted">Created: {fmtDate(r.createdAt)}</span>
+        </div>
+      ),
     },
     { header: 'Status', accessor: 'status', render: (r) => <StatusBadge status={r.status} /> },
     {
@@ -148,7 +233,19 @@ export default function UrcDemands() {
         );
       },
     },
+    {
+      header: 'Details',
+      accessor: '_details',
+      render: (r) => (
+        <Button variant="outline" size="sm" icon={Eye} onClick={() => setSelected(r)}>
+          View
+        </Button>
+      ),
+    },
   ];
+
+  const sel = selected;
+  const selPerson = sel ? personOf(sel) : null;
 
   return (
     <div className="urc-demands-page">
@@ -181,6 +278,81 @@ export default function UrcDemands() {
       <Card>
         <DataTable columns={columns} data={demands} loading={loading} />
       </Card>
+
+      {sel && (
+        <Modal
+          isOpen
+          onClose={() => setSelected(null)}
+          title={`Demand ${sel.demandNo || sel._id}`}
+          subtitle={sel.statusLabel || pretty(sel.status)}
+          maxWidth="820px"
+        >
+          <Section title="Beneficiary">
+            <Field label="Name">{selPerson.name}</Field>
+            <Field label="Phone">{selPerson.mobile}</Field>
+            <Field label="Email">{selPerson.email}</Field>
+            <Field label="Card ID">{selPerson.cardId}</Field>
+            <Field label="Category">{selPerson.category}</Field>
+            <Field label="Username">{sel.userId?.username}</Field>
+          </Section>
+
+          <Section title="Vehicle / Item">
+            <Field label="Name">{sel.productSnapshot?.name || sel.productId?.name}</Field>
+            <Field label="SKU">{sel.productSnapshot?.sku || sel.productId?.sku}</Field>
+            <Field label="Quantity">{sel.quantity}</Field>
+            <Field label="Colour">{sel.selectedColor}</Field>
+            <Field label="Unit price">{fmtMoney(sel.unitPrice)}</Field>
+            <Field label="Total amount">{fmtMoney(sel.totalAmount)}</Field>
+          </Section>
+
+          <Section title="Delivery Address">
+            <Field label="Address">{sel.deliveryAddress?.address}</Field>
+            <Field label="City">{sel.deliveryAddress?.city}</Field>
+            <Field label="State">{sel.deliveryAddress?.state || sel.state}</Field>
+            <Field label="Pin code">{sel.deliveryAddress?.pinCode}</Field>
+            <Field label="Mobile">{sel.deliveryAddress?.mobile}</Field>
+          </Section>
+
+          <Section title="Depot / Dealer / URC">
+            <Field label="Depot">{sel.depotId ? `${sel.depotId.name} (${sel.depotId.code})` : ''}</Field>
+            <Field label="Dealer">{sel.dealerId ? `${sel.dealerId.name} (${sel.dealerId.code})` : ''}</Field>
+            <Field label="Dealer phone">{sel.dealerId?.phone}</Field>
+            <Field label="Dealer email">{sel.dealerId?.email}</Field>
+            <Field label="URC">{sel.urcId ? `${sel.urcId.name} (${sel.urcId.code})` : ''}</Field>
+          </Section>
+
+          <Section title="Payment">
+            <Field label="Method">{pretty(sel.paymentMethod)}</Field>
+            <Field label="Status">{pretty(sel.paymentStatus)}</Field>
+            <Field label="Payment No">{sel.latestPayment?.paymentNo}</Field>
+            <Field label="UTR / Txn ID">{sel.latestPayment?.gatewayTxnId}</Field>
+            <Field label="Paid at">{fmtDateTime(sel.latestPayment?.paidAt)}</Field>
+            <Field label="OR number">{sel.paymentDetails?.orNumber}</Field>
+            <Field label="Loan">{sel.loan?.isLoan ? `Yes · ${fmtMoney(sel.loan.loanAmount)} · ${sel.loan.bankName}` : 'No'}</Field>
+          </Section>
+
+          <Section title="Supply Order & Timeline">
+            <Field label="Supply Order No">{sel.supplyOrderNo}</Field>
+            <Field label="Created">{fmtDateTime(sel.createdAt)}</Field>
+            <Field label="Supply order issued">{fmtDateTime(sel.supplyOrderIssuedAt)}</Field>
+            <Field label="Completed">{fmtDateTime(sel.completedAt)}</Field>
+          </Section>
+
+          {Array.isArray(sel.statusHistory) && sel.statusHistory.length > 0 && (
+            <section>
+              <h4 style={{ margin: '0 0 8px', fontSize: 14 }}>Status History</h4>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {sel.statusHistory.map((h, i) => (
+                  <li key={h._id || i} className="small" style={{ marginBottom: 4 }}>
+                    <b>{pretty(h.to)}</b> · <span className="muted">{fmtDateTime(h.at)}</span>
+                    {h.note ? <div className="micro muted">{h.note}</div> : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </Modal>
+      )}
     </div>
   );
 }

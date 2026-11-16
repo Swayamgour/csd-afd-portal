@@ -184,18 +184,18 @@ export default function OemDashboard() {
           variant="warning"
           onClick={() => navigate('/oem/orders')}
         />
-        <StatCard
+        {/* <StatCard
           title="Factory Dispatched"
           value={`${d.completedOrders ?? 0} Units`}
           subtext="Delivered via authorized network"
           icon={CheckCircle2}
           variant="success"
           onClick={() => navigate('/oem/orders')}
-        />
+        /> */}
       </div>
 
       {/* Quick Navigation Cards */}
-      <div className="grid-3-col gap-2 mb-3">
+      {/* <div className="grid-3-col gap-2 mb-3">
         <Card title="Catalog & Empanelment" subtitle="Manage CSD index numbers and rate contracts">
           <p className="muted small mb-2">
             Register new automobile variants, submit HO negotiated rates, and monitor CSD rate contract empanelment.
@@ -237,7 +237,7 @@ export default function OemDashboard() {
             </Button>
           </div>
         </Card>
-      </div>
+      </div> */}
 
       {/* Active Supply Orders Table */}
       <Card
@@ -248,7 +248,7 @@ export default function OemDashboard() {
             View All Orders &rarr;
           </Link>
         }
-        className="mb-3"
+        className="mb-3 mt-3"
       >
         <DataTable
           columns={orderColumns}

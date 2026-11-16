@@ -25,7 +25,8 @@ import {
   Image,
   UserCheck,
   Upload,
-  Download
+  Download,
+  UserPlus
 } from 'lucide-react';
 import { ROLES } from '../permissions/roles.js';
 
@@ -55,19 +56,20 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'Supply Orders', to: '/csd/orders', icon: Truck },
     { title: 'Treasury Payments', to: '/csd/payments', icon: CreditCard },
     { title: 'Beneficiary Registry', to: '/csd/beneficiaries', icon: Users },
-    { title: 'User Management', to: '/csd/users', icon: User },
+    // { title: 'User Management', to: '/csd/users', icon: User },
     { title: 'Product Catalogue', to: '/csd/products', icon: Package },
     { title: 'Categories & Quotas', to: '/csd/categories', icon: Layers },
     { title: 'OEM Partners', to: '/csd/oems', icon: Building2 },
     { title: 'Dealer Network', to: '/csd/dealers', icon: Store },
+    { title: 'Dealer Requests', to: '/csd/dealer-requests', icon: UserPlus },
     { title: 'Regional Depots', to: '/csd/depots', icon: Warehouse },
     { title: 'URC Canteens', to: '/csd/urcs', icon: Store },
     { title: 'Reports & MIS', to: '/csd/reports', icon: FileSpreadsheet },
     { title: 'Audit Logs', to: '/csd/audit-logs', icon: ShieldAlert },
     { title: 'Login History', to: '/csd/login-history', icon: History },
-    { title: 'Content & Circulars', to: '/csd/content', icon: FileCheck },
-    { title: 'Helpdesk Oversight', to: '/csd/support', icon: HelpCircle },
-    { title: 'Settings', to: '/csd/settings', icon: Settings }
+    // { title: 'Content & Circulars', to: '/csd/content', icon: FileCheck },
+    // { title: 'Helpdesk Oversight', to: '/csd/support', icon: HelpCircle },
+    // { title: 'Settings', to: '/csd/settings', icon: Settings }
   ],
 
   [ROLES.DEPOT]: [
@@ -75,6 +77,7 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'Received Demands', to: '/depot/demands', icon: FileText },
     { title: 'Order Import', to: '/depot/order-import', icon: Upload },
     { title: 'Order Export', to: '/depot/order-export', icon: Download },
+    { title: 'Dealer Requests', to: '/depot/dealer-requests', icon: UserPlus },
     // { title: 'Supply Orders', to: '/depot/orders', icon: Truck },
     // { title: 'Allocated Products', to: '/depot/products', icon: Package },
     // { title: 'Transactions', to: '/depot/transactions', icon: CreditCard },
@@ -87,11 +90,12 @@ export const ROLE_SIDEBAR_NAV = {
   [ROLES.URC]: [
     { title: 'URC Dashboard', to: '/urc/dashboard', icon: LayoutDashboard },
     { title: 'Local Demands', to: '/urc/demands', icon: FileText },
-    { title: 'Supply Orders', to: '/urc/orders', icon: Truck },
-    { title: 'Entitled Products', to: '/urc/products', icon: Package },
-    { title: 'URC Reports', to: '/urc/reports', icon: FileSpreadsheet },
-    { title: 'Notifications', to: '/urc/notifications', icon: Bell },
-    { title: 'Support', to: '/urc/support', icon: HelpCircle },
+    { title: 'Dealer Verification', to: '/urc/dealer-requests', icon: UserPlus },
+    // { title: 'Supply Orders', to: '/urc/orders', icon: Truck },
+    // { title: 'Entitled Products', to: '/urc/products', icon: Package },
+    // { title: 'URC Reports', to: '/urc/reports', icon: FileSpreadsheet },
+    // { title: 'Notifications', to: '/urc/notifications', icon: Bell },
+    // { title: 'Support', to: '/urc/support', icon: HelpCircle },
     { title: 'URC Profile', to: '/urc/profile', icon: Store }
   ],
 
@@ -99,11 +103,12 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'OEM Dashboard', to: '/oem/dashboard', icon: LayoutDashboard },
     { title: 'Product Catalog', to: '/oem/products', icon: Package },
     { title: 'Authorized Dealers', to: '/oem/dealers', icon: Store },
+    { title: 'New Dealer Requests', to: '/oem/dealer-requests', icon: UserPlus },
     { title: 'Dealer Products', to: '/oem/dealer-products', icon: Layers },
     { title: 'State Pricing', to: '/oem/pricing', icon: CreditCard },
     { title: 'AFD Demands', to: '/oem/demands', icon: FileText },
     { title: 'Supply Orders', to: '/oem/orders', icon: Truck },
-    { title: 'Reports & MIS', to: '/oem/reports', icon: FileSpreadsheet },
+    // { title: 'Reports & MIS', to: '/oem/reports', icon: FileSpreadsheet },
     { title: 'OEM Profile', to: '/oem/profile', icon: Building2 }
   ],
 
@@ -153,6 +158,7 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'Categories', to: '/csd/categories', icon: Layers },
     { title: 'OEMs / Manufacturers', to: '/csd/oems', icon: Building2 },
     { title: 'Dealer Network', to: '/csd/dealers', icon: Store },
+    { title: 'Dealer Requests', to: '/csd/dealer-requests', icon: UserPlus },
     { title: 'Depot Management', to: '/csd/depots', icon: Warehouse },
     { title: 'URC Management', to: '/csd/urcs', icon: Store },
     { title: 'Demand Monitoring', to: '/csd/demands', icon: FileText },
