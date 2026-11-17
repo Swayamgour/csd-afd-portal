@@ -8,7 +8,6 @@ const getEmailJsConfig = () => {
   const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || '';
   const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '';
   const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '';
-  const privateKey = import.meta.env.VITE_EMAILJS_PRIVATE_KEY || '';
 
   const isConfigured =
     serviceId &&
@@ -18,7 +17,7 @@ const getEmailJsConfig = () => {
     templateId !== 'your_template_id' &&
     publicKey !== 'your_public_key';
 
-  return { serviceId, templateId, publicKey, privateKey, isConfigured };
+  return { serviceId, templateId, publicKey, isConfigured };
 };
 
 /**

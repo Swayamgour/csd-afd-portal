@@ -8,10 +8,18 @@ export function DataTable({
   loading = false,
   emptyTitle = 'No records found',
   emptyText = 'There are no items to display matching the criteria.',
-  pagination, // { page, totalPages, totalItems, onPageChange, pageSize }
+  pagination, // { page, totalPages, pages, totalItems, total, onPageChange, pageSize, onPageSizeChange }
   onRowClick,
   className = ''
 }) {
+  const currentPage = Number(pagination?.page) || 1;
+  const pageSize = Number(pagination?.pageSize) || 15;
+  const totalItems = Number(pagination?.totalItems ?? pagination?.total ?? data.length) || 0;
+  const totalPages =
+    Number(pagination?.totalPages || pagination?.pages) ||
+    (totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1);
+  const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalItems);
 
   return (
     <div className={`data-table-container ${className}`}>
@@ -49,7 +57,7 @@ export function DataTable({
             ) : (
               data.map((row, rIdx) => (
                 <tr
-                  key={row.id || rIdx}
+                  key={row.id || row._id || rIdx}
                   onClick={() => onRowClick?.(row)}
                   className={onRowClick ? 'clickable-row' : ''}
                 >
@@ -65,16 +73,42 @@ export function DataTable({
         </table>
       </div>
 
-      {pagination && pagination.totalPages > 1 && (
+      {pagination && (
         <div className="table-pagination-footer between">
-          <span className="small muted">
-            Showing Page <b>{pagination.page}</b> of <b>{pagination.totalPages}</b> ({pagination.totalItems || data.length} total records)
-          </span>
-          <Pagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            onPageChange={pagination.onPageChange}
-          />
+          <div className="flex items-center gap-3">
+            <span className="small muted">
+              Showing <b>{startItem}</b>–<b>{endItem}</b> of <b>{totalItems}</b> records
+              {totalPages > 1 && (
+                <> (Page <b>{currentPage}</b> of <b>{totalPages}</b>)</>
+              )}
+            </span>
+            {pagination.onPageSizeChange && (
+              <div className="flex items-center gap-1.5 small muted text-xs">
+                <span>Per page:</span>
+                <select
+                  className="form-control text-xs py-0.5 px-2 h-7 w-20 rounded border-slate-300"
+                  value={pageSize}
+                  onChange={(e) => pagination.onPageSizeChange(Number(e.target.value))}
+                >
+                  <option value={15}>15</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            )}
+          </div>
+          {totalPages > 1 ? (
+            <Pagination
+              page={currentPage}
+              totalPages={totalPages}
+              onPageChange={pagination.onPageChange}
+            />
+          ) : (
+            <span className="small muted text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium">
+              Page 1 of 1
+            </span>
+          )}
         </div>
       )}
     </div>

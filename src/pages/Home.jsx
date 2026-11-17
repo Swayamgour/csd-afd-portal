@@ -48,7 +48,7 @@ export const Shop = ({ to = "/products", children = "Shop now" }) => (
 );
 
 export default function Home() {
-  const [cat, setCat] = useState("car");
+  const [cat, setCat] = useState("all");
   const { isAuthenticated, role, roleHome, user } = useAuth();
   const navigate = useNavigate();
 
@@ -190,7 +190,7 @@ export default function Home() {
         <section id="shop" aria-labelledby="shop-h" className="shop-sec">
           <div className="sec-h">
             <h2 id="shop-h">Explore the range</h2>
-            <Link to={`/products?cat=${cat}`} className="more">
+            <Link to={cat === "all" ? "/products?cat=all" : `/products?cat=${cat}`} className="more">
               View all <ArrowRight size={15} aria-hidden />
             </Link>
           </div>
@@ -198,8 +198,9 @@ export default function Home() {
             cat={cat}
             onCat={setCat}
             embedded
+            allowAll
             title={
-              { car: "Cars", bike: "Bikes", "white-goods": "Home appliances" }[
+              { all: "All products", car: "Cars", bike: "Bikes", "white-goods": "Home appliances" }[
               cat
               ]
             }

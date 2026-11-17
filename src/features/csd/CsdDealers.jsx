@@ -38,6 +38,8 @@ export default function CsdDealers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDealerForView, setSelectedDealerForView] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -76,6 +78,11 @@ export default function CsdDealers() {
       oemName.toLowerCase().includes(q)
     );
   });
+
+  const pagedDealers = React.useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredDealers.slice(start, start + pageSize);
+  }, [filteredDealers, page, pageSize]);
 
   const columns = [
     {
@@ -258,7 +265,10 @@ export default function CsdDealers() {
               type="text"
               placeholder="Search dealer name, city, OEM..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
               className="form-control"
             />
           </div>
@@ -266,8 +276,22 @@ export default function CsdDealers() {
       >
         <DataTable
           columns={columns}
-          data={filteredDealers}
+          data={pagedDealers}
           loading={loading}
+          pagination={{
+            page,
+            pageSize,
+            totalItems: filteredDealers.length,
+            totalPages: Math.ceil(filteredDealers.length / pageSize) || 1,
+            onPageChange: (newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+            onPageSizeChange: (newLimit) => {
+              setPageSize(newLimit);
+              setPage(1);
+            },
+          }}
           emptyText="No dealerships registered yet. Click 'Add New Dealer' to register."
         />
       </Card>

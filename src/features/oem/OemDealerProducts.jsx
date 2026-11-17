@@ -31,7 +31,7 @@ export default function OemDealerProducts() {
   const location = useLocation();
 
   const [page, setPage] = useState(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState(15);
   const [selectedDealerFilter, setSelectedDealerFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -52,7 +52,7 @@ export default function OemDealerProducts() {
     if (selectedDealerFilter) p.dealerId = selectedDealerFilter;
     if (statusFilter) p.status = statusFilter;
     return p;
-  }, [selectedDealerFilter, statusFilter, page]);
+  }, [selectedDealerFilter, statusFilter, page, pageSize]);
 
   const {
     data: mappingsData,
@@ -272,17 +272,20 @@ export default function OemDealerProducts() {
           columns={columns}
           data={mappings}
           loading={isLoading}
-          pagination={
-            meta.totalPages > 1
-              ? {
-                  page: meta.page || page,
-                  totalPages: meta.totalPages,
-                  totalItems: meta.total,
-                  onPageChange: setPage,
-                  pageSize,
-                }
-              : null
-          }
+          pagination={{
+            page: meta.page || page,
+            totalPages: meta.totalPages || meta.pages || Math.ceil((meta.total || 0) / pageSize) || 1,
+            totalItems: meta.total ?? mappings.length,
+            pageSize,
+            onPageChange: (newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+            onPageSizeChange: (newLimit) => {
+              setPageSize(newLimit);
+              setPage(1);
+            },
+          }}
           emptyTitle="No dealership mappings found"
           emptyText="No dealership product allotments found matching your filter."
         />

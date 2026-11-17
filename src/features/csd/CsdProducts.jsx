@@ -19,7 +19,8 @@ import {
   Eye,
   IndianRupee,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  FileSpreadsheet
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
@@ -27,13 +28,15 @@ import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Button from '../../components/common/Button.jsx';
 import Badge from '../../components/common/Badge.jsx';
+import ExcelImportModal from '../../components/common/ExcelImportModal.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import {
   useGetProductsQuery,
   useGetCategoriesQuery,
   useUpdateProductMutation,
   useDeleteProductMutation,
-  useCreateProductMutation
+  useCreateProductMutation,
+  useImportProductsExcelMutation
 } from '../catalog/productApi.js';
 import { useGetOemsQuery } from '../org/orgApi.js';
 
@@ -44,6 +47,8 @@ export default function CsdProducts() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   // Query parameters for dynamic backend catalogue
   const queryParams = useMemo(() => {
@@ -68,6 +73,8 @@ export default function CsdProducts() {
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [importProductsExcel] = useImportProductsExcelMutation();
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const productsList = useMemo(() => {
     if (Array.isArray(productsData)) return productsData;
@@ -76,6 +83,11 @@ export default function CsdProducts() {
     if (Array.isArray(productsData?.data)) return productsData.data;
     return [];
   }, [productsData]);
+
+  const pagedProducts = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return productsList.slice(start, start + pageSize);
+  }, [productsList, page, pageSize]);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -335,6 +347,9 @@ export default function CsdProducts() {
               <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
               {isFetching ? 'Syncing...' : 'Sync Products'}
             </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/csd/excel-import')}>
+              <FileSpreadsheet size={14} className="mr-xs" /> Upload Excel
+            </Button>
             <Button variant="primary" size="sm" onClick={openCreateModal}>
               <PlusCircle size={14} className="mr-xs" /> Catalogue New Product
             </Button>
@@ -376,7 +391,10 @@ export default function CsdProducts() {
               type="text"
               placeholder="Search by model, SKU, brand, body type..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
               className="form-control"
             />
           </div>
@@ -385,7 +403,10 @@ export default function CsdProducts() {
             {/* Category Filter */}
             <select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setPage(1);
+              }}
               className="form-control"
               aria-label="Filter by Category"
             >
@@ -400,7 +421,10 @@ export default function CsdProducts() {
             {/* OEM Filter */}
             <select
               value={oemFilter}
-              onChange={(e) => setOemFilter(e.target.value)}
+              onChange={(e) => {
+                setOemFilter(e.target.value);
+                setPage(1);
+              }}
               className="form-control"
               aria-label="Filter by OEM"
             >
@@ -415,7 +439,10 @@ export default function CsdProducts() {
             {/* Status Filter */}
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
               className="form-control"
               aria-label="Filter by Status"
             >
@@ -432,6 +459,7 @@ export default function CsdProducts() {
                   setOemFilter('all');
                   setStatusFilter('');
                   setSearchTerm('');
+                  setPage(1);
                 }}
                 className="csd-btn-reset-filters"
                 title="Reset all filters"
@@ -458,9 +486,37 @@ export default function CsdProducts() {
             </div>
           </div>
         ) : (
-          <DataTable columns={columns} data={productsList} />
+          <DataTable
+            columns={columns}
+            data={pagedProducts}
+            pagination={{
+              page,
+              pageSize,
+              totalItems: productsList.length,
+              totalPages: Math.ceil(productsList.length / pageSize) || 1,
+              onPageChange: (newPage) => {
+                setPage(newPage);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              },
+              onPageSizeChange: (newLimit) => {
+                setPageSize(newLimit);
+                setPage(1);
+              },
+            }}
+          />
         )}
       </Card>
+
+      <ExcelImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => {
+          setIsImportModalOpen(false);
+          refetch();
+        }}
+        onImport={importProductsExcel}
+        templateUrl="/api/v1/products/import-template"
+        title="CSD Master Product & Pricing Excel Import"
+      />
     </div>
   );
 }

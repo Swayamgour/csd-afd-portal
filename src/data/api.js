@@ -35,6 +35,8 @@ export function mapBackendProduct(p) {
 
   // 3. Pricing (null when the server has no price)
   const price = num(p.priceToCustomer ?? p.price ?? p.csdFinalPriceWithConcession ?? p.basicPrice);
+  const minPrice = num(p.minPrice ?? p.priceMin ?? p.priceRange?.min ?? p.fromPrice);
+  const maxPrice = num(p.maxPrice ?? p.priceMax ?? p.priceRange?.max ?? p.toPrice);
   const mrp = num(p.mrp);
   const isAppliance = category === 'white-goods';
   const toUnit = (v) => (v === null ? null : isAppliance ? v : Number((v / 100000).toFixed(2)));
@@ -68,8 +70,27 @@ export function mapBackendProduct(p) {
   // 6. Type / body type - server value only
   const type = str(p.attributes?.type || p.specifications?.bodyType || p.type);
 
-  // 7. Images - server values only
-  const images = Array.isArray(p.images) && p.images.length ? p.images.filter(Boolean) : p.image ? [p.image] : [];
+  // 7. Images - server values only (support relative /api/v1/files and /uploads paths)
+  const resolveImg = (url) => {
+    if (!url || typeof url !== 'string') return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('blob:')) {
+      return url;
+    }
+    if (url.startsWith('/api/') || url.startsWith('/uploads/')) {
+      const backendBase = (
+        import.meta.env.VITE_API_URL ||
+        import.meta.env.VITE_API_BASE_URL ||
+        'http://localhost:5000/api/v1'
+      ).replace(/\/api\/v1\/?$/, '');
+      return `${backendBase}${url}`;
+    }
+    return url;
+  };
+
+  const rawImages = Array.isArray(p.images) && p.images.length
+    ? p.images.filter(Boolean)
+    : (p.imageUrl ? [p.imageUrl] : (p.image ? [p.image] : []));
+  const images = rawImages.map(resolveImg).filter(Boolean);
 
   return {
     id: str(p._id || p.id),
@@ -89,6 +110,8 @@ export function mapBackendProduct(p) {
     lo,
     hi,
     price,
+    minPrice,
+    maxPrice,
     priceToCustomer: price,
     concessionalPrice: price,
     mrp,

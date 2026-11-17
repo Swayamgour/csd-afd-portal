@@ -4,6 +4,7 @@ import Catalog from "../components/Catalog.jsx";
 import { CAT_PLURAL } from "../data/utils.js";
 
 const hero = {
+  all: ["All products", "Browse all concessional products through CSD AFD."],
   car: ["Cars", "Concessional prices on India's most-loved cars."],
   bike: ["Bikes", "Commuters, cruisers and sports bikes for every rider."],
   "white-goods": ["Home appliances", "Refrigerators, washing machines, TVs and more."],
@@ -11,10 +12,10 @@ const hero = {
 
 export default function Products() {
   const [sp, setSp] = useSearchParams();
-  const cat = ["car", "bike", "white-goods"].includes(sp.get("cat")) ? sp.get("cat") : "car";
+  const cat = ["all", "car", "bike", "white-goods"].includes(sp.get("cat")) ? sp.get("cat") : "car";
   const onlyWish = sp.get("wish") === "1";
   useEffect(() => { document.title = `${onlyWish ? "Wishlist" : CAT_PLURAL[cat]} - CSD AFD Online`; }, [cat, onlyWish]);
-  const [h, sub] = hero[cat];
+  const [h, sub] = hero[cat] || hero.all;
   return (
     <div className="wrap">
       <nav className="bc" aria-label="Breadcrumb"><ol><li><Link to="/">Home</Link></li><li><span aria-current="page">{onlyWish ? "Wishlist" : h}</span></li></ol></nav>
@@ -24,7 +25,7 @@ export default function Products() {
         </div>
       )}
       {onlyWish && <h1 className="ptitle">My wishlist</h1>}
-      <Catalog cat={onlyWish ? "all" : cat} allowAll={onlyWish} onlyWish={onlyWish}
+      <Catalog cat={onlyWish ? "all" : cat} allowAll={true} onlyWish={onlyWish}
         onCat={(c) => setSp({ cat: c })} title={onlyWish ? "Saved products" : h} />
     </div>
   );

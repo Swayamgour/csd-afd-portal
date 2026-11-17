@@ -1,5 +1,33 @@
 import { api } from '../../redux/api';
 
+const parsePaginatedResponse = (response) => {
+  const items = Array.isArray(response?.data)
+    ? response.data
+    : Array.isArray(response?.data?.items)
+    ? response.data.items
+    : Array.isArray(response?.items)
+    ? response.items
+    : [];
+  const rawMeta = response?.meta || {};
+  const total = Number(rawMeta.total ?? rawMeta.totalItems ?? items.length) || 0;
+  const limit = Number(rawMeta.limit) || 15;
+  const totalPages =
+    Number(rawMeta.totalPages || rawMeta.pages) || (total > 0 ? Math.ceil(total / limit) : 1);
+  const page = Number(rawMeta.page) || 1;
+  return {
+    items,
+    meta: {
+      ...rawMeta,
+      page,
+      limit,
+      total,
+      totalItems: total,
+      pages: totalPages,
+      totalPages,
+    },
+  };
+};
+
 export const oemApi = api.injectEndpoints({
   endpoints: (builder) => ({
     // 1. Dashboard & Analytics
@@ -21,17 +49,7 @@ export const oemApi = api.injectEndpoints({
         url: '/oem/products',
         params,
       }),
-      transformResponse: (response) => {
-        const items = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.data?.items)
-          ? response.data.items
-          : Array.isArray(response?.items)
-          ? response.items
-          : [];
-        const meta = response?.meta || {};
-        return { items, meta };
-      },
+      transformResponse: parsePaginatedResponse,
       providesTags: (result) =>
         result?.items && Array.isArray(result.items)
           ? [
@@ -46,6 +64,15 @@ export const oemApi = api.injectEndpoints({
       query: (id) => `/oem/products/${id}`,
       transformResponse: (response) => response?.data || response,
       providesTags: (_res, _err, id) => [{ type: 'OemProduct', id }, 'OemProduct'],
+    }),
+
+    importOemProductsExcel: builder.mutation({
+      query: (formData) => ({
+        url: '/oem/products/import-excel',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['OemProduct', 'OemDashboard', 'Product', 'OemPricing'],
     }),
 
     createOemProduct: builder.mutation({
@@ -91,17 +118,7 @@ export const oemApi = api.injectEndpoints({
         url: '/oem/dealers',
         params,
       }),
-      transformResponse: (response) => {
-        const items = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.data?.items)
-          ? response.data.items
-          : Array.isArray(response?.items)
-          ? response.items
-          : [];
-        const meta = response?.meta || {};
-        return { items, meta };
-      },
+      transformResponse: parsePaginatedResponse,
       providesTags: (result) =>
         result?.items && Array.isArray(result.items)
           ? [
@@ -136,17 +153,7 @@ export const oemApi = api.injectEndpoints({
         url: '/oem/dealer-products',
         params,
       }),
-      transformResponse: (response) => {
-        const items = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.data?.items)
-          ? response.data.items
-          : Array.isArray(response?.items)
-          ? response.items
-          : [];
-        const meta = response?.meta || {};
-        return { items, meta };
-      },
+      transformResponse: parsePaginatedResponse,
       providesTags: (result) =>
         result?.items && Array.isArray(result.items)
           ? [
@@ -198,17 +205,7 @@ export const oemApi = api.injectEndpoints({
         url: '/oem/pricing',
         params,
       }),
-      transformResponse: (response) => {
-        const items = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.data?.items)
-          ? response.data.items
-          : Array.isArray(response?.items)
-          ? response.items
-          : [];
-        const meta = response?.meta || {};
-        return { items, meta };
-      },
+      transformResponse: parsePaginatedResponse,
       providesTags: (result) =>
         result?.items && Array.isArray(result.items)
           ? [
@@ -252,17 +249,7 @@ export const oemApi = api.injectEndpoints({
         url: '/oem/demands',
         params,
       }),
-      transformResponse: (response) => {
-        const items = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.data?.items)
-          ? response.data.items
-          : Array.isArray(response?.items)
-          ? response.items
-          : [];
-        const meta = response?.meta || {};
-        return { items, meta };
-      },
+      transformResponse: parsePaginatedResponse,
       providesTags: (result) =>
         result?.items && Array.isArray(result.items)
           ? [
@@ -285,17 +272,7 @@ export const oemApi = api.injectEndpoints({
         url: '/oem/orders',
         params,
       }),
-      transformResponse: (response) => {
-        const items = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.data?.items)
-          ? response.data.items
-          : Array.isArray(response?.items)
-          ? response.items
-          : [];
-        const meta = response?.meta || {};
-        return { items, meta };
-      },
+      transformResponse: parsePaginatedResponse,
       providesTags: (result) =>
         result?.items && Array.isArray(result.items)
           ? [
@@ -346,17 +323,7 @@ export const oemApi = api.injectEndpoints({
         url: '/oem/reports/demands',
         params,
       }),
-      transformResponse: (response) => {
-        const items = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.data?.items)
-          ? response.data.items
-          : Array.isArray(response?.items)
-          ? response.items
-          : [];
-        const meta = response?.meta || {};
-        return { items, meta };
-      },
+      transformResponse: parsePaginatedResponse,
       providesTags: ['OemReport'],
     }),
 
@@ -365,17 +332,7 @@ export const oemApi = api.injectEndpoints({
         url: '/oem/reports/orders',
         params,
       }),
-      transformResponse: (response) => {
-        const items = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.data?.items)
-          ? response.data.items
-          : Array.isArray(response?.items)
-          ? response.items
-          : [];
-        const meta = response?.meta || {};
-        return { items, meta };
-      },
+      transformResponse: parsePaginatedResponse,
       providesTags: ['OemReport'],
     }),
 
@@ -402,6 +359,7 @@ export const {
   useGetOemSummaryQuery,
   useGetOemProductsQuery,
   useGetOemProductByIdQuery,
+  useImportOemProductsExcelMutation,
   useCreateOemProductMutation,
   useUpdateOemProductMutation,
   useUpdateOemProductStatusMutation,

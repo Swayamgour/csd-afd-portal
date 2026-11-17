@@ -1,23 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Eye,
-  EyeOff,
   RefreshCw,
   ArrowLeft,
-  User,
-  CreditCard,
-  Mail,
-  Lock,
-  Phone,
   KeyRound,
-  IdCard,
-  Calendar,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
   AlertCircle,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import AuthArt from "./AuthArt";
 
@@ -29,6 +17,13 @@ import EmailOtpModal from "../components/modals/EmailOtpModal.jsx";
 import { userService } from "../services/user.service.js";
 import { makeCaptcha } from "../utils/captcha.js";
 import DigiLockerButton from "../components/common/DigiLockerButton.jsx";
+import {
+  RegisterCardSection,
+  RegisterServiceSection,
+  RegisterIdentitySection,
+  RegisterAccountSection,
+  RegisterSuccessCard,
+} from "../components/register";
 
 const EMPLOYMENT = ["Serving", "Retired", "Defence Civilian"];
 const ORGS = ["Army", "Navy", "Air Force", "Defence Civilian / Other"];
@@ -177,37 +172,7 @@ function validateForm(f) {
   return x;
 }
 
-function Field({ id, label, req, hint, err, children }) {
-  return (
-    <div className="fgrp">
-      <label htmlFor={id}>
-        {label}
-        {req && (
-          <span className="req-star" aria-hidden>
-            {" "}
-            *
-          </span>
-        )}
-      </label>
-      {children}
-      {hint && <p className="small hint">{hint}</p>}
-      <p className="err" role={err ? "alert" : undefined}>
-        {err && `⚠ ${err}`}
-      </p>
-    </div>
-  );
-}
 
-function Section({ n, title, children }) {
-  return (
-    <section className="rsec">
-      <h2>
-        <span>{n}</span> {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
 
 const FIELD_LABELS = {
   name: "Beneficiary Name",
@@ -240,9 +205,6 @@ export default function Register() {
     [formErrorList, setFormErrorList] = useState([]),
     [showPw, setShowPw] = useState(false),
     [showPwC, setShowPwC] = useState(false),
-    [showCard, setShowCard] = useState(false),
-    // [showChip, setShowChip] = useState(false),
-    // [showPan, setShowPan] = useState(false),
     [showCardId, setShowCardId] = useState(false),
     [showChip, setShowChip] = useState(false),
     [showPan, setShowPan] = useState(false),
@@ -533,60 +495,7 @@ export default function Register() {
           title="Registration Completed!"
           text="Your email address has been verified. Your account is currently pending administrator verification."
         />
-
-        <div className="panel logincard authcard reg-success-card">
-          <div className="reg-success-icon-wrap">
-            <CheckCircle2 size={40} />
-          </div>
-
-          <h1 className="reg-success-title">
-            Registration Successful!
-          </h1>
-
-          <div className="reg-success-badge">
-            <ShieldCheck size={16} /> Email Verified via OTP
-          </div>
-
-          {/* Pending Status Alert Banner */}
-          <div className="reg-pending-alert">
-            <div className="row align-center gap-1 mb-1">
-              <Clock size={20} color="var(--color-warning)" />
-              <strong className="reg-pending-title">
-                Account Status: PENDING CS DIRECTOR APPROVAL
-              </strong>
-            </div>
-            <p className="reg-pending-desc">
-              Your account has been registered and your official email has been verified. You can log in to view products and search the catalog. However, <strong>Demand Generation</strong> will be available after your account is approved by the CS Director.
-            </p>
-          </div>
-
-          {/* Beneficiary Details Summary Card */}
-          <div className="reg-summary-card">
-            <div className="reg-summary-row">
-              <span className="reg-summary-label">Beneficiary Name:</span>
-              <strong className="reg-summary-val">{registeredUser?.name || f.name}</strong>
-            </div>
-            <div className="reg-summary-row">
-              <span className="reg-summary-label">Username:</span>
-              <strong className="reg-summary-val">{registeredUser?.username || f.username}</strong>
-            </div>
-            <div className="reg-summary-row">
-              <span className="reg-summary-label">Verified Email:</span>
-              <span className="text-green fw-bold">{f.email} ✓</span>
-            </div>
-            <div className="reg-summary-row">
-              <span className="reg-summary-label">Grocery Card ID:</span>
-              <strong className="reg-summary-val">{f.cardId}</strong>
-            </div>
-          </div>
-
-          <Link
-            to="/login"
-            className="btn big wide row align-center justify-center text-center"
-          >
-            Proceed to Beneficiary Login
-          </Link>
-        </div>
+        <RegisterSuccessCard registeredUser={registeredUser} f={f} />
       </div>
     );
   }
@@ -683,396 +592,49 @@ export default function Register() {
           </div>
         )}
 
-        <Section n="1" title="Card details">
-          <Field
-            id="name"
-            label="Name as printed on front face of grocery canteen card"
-            req
-            err={shown("name")}
-          >
-            <div className="fld">
-              <User size={18} aria-hidden />
-              <input
-                id="name"
-                placeholder="(Only Alphabets allowed)"
-                value={f.name}
-                onChange={set("name")}
-                aria-invalid={!!shown("name")}
-              />
-            </div>
-          </Field>
-          <div className="reg-grid">
-            <Field
-              id="cardId"
-              label="Card ID printed on front face of the grocery card"
-              req
-              err={shown("cardId")}
-              hint="( Alphanumeric no. starting with GA/GB/GC/GE/GM/GR like grocery card id GA01052027551000J00. Third last is alphabet not number. )"
-            >
-              <div className="fld has-eye">
-                <CreditCard size={18} aria-hidden />
-                <input
-                  id="cardId"
-                  // type={showCard ? "text" : "password"}
-                  autoComplete="off"
-                  type={showCardId ? "text" : "password"}
-                  placeholder="(19 digit Alphanumeric)"
-                  maxLength={19}
-                  value={f.cardId}
-                  onChange={upper("cardId")}
-                  onBlur={() => checkSingleDuplicate("cardId", f.cardId)}
-                  aria-invalid={!!shown("cardId")}
-                />
-                <button
-                  type="button"
-                  className="eye"
-                  aria-label={showCard ? "Hide Card ID" : "Show Card ID"}
-                  onClick={() => setShowCard(!showCard)}
-                >
-                  {showCard ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-                <button
-                  type="button"
-                  className="eye"
-                  aria-label={showCardId ? "Hide Card ID" : "Show Card ID"}
-                  onClick={() => setShowCardId(!showCardId)}
-                >
-                  {showCardId ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </Field>
-            <Field
-              id="chip"
-              label="Chip number printed on back of canteen card or printed on the grocery bill"
-              req
-              err={shown("chip")}
-              hint="( 16 Digit No. (5312120004689336). Given on reverse of grocery card at bottom right. Also given on grocery bill.)"
-            >
-              <div className="fld has-eye">
-                <IdCard size={18} aria-hidden />
-                <input
-                  id="chip"
-                  type={showChip ? "text" : "password"}
-                  autoComplete="off"
-                  // type={showChip ? "text" : "password"}
-                  inputMode="numeric"
-                  placeholder="(16 digit Numeric)"
-                  maxLength={16}
-                  value={f.chip}
-                  onChange={set("chip")}
-                  onBlur={() => checkSingleDuplicate("chipNumber", f.chip)}
-                  aria-invalid={!!shown("chip")}
-                />
-                <button
-                  type="button"
-                  className="eye"
-                  aria-label={showChip ? "Hide chip number" : "Show chip number"}
-                  onClick={() => setShowChip(!showChip)}
-                >
-                  {showChip ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-                <button
-                  type="button"
-                  className="eye"
-                  aria-label={showChip ? "Hide Chip number" : "Show Chip number"}
-                  onClick={() => setShowChip(!showChip)}
-                >
-                  {showChip ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </Field>
-          </div>
-        </Section>
+        <RegisterCardSection
+          f={f}
+          shown={shown}
+          set={set}
+          upper={upper}
+          checkSingleDuplicate={checkSingleDuplicate}
+          showCardId={showCardId}
+          setShowCardId={setShowCardId}
+          showChip={showChip}
+          setShowChip={setShowChip}
+        />
 
-        <Section n="2" title="Service details">
-          <div className="reg-grid">
-            <Field
-              id="employment"
-              label="Employment status"
-              req
-              err={shown("employment")}
-            >
-              <select
-                id="employment"
-                value={f.employment}
-                onChange={set("employment")}
-              >
-                <option value="">Select</option>
-                {EMPLOYMENT.map((o) => (
-                  <option key={o}>{o}</option>
-                ))}
-              </select>
-            </Field>
-            <Field id="org" label="Organization" req err={shown("org")}>
-              <select id="org" value={f.org} onChange={set("org")}>
-                <option value="">Select</option>
-                {ORGS.map((o) => (
-                  <option key={o}>{o}</option>
-                ))}
-              </select>
-            </Field>
-            <Field id="dob" label="Date of birth" req err={shown("dob")}>
-              <div className="fld">
-                <Calendar size={18} aria-hidden />
-                <input
-                  id="dob"
-                  type="date"
-                  value={f.dob}
-                  onChange={set("dob")}
-                />
-              </div>
-            </Field>
-            <Field
-              id="doe"
-              label="Date of Enrollment/Commissioning"
-              req
-              err={shown("doe")}
-              hint="( It is date of joining service. Not Date of Promotion to JCO. Not Date of Joining DSC/other service. )"
-            >
-              <div className="fld">
-                <Calendar size={18} aria-hidden />
-                <input
-                  id="doe"
-                  type="date"
-                  value={f.doe}
-                  onChange={set("doe")}
-                />
-              </div>
-            </Field>
-            <Field id="dor" label="Date of retirement" req err={shown("dor")}>
-              <div className="fld">
-                <Calendar size={18} aria-hidden />
-                <input
-                  id="dor"
-                  type="date"
-                  value={f.dor}
-                  onChange={set("dor")}
-                />
-              </div>
-            </Field>
-            <Field
-              id="ent"
-              label="Entitlement category* Serving & Retired (Armed Forces/Defence Civilians)"
-              req
-              err={shown("entitlement")}
-            >
-              <select
-                id="ent"
-                value={f.entitlement}
-                onChange={set("entitlement")}
-              >
-                <option value="">Select</option>
-                {ENTITLEMENT.map((o) => (
-                  <option key={o}>{o}</option>
-                ))}
-              </select>
-            </Field>
-            <Field id="pl" label="Pay Level" req err={shown("payLevel")}>
-              <select id="pl" value={f.payLevel} onChange={set("payLevel")}>
-                <option value="">Select</option>
-                {PAY_LEVELS.map((o) => (
-                  <option key={o}>{o}</option>
-                ))}
-              </select>
-            </Field>
-            <Field id="ppo" label="PPO/Discharge No. (Ex. Servicemen)">
-              <div className="fld">
-                <IdCard size={18} aria-hidden />
-                <input id="ppo" value={f.ppo} onChange={set("ppo")} />
-              </div>
-            </Field>
-          </div>
-        </Section>
+        <RegisterServiceSection
+          f={f}
+          shown={shown}
+          set={set}
+        />
 
-        <Section n="3" title="Identity">
-          <div className="reg-grid">
-            <Field id="pan" label="PAN number" req err={shown("pan")}>
-              <div className="fld has-eye">
-                <IdCard size={18} aria-hidden />
-                <input
-                  id="pan"
-                  type={showPan ? "text" : "password"}
-                  autoComplete="off"
-                  // type={showPan ? "text" : "password"}
-                  maxLength={10}
-                  value={f.pan}
-                  onChange={upper("pan")}
-                  onBlur={() => checkSingleDuplicate("pan", f.pan)}
-                  aria-invalid={!!shown("pan")}
-                />
-                <button
-                  type="button"
-                  className="eye"
-                  aria-label={showPan ? "Hide PAN number" : "Show PAN number"}
-                  onClick={() => setShowPan(!showPan)}
-                >
-                  {showPan ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </Field>
-            <Field
-              id="panC"
-              label="Confirm PAN number"
-              err={shown("panC")}
-              hint="( Copy paste is not allowed )"
-            >
-              <div className="fld has-eye">
-                <IdCard size={18} aria-hidden />
-                <input
-                  id="panC"
-                  type={showPanC ? "text" : "password"}
-                  maxLength={10}
-                  autoComplete="off"
-                  value={f.panC}
-                  onChange={upper("panC")}
-                  onPaste={noPaste}
-                  onDrop={noPaste}
-                  aria-invalid={!!shown("panC")}
-                />
-                <button
-                  type="button"
-                  className="eye"
-                  aria-label={showPanC ? "Hide Confirm PAN number" : "Show Confirm PAN number"}
-                  onClick={() => setShowPanC(!showPanC)}
-                >
-                  {showPanC ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </Field>
-          </div>
-        </Section>
+        <RegisterIdentitySection
+          f={f}
+          shown={shown}
+          upper={upper}
+          noPaste={noPaste}
+          checkSingleDuplicate={checkSingleDuplicate}
+          showPan={showPan}
+          setShowPan={setShowPan}
+          showPanC={showPanC}
+          setShowPanC={setShowPanC}
+        />
 
-        <Section n="4" title="Account details">
-          <Field
-            id="username"
-            label="Username"
-            req
-            err={shown("username")}
-            hint="Please do not use special characters in User Name"
-          >
-            <div className="fld">
-              <User size={18} aria-hidden />
-              <input
-                id="username"
-                autoComplete="username"
-                value={f.username}
-                onChange={set("username")}
-                onBlur={() => checkSingleDuplicate("username", f.username)}
-                aria-invalid={!!shown("username")}
-              />
-            </div>
-          </Field>
-
-          <div className="reg-grid">
-            <Field id="email" label="Email" req err={shown("email")} hint="A 6-digit OTP will be sent to this email via EmailJS upon submission.">
-              <div className="fld">
-                <Mail size={18} aria-hidden />
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="name@example.com"
-                  value={f.email}
-                  onChange={set("email")}
-                  onBlur={() => checkSingleDuplicate("email", f.email)}
-                  aria-invalid={!!shown("email")}
-                />
-              </div>
-            </Field>
-
-            <Field id="mobile" label="Mobile number" req err={shown("mobile")}>
-              <div className="fld">
-                <Phone size={18} aria-hidden />
-                <input
-                  id="mobile"
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={10}
-                  placeholder="10-digit mobile number"
-                  value={f.mobile}
-                  onChange={set("mobile")}
-                  onBlur={() => checkSingleDuplicate("mobile", f.mobile)}
-                  aria-invalid={!!shown("mobile")}
-                />
-              </div>
-            </Field>
-          </div>
-
-          <div className="reg-grid">
-            <Field id="pw" label="Password" req err={shown("pw")}>
-              <div className="fld has-eye">
-                <Lock size={18} aria-hidden />
-                <input
-                  id="pw"
-                  type={showPw ? "text" : "password"}
-                  autoComplete="new-password"
-                  value={f.pw}
-                  onChange={set("pw")}
-                  aria-invalid={!!shown("pw")}
-                  className={pwStrength?.label === "Strong" ? "input-valid-strong" : ""}
-                />
-                <button
-                  type="button"
-                  className="eye"
-                  aria-label={showPw ? "Hide password" : "Show password"}
-                  onClick={() => setShowPw(!showPw)}
-                >
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {(f.pw || touched.pw) && (
-                <>
-                  <div className="pw-meter" aria-hidden>
-                    {[0, 1, 2, 3].map((i) => (
-                      <span
-                        key={i}
-                        className={i < PW_RULES.filter((r) => r.test(f.pw)).length ? `on ${pwStrength?.className || ""}` : ""}
-                      />
-                    ))}
-                  </div>
-                  <ul className="pw-rules" aria-label="Password requirements">
-                    {PW_RULES.map((r) => {
-                      const ok = r.test(f.pw);
-                      return (
-                        <li key={r.key} className={ok ? "ok" : "bad"}>
-                          {ok ? <CheckCircle2 size={14} aria-hidden /> : <AlertCircle size={14} aria-hidden />} {r.label}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {pwStrength && (
-                    <div className={`pw-strength-badge ${pwStrength.className}`}>
-                      {pwStrength.label}
-                      {pwStrength.label !== "Strong" && " · add @ # $ ! to make it stronger"}
-                    </div>
-                  )}
-                </>
-              )}
-            </Field>
-            <Field id="pwC" label="Confirm password" req err={shown("pwC")}>
-              <div className="fld has-eye">
-                <Lock size={18} aria-hidden />
-                <input
-                  id="pwC"
-                  type={showPwC ? "text" : "password"}
-                  autoComplete="new-password"
-                  value={f.pwC}
-                  onChange={set("pwC")}
-                  aria-invalid={!!shown("pwC")}
-                  className={f.pwC && f.pwC === f.pw ? "input-valid-strong" : ""}
-                />
-                <button
-                  type="button"
-                  className="eye"
-                  aria-label={showPwC ? "Hide password" : "Show password"}
-                  onClick={() => setShowPwC(!showPwC)}
-                >
-                  {showPwC ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </Field>
-          </div>
-        </Section>
+        <RegisterAccountSection
+          f={f}
+          shown={shown}
+          set={set}
+          checkSingleDuplicate={checkSingleDuplicate}
+          touched={touched}
+          showPw={showPw}
+          setShowPw={setShowPw}
+          showPwC={showPwC}
+          setShowPwC={setShowPwC}
+          pwStrength={pwStrength}
+          PW_RULES={PW_RULES}
+        />
 
         <label className="inline agree">
           <input type="checkbox" checked={f.agree} onChange={set("agree")} /> I

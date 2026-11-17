@@ -58,6 +58,7 @@ export const ROLE_SIDEBAR_NAV = {
     { title: 'Beneficiary Registry', to: '/csd/beneficiaries', icon: Users },
     // { title: 'User Management', to: '/csd/users', icon: User },
     { title: 'Product Catalogue', to: '/csd/products', icon: Package },
+    { title: 'Bulk Excel Import', to: '/csd/excel-import', icon: Upload },
     { title: 'Categories & Quotas', to: '/csd/categories', icon: Layers },
     { title: 'OEM Partners', to: '/csd/oems', icon: Building2 },
     { title: 'Dealer Network', to: '/csd/dealers', icon: Store },
@@ -102,6 +103,7 @@ export const ROLE_SIDEBAR_NAV = {
   [ROLES.OEM]: [
     { title: 'OEM Dashboard', to: '/oem/dashboard', icon: LayoutDashboard },
     { title: 'Product Catalog', to: '/oem/products', icon: Package },
+    { title: 'Excel Import', to: '/oem/excel-import', icon: Upload },
     { title: 'Authorized Dealers', to: '/oem/dealers', icon: Store },
     { title: 'New Dealer Requests', to: '/oem/dealer-requests', icon: UserPlus },
     { title: 'Dealer Products', to: '/oem/dealer-products', icon: Layers },

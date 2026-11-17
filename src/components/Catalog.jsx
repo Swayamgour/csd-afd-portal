@@ -27,7 +27,7 @@ const SORTS = [
   ["az", "Name: A to Z"],
 ];
 const CATS = [
-  ["all", "All", null],
+  ["all", "All", LayoutGrid],
   ["car", "Cars", Car],
   ["bike", "Bikes", Bike],
   ["white-goods", "Appliances", Refrigerator],
@@ -74,11 +74,11 @@ export default function Catalog({
   onlyWish = false,
   title,
   embedded = false,
-  allowAll = false,
+  allowAll = true,
 }) {
   const { wish, cmp } = useStore();
-  const canSeePrice = useCanSeePrice(); // visitors get no price filter / price sort / discount sort
-  // One shared request for the whole app (see hooks/useStoreProducts.js)
+  const canSeePrice = useCanSeePrice(); 
+  
   const { products: all, isLoading, isError, isEmpty, refetch } = useStoreProducts();
   const [sort, setSort] = useState("rec"),
     [view, setView] = useState("grid"),

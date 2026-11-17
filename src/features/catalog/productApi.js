@@ -147,6 +147,15 @@ export const productApi = api.injectEndpoints({
       invalidatesTags: [{ type: 'Product', id: 'LIST' }, 'Product', 'Dashboard'],
     }),
 
+    importProductsExcel: builder.mutation({
+      query: (formData) => ({
+        url: '/products/import-excel',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: [{ type: 'Product', id: 'LIST' }, 'Product', 'OemProduct', 'Dashboard'],
+    }),
+
     uploadFiles: builder.mutation({
       query: (formData) => ({
         url: '/files',
@@ -169,5 +178,6 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useImportProductsExcelMutation,
   useUploadFilesMutation,
 } = productApi;

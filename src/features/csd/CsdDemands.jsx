@@ -28,6 +28,8 @@ export default function CsdDemands() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDemand, setSelectedDemand] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   const queryParams = useMemo(() => {
     const p = {};
@@ -41,6 +43,11 @@ export default function CsdDemands() {
   const demands = useMemo(() => {
     return demandsData?.items || (Array.isArray(demandsData) ? demandsData : []);
   }, [demandsData]);
+
+  const pagedDemands = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return demands.slice(start, start + pageSize);
+  }, [demands, page, pageSize]);
 
   const kpiStats = useMemo(() => {
     const total = demands.length;
@@ -251,7 +258,24 @@ export default function CsdDemands() {
             <p className="text-xs text-slate-400 mt-1">Try adjusting your filters</p>
           </div>
         ) : (
-          <DataTable columns={columns} data={demands} />
+          <DataTable
+            columns={columns}
+            data={pagedDemands}
+            pagination={{
+              page,
+              pageSize,
+              totalItems: demands.length,
+              totalPages: Math.ceil(demands.length / pageSize) || 1,
+              onPageChange: (newPage) => {
+                setPage(newPage);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              },
+              onPageSizeChange: (newLimit) => {
+                setPageSize(newLimit);
+                setPage(1);
+              },
+            }}
+          />
         )}
       </Card>
 

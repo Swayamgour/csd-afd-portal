@@ -64,6 +64,14 @@ export const dealerRequestApi = api.injectEndpoints({
       query: ({ id, ...body }) => ({ url: `/dealer-requests/${id}/submit-verification`, method: 'POST', body }),
       invalidatesTags: [{ type: 'DealerRequest', id: 'LIST' }],
     }),
+    submitDepotVerification: builder.mutation({
+      query: ({ id, ...body }) => ({ url: `/dealer-requests/${id}/submit-depot-verification`, method: 'POST', body }),
+      invalidatesTags: [{ type: 'DealerRequest', id: 'LIST' }],
+    }),
+    recalculateScrutiny: builder.mutation({
+      query: (id) => ({ url: `/dealer-requests/${id}/scrutiny`, method: 'POST' }),
+      invalidatesTags: (_r, _e, id) => [{ type: 'DealerRequest', id }],
+    }),
     createDealerFromRequest: builder.mutation({
       query: ({ id, ...body }) => ({ url: `/dealer-requests/${id}/create-dealer`, method: 'POST', body }),
       transformResponse: unwrap,
@@ -91,6 +99,8 @@ export const {
   useRejectDealerRequestMutation,
   useForwardDealerRequestToUrcMutation,
   useSubmitDealerVerificationMutation,
+  useSubmitDepotVerificationMutation,
+  useRecalculateScrutinyMutation,
   useCreateDealerFromRequestMutation,
   useUploadDealerRequestPhotosMutation,
 } = dealerRequestApi;

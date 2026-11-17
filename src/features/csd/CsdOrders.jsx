@@ -25,6 +25,8 @@ export default function CsdOrders() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   const queryParams = useMemo(() => {
     const p = {};
@@ -38,6 +40,11 @@ export default function CsdOrders() {
   const orders = useMemo(() => {
     return ordersData?.items || (Array.isArray(ordersData) ? ordersData : []);
   }, [ordersData]);
+
+  const pagedOrders = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return orders.slice(start, start + pageSize);
+  }, [orders, page, pageSize]);
 
   const kpiStats = useMemo(() => {
     const total = orders.length;
@@ -241,7 +248,24 @@ export default function CsdOrders() {
             <p className="text-xs text-slate-400 mt-1">Try adjusting your filters</p>
           </div>
         ) : (
-          <DataTable columns={columns} data={orders} />
+          <DataTable
+            columns={columns}
+            data={pagedOrders}
+            pagination={{
+              page,
+              pageSize,
+              totalItems: orders.length,
+              totalPages: Math.ceil(orders.length / pageSize) || 1,
+              onPageChange: (newPage) => {
+                setPage(newPage);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              },
+              onPageSizeChange: (newLimit) => {
+                setPageSize(newLimit);
+                setPage(1);
+              },
+            }}
+          />
         )}
       </Card>
 

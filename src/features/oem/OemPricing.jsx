@@ -38,7 +38,7 @@ export default function OemPricing() {
   const location = useLocation();
 
   const [page, setPage] = useState(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState(15);
   const [stateFilter, setStateFilter] = useState('');
   const [productFilter, setProductFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -60,7 +60,7 @@ export default function OemPricing() {
     if (productFilter) p.productId = productFilter;
     if (statusFilter) p.status = statusFilter;
     return p;
-  }, [stateFilter, productFilter, statusFilter, page]);
+  }, [stateFilter, productFilter, statusFilter, page, pageSize]);
 
   const {
     data: pricingData,
@@ -249,17 +249,20 @@ export default function OemPricing() {
           columns={columns}
           data={prices}
           loading={isLoading}
-          pagination={
-            meta.totalPages > 1
-              ? {
-                  page: meta.page || page,
-                  totalPages: meta.totalPages,
-                  totalItems: meta.total,
-                  onPageChange: setPage,
-                  pageSize,
-                }
-              : null
-          }
+          pagination={{
+            page: meta.page || page,
+            totalPages: meta.totalPages || meta.pages || Math.ceil((meta.total || 0) / pageSize) || 1,
+            totalItems: meta.total ?? prices.length,
+            pageSize,
+            onPageChange: (newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+            onPageSizeChange: (newLimit) => {
+              setPageSize(newLimit);
+              setPage(1);
+            },
+          }}
           emptyTitle="No state pricing schedules found"
           emptyText="No state pricing tiers found matching your filter."
         />

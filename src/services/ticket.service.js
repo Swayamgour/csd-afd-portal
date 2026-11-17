@@ -38,28 +38,28 @@ export const ticketService = {
           t.category.toLowerCase().includes(q)
       );
     }
-    const res = await apiClient.get('/tickets', list);
+    const res = await apiClient.get('/helpdesk/tickets', list);
     return res.data;
   },
 
   async getTicketById(id) {
     const item = ticketsStore.find((t) => t.id === id);
-    const res = await apiClient.get(`/tickets/${id}`, item || null);
+    const res = await apiClient.get(`/helpdesk/tickets/${id}`, item || null);
     return res.data;
   },
 
   async getMetrics() {
-    const res = await apiClient.get('/tickets/metrics', metricsStore);
+    const res = await apiClient.get('/helpdesk/tickets/metrics', metricsStore);
     return res.data;
   },
 
   async getCallRecords() {
-    const res = await apiClient.get('/tickets/calls', MOCK_CALL_RECORDS);
+    const res = await apiClient.get('/helpdesk/tickets/calls', MOCK_CALL_RECORDS);
     return res.data;
   },
 
   async getFeedback() {
-    const res = await apiClient.get('/tickets/feedback', MOCK_FEEDBACK);
+    const res = await apiClient.get('/helpdesk/tickets/feedback', MOCK_FEEDBACK);
     return res.data;
   },
 
@@ -95,7 +95,7 @@ export const ticketService = {
     };
     ticketsStore = [newTicket, ...ticketsStore];
     metricsStore.openTickets += 1;
-    const res = await apiClient.post('/tickets', newTicket);
+    const res = await apiClient.post('/helpdesk/tickets', newTicket);
     return res.data;
   },
 
@@ -119,7 +119,7 @@ export const ticketService = {
         { step: 'Reply Added', by: sender, date: new Date().toLocaleString(), note: message.slice(0, 60) + '...' }
       ];
       ticketsStore[idx] = ticket;
-      const res = await apiClient.post(`/tickets/${ticketId}/reply`, ticket);
+      const res = await apiClient.post(`/helpdesk/tickets/${ticketId}/reply`, ticket);
       return res.data;
     }
     throw new Error('Ticket not found');
@@ -151,7 +151,7 @@ export const ticketService = {
 
       ticketsStore[idx] = ticket;
       metricsStore.escalatedTickets += 1;
-      const res = await apiClient.put(`/tickets/${ticketId}/escalate`, ticket);
+      const res = await apiClient.put(`/helpdesk/tickets/${ticketId}/escalate`, ticket);
       return res.data;
     }
     throw new Error('Ticket not found');
@@ -168,7 +168,7 @@ export const ticketService = {
       ticketsStore[idx] = ticket;
       metricsStore.resolvedToday += 1;
       metricsStore.openTickets = Math.max(0, metricsStore.openTickets - 1);
-      const res = await apiClient.put(`/tickets/${ticketId}/resolve`, ticket);
+      const res = await apiClient.put(`/helpdesk/tickets/${ticketId}/resolve`, ticket);
       return res.data;
     }
     throw new Error('Ticket not found');
@@ -183,7 +183,7 @@ export const ticketService = {
         { step: 'Closed', by: closedBy, date: new Date().toLocaleString(), note: 'Ticket archived after confirmation' }
       ];
       ticketsStore[idx] = ticket;
-      const res = await apiClient.put(`/tickets/${ticketId}/close`, ticket);
+      const res = await apiClient.put(`/helpdesk/tickets/${ticketId}/close`, ticket);
       return res.data;
     }
     throw new Error('Ticket not found');
@@ -203,7 +203,7 @@ export const ticketService = {
         { step: `Assigned to ${agentName}`, by: assignedBy, date: new Date().toLocaleString(), note: 'Owner reassigned' }
       ];
       ticketsStore[idx] = ticket;
-      const res = await apiClient.put(`/tickets/${ticketId}/assign`, ticket);
+      const res = await apiClient.put(`/helpdesk/tickets/${ticketId}/assign`, ticket);
       return res.data;
     }
     throw new Error('Ticket not found');

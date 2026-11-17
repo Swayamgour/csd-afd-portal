@@ -20,46 +20,65 @@ const getHeaders = (extraHeaders = {}) => {
   };
 };
 
+const parseResponse = async (res) => {
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(json.message || `API request failed with status ${res.status}`);
+    err.status = res.status;
+    err.code = json.code;
+    err.details = json.details;
+    throw err;
+  }
+  return { status: res.status, data: json.data || json };
+};
+
 export const apiClient = {
   async get(endpoint) {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
-      headers: getHeaders()
+      headers: getHeaders(),
+      credentials: 'include',
     });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json.message || 'API request failed');
-    return { status: res.status, data: json.data || json };
+    return parseResponse(res);
   },
 
   async post(endpoint, payload = {}) {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(payload)
     });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json.message || 'API request failed');
-    return { status: res.status, data: json.data || json };
+    return parseResponse(res);
+  },
+
+  async patch(endpoint, payload = {}) {
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+    return parseResponse(res);
   },
 
   async put(endpoint, payload = {}) {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'PUT',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(payload)
     });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json.message || 'API request failed');
-    return { status: res.status, data: json.data || json };
+    return parseResponse(res);
   },
 
   async delete(endpoint) {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'DELETE',
-      headers: getHeaders()
+      headers: getHeaders(),
+      credentials: 'include',
     });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json.message || 'API request failed');
-    return { status: res.status, data: json.data || json, success: true };
+    const parsed = await parseResponse(res);
+    return { ...parsed, success: true };
   },
 
   async download(endpoint, filename) {
@@ -68,6 +87,7 @@ export const apiClient = {
 
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       headers,
+      credentials: 'include',
     });
 
     if (!res.ok) {

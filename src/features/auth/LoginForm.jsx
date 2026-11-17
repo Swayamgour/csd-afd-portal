@@ -26,8 +26,8 @@ import { getRoleNavigatePath, isPathAllowedForRole } from '../../permissions/rol
 import { makeCaptcha } from '../../utils/captcha.js';
 import DigiLockerButton from '../../components/common/DigiLockerButton.jsx';
 
-// Test / demo accounts. Set to false to hide the "Demo accounts" box in production.
-const SHOW_DEMO_ACCOUNTS = true;
+// Test / demo accounts are visible in development mode only.
+const SHOW_DEMO_ACCOUNTS = Boolean(import.meta.env.DEV);
 
 const TEST_ACCOUNTS = [
   { role: 'ADMIN', label: 'System Admin', tag: 'Admin', icon: Settings, username: 'admincsd', password: 'Test@123456' },

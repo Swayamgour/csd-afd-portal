@@ -10,6 +10,7 @@ import {
   X,
   Send,
   Eye,
+  FileSpreadsheet,
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
@@ -17,6 +18,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import CatalogToolbar from '../../components/common/CatalogToolbar.jsx';
+import ExcelImportModal from '../../components/common/ExcelImportModal.jsx';
 import { ProductCell, PriceCell } from '../../components/common/ProductGrid.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -24,6 +26,7 @@ import { useGetCategoriesQuery } from '../catalog/productApi.js';
 import {
   useGetOemProductsQuery,
   useUpdateOemProductStatusMutation,
+  useImportOemProductsExcelMutation,
 } from './oemApi.js';
 
 export default function OemProducts() {
@@ -34,9 +37,10 @@ export default function OemProducts() {
   const [statusFilter, setStatusFilter] = useState('');
   const [formError, setFormError] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState(15);
 
   const [toastMessage, setToastMessage] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const queryParams = useMemo(() => {
     const p = { page, limit: pageSize };
@@ -44,7 +48,7 @@ export default function OemProducts() {
     if (categoryFilter) p.categoryId = categoryFilter;
     if (statusFilter) p.status = statusFilter;
     return p;
-  }, [searchTerm, categoryFilter, statusFilter, page]);
+  }, [searchTerm, categoryFilter, statusFilter, page, pageSize]);
 
   const {
     data: productsData,
@@ -56,6 +60,7 @@ export default function OemProducts() {
   const { data: categories = [] } = useGetCategoriesQuery();
 
   const [updateProductStatus, { isLoading: isSubmittingStatus }] = useUpdateOemProductStatusMutation();
+  const [importOemProductsExcel] = useImportOemProductsExcelMutation();
 
   const products = productsData?.items || [];
   const meta = productsData?.meta || {};
@@ -178,6 +183,14 @@ export default function OemProducts() {
               Sync
             </Button>
             <Button
+              variant="outline"
+              size="sm"
+              icon={FileSpreadsheet}
+              onClick={() => navigate('/oem/excel-import')}
+            >
+              Upload Excel
+            </Button>
+            <Button
               variant="primary"
               size="sm"
               icon={PlusCircle}
@@ -261,21 +274,35 @@ export default function OemProducts() {
           columns={columns}
           data={products}
           loading={isLoading}
-          pagination={
-            meta.totalPages > 1
-              ? {
-                page: meta.page || page,
-                totalPages: meta.totalPages,
-                totalItems: meta.total,
-                onPageChange: setPage,
-                pageSize,
-              }
-              : null
-          }
+          pagination={{
+            page: meta.page || page,
+            totalPages: meta.totalPages || meta.pages || Math.ceil((meta.total || 0) / pageSize) || 1,
+            totalItems: meta.total ?? products.length,
+            pageSize,
+            onPageChange: (newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+            onPageSizeChange: (newLimit) => {
+              setPageSize(newLimit);
+              setPage(1);
+            },
+          }}
           emptyTitle="No products in catalog"
           emptyText="No products matched your search or filter criteria."
         />
       </Card>
+
+      <ExcelImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => {
+          setIsImportModalOpen(false);
+          refetch();
+        }}
+        onImport={importOemProductsExcel}
+        templateUrl="/api/v1/oem/products/import-template"
+        title="OEM Product & State Pricing Excel Import"
+      />
     </div>
   );
 }

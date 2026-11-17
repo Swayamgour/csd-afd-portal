@@ -29,7 +29,7 @@ export default function OemDealers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [stateFilter, setStateFilter] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState(15);
 
   const [selectedDealerId, setSelectedDealerId] = useState(null);
 
@@ -38,7 +38,7 @@ export default function OemDealers() {
     if (searchTerm) p.q = searchTerm;
     if (stateFilter) p.state = stateFilter;
     return p;
-  }, [searchTerm, stateFilter, page]);
+  }, [searchTerm, stateFilter, page, pageSize]);
 
   const {
     data: dealersData,
@@ -298,17 +298,20 @@ export default function OemDealers() {
           columns={columns}
           data={dealers}
           loading={isLoading}
-          pagination={
-            meta.totalPages > 1
-              ? {
-                  page: meta.page || page,
-                  totalPages: meta.totalPages,
-                  totalItems: meta.total,
-                  onPageChange: setPage,
-                  pageSize,
-                }
-              : null
-          }
+          pagination={{
+            page: meta.page || page,
+            totalPages: meta.totalPages || meta.pages || Math.ceil((meta.total || 0) / pageSize) || 1,
+            totalItems: meta.total ?? dealers.length,
+            pageSize,
+            onPageChange: (newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+            onPageSizeChange: (newLimit) => {
+              setPageSize(newLimit);
+              setPage(1);
+            },
+          }}
           emptyTitle="No dealerships found"
           emptyText="No dealerships matching your query exist in your authorized OEM network."
         />

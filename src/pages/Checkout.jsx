@@ -25,6 +25,11 @@ import { useCreateDemandMutation } from '../features/demand/demandApi.js';
 import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
 import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery, useGetAvailableStatesQuery } from '../features/org/orgApi.js';
 import { INDIAN_STATES, PAY_LEVELS } from '../data/mock/locations.mock.js';
+import CheckoutBreadcrumbs from '../components/checkout/CheckoutBreadcrumbs.jsx';
+import CheckoutBeneficiaryCard from '../components/checkout/CheckoutBeneficiaryCard.jsx';
+import CheckoutAdditionalInfoCard from '../components/checkout/CheckoutAdditionalInfoCard.jsx';
+import CheckoutWorkflowNotice from '../components/checkout/CheckoutWorkflowNotice.jsx';
+import CheckoutOrderSummary from '../components/checkout/CheckoutOrderSummary.jsx';
 
 export default function Checkout() {
   const location = useLocation();
@@ -335,39 +340,7 @@ export default function Checkout() {
 
   return (
     <div className="checkout-page-container">
-      {/* Breadcrumb matching Section 3 */}
-      <nav aria-label="Breadcrumb" className="checkout-breadcrumb-nav">
-        <ol className="checkout-breadcrumb-list">
-          <li><Link to="/" className="checkout-breadcrumb-link">Home</Link></li>
-          <li><ChevronRight size={13} /></li>
-          <li><Link to="/products" className="checkout-breadcrumb-link">Products</Link></li>
-          <li><ChevronRight size={13} /></li>
-          <li><span aria-current="page" className="checkout-breadcrumb-active">Checkout</span></li>
-        </ol>
-      </nav>
-
-      {/* Progress Indicator matching Section 3 */}
-      <div className="checkout-progress-card">
-        <div className="checkout-progress-row">
-          {[
-            { step: 1, label: 'Product Selection', state: 'completed' },
-            { step: 2, label: 'Eligibility Verified', state: 'completed' },
-            { step: 3, label: 'Demand Lodgement', state: 'current' },
-            { step: 4, label: 'Depot Approval', state: 'upcoming' },
-            { step: 5, label: 'Payment & Supply Order', state: 'upcoming' }
-          ].map((s, idx) => (
-            <div key={s.step} className="checkout-step-item">
-              <div className={`checkout-step-badge ${s.state}`}>
-                {s.state === 'completed' ? <CheckCircle2 size={16} /> : s.step}
-              </div>
-              <span className={`checkout-step-label ${s.state}`}>
-                {s.label}
-              </span>
-              {idx < 4 && <ChevronRight size={14} color="#cbd5e1" />}
-            </div>
-          ))}
-        </div>
-      </div>
+      <CheckoutBreadcrumbs />
 
       <div className="checkout-header-section">
         <h1 className="checkout-page-heading">
@@ -381,779 +354,84 @@ export default function Checkout() {
       {/* Main 2-Column Responsive Layout */}
       <form onSubmit={handleFormSubmit}>
         <div className="checkout-main-grid">
-          {/* =========================================================
-              LEFT COLUMN: Pre-filled section & Additional Information
-              ========================================================= */}
+          {/* LEFT COLUMN: Beneficiary details, required KYC documents & workflow */}
           <div className="checkout-left-column">
+            <CheckoutBeneficiaryCard
+              product={product}
+              beneficiary={beneficiary}
+            />
 
-            {/* SECTION A: PRE-FILLED SECTION (Fig. 14) */}
-            <div className="checkout-card">
-              <div className="checkout-card-header">
-                <div className="checkout-card-title">
-                  <User size={20} color="#1e4fd8" />
-                  <span>Beneficiary Details</span>
-                </div>
-                <span className="checkout-spec-pill">
-                  <Lock size={12} /> READ ONLY (REGISTRATION RECORD)
-                </span>
-              </div>
+            <CheckoutAdditionalInfoCard
+              prevPurchase={prevPurchase}
+              setPrevPurchase={setPrevPurchase}
+              prevPurchaseDate={prevPurchaseDate}
+              setPrevPurchaseDate={setPrevPurchaseDate}
+              payLevel={payLevel}
+              setPayLevel={setPayLevel}
+              payLevels={PAY_LEVELS}
+              addressLine={addressLine}
+              setAddressLine={setAddressLine}
+              townCity={townCity}
+              setTownCity={setTownCity}
+              pincode={pincode}
+              setPincode={setPincode}
+              billingState={billingState}
+              setBillingState={setBillingState}
+              statesList={backendStates.length > 0 ? backendStates.map((s) => s.state || s) : INDIAN_STATES}
+              country={country}
+              canteenCardFile={canteenCardFile}
+              setCanteenCardFile={setCanteenCardFile}
+              panCopyFile={panCopyFile}
+              setPanCopyFile={setPanCopyFile}
+              availabilityCertFile={availabilityCertFile}
+              setAvailabilityCertFile={setAvailabilityCertFile}
+              dealerPriceInput={dealerPriceInput}
+              setDealerPriceInput={setDealerPriceInput}
+              handleMatchPrice={handleMatchPrice}
+              isPriceMatched={isPriceMatched}
+              netPrice={netPrice}
+              enteredDealerPrice={enteredDealerPrice}
+              ppoDocFile={ppoDocFile}
+              setPpoDocFile={setPpoDocFile}
+              pensionSlipFile={pensionSlipFile}
+              setPensionSlipFile={setPensionSlipFile}
+              hasLoan={hasLoan}
+              setHasLoan={setHasLoan}
+              loanAmount={loanAmount}
+              setLoanAmount={setLoanAmount}
+              loanSanctionFile={loanSanctionFile}
+              setLoanSanctionFile={setLoanSanctionFile}
+              setPaymentMode={setPaymentMode}
+              formErrors={formErrors}
+            />
 
-              <p className="csd-form-helper-text helper-text-mb-md">
-                The data in this section is fetched from the registration form and it cannot be changed.
-              </p>
-
-              {/* 2-Column Grid matching Fig. 14 */}
-              <div className="beneficiary-read-only-grid">
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    State <span className="doc-upload-required-star">*</span>
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {product?.selectedState || product?.state || beneficiary.priceZone}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Depot <span className="doc-upload-required-star">*</span>
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.depot}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    URC <span className="doc-upload-required-star">*</span>
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.urc}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Email <span className="doc-upload-required-star">*</span>
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.email}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Username
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.username}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Beneficiary Name
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.name}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Grocery Card Number
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.groceryCardNumber}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Chip Number
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.chipNumber}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Mobile Number
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.phone}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Employment Status
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.employmentStatus}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Organization
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.organization}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Date of Birth
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.dateOfBirth}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Date of Enrollment / Commissioning
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.dateOfEnrollment}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Date of Retirement
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.dateOfRetirement}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    Entitlement Category
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.entitlementCategory}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box">
-                  <div className="beneficiary-field-label">
-                    PPO No. / Discharge No. (ESM)
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.ppoNumber}
-                  </div>
-                </div>
-
-                <div className="beneficiary-field-box beneficiary-field-full">
-                  <div className="beneficiary-field-label">
-                    PAN Number
-                  </div>
-                  <div className="beneficiary-field-value">
-                    {beneficiary.panNumber}
-                  </div>
-                </div>
-              </div>
-
-              <div className="profile-correction-link-box">
-                <Link to="/beneficiary/profile" className="checkout-breadcrumb-link">
-                  Need corrections in service record? Update Profile →
-                </Link>
-              </div>
-            </div>
-
-            {/* SECTION B: YET TO BE FILLED SECTION (Fig. 15) */}
-            <div className="checkout-card">
-              <div className="checkout-card-header">
-                <div className="checkout-card-title">
-                  <FileText size={20} color="#d97706" />
-                  <span>Additional Required Information</span>
-                </div>
-                <p className="csd-form-helper-text">
-                  User will have to upload the documents and requested data. No serving document should be uploaded until specified.
-                </p>
-              </div>
-
-              <div className="checkout-form-stack">
-                {/* Previous Purchase Question (Fig. 15 & 18) */}
-                <div className="dealer-price-validation-box">
-                  <label className="csd-form-label">
-                    Did you purchase AFD1 item (same category) earlier from CSD? <span className="doc-upload-required-star">*</span>
-                  </label>
-                  <div className="checkout-radio-card-group">
-                    <label className={`checkout-radio-card ${prevPurchase === 'Yes' ? 'active' : ''}`}>
-                      <input
-                        type="radio"
-                        name="prevPurchase"
-                        value="Yes"
-                        checked={prevPurchase === 'Yes'}
-                        onChange={() => setPrevPurchase('Yes')}
-                      />
-                      <span className="checkout-radio-card-title">Yes</span>
-                    </label>
-                    <label className={`checkout-radio-card ${prevPurchase === 'No' ? 'active' : ''}`}>
-                      <input
-                        type="radio"
-                        name="prevPurchase"
-                        value="No"
-                        checked={prevPurchase === 'No'}
-                        onChange={() => setPrevPurchase('No')}
-                      />
-                      <span className="checkout-radio-card-title">No</span>
-                    </label>
-                  </div>
-
-                  {/* Conditional: If Yes -> Date of last purchase of Ibid item */}
-                  {prevPurchase === 'Yes' && (
-                    <div className="previous-purchase-date-box">
-                      <label className="csd-form-label">
-                        Date of last purchase of Ibid item <span className="doc-upload-required-star">*</span>
-                      </label>
-                      <input
-                        type="date"
-                        className={`csd-form-input ${formErrors.prevPurchaseDate ? 'has-error' : ''}`}
-                        value={prevPurchaseDate}
-                        onChange={(e) => setPrevPurchaseDate(e.target.value)}
-                        required={prevPurchase === 'Yes'}
-                      />
-                      <p className="csd-form-helper-text">
-                        Notice: As per CSD rules, four-wheelers may only be purchased once in 5 to 8 years depending on service entitlement.
-                      </p>
-                      {formErrors.prevPurchaseDate && (
-                        <span className="csd-form-error-text">
-                          <AlertCircle size={14} /> {formErrors.prevPurchaseDate}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Pay Level (Fig. 15) */}
-                <div className="csd-form-group">
-                  <label className="csd-form-label">
-                    Pay Level <span className="doc-upload-required-star">*</span>
-                  </label>
-                  <select
-                    value={payLevel}
-                    onChange={(e) => setPayLevel(e.target.value)}
-                    className="csd-form-select"
-                  >
-                    {PAY_LEVELS.map((pl) => (
-                      <option key={pl.value} value={pl.value}>
-                        {pl.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Registration Address (Fig. 15) */}
-                <div className="csd-form-group">
-                  <label className="csd-form-label">
-                    Address for registration <span className="doc-upload-required-star">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className={`csd-form-input ${formErrors.addressLine ? 'has-error' : ''}`}
-                    placeholder="House number and street name"
-                    value={addressLine}
-                    onChange={(e) => setAddressLine(e.target.value)}
-                    required
-                  />
-                  {formErrors.addressLine && (
-                    <span className="csd-form-error-text">
-                      <AlertCircle size={14} /> {formErrors.addressLine}
-                    </span>
-                  )}
-                </div>
-
-                {/* Town/City, Pincode, Billing State, Country */}
-                <div className="checkout-form-row-2">
-                  <div className="csd-form-group">
-                    <label className="csd-form-label">
-                      Town / City <span className="doc-upload-required-star">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      className={`csd-form-input ${formErrors.townCity ? 'has-error' : ''}`}
-                      placeholder="e.g. New Delhi"
-                      value={townCity}
-                      onChange={(e) => setTownCity(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="csd-form-group">
-                    <label className="csd-form-label">
-                      Pin code <span className="doc-upload-required-star">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      maxLength={6}
-                      className={`csd-form-input ${formErrors.pincode ? 'has-error' : ''}`}
-                      placeholder="e.g. 110010"
-                      value={pincode}
-                      onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                      required
-                    />
-                  </div>
-
-                  <div className="csd-form-group">
-                    <label className="csd-form-label">
-                      Billing State <span className="doc-upload-required-star">*</span>
-                    </label>
-                    <select
-                      value={billingState}
-                      onChange={(e) => setBillingState(e.target.value)}
-                      className={`csd-form-select ${formErrors.billingState ? 'has-error' : ''}`}
-                    >
-                      {(backendStates.length > 0 ? backendStates.map((s) => s.state || s) : INDIAN_STATES).map((st) => (
-                        <option key={st} value={st}>
-                          {st}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="csd-form-group">
-                    <label className="csd-form-label">
-                      Country <span className="doc-upload-required-star">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={country}
-                      disabled
-                      className="csd-form-input bg-slate-muted"
-                    />
-                  </div>
-                </div>
-
-                {/* Mandatory Document Uploads (Fig. 15) */}
-                <div className="checkout-docs-section">
-                  <h4 className="checkout-docs-title">
-                    Statutory Documents & Certificates
-                  </h4>
-
-                  <DocumentUpload
-                    label="Canteen Card"
-                    required
-                    file={canteenCardFile}
-                    onFileSelect={setCanteenCardFile}
-                    onFileRemove={() => setCanteenCardFile(null)}
-                    error={formErrors.canteenCard}
-                    helperText="Upload scanned copy of valid CSD Smart Grocery / Liquor Card (PDF, JPG, PNG)"
-                  />
-
-                  <DocumentUpload
-                    label="PAN copy"
-                    required
-                    file={panCopyFile}
-                    onFileSelect={setPanCopyFile}
-                    onFileRemove={() => setPanCopyFile(null)}
-                    error={formErrors.panCopy}
-                    helperText="Upload official self-attested Permanent Account Number card copy"
-                  />
-
-                  <DocumentUpload
-                    label="Availability certificate"
-                    required
-                    file={availabilityCertFile}
-                    onFileSelect={setAvailabilityCertFile}
-                    onFileRemove={() => setAvailabilityCertFile(null)}
-                    error={formErrors.availabilityCert}
-                    helperText="Upload official Availability Certificate signed and stamped by authorized CSD Dealer"
-                  />
-
-                  {/* Dealer Price Mentioned in Availability Certificate (Fig. 15 & 16) */}
-                  <div className="dealer-price-validation-box">
-                    <div className="dealer-price-header-row">
-                      <label className="csd-form-label label-clean-bold">
-                        Dealer Price mentioned in Availability certificate <span className="doc-upload-required-star">*</span>
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleMatchPrice}
-                        className="btn-autofill-price"
-                        title="Auto-fill exact Net Price"
-                      >
-                        <Sparkles size={13} aria-hidden />
-                        <span>Auto-fill Net Price (₹ {netPrice.toLocaleString('en-IN')})</span>
-                      </button>
-                    </div>
-
-                    <div className={`dealer-price-input-wrapper ${isPriceMatched ? 'is-matched' : 'is-mismatched'}`}>
-                      <span className="dealer-price-currency-tag">₹</span>
-                      <input
-                        type="number"
-                        className="dealer-price-field"
-                        value={dealerPriceInput}
-                        onChange={(e) => setDealerPriceInput(e.target.value)}
-                        placeholder="Enter exact price quoted in availability certificate"
-                        required
-                      />
-                      {isPriceMatched && (
-                        <span className="dealer-price-matched-indicator">
-                          <CheckCircle2 size={16} />
-                          <span>Matched with Net Price</span>
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Fig. 16, 17, 18 Alert */}
-                    {!isPriceMatched && (
-                      <div className="price-mismatch-alert-banner">
-                        <AlertCircle size={16} flexShrink={0} />
-                        <span>
-                          <strong>Dealer Price and Net Price to be Paid must be the same.</strong> Net Price: ₹{netPrice.toLocaleString('en-IN')}, Dealer Price: ₹{enteredDealerPrice.toLocaleString('en-IN')}.
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Optional for ESM / Pensioners */}
-                  <div className="checkout-form-row-2">
-                    <DocumentUpload
-                      label="PPO / Discharge Book / Release Order"
-                      file={ppoDocFile}
-                      onFileSelect={setPpoDocFile}
-                      onFileRemove={() => setPpoDocFile(null)}
-                      helperText="Required for Ex-Servicemen (ESM) applicants"
-                    />
-
-                    <DocumentUpload
-                      label="Last Pension slip"
-                      file={pensionSlipFile}
-                      onFileSelect={setPensionSlipFile}
-                      onFileRemove={() => setPensionSlipFile(null)}
-                      helperText="Required for Ex-Servicemen (ESM) applicants"
-                    />
-                  </div>
-                </div>
-
-                {/* Loan Section (Fig. 15 & Fig. 21) */}
-                <div className="dealer-price-validation-box">
-                  <label className="csd-form-label">
-                    Have you taken loan? <span className="doc-upload-required-star">*</span>
-                  </label>
-                  <div className="checkout-radio-card-group">
-                    <label className={`checkout-radio-card ${hasLoan === 'Yes' ? 'active' : ''}`}>
-                      <input
-                        type="radio"
-                        name="hasLoan"
-                        value="Yes"
-                        checked={hasLoan === 'Yes'}
-                        onChange={() => {
-                          setHasLoan('Yes');
-                          setPaymentMode('DIRECT_BANK_TRANSFER'); // Manual: loan => direct bank transfer only
-                        }}
-                      />
-                      <span className="checkout-radio-card-title">Yes</span>
-                    </label>
-                    <label className={`checkout-radio-card ${hasLoan === 'No' ? 'active' : ''}`}>
-                      <input
-                        type="radio"
-                        name="hasLoan"
-                        value="No"
-                        checked={hasLoan === 'No'}
-                        onChange={() => setHasLoan('No')}
-                      />
-                      <span className="checkout-radio-card-title">No</span>
-                    </label>
-                  </div>
-
-                  {/* Conditional Loan Fields (Fig. 21) */}
-                  {hasLoan === 'Yes' && (
-                    <div className="previous-purchase-date-box">
-                      <div className="csd-form-group">
-                        <label className="csd-form-label">
-                          Loan Amount <span className="doc-upload-required-star">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          className={`csd-form-input ${formErrors.loanAmount ? 'has-error' : ''}`}
-                          placeholder="e.g. 500000"
-                          value={loanAmount}
-                          onChange={(e) => setLoanAmount(e.target.value)}
-                          required={hasLoan === 'Yes'}
-                        />
-                        {formErrors.loanAmount && (
-                          <span className="csd-form-error-text">
-                            <AlertCircle size={14} /> {formErrors.loanAmount}
-                          </span>
-                        )}
-                      </div>
-
-                      <DocumentUpload
-                        label="Loan Sanction Letter"
-                        required
-                        file={loanSanctionFile}
-                        onFileSelect={setLoanSanctionFile}
-                        onFileRemove={() => setLoanSanctionFile(null)}
-                        error={formErrors.loanSanction}
-                        helperText="Upload official sanction letter from nationalized / scheduled commercial bank"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* 4. Demand Processing & Depot Sanction Workflow */}
-                <div className="checkout-workflow-notice">
-                  <div className="checkout-workflow-header">
-                    <h4>
-                      <ShieldCheck size={18} color="#1e4fd8" />
-                      4. Payment Mode & Demand Workflow
-                    </h4>
-                    <span className="checkout-workflow-badge">Payment opens after depot approval</span>
-                  </div>
-
-                  <label className="csd-form-label">
-                    Preferred payment mode (used once the depot approves) <span className="doc-upload-required-star">*</span>
-                  </label>
-                  <div className="checkout-radio-card-group">
-                    <label className={`checkout-radio-card ${paymentMode === 'DIRECT_BANK_TRANSFER' ? 'active' : ''}`}>
-                      <input
-                        type="radio"
-                        name="paymentMode"
-                        value="DIRECT_BANK_TRANSFER"
-                        checked={paymentMode === 'DIRECT_BANK_TRANSFER'}
-                        onChange={() => setPaymentMode('DIRECT_BANK_TRANSFER')}
-                      />
-                      <span className="checkout-radio-card-title">Direct Bank Transfer (NEFT/RTGS)</span>
-                    </label>
-                    <label className={`checkout-radio-card ${paymentMode === 'ONLINE_PAYMENT' ? 'active' : ''}`} style={hasLoan === 'Yes' ? { opacity: 0.5 } : undefined}>
-                      <input
-                        type="radio"
-                        name="paymentMode"
-                        value="ONLINE_PAYMENT"
-                        disabled={hasLoan === 'Yes'}
-                        checked={paymentMode === 'ONLINE_PAYMENT'}
-                        onChange={() => setPaymentMode('ONLINE_PAYMENT')}
-                      />
-                      <span className="checkout-radio-card-title">Online Payment</span>
-                    </label>
-                  </div>
-                  {hasLoan === 'Yes' && (
-                    <p className="small muted">Online payment is not available when a loan is taken; use Direct Bank Transfer.</p>
-                  )}
-                  {formErrors.paymentMode && (
-                    <span className="csd-form-error"><AlertCircle size={14} /> {formErrors.paymentMode}</span>
-                  )}
-
-                  <div className="checkout-workflow-timeline">
-                    <div className="checkout-workflow-step active">
-                      <div className="checkout-workflow-step-num">1</div>
-                      <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Demand generated (pending depot approval)</div>
-                        <div className="checkout-workflow-step-sub">Demand is lodged with KYC documents and availability certificate.</div>
-                      </div>
-                    </div>
-                    <div className="checkout-workflow-step">
-                      <div className="checkout-workflow-step-num">2</div>
-                      <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Depot approval</div>
-                        <div className="checkout-workflow-step-sub">Depot scrutinises your documents and eligibility. Once approved, the payment button is enabled for you.</div>
-                      </div>
-                    </div>
-                    <div className="checkout-workflow-step">
-                      <div className="checkout-workflow-step-num">3</div>
-                      <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Payment & depot verification</div>
-                        <div className="checkout-workflow-step-sub">You pay online, or by NEFT/RTGS with receipt upload. The depot verifies the payment, records it and prepares the Local Supply Order.</div>
-                      </div>
-                    </div>
-                    <div className="checkout-workflow-step">
-                      <div className="checkout-workflow-step-num">4</div>
-                      <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Final approval — Supply order issued (URC)</div>
-                        <div className="checkout-workflow-step-sub">Depot approves again after checking the payment; the Supply Order goes to the URC. If rejected after payment, the amount is refunded.</div>
-                      </div>
-                    </div>
-                    <div className="checkout-workflow-step">
-                      <div className="checkout-workflow-step-num">5</div>
-                      <div className="checkout-workflow-step-info">
-                        <div className="checkout-workflow-step-title">Delivery completed</div>
-                        <div className="checkout-workflow-step-sub">Item is delivered by the dealer against the Supply Order.</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Additional Remarks (Fig. 15) */}
-                <div className="csd-form-group">
-                  <label className="csd-form-label">
-                    Additional remarks
-                  </label>
-                  <textarea
-                    rows={3}
-                    className="csd-form-textarea"
-                    placeholder="Notes about your order, e.g. special notes for delivery."
-                    value={remarks}
-                    onChange={(e) => setRemarks(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
+            <CheckoutWorkflowNotice
+              paymentMode={paymentMode}
+              setPaymentMode={setPaymentMode}
+              hasLoan={hasLoan}
+              formErrors={formErrors}
+              remarks={remarks}
+              setRemarks={setRemarks}
+            />
           </div>
 
-          {/* =========================================================
-              RIGHT COLUMN: Payment Details / Summary ("Your demand") (Fig. 12 & 15)
-              ========================================================= */}
-          <div className="checkout-summary-sticky">
-            
-            <div className="checkout-card">
-              <div className="demand-summary-header">
-                <h3 className="demand-summary-title">
-                  Your demand
-                </h3>
-              </div>
-
-              {/* Product Info */}
-              <div className="demand-product-info-box">
-                <div className="demand-summary-product-name">
-                  {product.productName}
-                </div>
-                <div className="checkout-spec-pill-group">
-                  <span className="checkout-spec-pill">
-                    {product.sku}
-                  </span>
-                  <span className="checkout-spec-pill badge-green-pill">
-                    {product.taxClass || 'tax-class-8'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Color & Dealer Specification */}
-              <div className="demand-summary-dealer-box">
-                <div className="demand-summary-meta-line">
-                  Color: <strong>{product.selectedColor || 'GRANITE GREY'}</strong>
-                </div>
-                <div className="demand-summary-meta-line">
-                  Dealer Name: <strong>{dealerInfo.name}</strong>
-                </div>
-                <div className="demand-summary-meta-line">
-                  Dealer Address: <span className="text-muted">{dealerInfo.address}</span>
-                </div>
-                <div className="checkout-form-row-2 row-mt-xs">
-                  <div className="demand-summary-meta-line">Depot: <strong>{product.selectedDepot}</strong></div>
-                  <div className="demand-summary-meta-line">URC: <strong>{product.selectedUrc}</strong></div>
-                </div>
-              </div>
-
-              {/* Breakdown Table matching Fig. 12 & Official CSD Rate Sheet */}
-              <table className="demand-summary-calc-table">
-                <tbody>
-                  {isCsdRateList ? (
-                    <>
-                      <tr>
-                        <td>Basic Price (incl. Dealer Margin)</td>
-                        <td>₹ {subtotal.toLocaleString('en-IN')}</td>
-                      </tr>
-                      {discountVal > 0 && (
-                        <tr className="row-discount-positive">
-                          <td>CSD Discount & Market Scheme</td>
-                          <td>- ₹ {discountVal.toLocaleString('en-IN')}</td>
-                        </tr>
-                      )}
-                      <tr>
-                        <td>CSD Basic with Discount</td>
-                        <td className="font-semibold">₹ {csdBasic.toLocaleString('en-IN')}</td>
-                      </tr>
-                      <tr>
-                        <td>CGST Concession</td>
-                        <td>₹ {additionalCost.toLocaleString('en-IN')}</td>
-                      </tr>
-                      <tr>
-                        <td>SGST Concession</td>
-                        <td>₹ {cess.toLocaleString('en-IN')}</td>
-                      </tr>
-                      {incidentalCharges > 0 && (
-                        <tr>
-                          <td>CSD Profit @ 0.50%</td>
-                          <td>₹ {incidentalCharges.toLocaleString('en-IN')}</td>
-                        </tr>
-                      )}
-                      {tcsVal > 0 && (
-                        <tr>
-                          <td>TCS @ 1% (Above 10 Lacs)</td>
-                          <td>₹ {tcsVal.toLocaleString('en-IN')}</td>
-                        </tr>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <tr>
-                        <td>Subtotal</td>
-                        <td>₹ {subtotal.toLocaleString('en-IN')}</td>
-                      </tr>
-                      <tr>
-                        <td>Additional Cost (14%)</td>
-                        <td>₹ {additionalCost.toLocaleString('en-IN')}</td>
-                      </tr>
-                      <tr>
-                        <td>Cess (17%)</td>
-                        <td>₹ {cess.toLocaleString('en-IN')}</td>
-                      </tr>
-                      <tr>
-                        <td>Incidental Charges (0.5%)</td>
-                        <td>₹ {incidentalCharges.toLocaleString('en-IN')}</td>
-                      </tr>
-                    </>
-                  )}
-                  <tr className="demand-summary-net-row">
-                    <td>
-                      <div>Net Price to be Paid</div>
-                      <small className="summary-detail-sub">
-                        Inclusive of all Taxes and Levies
-                      </small>
-                    </td>
-                    <td className="demand-summary-net-price">
-                      ₹ {netPrice.toLocaleString('en-IN')}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {/* Submit CTA */}
-              <button
-                type="submit"
-                disabled={!isPriceMatched || submitting || isPendingApproval}
-                className={`btn-submit-demand ${isPendingApproval ? 'btn-disabled-login' : ''}`}
-                title={isPendingApproval ? 'Your account is pending approval. Demand generation is unavailable until approval.' : undefined}
-              >
-                {submitting ? 'Generating Demand...' : isPendingApproval ? 'ACCOUNT APPROVAL PENDING' : 'Submit Demand for Depot Approval'}
-              </button>
-
-              <div className="text-center mt-2">
-                <span className="checkout-spec-pill badge-green-pill" style={{ display: 'inline-flex', padding: '4px 10px', fontSize: '11px', fontWeight: 600 }}>
-                  ✓ No Payment Required at Checkout
-                </span>
-              </div>
-
-              {isPendingApproval && (
-                <p className="csd-form-error-text error-text-center mt-2">
-                  ⚠ Your account is pending approval. Demand generation is unavailable until approval.
-                </p>
-              )}
-
-              {!isPriceMatched && !isPendingApproval && (
-                <p className="csd-form-error-text error-text-center">
-                  ⚠ Please match Dealer Price with Net Price to proceed.
-                </p>
-              )}
-            </div>
-
-            {/* Statutory Security Seal */}
-            <div className="csd-alert-banner info">
-              <ShieldCheck size={20} color="var(--color-success)" flexShrink={0} />
-              <span className="text-xs-clean">
-                Statutory AFD Portal: All allocations are protected by Armed Forces HQ guidelines. No dealer handling charges allowed.
-              </span>
-            </div>
-
-          </div>
+          {/* RIGHT COLUMN: Payment Details / Summary */}
+          <CheckoutOrderSummary
+            product={product}
+            dealerInfo={dealerInfo}
+            isCsdRateList={isCsdRateList}
+            subtotal={subtotal}
+            discountVal={discountVal}
+            csdBasic={csdBasic}
+            additionalCost={additionalCost}
+            cess={cess}
+            incidentalCharges={incidentalCharges}
+            tcsVal={tcsVal}
+            netPrice={netPrice}
+            isPriceMatched={isPriceMatched}
+            submitting={submitting}
+            isPendingApproval={isPendingApproval}
+          />
         </div>
       </form>
     </div>

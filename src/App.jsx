@@ -175,6 +175,7 @@ const DepotFormPage = lazyImport(() => import('./features/csd/DepotFormPage.jsx'
 const UrcFormPage = lazyImport(() => import('./features/csd/UrcFormPage.jsx'), 'default');
 const OemPricingFormPage = lazyImport(() => import('./features/oem/OemPricingFormPage.jsx'), 'default');
 const OemDealerProductFormPage = lazyImport(() => import('./features/oem/OemDealerProductFormPage.jsx'), 'default');
+const OemExcelImportPage = lazyImport(() => import('./features/oem/OemExcelImportPage.jsx'), 'default');
 
 export default function App() {
   const { pathname } = useLocation();
@@ -244,6 +245,7 @@ export default function App() {
           <Route path="/csd/users" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdUsers /></RoleRoute>} />
           <Route path="/csd/beneficiaries" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdBeneficiaries /></RoleRoute>} />
           <Route path="/csd/products" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdProducts /></RoleRoute>} />
+          <Route path="/csd/excel-import" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><OemExcelImportPage /></RoleRoute>} />
           <Route path="/csd/products/new" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><ProductFormPage /></RoleRoute>} />
           <Route path="/csd/products/:id/edit" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><ProductFormPage /></RoleRoute>} />
           <Route path="/csd/categories" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdCategories /></RoleRoute>} />
@@ -302,6 +304,7 @@ export default function App() {
           {/* 5. OEM PORTAL */}
           <Route path="/oem/dashboard" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDashboard /></RoleRoute>} />
           <Route path="/oem/products" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemProducts /></RoleRoute>} />
+          <Route path="/oem/excel-import" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemExcelImportPage /></RoleRoute>} />
           <Route path="/oem/products/new" element={<RoleRoute allowedRoles={[ROLES.OEM]}><ProductFormPage /></RoleRoute>} />
           <Route path="/oem/products/:id/edit" element={<RoleRoute allowedRoles={[ROLES.OEM]}><ProductFormPage /></RoleRoute>} />
           <Route path="/oem/dealers" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDealers /></RoleRoute>} />

@@ -1,21 +1,6 @@
 import React, { useState } from 'react';
 import { X, CreditCard, Building2, Smartphone, ShieldCheck, Landmark, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 
-async function computeHmacSha256(secret, message) {
-  const enc = new TextEncoder();
-  const key = await window.crypto.subtle.importKey(
-    'raw',
-    enc.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const sigBuffer = await window.crypto.subtle.sign('HMAC', key, enc.encode(message));
-  return Array.from(new Uint8Array(sigBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
 export function OnlinePaymentModal({
   isOpen,
   onClose,
@@ -24,7 +9,7 @@ export function OnlinePaymentModal({
   demandNo = '',
   productName = '',
   gatewayOrderId = '',
-  keyId = 'rzp_test_5173CSDPortal'
+  keyId = ''
 }) {
   const [method, setMethod] = useState('netbanking'); // netbanking, card, banktransfer
   const [selectedBank, setSelectedBank] = useState('SBI');
@@ -44,15 +29,12 @@ export function OnlinePaymentModal({
     try {
       const paymentId = `pay_${Date.now()}`;
       const effectiveOrderId = gatewayOrderId || `order_${Date.now()}`;
-      const secret = 'secret_csd_afd_secure_key';
-      const signature = await computeHmacSha256(secret, `${effectiveOrderId}|${paymentId}`);
 
       setStep('success');
-      onSuccess({
-        paymentMethod: 'Online Payment (Razorpay)',
+      onSuccess?.({
+        paymentMethod: 'Online Payment',
         gatewayOrderId: effectiveOrderId,
         gatewayPaymentId: paymentId,
-        gatewaySignature: signature,
         amount: Number(amount) || 0,
         paidAt: new Date().toISOString(),
       });

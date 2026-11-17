@@ -21,7 +21,7 @@ export default function OemDemands() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState(15);
 
   const [selectedDemandId, setSelectedDemandId] = useState(null);
 
@@ -30,7 +30,7 @@ export default function OemDemands() {
     if (searchTerm) p.q = searchTerm;
     if (statusFilter) p.status = statusFilter;
     return p;
-  }, [searchTerm, statusFilter, page]);
+  }, [searchTerm, statusFilter, page, pageSize]);
 
   const {
     data: demandsData,
@@ -260,17 +260,20 @@ export default function OemDemands() {
           columns={columns}
           data={demands}
           loading={isLoading}
-          pagination={
-            meta.totalPages > 1
-              ? {
-                  page: meta.page || page,
-                  totalPages: meta.totalPages,
-                  totalItems: meta.total,
-                  onPageChange: setPage,
-                  pageSize,
-                }
-              : null
-          }
+          pagination={{
+            page: meta.page || page,
+            totalPages: meta.totalPages || meta.pages || Math.ceil((meta.total || 0) / pageSize) || 1,
+            totalItems: meta.total ?? demands.length,
+            pageSize,
+            onPageChange: (newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+            onPageSizeChange: (newLimit) => {
+              setPageSize(newLimit);
+              setPage(1);
+            },
+          }}
           emptyTitle="No demands found"
           emptyText="No defence demands matching your query were found."
         />

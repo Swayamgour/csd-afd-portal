@@ -27,7 +27,7 @@ export default function OemOrders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState(15);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailOrderId, setDetailOrderId] = useState(null);
@@ -47,7 +47,7 @@ export default function OemOrders() {
     if (searchTerm) p.q = searchTerm;
     if (statusFilter) p.status = statusFilter;
     return p;
-  }, [searchTerm, statusFilter, page]);
+  }, [searchTerm, statusFilter, page, pageSize]);
 
   const {
     data: ordersData,
@@ -265,17 +265,20 @@ export default function OemOrders() {
           columns={columns}
           data={orders}
           loading={isLoading}
-          pagination={
-            meta.totalPages > 1
-              ? {
-                  page: meta.page || page,
-                  totalPages: meta.totalPages,
-                  totalItems: meta.total,
-                  onPageChange: setPage,
-                  pageSize,
-                }
-              : null
-          }
+          pagination={{
+            page: meta.page || page,
+            totalPages: meta.totalPages || meta.pages || Math.ceil((meta.total || 0) / pageSize) || 1,
+            totalItems: meta.total ?? orders.length,
+            pageSize,
+            onPageChange: (newPage) => {
+              setPage(newPage);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+            onPageSizeChange: (newLimit) => {
+              setPageSize(newLimit);
+              setPage(1);
+            },
+          }}
           emptyTitle="No supply orders found"
           emptyText="No institutional orders matching your filter criteria were found."
         />
