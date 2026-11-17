@@ -13,7 +13,7 @@ import {
   FileText,
 } from "lucide-react";
 import Catalog from "../components/Catalog.jsx";
-import { Loader, UnavailableState, InlineNote } from "../components/States.jsx";
+import { Loader, UnavailableState, InlineNote } from "../components/common/States.jsx";
 import { useStoreProducts } from "../hooks/useStoreProducts.js";
 import { useGetBannersQuery, useGetContentQuery } from "../features/admin/adminApi.js";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -66,6 +66,9 @@ export default function Home() {
   }, [isAuthenticated, role, roleHome, user, navigate]);
 
   // Category tiles built from real data (count + first available image); empty categories are not shown
+
+  console.log(CATEGORY_TILES);
+
   const cats = useMemo(
     () =>
       CATEGORY_TILES.map((t) => {
@@ -74,8 +77,6 @@ export default function Home() {
       }).filter((t) => t.count > 0),
     [allProducts],
   );
-
-  // console.log(cats);
 
   // Hero banners (logged-out only) - server only, no default images
   const { data: heroData, isLoading: heroLoading } = useGetBannersQuery(
@@ -173,6 +174,7 @@ export default function Home() {
             <ul className="grid3 cats">
               {cats.map((t, i) => (
                 <li key={t.key} className={i === 2 ? "wide2" : ""}>
+                  {console.log(cats)}
                   <Link className={`cat ${t.cls}`} to={t.to}>
                     <small>{t.group}</small>
                     <strong>{t.label}</strong>

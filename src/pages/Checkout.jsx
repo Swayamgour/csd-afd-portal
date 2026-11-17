@@ -24,7 +24,7 @@ import { DocumentUpload } from '../components/common/DocumentUpload.jsx';
 import { useCreateDemandMutation } from '../features/demand/demandApi.js';
 import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
 import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery, useGetAvailableStatesQuery } from '../features/org/orgApi.js';
-import { INDIAN_STATES, PAY_LEVELS } from '../data/mock/locations.mock.js';
+import { INDIAN_STATES, PAY_LEVELS } from '../utils/locations.js';
 import CheckoutBreadcrumbs from '../components/checkout/CheckoutBreadcrumbs.jsx';
 import CheckoutBeneficiaryCard from '../components/checkout/CheckoutBeneficiaryCard.jsx';
 import CheckoutAdditionalInfoCard from '../components/checkout/CheckoutAdditionalInfoCard.jsx';

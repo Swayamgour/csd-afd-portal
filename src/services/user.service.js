@@ -1,4 +1,6 @@
 import { apiClient } from './apiClient.js';
+import { getAccessToken } from '../utils/tokenStorage.js';
+import { API_BASE_URL } from '../config/env.js';
 
 export const isMockUser = (u) => false;
 
@@ -61,7 +63,7 @@ export const userService = {
   async checkDuplicates({ username, email, mobile, cardId, chipNumber, pan }) {
     const conflicts = {};
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/check-duplicates`, {
+      const res = await fetch(`${API_BASE_URL}/auth/check-duplicates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, mobile, cardId, chipNumber, pan })
@@ -104,7 +106,7 @@ export const userService = {
       if (filter.status && filter.status !== 'All' && filter.status !== 'ALL') params.set('status', filter.status);
       if (filter.search) params.set('q', filter.search);
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/users?${params.toString()}`, {
+      const res = await fetch(`${API_BASE_URL}/users?${params.toString()}`, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -148,8 +150,8 @@ export const userService = {
    */
   async getUserById(id) {
     try {
-      const token = localStorage.getItem('csd_auth_token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/users/${id}`, {
+      const token = getAccessToken();
+      const res = await fetch(`${API_BASE_URL}/users/${id}`, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -169,8 +171,8 @@ export const userService = {
    * POST /api/v1/users
    */
   async createUser(userData) {
-    const token = localStorage.getItem('csd_auth_token');
-    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/users`, {
+    const token = getAccessToken();
+    const res = await fetch(`${API_BASE_URL}/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -196,8 +198,8 @@ export const userService = {
    * PATCH /api/v1/users/:id
    */
   async updateUser(id, updateData) {
-    const token = localStorage.getItem('csd_auth_token');
-    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/users/${id}`, {
+    const token = getAccessToken();
+    const res = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -221,9 +223,9 @@ export const userService = {
    * PATCH /api/v1/users/:id/status
    */
   async updateUserStatus(id, newStatus, reason = '', changedBy = '') {
-    const token = localStorage.getItem('csd_auth_token');
+    const token = getAccessToken();
     const dbStatus = newStatus === 'Active' ? 'ACTIVE' : (newStatus === 'Denied' || newStatus === 'Suspended' ? 'LOCKED' : newStatus);
-    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/users/${id}/status`, {
+    const res = await fetch(`${API_BASE_URL}/users/${id}/status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -244,10 +246,10 @@ export const userService = {
    */
   async approveBeneficiaryUser(id, decision = 'APPROVED', remarks = 'Profile and entitlement verified by CS Director') {
     const isApproved = decision === 'APPROVED' || decision === 'VERIFIED';
-    const token = localStorage.getItem('csd_auth_token');
+    const token = getAccessToken();
     const endpoint = isApproved ? `/users/${id}/approve` : `/users/${id}/reject`;
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}${endpoint}`, {
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

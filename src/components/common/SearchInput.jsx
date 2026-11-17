@@ -1,17 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 
 export function SearchInput({
-  value,
+  value = '',
   onChange,
   placeholder = 'Search by keyword, ID, or name...',
   onClear,
   className = '',
-  size = 'md'
+  size = 'md',
+  debounceMs = 0
 }) {
+  const [innerVal, setInnerVal] = useState(value || '');
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  // Sync if external value changed (e.g. parent reset)
+  useEffect(() => {
+    setInnerVal(value || '');
+  }, [value]);
+
+  // Debounce dispatching to parent only if debounceMs > 0
+  useEffect(() => {
+    if (debounceMs <= 0) return;
+    if (innerVal === (value || '')) return;
+
+    const timer = setTimeout(() => {
+      onChangeRef.current?.({ target: { value: innerVal } });
+    }, debounceMs);
+
+    return () => clearTimeout(timer);
+  }, [innerVal, debounceMs, value]);
+
   const handleChange = (e) => {
-    if (!onChange) return;
-    onChange(e);
+    const nextVal = e.target.value;
+    setInnerVal(nextVal);
+    if (debounceMs <= 0) {
+      onChange?.(e);
+    }
+  };
+
+  const handleClear = () => {
+    setInnerVal('');
+    onChangeRef.current?.({ target: { value: '' } });
+    onClear?.();
   };
 
   return (
@@ -19,19 +50,16 @@ export function SearchInput({
       <Search size={16} className="fld-icon text-muted" aria-hidden="true" />
       <input
         type="search"
-        value={value || ''}
+        value={innerVal}
         onChange={handleChange}
         placeholder={placeholder}
         className="form-control"
         aria-label={placeholder}
       />
-      {value && (
+      {innerVal && (
         <button
           type="button"
-          onClick={() => {
-            if (onChange) onChange({ target: { value: '' } });
-            onClear?.();
-          }}
+          onClick={handleClear}
           className="search-clear-btn"
           aria-label="Clear search"
         >

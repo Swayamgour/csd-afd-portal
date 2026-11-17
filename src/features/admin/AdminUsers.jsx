@@ -84,7 +84,8 @@ export const AdminUsers = () => {
 
   // Filtering
   const filteredUsers = users.filter((u) => {
-    const s = search.toLowerCase().trim();
+    const rawVal = typeof search === 'string' ? search : search?.target?.value || '';
+    const s = rawVal.toLowerCase().trim();
     const matchesSearch =
       !s ||
       (u.name && u.name.toLowerCase().includes(s)) ||
@@ -316,7 +317,7 @@ export const AdminUsers = () => {
       <Card>
         <FilterBar
           searchValue={search}
-          onSearchChange={setSearch}
+          onSearchChange={(e) => setSearch(e?.target ? e.target.value : e)}
           searchPlaceholder="Search by username, name, email, mobile..."
           filters={[
             {

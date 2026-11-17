@@ -21,6 +21,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import {
   useGetDealersQuery,
   useGetOemsQuery,
@@ -36,6 +37,7 @@ export default function CsdDealers() {
   const [updateDealer] = useUpdateDealerMutation();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [selectedDealerForView, setSelectedDealerForView] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   const [page, setPage] = useState(1);
@@ -66,18 +68,20 @@ export default function CsdDealers() {
     }
   };
 
-  const filteredDealers = dealers.filter((d) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase().trim();
-    const oemName = d.oemId?.name || '';
-    return (
-      (d.name || '').toLowerCase().includes(q) ||
-      (d.code || '').toLowerCase().includes(q) ||
-      (d.city || '').toLowerCase().includes(q) ||
-      (d.state || '').toLowerCase().includes(q) ||
-      oemName.toLowerCase().includes(q)
-    );
-  });
+  const filteredDealers = React.useMemo(() => {
+    if (!debouncedSearch.trim()) return dealers;
+    const q = debouncedSearch.toLowerCase().trim();
+    return dealers.filter((d) => {
+      const oemName = d.oemId?.name || '';
+      return (
+        (d.name || '').toLowerCase().includes(q) ||
+        (d.code || '').toLowerCase().includes(q) ||
+        (d.city || '').toLowerCase().includes(q) ||
+        (d.state || '').toLowerCase().includes(q) ||
+        oemName.toLowerCase().includes(q)
+      );
+    });
+  }, [dealers, debouncedSearch]);
 
   const pagedDealers = React.useMemo(() => {
     const start = (page - 1) * pageSize;

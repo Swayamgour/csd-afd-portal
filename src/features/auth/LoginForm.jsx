@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../../config/env.js';
 import {
   User,
   Lock,
@@ -114,7 +115,7 @@ export default function LoginForm({ onNeedOtp }) {
       let credResult;
       try {
         const credRes = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/verify-credentials`,
+          `${API_BASE_URL}/auth/verify-credentials`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

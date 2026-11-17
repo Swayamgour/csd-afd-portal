@@ -22,6 +22,7 @@ import ExcelImportModal from '../../components/common/ExcelImportModal.jsx';
 import { ProductCell, PriceCell } from '../../components/common/ProductGrid.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetCategoriesQuery } from '../catalog/productApi.js';
 import {
   useGetOemProductsQuery,
@@ -33,6 +34,7 @@ export default function OemProducts() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [formError, setFormError] = useState('');
@@ -44,11 +46,11 @@ export default function OemProducts() {
 
   const queryParams = useMemo(() => {
     const p = { page, limit: pageSize };
-    if (searchTerm) p.q = searchTerm;
+    if (debouncedSearch) p.q = debouncedSearch;
     if (categoryFilter) p.categoryId = categoryFilter;
     if (statusFilter) p.status = statusFilter;
     return p;
-  }, [searchTerm, categoryFilter, statusFilter, page, pageSize]);
+  }, [debouncedSearch, categoryFilter, statusFilter, page, pageSize]);
 
   const {
     data: productsData,

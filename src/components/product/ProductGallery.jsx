@@ -14,7 +14,6 @@ export function ProductGallery({
   w,
   toggleWish,
 }) {
-  console.log(p)
   return (
     <div className="gallery">
       <div

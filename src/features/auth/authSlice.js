@@ -1,22 +1,21 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { getAccessToken, setTokens, clearTokens } from '../../utils/tokenStorage.js'
 
 const getStoredUser = () => {
   try {
-    const token = localStorage.getItem('csd_auth_token')
-    if (!token || token === 'csd_demo_token_active') return null
+    const token = getAccessToken()
+    if (!token) return null
     const userStr = localStorage.getItem('csd_auth_user')
     if (!userStr) return null
-    const user = JSON.parse(userStr)
-    if (user?.id === 'USR-BEN-001' || user?.username === 'JC-765432X') return null
-    return user
+    return JSON.parse(userStr)
   } catch {
     return null
   }
 }
 
 const getStoredToken = () => {
-  const token = localStorage.getItem('csd_auth_token')
-  if (!token || token === 'csd_demo_token_active' || !getStoredUser()) return null
+  const token = getAccessToken()
+  if (!token || !getStoredUser()) return null
   return token
 }
 
@@ -48,7 +47,7 @@ const authSlice = createSlice({
       }
 
       if (token) {
-        localStorage.setItem('csd_auth_token', token)
+        setTokens({ accessToken: token })
       }
     },
 
@@ -69,9 +68,9 @@ const authSlice = createSlice({
       state.token = null
       state.isAuthenticated = false
 
+      clearTokens()
       localStorage.removeItem('csd_auth_user')
       localStorage.removeItem('csd_auth_role')
-      localStorage.removeItem('csd_auth_token')
     },
   },
 })

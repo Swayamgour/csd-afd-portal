@@ -39,6 +39,7 @@ import {
   useImportProductsExcelMutation
 } from '../catalog/productApi.js';
 import { useGetOemsQuery } from '../org/orgApi.js';
+import { useDebounce } from '../../hooks/useDebounce.js';
 
 export default function CsdProducts() {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ export default function CsdProducts() {
   const [oemFilter, setOemFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [toast, setToast] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -53,12 +55,12 @@ export default function CsdProducts() {
   // Query parameters for dynamic backend catalogue
   const queryParams = useMemo(() => {
     const p = { limit: 100 };
-    if (searchTerm) p.q = searchTerm;
+    if (debouncedSearch) p.q = debouncedSearch;
     if (categoryFilter && categoryFilter !== 'all') p.categoryId = categoryFilter;
     if (oemFilter && oemFilter !== 'all') p.oemId = oemFilter;
     if (statusFilter) p.status = statusFilter;
     return p;
-  }, [searchTerm, categoryFilter, oemFilter, statusFilter]);
+  }, [debouncedSearch, categoryFilter, oemFilter, statusFilter]);
 
   const {
     data: productsData,

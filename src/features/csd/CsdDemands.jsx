@@ -22,11 +22,13 @@ import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
 
 export default function CsdDemands() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [selectedDemand, setSelectedDemand] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -34,9 +36,9 @@ export default function CsdDemands() {
   const queryParams = useMemo(() => {
     const p = {};
     if (statusFilter) p.status = statusFilter;
-    if (searchTerm) p.q = searchTerm;
+    if (debouncedSearch) p.q = debouncedSearch;
     return p;
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, debouncedSearch]);
 
   const { data: demandsData, isLoading, isFetching, refetch } = useGetDemandsQuery(queryParams);
 

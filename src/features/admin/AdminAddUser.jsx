@@ -109,17 +109,32 @@ export default function AdminAddUser() {
     const symbols = '!@#$%^&*-_=+';
     const all = uppers + lowers + numbers + symbols;
 
-    let pwd = '';
-    pwd += uppers[Math.floor(Math.random() * uppers.length)];
-    pwd += lowers[Math.floor(Math.random() * lowers.length)];
-    pwd += numbers[Math.floor(Math.random() * numbers.length)];
-    pwd += symbols[Math.floor(Math.random() * symbols.length)];
+    const getRandomChar = (str) => {
+      const arr = new Uint32Array(1);
+      crypto.getRandomValues(arr);
+      return str[arr[0] % str.length];
+    };
+
+    const pwdChars = [
+      getRandomChar(uppers),
+      getRandomChar(lowers),
+      getRandomChar(numbers),
+      getRandomChar(symbols),
+    ];
 
     for (let i = 4; i < 16; i++) {
-      pwd += all[Math.floor(Math.random() * all.length)];
+      pwdChars.push(getRandomChar(all));
     }
 
-    pwd = pwd.split('').sort(() => 0.5 - Math.random()).join('');
+    // Cryptographic Fisher-Yates shuffle
+    for (let i = pwdChars.length - 1; i > 0; i--) {
+      const arr = new Uint32Array(1);
+      crypto.getRandomValues(arr);
+      const j = arr[0] % (i + 1);
+      [pwdChars[i], pwdChars[j]] = [pwdChars[j], pwdChars[i]];
+    }
+
+    const pwd = pwdChars.join('');
     setPass1(pwd);
     setPass2(pwd);
     setShowPassword(true);

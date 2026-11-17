@@ -19,6 +19,17 @@
   --r-sm: 9px;
   --sh: 0 1px 2px rgba(12, 31, 71, .06), 0 6px 18px rgba(12, 31, 71, .05);
   --sh-lg: 0 18px 44px rgba(12, 31, 71, .18);
+
+  /* Layering / z-index scale */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-header: 300;
+  --z-drawer: 400;
+  --z-modal-backdrop: 500;
+  --z-modal: 510;
+  --z-toast: 600;
+  --z-tooltip: 700;
   /* --f: 'Space Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif; */
   /* --fd: 'Fraunces', Georgia, 'Times New Roman', serif; */
 }

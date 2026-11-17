@@ -1,13 +1,17 @@
 import { apiClient } from './apiClient.js';
+import { getAccessToken } from '../utils/tokenStorage.js';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' ? window.location.origin + '/api/v1' : '/api/v1');
 
 let ordersStore = [];
 
 export const orderService = {
   async getOrders(filter = {}) {
     try {
-      const token = localStorage.getItem('csd_auth_token');
+      const token = getAccessToken();
       const res = await fetch(`${API_BASE}/orders`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });

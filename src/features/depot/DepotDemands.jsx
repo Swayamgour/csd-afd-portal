@@ -5,6 +5,7 @@ import PageHeader from '../../components/common/PageHeader.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import DepotDemandActions from './DepotDemandActions.jsx';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
 import { getStatusLabel, fmtINR, upper, hasPaymentDetails, hasSupplyOrderDocs } from '../../utils/demandStatus.js';
 
@@ -21,13 +22,14 @@ export default function DepotDemands() {
   const { data, isLoading, isFetching, refetch } = useGetDemandsQuery();
   const [tab, setTab] = useState('approval');
   const [q, setQ] = useState('');
+  const debouncedQ = useDebounce(q, 300);
   const [sort, setSort] = useState('newest');
 
   const demands = data?.items || [];
 
   const rows = useMemo(() => {
     const t = TABS.find((x) => x.key === tab) || TABS[0];
-    const needle = q.trim().toLowerCase();
+    const needle = debouncedQ.trim().toLowerCase();
     return demands
       .filter(t.test)
       .filter((d) => {
@@ -39,7 +41,7 @@ export default function DepotDemands() {
         const diff = new Date(b.createdAt) - new Date(a.createdAt);
         return sort === 'newest' ? diff : -diff;
       });
-  }, [demands, tab, q, sort]);
+  }, [demands, tab, debouncedQ, sort]);
 
   const columns = [
     {

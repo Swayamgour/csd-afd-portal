@@ -11,6 +11,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import Button from './Button.jsx';
+import { getAccessToken } from '../../utils/tokenStorage.js';
 
 export default function ExcelImportModal({
   isOpen,
@@ -61,19 +62,33 @@ export default function ExcelImportModal({
 
   const handleDownloadTemplate = async () => {
     try {
-      const token =
-        localStorage.getItem('csd_auth_token') ||
-        sessionStorage.getItem('csd_auth_token') ||
-        '';
-
+      const token = getAccessToken() || '';
       const headers = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const res = await fetch(templateUrl, { method: 'GET', headers });
-      if (!res.ok) {
-        throw new Error(`Failed to download template (${res.status})`);
+      const urlsToTry = [
+        templateUrl,
+        '/api/v1/products/import-template',
+      ];
+
+      let blob = null;
+      for (const url of urlsToTry) {
+        try {
+          const authUrl = token ? `${url}?token=${encodeURIComponent(token)}` : url;
+          const res = await fetch(authUrl, { method: 'GET', headers });
+          if (res.ok) {
+            blob = await res.blob();
+            break;
+          }
+        } catch {
+          // try next URL
+        }
       }
-      const blob = await res.blob();
+
+      if (!blob) {
+        throw new Error('Template download endpoint returned an error.');
+      }
+
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
@@ -82,14 +97,9 @@ export default function ExcelImportModal({
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(blobUrl);
-    } catch {
-      // Fallback
-      const a = document.createElement('a');
-      a.href = templateUrl;
-      a.download = 'CSD_Product_and_Pricing_Template.xlsx';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Template download error:', err);
+      setError('Unable to download template. Please ensure backend service is running.');
     }
   };
 
@@ -141,9 +151,8 @@ export default function ExcelImportModal({
               {/* Upload Dropzone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition ${
-                  file ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-300 hover:border-brand bg-slate-50/50'
-                }`}
+                className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition ${file ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-300 hover:border-brand bg-slate-50/50'
+                  }`}
               >
                 <input
                   ref={fileInputRef}
@@ -191,18 +200,16 @@ export default function ExcelImportModal({
                 <button
                   type="button"
                   onClick={() => setActiveTab('summary')}
-                  className={`pb-2 px-3 font-medium transition ${
-                    activeTab === 'summary' ? 'border-b-2 border-brand text-brand font-semibold' : 'text-slate-500 hover:text-slate-700'
-                  }`}
+                  className={`pb-2 px-3 font-medium transition ${activeTab === 'summary' ? 'border-b-2 border-brand text-brand font-semibold' : 'text-slate-500 hover:text-slate-700'
+                    }`}
                 >
                   Summary
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('scrutiny')}
-                  className={`pb-2 px-3 font-medium transition ${
-                    activeTab === 'scrutiny' ? 'border-b-2 border-brand text-brand font-semibold' : 'text-slate-500 hover:text-slate-700'
-                  }`}
+                  className={`pb-2 px-3 font-medium transition ${activeTab === 'scrutiny' ? 'border-b-2 border-brand text-brand font-semibold' : 'text-slate-500 hover:text-slate-700'
+                    }`}
                 >
                   Automated Checks ({scrutiny?.checks?.length || 0})
                 </button>
@@ -233,11 +240,10 @@ export default function ExcelImportModal({
                   {scrutiny?.checks?.map((chk) => (
                     <div
                       key={chk.id}
-                      className={`flex items-start justify-between p-2.5 rounded-lg border text-xs ${
-                        chk.status === 'PASSED'
-                          ? 'bg-emerald-50/50 border-emerald-200 text-emerald-950'
-                          : 'bg-amber-50/60 border-amber-200 text-amber-950'
-                      }`}
+                      className={`flex items-start justify-between p-2.5 rounded-lg border text-xs ${chk.status === 'PASSED'
+                        ? 'bg-emerald-50/50 border-emerald-200 text-emerald-950'
+                        : 'bg-amber-50/60 border-amber-200 text-amber-950'
+                        }`}
                     >
                       <div className="flex items-center gap-2">
                         {chk.status === 'PASSED' ? (
@@ -251,9 +257,8 @@ export default function ExcelImportModal({
                         </div>
                       </div>
                       <span
-                        className={`px-2 py-0.5 rounded font-mono font-bold text-[10px] ${
-                          chk.status === 'PASSED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}
+                        className={`px-2 py-0.5 rounded font-mono font-bold text-[10px] ${chk.status === 'PASSED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}
                       >
                         {chk.status}
                       </span>

@@ -1,3 +1,9 @@
+/**
+ * Client-side visual CAPTCHA generator.
+ * TODO(security): Client-side CAPTCHA is purely UX-level friction and can be bypassed by scripts.
+ * Production systems must validate CAPTCHA server-side or rely on Cloudflare Turnstile / reCAPTCHA.
+ */
+
 const UPPERCASE = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 const LOWERCASE = "abcdefghjkmnpqrstuvwxyz";
 const NUMBERS = "23456789";

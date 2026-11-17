@@ -8,18 +8,20 @@ import Button from '../../components/common/Button.jsx';
 import CatalogToolbar from '../../components/common/CatalogToolbar.jsx';
 import { ProductCell, CategoryBadge, PriceCell } from '../../components/common/ProductGrid.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetProductsQuery, useGetCategoriesQuery } from '../catalog/productApi.js';
 
 export default function DepotProducts() {
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [categoryFilter, setCategoryFilter] = useState('');
 
   const queryParams = useMemo(() => {
     const p = { limit: 100, status: 'ACTIVE' };
-    if (searchTerm) p.q = searchTerm;
+    if (debouncedSearch) p.q = debouncedSearch;
     if (categoryFilter) p.categoryId = categoryFilter;
     return p;
-  }, [searchTerm, categoryFilter]);
+  }, [debouncedSearch, categoryFilter]);
 
   const { data: productsData, isLoading, isFetching, refetch } = useGetProductsQuery(queryParams);
   const { data: categories = [] } = useGetCategoriesQuery();

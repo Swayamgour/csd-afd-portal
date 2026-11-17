@@ -19,11 +19,13 @@ import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetOrdersQuery } from '../demand/demandApi.js';
 
 export default function CsdOrders() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -31,9 +33,9 @@ export default function CsdOrders() {
   const queryParams = useMemo(() => {
     const p = {};
     if (statusFilter) p.status = statusFilter;
-    if (searchTerm) p.q = searchTerm;
+    if (debouncedSearch) p.q = debouncedSearch;
     return p;
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, debouncedSearch]);
 
   const { data: ordersData, isLoading, isFetching, refetch } = useGetOrdersQuery(queryParams);
 
@@ -130,8 +132,8 @@ export default function CsdOrders() {
             row.status === 'DELIVERED' || row.status === 'COMPLETED'
               ? 'success'
               : row.status === 'IN_TRANSIT'
-              ? 'brand'
-              : 'warning'
+                ? 'brand'
+                : 'warning'
           }
         >
           {row.status}
@@ -292,8 +294,8 @@ export default function CsdOrders() {
                     selectedOrder.status === 'DELIVERED' || selectedOrder.status === 'COMPLETED'
                       ? 'success'
                       : selectedOrder.status === 'IN_TRANSIT'
-                      ? 'brand'
-                      : 'warning'
+                        ? 'brand'
+                        : 'warning'
                   }
                 >
                   {selectedOrder.status}

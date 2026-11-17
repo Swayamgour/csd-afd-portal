@@ -285,7 +285,9 @@ export default function Register() {
           [field]: res.conflicts[field],
         }));
       }
-    } catch (e) { }
+    } catch (e) {
+      console.warn("Duplicate check network notice:", e?.message || e);
+    }
   };
 
   const refreshCaptcha = () => {

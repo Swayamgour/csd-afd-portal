@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   SlidersHorizontal,
@@ -12,8 +12,9 @@ import {
   Check,
 } from "lucide-react";
 import ProductCard from "./ProductCard.jsx";
-import { Loader, EmptyState, UnavailableState } from "./States.jsx";
+import { Loader, EmptyState, UnavailableState } from "./common/States.jsx";
 import { useStoreProducts } from "../hooks/useStoreProducts.js";
+import { useDebounce } from "../hooks/useDebounce.js";
 import { useStore } from "../context/Store.jsx";
 import { useCanSeePrice } from "./PriceLock.jsx";
 import { CAT_PLURAL, matches, rupees } from "../data/utils.js";
@@ -106,6 +107,7 @@ export default function Catalog({
     return () => window.removeEventListener("keydown", k);
   }, [drawer]);
 
+  const debouncedQ = useDebounce(q, 300);
   const single = cat !== "all";
   // products in the current scope (category + search + wishlist)
   const scope = useMemo(
@@ -114,9 +116,9 @@ export default function Catalog({
         (p) =>
           (!single || p.category === cat) &&
           (!onlyWish || wish.includes(p.id)) &&
-          matches(p, q),
+          matches(p, debouncedQ),
       ),
-    [all, cat, single, q, onlyWish, wish],
+    [all, cat, single, debouncedQ, onlyWish, wish],
   );
   const priced = scope.filter((p) => p.lo != null).map((p) => p.lo);
   const hi =
@@ -128,14 +130,17 @@ export default function Catalog({
   const money = (v) =>
     cat === "white-goods" ? `₹${Number(v).toLocaleString("en-IN")}` : lakh(v);
 
-  const passes = (p, skipBrand) =>
-    (skipBrand || !brands.length || brands.includes(p.brand)) &&
-    (!types.length || types.includes(p.type)) &&
-    (!fuels.length || (p.fuel || []).some((f) => fuels.includes(f))) &&
-    (!trans.length ||
-      (p.trans || "").split(" / ").some((t) => trans.includes(t))) &&
-    (!minRating || p.rating >= minRating) &&
-    (!hi || p.lo == null || p.lo <= lim);
+  const passes = useCallback(
+    (p, skipBrand) =>
+      (skipBrand || !brands.length || brands.includes(p.brand)) &&
+      (!types.length || types.includes(p.type)) &&
+      (!fuels.length || (p.fuel || []).some((f) => fuels.includes(f))) &&
+      (!trans.length ||
+        (p.trans || "").split(" / ").some((t) => trans.includes(t))) &&
+      (!minRating || p.rating >= minRating) &&
+      (!hi || p.lo == null || p.lo <= lim),
+    [brands, types, fuels, trans, minRating, hi, lim],
+  );
 
   const brandCounts = useMemo(() => {
     const m = {};
@@ -145,7 +150,7 @@ export default function Catalog({
         m[p.brand] = (m[p.brand] || 0) + 1;
       });
     return m;
-  }, [scope, types, fuels, trans, minRating, lim]); // eslint-disable-line
+  }, [scope, passes]);
 
   const brandList = useMemo(
     () =>
@@ -174,7 +179,7 @@ export default function Catalog({
       az: (a, b) => (a.name || "").localeCompare(b.name || ""),
     }[sort];
     return by ? [...l].sort(by) : l;
-  }, [scope, brands, types, fuels, trans, minRating, lim, sort]); // eslint-disable-line
+  }, [scope, passes, sort]);
 
   const uniq = (f) => [...new Set(scope.flatMap(f))].sort();
   const count = (f) => {
@@ -269,7 +274,6 @@ export default function Catalog({
         set={setTypes}
         counts={count((p) => [p.type])}
       />
-      {/* {console.log("fuelList", fuelList)} */}
       {cat !== "white-goods" && (
         <Group
           title="Fuel type"

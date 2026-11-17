@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { API_ORIGIN } from '../../config/env.js';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Store,
@@ -750,7 +751,7 @@ export default function DealerDashboard() {
                 const isAbsolute = cert.url?.startsWith('http');
                 const fileUrl = isAbsolute
                   ? cert.url
-                  : `http://localhost:5000${cert.url?.startsWith('/') ? '' : '/'}${cert.url}`;
+                  : `${API_ORIGIN || ''}${cert.url?.startsWith('/') ? '' : '/'}${cert.url}`;
 
                 return (
                   <div className="between align-center p-2 bg-white rounded border">

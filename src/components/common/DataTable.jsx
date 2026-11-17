@@ -62,7 +62,7 @@ export function DataTable({
                   className={onRowClick ? 'clickable-row' : ''}
                 >
                   {columns.map((col, cIdx) => (
-                    <td key={cIdx} className={col.className || ''}>
+                    <td key={col.accessor || col.id || col.header || cIdx} className={col.className || ''}>
                       {col.render ? col.render(row, rIdx) : row[col.accessor]}
                     </td>
                   ))}

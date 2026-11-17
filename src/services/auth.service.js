@@ -1,4 +1,4 @@
-import { setCookie, deleteCookie } from '../utils/cookie.js';
+import { setTokens, clearTokens } from '../utils/tokenStorage.js';
 
 export const authService = {
   async verifyCredentials({ username, password }) {
@@ -57,17 +57,12 @@ export const authService = {
         isEmailVerified: data.user.isEmailVerified !== undefined ? data.user.isEmailVerified : true,
       };
 
-      localStorage.setItem('csd_auth_token', data.accessToken);
-      setCookie('csd_auth_token', data.accessToken, 7);
-      setCookie('accessToken', data.accessToken, 7);
-      if (data.refreshToken) {
-        localStorage.setItem('csd_refresh_token', data.refreshToken);
-        setCookie('csd_refresh_token', data.refreshToken, 30);
-        setCookie('refreshToken', data.refreshToken, 30);
-      }
+      setTokens({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken || null,
+      });
       localStorage.setItem('csd_auth_user', JSON.stringify(userObj));
       localStorage.setItem('csd_auth_role', normalizedRole);
-      setCookie('csd_auth_role', normalizedRole, 7);
 
       return {
         status: 200,
@@ -155,15 +150,9 @@ export const authService = {
     } catch (e) {
       // offline logout
     } finally {
-      localStorage.removeItem('csd_auth_token');
-      localStorage.removeItem('csd_refresh_token');
+      clearTokens();
       localStorage.removeItem('csd_auth_user');
       localStorage.removeItem('csd_auth_role');
-      deleteCookie('csd_auth_token');
-      deleteCookie('accessToken');
-      deleteCookie('csd_refresh_token');
-      deleteCookie('refreshToken');
-      deleteCookie('csd_auth_role');
     }
     return { status: 200, data: { success: true } };
   }

@@ -4748,7 +4748,7 @@ select.select-input {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh -20vh);
+    min-height: calc(100vh - 20vh);
     width: 100%;
     padding: 2rem 1rem;
 }

@@ -1,6 +1,41 @@
-import React from 'react';
-import { Loader2, AlertTriangle, SearchX, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Loader2, AlertTriangle, SearchX, RefreshCw, CloudOff } from 'lucide-react';
 import Button from './Button.jsx';
+
+/** Spinner with slow loading hint */
+export const Loader = ({ label = 'Loading', slowAfter = 8000, onRetry }) => {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), slowAfter);
+    return () => clearTimeout(t);
+  }, [slowAfter]);
+  return (
+    <div className="state" role="status" aria-live="polite">
+      <Loader2 className="spin" aria-hidden />
+      <p>{label}…</p>
+      {slow && (
+        <>
+          <p className="muted">This is taking longer than usual. Please wait a moment.</p>
+          {onRetry && <button className="btn out" onClick={onRetry}>Retry</button>}
+        </>
+      )}
+    </div>
+  );
+};
+
+export const UnavailableState = ({ title = 'Not available', text = 'This information is not available right now. Please try again later.', onRetry }) => (
+  <div className="state" role="alert">
+    <CloudOff aria-hidden size={36} />
+    <h2>{title}</h2>
+    <p>{text}</p>
+    {onRetry && <button className="btn" onClick={onRetry}>Try again</button>}
+  </div>
+);
+
+export const InlineNote = ({ children }) => <p className="muted" role="status">{children}</p>;
+
+export const HomeLink = () => <Link className="btn" to="/">Go to home</Link>;
 
 export function LoadingState({ message, text, className = '' }) {
   const displayMsg = text || message || 'Loading records...';

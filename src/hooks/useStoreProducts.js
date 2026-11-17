@@ -10,7 +10,7 @@ import { mapBackendProduct } from '../data/api.js';
  * GET /products?limit=100 and shares the cached result everywhere
  * (even when React.StrictMode double-mounts components in dev).
  */
-export const STORE_QUERY = { limit: 100 };
+export const STORE_QUERY = { limit: 1000 };
 
 export function useStoreProducts(options = {}) {
   const { data, isLoading, isFetching, isError, refetch } = useGetProductsQuery(STORE_QUERY, options);

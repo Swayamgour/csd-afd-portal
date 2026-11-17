@@ -15,10 +15,12 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetOemDemandsQuery, useGetOemDemandByIdQuery } from './oemApi.js';
 
 export default function OemDemands() {
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -27,10 +29,10 @@ export default function OemDemands() {
 
   const queryParams = useMemo(() => {
     const p = { page, limit: pageSize };
-    if (searchTerm) p.q = searchTerm;
+    if (debouncedSearch) p.q = debouncedSearch;
     if (statusFilter) p.status = statusFilter;
     return p;
-  }, [searchTerm, statusFilter, page, pageSize]);
+  }, [debouncedSearch, statusFilter, page, pageSize]);
 
   const {
     data: demandsData,

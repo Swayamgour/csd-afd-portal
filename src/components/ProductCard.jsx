@@ -10,6 +10,7 @@ import {
 import { useStore } from "../context/Store.jsx";
 import { CAT_LABEL, priceText, inr, onImgError } from "../data/utils.js";
 import { placeholder } from "../data/art.js";
+import { API_ORIGIN } from "../config/env.js";
 
 export const Stars = ({ v, n }) => (typeof v !== "number" || !v) ? null : (
 
@@ -49,12 +50,7 @@ export const getProductImgSrc = (p) => {
     return firstImg;
   }
   if (firstImg.startsWith("/api/") || firstImg.startsWith("/uploads/")) {
-    const backendBase = (
-      import.meta.env.VITE_API_URL ||
-      import.meta.env.VITE_API_BASE_URL ||
-      "http://localhost:5000/api/v1"
-    ).replace(/\/api\/v1\/?$/, "");
-    return `${backendBase}${firstImg}`;
+    return `${API_ORIGIN || ""}${firstImg}`;
   }
   return firstImg;
 };

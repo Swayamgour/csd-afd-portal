@@ -5,6 +5,7 @@ import { Card } from '../../components/common/Card.jsx';
 import { DataTable } from '../../components/common/DataTable.jsx';
 import { StatCard } from '../../components/common/StatCard.jsx';
 import { Button } from '../../components/common/Button.jsx';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetUsersQuery, useApproveUserMutation, useRejectUserMutation } from '../admin/adminApi.js';
 import {
   Users,
@@ -29,6 +30,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
   const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState(defaultTab);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [toastMessage, setToastMessage] = useState('');
 
@@ -122,36 +124,38 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
   };
 
   // Filter list
-  const filteredUsers = users.filter((u) => {
-    const vStatus = u.verificationStatus || u.beneficiary?.verificationStatus || (u.status === 'Pending' ? 'PENDING' : 'VERIFIED');
-    const isPending = vStatus === 'PENDING' || u.adminApproval === 'PENDING';
-    const isApproved = vStatus === 'VERIFIED' || vStatus === 'APPROVED';
-    const isRejected = vStatus === 'REJECTED';
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const vStatus = u.verificationStatus || u.beneficiary?.verificationStatus || (u.status === 'Pending' ? 'PENDING' : 'VERIFIED');
+      const isPending = vStatus === 'PENDING' || u.adminApproval === 'PENDING';
+      const isApproved = vStatus === 'VERIFIED' || vStatus === 'APPROVED';
+      const isRejected = vStatus === 'REJECTED';
 
-    if (statusTab === 'PENDING' && !isPending) return false;
-    if (statusTab === 'APPROVED' && !isApproved) return false;
-    if (statusTab === 'REJECTED' && !isRejected) return false;
+      if (statusTab === 'PENDING' && !isPending) return false;
+      if (statusTab === 'APPROVED' && !isApproved) return false;
+      if (statusTab === 'REJECTED' && !isRejected) return false;
 
-    if (categoryFilter !== 'ALL') {
-      const cat = u.category || u.beneficiary?.category || u.beneficiary?.employmentStatus || '';
-      if (!cat.toUpperCase().includes(categoryFilter.toUpperCase())) return false;
-    }
+      if (categoryFilter !== 'ALL') {
+        const cat = u.category || u.beneficiary?.category || u.beneficiary?.employmentStatus || '';
+        if (!cat.toUpperCase().includes(categoryFilter.toUpperCase())) return false;
+      }
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const b = u.beneficiary || {};
-      const match =
-        (u.name || '').toLowerCase().includes(q) ||
-        (u.email || '').toLowerCase().includes(q) ||
-        (u.mobile || u.phone || '').includes(q) ||
-        (b.serviceNumber || u.serviceNumber || '').toLowerCase().includes(q) ||
-        (b.cardId || u.cardId || '').toLowerCase().includes(q) ||
-        (b.rank || u.rank || '').toLowerCase().includes(q);
-      if (!match) return false;
-    }
+      if (debouncedSearch.trim()) {
+        const q = debouncedSearch.toLowerCase().trim();
+        const b = u.beneficiary || {};
+        const match =
+          (u.name || '').toLowerCase().includes(q) ||
+          (u.email || '').toLowerCase().includes(q) ||
+          (u.mobile || u.phone || '').includes(q) ||
+          (b.serviceNumber || u.serviceNumber || '').toLowerCase().includes(q) ||
+          (b.cardId || u.cardId || '').toLowerCase().includes(q) ||
+          (b.rank || u.rank || '').toLowerCase().includes(q);
+        if (!match) return false;
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }, [users, statusTab, categoryFilter, debouncedSearch]);
 
   const columns = [
     {

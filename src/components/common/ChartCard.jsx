@@ -16,7 +16,7 @@ export function ChartCard({
           const pct = Math.round((item.value / maxVal) * 100);
           const widthClass = `chart-w-${Math.min(100, Math.max(0, Math.round(pct / 5) * 5))}`;
           return (
-            <div key={idx} className="chart-bar-item">
+            <div key={item.id || item.label || idx} className="chart-bar-item">
               <div className="chart-bar-labels between small">
                 <span className="chart-bar-label font-semibold">{item.label}</span>
                 <span className="chart-bar-val muted">{item.displayValue || item.value}</span>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Search, X, ArrowUpRight, Tag, Layers } from 'lucide-react'
 import { useStoreProducts } from '../hooks/useStoreProducts.js'
+import { useDebounce } from '../hooks/useDebounce.js'
 import { useCanSeePrice } from './PriceLock.jsx'
 import { CAT_LABEL, matches, priceFrom, onImgError } from '../data/utils.js'
 
@@ -47,6 +48,7 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
   const loc = useLocation(), go = useNavigate()
   const fromUrl = loc.pathname === '/search' ? new URLSearchParams(loc.search).get('q') || '' : ''
   const [q, setQ] = useState(fromUrl), [open, setOpen] = useState(false), [active, setActive] = useState(-1)
+  const debouncedQ = useDebounce(q, 300)
   const [wantData, setWantData] = useState(false)
   const box = useRef(null), input = useRef(null)
   const canSeePrice = useCanSeePrice()
@@ -62,8 +64,8 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
     return () => document.removeEventListener('mousedown', away)
   }, [])
 
-  const items = useMemo(() => buildSuggestions(q, liveProducts, canSeePrice), [q, liveProducts, canSeePrice])
-  const ready = q.trim().length >= MIN
+  const items = useMemo(() => buildSuggestions(debouncedQ, liveProducts, canSeePrice), [debouncedQ, liveProducts, canSeePrice])
+  const ready = debouncedQ.trim().length >= MIN
   const total = items.length + (ready ? 1 : 0)
 
   const run = text => {

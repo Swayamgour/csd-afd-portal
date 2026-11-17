@@ -2,7 +2,9 @@
 // The browser is sent to the backend, which redirects to DigiLocker and finally back to
 // /auth/digilocker/callback?status=ok&mode=..&ticket=..  (or status=error&code=..)
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+import { API_BASE_URL } from '../config/env.js';
+
+const API_BASE = API_BASE_URL;
 
 export function startDigiLocker(mode) {
   const m = String(mode).toUpperCase();

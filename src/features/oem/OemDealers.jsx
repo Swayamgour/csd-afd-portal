@@ -18,6 +18,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import {
   useGetOemDealersQuery,
   useGetOemDealerByIdQuery,
@@ -27,6 +28,7 @@ import {
 
 export default function OemDealers() {
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [stateFilter, setStateFilter] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
@@ -35,10 +37,10 @@ export default function OemDealers() {
 
   const queryParams = useMemo(() => {
     const p = { page, limit: pageSize };
-    if (searchTerm) p.q = searchTerm;
+    if (debouncedSearch) p.q = debouncedSearch;
     if (stateFilter) p.state = stateFilter;
     return p;
-  }, [searchTerm, stateFilter, page, pageSize]);
+  }, [debouncedSearch, stateFilter, page, pageSize]);
 
   const {
     data: dealersData,

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { ROLES, ROLE_HOMES, getRoleNavigatePath, normalizeRole } from '../permissions/roles.js';
 import { ROLE_PERMISSIONS } from '../permissions/permissions.js';
-import { getCookie, setCookie, deleteCookie } from '../utils/cookie.js';
+import { getAccessToken, setTokens, clearTokens } from '../utils/tokenStorage.js';
 
 const AuthContext = createContext(null);
 
@@ -13,39 +13,22 @@ export const useAuth = () => {
   return ctx;
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' ? window.location.origin + '/api/v1' : '/api/v1');
 
 // One in-flight GET /auth/me per token (React.StrictMode / re-renders can never double-call it)
 let meInflight = null; // { token, promise }
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => {
-    try {
-      const t =
-        localStorage.getItem('csd_auth_token') ||
-        getCookie('csd_auth_token') ||
-        getCookie('accessToken');
-      if (!t || t === 'csd_demo_token_active' || t.startsWith('csd_token_')) {
-        return null;
-      }
-      return t;
-    } catch {
-      return null;
-    }
-  });
+  const [token, setToken] = useState(() => getAccessToken());
 
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('csd_auth_user');
       if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.id?.startsWith('USR-') || parsed?.username === 'JC-765432X') {
-          localStorage.removeItem('csd_auth_user');
-          localStorage.removeItem('csd_auth_token');
-          localStorage.removeItem('csd_auth_role');
-          return null;
-        }
-        return parsed;
+        return JSON.parse(saved);
       }
     } catch {
       // ignore
@@ -58,6 +41,31 @@ export function AuthProvider({ children }) {
 
   // Authenticated user session verification via GET /auth/me
   const verifiedTokenRef = useRef(null);
+
+  // Listen to silent refresh and token updates across the app (e.g. from Redux baseQueryWithReauth)
+  useEffect(() => {
+    const onTokensUpdated = (e) => {
+      const nextAccessToken = e?.detail?.accessToken;
+      if (nextAccessToken) {
+        setToken(nextAccessToken);
+        verifiedTokenRef.current = nextAccessToken;
+      }
+    };
+
+    const onTokensCleared = () => {
+      setToken(null);
+      setUser(null);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('csd_tokens_updated', onTokensUpdated);
+      window.addEventListener('csd_tokens_cleared', onTokensCleared);
+      return () => {
+        window.removeEventListener('csd_tokens_updated', onTokensUpdated);
+        window.removeEventListener('csd_tokens_cleared', onTokensCleared);
+      };
+    }
+  }, []);
 
   const refreshMe = useCallback(async (authToken) => {
     const activeToken = authToken || token;
@@ -115,20 +123,13 @@ export function AuthProvider({ children }) {
       try {
         localStorage.setItem('csd_auth_user', JSON.stringify(user));
         localStorage.setItem('csd_auth_role', user.role);
-        setCookie('csd_auth_role', user.role, 7);
       } catch (e) {
         console.error('Storage error', e);
       }
     } else {
       localStorage.removeItem('csd_auth_user');
       localStorage.removeItem('csd_auth_role');
-      localStorage.removeItem('csd_auth_token');
-      localStorage.removeItem('csd_refresh_token');
-      deleteCookie('csd_auth_user');
-      deleteCookie('csd_auth_role');
-      deleteCookie('csd_auth_token');
-      deleteCookie('accessToken');
-      deleteCookie('refreshToken');
+      clearTokens();
     }
   }, [user]);
 
@@ -141,14 +142,12 @@ export function AuthProvider({ children }) {
         verifiedTokenRef.current = t;
         setUser(u);
         setToken(t);
-        localStorage.setItem('csd_auth_token', t);
+        setTokens({
+          accessToken: t,
+          refreshToken: credentials.refreshToken || null,
+        });
         localStorage.setItem('csd_auth_user', JSON.stringify(u));
         localStorage.setItem('csd_auth_role', u.role);
-        setCookie('csd_auth_token', t, 7);
-        setCookie('accessToken', t, 7);
-        if (credentials.refreshToken) {
-          setCookie('refreshToken', credentials.refreshToken, 30);
-        }
         return u;
       }
 
@@ -171,14 +170,12 @@ export function AuthProvider({ children }) {
       verifiedTokenRef.current = accessToken;
       setUser(userObj);
       setToken(accessToken);
-      localStorage.setItem('csd_auth_token', accessToken);
+      setTokens({
+        accessToken,
+        refreshToken: refreshToken || null,
+      });
       localStorage.setItem('csd_auth_user', JSON.stringify(userObj));
       localStorage.setItem('csd_auth_role', userObj.role);
-      setCookie('csd_auth_token', accessToken, 7);
-      setCookie('accessToken', accessToken, 7);
-      if (refreshToken) {
-        setCookie('refreshToken', refreshToken, 30);
-      }
       return userObj;
     } finally {
       setLoading(false);
@@ -198,15 +195,9 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
       setToken(null);
+      clearTokens();
       localStorage.removeItem('csd_auth_user');
       localStorage.removeItem('csd_auth_role');
-      localStorage.removeItem('csd_auth_token');
-      localStorage.removeItem('csd_refresh_token');
-      deleteCookie('csd_auth_token');
-      deleteCookie('accessToken');
-      deleteCookie('csd_refresh_token');
-      deleteCookie('refreshToken');
-      deleteCookie('csd_auth_role');
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, FileText, Loader2, AlertCircle } from 'lucide-react';
-import { getCookie } from '../../utils/cookie.js';
+import { getAccessToken } from '../../utils/tokenStorage.js';
 
 export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
   const [blobUrl, setBlobUrl] = useState(null);
@@ -9,25 +9,27 @@ export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
 
   useEffect(() => {
     if (!isOpen || !doc?.url) {
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
       setBlobUrl(null);
       setError(null);
       return;
     }
 
     let active = true;
+    let objectUrl = null;
     setLoading(true);
     setError(null);
 
     const fetchFile = async () => {
       try {
-        const token =
-          localStorage.getItem('csd_auth_token') ||
-          getCookie('csd_auth_token') ||
-          getCookie('accessToken');
-        const backendBase =
-          import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/v1\/?$/, '') ||
-          'http://localhost:5000';
+        const token = getAccessToken();
+        const backendBase = (
+          import.meta.env.VITE_API_BASE_URL ||
+          import.meta.env.VITE_API_URL ||
+          (typeof window !== 'undefined' ? window.location.origin : '')
+        ).replace(/\/api\/v1\/?$/, '');
         const fullUrl = doc.url.startsWith('http')
           ? doc.url
           : `${backendBase}${doc.url.startsWith('/') ? '' : '/'}${doc.url}`;
@@ -42,8 +44,8 @@ export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
 
         const blob = await res.blob();
         if (active) {
-          const url = URL.createObjectURL(blob);
-          setBlobUrl(url);
+          objectUrl = URL.createObjectURL(blob);
+          setBlobUrl(objectUrl);
           setLoading(false);
         }
       } catch (err) {
@@ -58,8 +60,8 @@ export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
 
     return () => {
       active = false;
-      if (blobUrl) {
-        URL.revokeObjectURL(blobUrl);
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
       }
     };
   }, [isOpen, doc]);

@@ -17,6 +17,7 @@ import ProductGrid, {
 import { ErrorState } from '../../components/common/States.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetProductsQuery, useGetCategoriesQuery } from '../catalog/productApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 
@@ -25,6 +26,7 @@ const LOCAL_FALLBACK = '/assets/maruti1.png';
 export const BeneficiaryProducts = () => {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const [category, setCategory] = useState('');
   const [view, setView] = useState('table');
 
@@ -36,7 +38,7 @@ export const BeneficiaryProducts = () => {
       user.adminApproval === 'PENDING');
 
   const { data: productsData, isLoading, isFetching, isError, error, refetch } = useGetProductsQuery({
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     category: category || undefined,
     limit: 50
   });

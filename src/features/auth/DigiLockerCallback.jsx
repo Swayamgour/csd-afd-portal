@@ -96,8 +96,7 @@ export default function DigiLockerCallback() {
         setPhase('register');
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [status, ticket, mode, completeLogin, completeLink, dispatch, login, navigate, refreshMe, ticketInfo, token]);
 
   if (phase === 'register' && info) {
     return (

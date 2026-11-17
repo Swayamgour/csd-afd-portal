@@ -22,6 +22,8 @@ export const STAGES = [
   { key: 'DEALER_CREATED', label: 'Dealer created' },
 ];
 
+import { API_ORIGIN } from '../../config/env.js';
+
 export const fmtDateTime = (d) =>
   d
     ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -31,7 +33,7 @@ export const fmtDateTime = (d) =>
 export const fileSrc = (url) => {
   if (!url) return '';
   if (/^https?:\/\//i.test(url)) return url;
-  const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/v1\/?$/, '') || 'http://localhost:5000';
+  const base = API_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : '');
   return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 

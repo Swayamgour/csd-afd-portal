@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { Stars } from "../components/ProductCard.jsx";
 import ProductCard from "../components/ProductCard.jsx";
-import { Loader, EmptyState, UnavailableState } from "../components/States.jsx";
+import { Loader, EmptyState, UnavailableState } from "../components/common/States.jsx";
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import PriceLock from "../components/PriceLock.jsx";
@@ -70,8 +70,6 @@ const val = (v) =>
 
 /** keep only images that actually load */
 function useGallery(p, colorImages) {
-
-  // console.log( colorImages)
   const [imgs, setImgs] = useState([]);
   // selected colour's own photos win; no photos for that colour => product gallery
   const key = (colorImages || []).join("|");
@@ -490,7 +488,6 @@ export default function ProductDetails() {
   );
   const imgs = useGallery(p, colorImages);
 
-  // console.log(imgs)
   useEffect(() => {
     setMain(0); // colour changed -> start from its first photo
   }, [color]);

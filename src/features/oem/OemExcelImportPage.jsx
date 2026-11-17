@@ -24,6 +24,7 @@ import Button from '../../components/common/Button.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
 import { useImportOemProductsExcelMutation } from './oemApi.js';
+import { getAccessToken } from '../../utils/tokenStorage.js';
 import { useImportProductsExcelMutation } from '../catalog/productApi.js';
 
 export default function OemExcelImportPage() {
@@ -107,27 +108,37 @@ export default function OemExcelImportPage() {
       setDownloading(true);
       setError(null);
 
-      const token =
-        localStorage.getItem('csd_auth_token') ||
-        sessionStorage.getItem('csd_auth_token') ||
-        '';
-
+      const token = getAccessToken() || '';
       const headers = {};
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const res = await fetch(templateUrl, {
-        method: 'GET',
-        headers,
-      });
+      // Try designated template URL first, fallback to public catalog template URL
+      const urlsToTry = [
+        templateUrl,
+        '/api/v1/products/import-template',
+      ];
 
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.message || `Download failed (${res.status})`);
+      let response = null;
+      for (const targetUrl of urlsToTry) {
+        try {
+          const authUrl = token ? `${targetUrl}?token=${encodeURIComponent(token)}` : targetUrl;
+          const res = await fetch(authUrl, { method: 'GET', headers });
+          if (res.ok) {
+            response = res;
+            break;
+          }
+        } catch {
+          // Try next URL candidate
+        }
       }
 
-      const blob = await res.blob();
+      if (!response || !response.ok) {
+        throw new Error('Template download endpoint returned an error.');
+      }
+
+      const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
@@ -137,14 +148,8 @@ export default function OemExcelImportPage() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
-      console.warn('Authenticated download failed, trying direct link:', err);
-      // Fallback: direct download without opening new blank tab
-      const a = document.createElement('a');
-      a.href = templateUrl;
-      a.download = 'CSD_Product_and_Pricing_Template.xlsx';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      console.error('Template download failed:', err);
+      setError('Unable to download template. Please verify backend service is running.');
     } finally {
       setDownloading(false);
     }
@@ -278,6 +283,18 @@ export default function OemExcelImportPage() {
                 </div>
               )}
             </div>
+
+            {loading && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 text-sm flex items-center gap-3">
+                <Loader2 className="animate-spin text-blue-600 shrink-0" size={24} />
+                <div>
+                  <div className="font-semibold text-blue-950">Processing Workbook & Running Automated 8-Point Scrutiny...</div>
+                  <div className="text-xs text-blue-700 mt-0.5">
+                    Validating mandatory columns, checking 39 CSD states coverage, calculating promotional parity, and synchronizing catalog database.
+                  </div>
+                </div>
+              </div>
+            )}
 
             {error && (
               <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">

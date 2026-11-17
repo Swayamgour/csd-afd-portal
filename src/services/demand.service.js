@@ -1,35 +1,18 @@
 import { apiClient } from './apiClient.js';
 
 const STORAGE_KEY = 'csd_demands_store';
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-
-// Auto-purge any stale mock demands from browser local storage
-try {
-  const rawCache = localStorage.getItem(STORAGE_KEY);
-  if (rawCache && (rawCache.includes('#40000-117921') || rawCache.includes('mydealer') || rawCache.includes('Jammu and Kashmir'))) {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-} catch {}
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' ? window.location.origin + '/api/v1' : '/api/v1');
 
 function getStoredDemands() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // Strip out all legacy static mock records
-        const clean = parsed.filter(
-          (d) =>
-            !String(d.id || '').startsWith('#') &&
-            d.beneficiaryId !== 'USR-BEN-001' &&
-            d.beneficiaryId !== 'USR-BEN-117' &&
-            d.dealer !== 'mydealer' &&
-            d.depot !== 'Mydepot' &&
-            d.priceZone !== 'Jammu and Kashmir' &&
-            d.username !== 'mytest1234' &&
-            d.username !== 'DEMO'
-        );
-        return clean;
+      if (Array.isArray(parsed)) {
+        return parsed;
       }
     }
   } catch (e) {
@@ -97,9 +80,9 @@ export const demandService = {
             beneficiaryPayment: d.beneficiaryPayment || {
               bank: d.loan?.isLoan ? (d.loan?.bankName || 'Bank Loan / Sanction') : (d.paymentMethod || 'Direct bank transfer (SBI)'),
               firstAccountHolder: bName,
-              accountNumber: d.beneficiaryId?.cardId ? `XXXX-XXXX-${d.beneficiaryId.cardId.slice(-4)}` : 'XXXX-XXXX-9842',
+              accountNumber: d.beneficiaryId?.cardId ? `XXXX-XXXX-${d.beneficiaryId.cardId.slice(-4)}` : '—',
               ifsc: 'SBIN0000691',
-              utr: d.utrNumber || (d.demandNo ? `UTR-SBI-${d.demandNo.replace(/\D/g, '')}` : 'UTR984210'),
+              utr: d.utrNumber || (d.demandNo ? `UTR-SBI-${d.demandNo.replace(/\D/g, '')}` : '—'),
               amountPaid: amt,
               dateOfPayment: d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-GB') : 'Recent'
             },

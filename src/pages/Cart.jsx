@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '../context/Store.jsx';
-import { EmptyState, Loader, UnavailableState } from '../components/States.jsx';
+import { EmptyState, Loader, UnavailableState } from '../components/common/States.jsx';
 import { priceText } from '../data/utils.js';
 import PriceLock, { useCanSeePrice } from '../components/PriceLock.jsx';
 import { useStoreProducts } from '../hooks/useStoreProducts.js';

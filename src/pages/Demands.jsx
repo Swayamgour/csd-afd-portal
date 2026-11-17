@@ -23,12 +23,14 @@ import { useGetDemandsQuery, useCancelDemandMutation } from '../features/demand/
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { isPayable, canCancel, getStatusLabel, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
+import { useDebounce } from '../hooks/useDebounce.js';
 
 export default function Demands() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [sortBy, setSortBy] = useState('date-desc');
   const [searchBy, setSearchBy] = useState('all');
 
@@ -36,7 +38,7 @@ export default function Demands() {
     data: demandsData,
     isLoading: loading,
     refetch,
-  } = useGetDemandsQuery({ q: searchTerm || undefined });
+  } = useGetDemandsQuery({ q: debouncedSearch || undefined });
 
   const [cancelDemand] = useCancelDemandMutation();
   const [submitDirectTransfer] = useSubmitDirectTransferMutation();

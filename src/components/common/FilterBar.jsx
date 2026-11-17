@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Filter, RotateCcw } from 'lucide-react';
 import Button from './Button.jsx';
 
@@ -10,8 +10,33 @@ export function FilterBar({
   searchValue,
   onSearchChange,
   searchPlaceholder = 'Search records...',
-  filters = []
+  filters = [],
+  debounceMs = 400
 }) {
+  const [innerSearch, setInnerSearch] = useState(
+    typeof searchValue === 'string' ? searchValue : searchValue?.target?.value || ''
+  );
+  const onChangeRef = useRef(onSearchChange);
+  onChangeRef.current = onSearchChange;
+
+  useEffect(() => {
+    const strVal = typeof searchValue === 'string' ? searchValue : searchValue?.target?.value || '';
+    setInnerSearch(strVal);
+  }, [searchValue]);
+
+  useEffect(() => {
+    const strVal = typeof searchValue === 'string' ? searchValue : searchValue?.target?.value || '';
+    if (innerSearch === strVal) return;
+
+    const timer = setTimeout(() => {
+      if (onChangeRef.current) {
+        onChangeRef.current({ target: { value: innerSearch }, value: innerSearch });
+      }
+    }, debounceMs);
+
+    return () => clearTimeout(timer);
+  }, [innerSearch, debounceMs, searchValue]);
+
   return (
     <div className={`filter-bar-container panel mb-2 ${className}`}>
       <div className="filter-bar-fields row align-end gap-1 flex-wrap filter-bar-flex">
@@ -21,8 +46,8 @@ export function FilterBar({
               type="text"
               className="form-control"
               placeholder={searchPlaceholder}
-              value={searchValue || ''}
-              onChange={onSearchChange}
+              value={innerSearch}
+              onChange={(e) => setInnerSearch(e.target.value)}
             />
           </div>
         )}

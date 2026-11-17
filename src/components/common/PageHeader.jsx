@@ -20,7 +20,7 @@ export function PageHeader({
                   const label = typeof b === 'object' ? b.label : b;
                   const href = typeof b === 'object' ? b.href : null;
                   return (
-                    <li key={idx} className="page-header-bc-item">
+                    <li key={href || (typeof label === 'string' ? label : idx)} className="page-header-bc-item">
                       {idx > 0 && <span className="page-header-bc-separator">/</span>}
                       {href ? (
                         <Link to={href} className="page-header-bc-link">

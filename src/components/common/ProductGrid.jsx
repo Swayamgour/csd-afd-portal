@@ -4,7 +4,51 @@ import { formatCurrency } from '../../utils/formatters.js';
 import Badge from './Badge.jsx';
 import { LoadingState } from './States.jsx';
 
-export const FALLBACK_IMG = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=200';
+export const FALLBACK_IMG = '/assets/maruti1.png';
+
+/** Intelligent category-aware fallback image selector */
+export const getCategoryFallback = (p) => {
+  const cat = String(p?.categoryId?.code || p?.categoryId?.name || p?.category || '').toUpperCase();
+  const name = String(p?.name || '').toUpperCase();
+  if (
+    cat.includes('BIKE') ||
+    cat.includes('TWO') ||
+    cat.includes('2') ||
+    name.includes('SCOOTER') ||
+    name.includes('MOPED') ||
+    name.includes('MOTORCYCLE') ||
+    name.includes('APACHE') ||
+    name.includes('JUPITER') ||
+    name.includes('NTORQ') ||
+    name.includes('RTR') ||
+    name.includes('RONIN') ||
+    name.includes('ZEST') ||
+    name.includes('RADEON') ||
+    name.includes('XL 100')
+  ) {
+    return '/assets/bullet1.png';
+  }
+  if (
+    cat.includes('WHITE') ||
+    cat.includes('GOODS') ||
+    cat.includes('APPLIANCE') ||
+    cat.includes('AIR CONDITIONER') ||
+    cat.includes('AC') ||
+    name.includes('SPLIT AC') ||
+    name.includes('AIR CONDITIONER') ||
+    name.includes('PANASONIC') ||
+    name.includes('REFRIGERATOR') ||
+    name.includes('FRIDGE') ||
+    name.includes('WASHING MACHINE') ||
+    name.includes('MICROWAVE') ||
+    name.includes('PURIFIER') ||
+    name.includes('COOLER') ||
+    name.includes('GEYSER')
+  ) {
+    return '/assets/white_goods1.png';
+  }
+  return '/assets/maruti1.png';
+};
 
 /** Single source of truth for catalogue price / image / brand lookups. */
 export const getProductPrice = (p) =>
@@ -13,18 +57,21 @@ export const getProductMrp = (p) => {
   const csd = getProductPrice(p);
   return Number(p.mrp || (p.hi && p.hi < 1000 ? p.hi * 100000 : p.hi) || 0) || csd;
 };
-export const getProductImage = (p, fallback = FALLBACK_IMG) => p.images?.[0] || p.image || fallback;
+export const getProductImage = (p, fallback) => {
+  const fb = fallback || getCategoryFallback(p);
+  return p?.images?.[0] || p?.imageUrl || p?.image || fb;
+};
 export const getProductBrand = (p) => p.oemId?.name || p.brandId?.name || p.brand || 'Authorized OEM';
 export const getProductCategory = (p) => p.categoryId?.name || p.category || 'CAR';
 
 /** Image + name + index, used as the first cell of every catalogue table. */
 export function ProductCell({ product: r, fallback }) {
-  const fb = fallback || FALLBACK_IMG;
+  const fb = fallback || getCategoryFallback(r);
   return (
     <div className="catalog-product-cell">
       <img
         src={getProductImage(r, fb)}
-        alt=""
+        alt={r?.name || ''}
         className="product-table-thumb"
         onError={(e) => {
           e.target.onerror = null;
@@ -73,11 +120,11 @@ export default function ProductGrid({
     );
   }
 
-  const fb = fallback || FALLBACK_IMG;
   return (
     <div className="catalog-grid">
       {products.map((p) => {
         const id = p._id || p.id;
+        const fb = fallback || getCategoryFallback(p);
         const csd = getProductPrice(p);
         const mrp = getProductMrp(p);
         const savings = mrp > csd ? mrp - csd : 0;

@@ -1,21 +1,18 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getCookie } from "../utils/cookie.js";
+import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "../utils/tokenStorage.js";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
-
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== "undefined" ? window.location.origin + "/api/v1" : "/api/v1");
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
   credentials: "include",
 
-
   prepareHeaders: (headers, { getState }) => {
     const stateToken = getState()?.auth?.token;
-    const token =
-      stateToken ||
-      localStorage.getItem("csd_auth_token") ||
-      getCookie("csd_auth_token") ||
-      getCookie("accessToken");
+    const token = stateToken || getAccessToken();
 
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
@@ -26,7 +23,7 @@ const rawBaseQuery = fetchBaseQuery({
 });
 
 // Public storefront pages must stay reachable WITHOUT login.
-// A 401 on these pages (guest, or an expired token) must never bounce the visitor to /login.
+// Protected beneficiary workflows (/checkout, /demands, /payment) are strictly excluded from public paths.
 const PUBLIC_PATHS = [
   "/",
   "/products",
@@ -36,9 +33,6 @@ const PUBLIC_PATHS = [
   "/categories",
   "/register",
   "/info",
-  "/checkout",
-  "/demands",
-  "/payment",
   "/login",
   "/forgot-password",
   "/forgot-username",
@@ -51,29 +45,89 @@ const PUBLIC_PATHS = [
 const isPublicPath = (pathname = "/") =>
   PUBLIC_PATHS.some((p) => (p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(p + "/")));
 
+// Shared refresh promise to prevent duplicate parallel refresh requests (mutex)
+let refreshPromise = null;
+
+const requestTokenRefresh = async (refreshToken) => {
+  try {
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const data = await res.json();
+    return data?.data || data;
+  } catch (err) {
+    console.warn("Silent token refresh error:", err);
+    return null;
+  }
+};
+
+const clearSessionAndRedirect = () => {
+  clearTokens();
+  localStorage.removeItem("csd_auth_user");
+  localStorage.removeItem("csd_auth_role");
+
+  if (typeof window !== "undefined" && !isPublicPath(window.location.pathname)) {
+    window.location.assign("/login?reason=session-expired");
+  }
+};
+
 const baseQueryWithReauth = async (args, apiInstance, extraOptions) => {
-  const result = await rawBaseQuery(args, apiInstance, extraOptions);
+  let result = await rawBaseQuery(args, apiInstance, extraOptions);
+
   if (result?.error && result.error.status === 401) {
     const url = typeof args === "string" ? args : args.url;
-    if (
+    const isAuthEndpoint =
       url &&
-      !url.includes("/auth/login") &&
-      !url.includes("/auth/verify-credentials") &&
-      !url.includes("/auth/send-otp") &&
-      !url.includes("/auth/digilocker/complete-")
-    ) {
-      // Drop the stale session either way
-      localStorage.removeItem("csd_auth_token");
-      localStorage.removeItem("csd_auth_user");
-      localStorage.removeItem("csd_auth_role");
+      (url.includes("/auth/login") ||
+        url.includes("/auth/refresh") ||
+        url.includes("/auth/verify-credentials") ||
+        url.includes("/auth/send-otp") ||
+        url.includes("/auth/digilocker/complete-"));
 
-      // Redirect ONLY when the user is inside the protected portal (dashboards etc.).
-      // Home and the other public storefront pages stay open for guests.
-      if (typeof window !== "undefined" && !isPublicPath(window.location.pathname)) {
-        window.location.href = "/login";
+    if (!isAuthEndpoint) {
+      const refreshToken = getRefreshToken();
+
+      if (refreshToken) {
+        if (!refreshPromise) {
+          refreshPromise = requestTokenRefresh(refreshToken).finally(() => {
+            refreshPromise = null;
+          });
+        }
+
+        const newTokens = await refreshPromise;
+
+        if (newTokens && (newTokens.accessToken || newTokens.token)) {
+          const nextToken = newTokens.accessToken || newTokens.token;
+          setTokens({
+            accessToken: nextToken,
+            refreshToken: newTokens.refreshToken,
+          });
+
+          // Synchronize Redux auth state so getState()?.auth?.token returns the fresh token on retry
+          const currentUser = apiInstance.getState()?.auth?.user || null;
+          apiInstance.dispatch({
+            type: "auth/setCredentials",
+            payload: { user: currentUser, token: nextToken }
+          });
+
+          // Retry the original query exactly once with the refreshed token
+          result = await rawBaseQuery(args, apiInstance, extraOptions);
+          return result;
+        }
       }
+
+      // No refresh token or refresh failed: drop stale session and redirect if protected
+      clearSessionAndRedirect();
     }
   }
+
   return result;
 };
 

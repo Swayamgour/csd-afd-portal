@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PlusCircle, Search, UserCheck, ShieldAlert, KeyRound, CheckCircle2, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
@@ -9,6 +9,7 @@ import FilterBar from '../../components/common/FilterBar.jsx';
 import Select from '../../components/common/Select.jsx';
 import SearchInput from '../../components/common/SearchInput.jsx';
 import Input from '../../components/common/Input.jsx';
+import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetUsersQuery, useCreateUserMutation, useUpdateUserStatusMutation } from '../admin/adminApi.js';
 import { ROLE_LABELS, ROLES } from '../../permissions/roles.js';
 
@@ -16,15 +17,16 @@ export default function CsdUsers() {
   const [roleFilter, setRoleFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [toast, setToast] = useState('');
 
-  const queryParams = {
+  const queryParams = useMemo(() => ({
     ...(roleFilter !== 'All' ? { role: roleFilter } : {}),
     ...(statusFilter !== 'All' ? { status: statusFilter } : {}),
-    ...(searchTerm ? { q: searchTerm } : {}),
-  };
+    ...(debouncedSearch ? { q: debouncedSearch } : {}),
+  }), [roleFilter, statusFilter, debouncedSearch]);
 
   const { data: rawUsers = [], isLoading: loading, refetch: refetchUsers } = useGetUsersQuery(queryParams);
   const [createUser] = useCreateUserMutation();

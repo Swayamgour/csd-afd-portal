@@ -91,14 +91,27 @@ export default function UrcDemands() {
   const handleDownloadAll = async (r) => {
     setBusyKey(`${r._id}:all`);
     setMsg(null);
+    const failedDocs = [];
+    let successCount = 0;
     try {
       for (const doc of DOCS) {
-        // one after another so the browser does not block multiple downloads
-        // eslint-disable-next-line no-await-in-loop
-        await downloadDoc(r, doc);
+        try {
+          // one after another so the browser does not block multiple downloads
+          // eslint-disable-next-line no-await-in-loop
+          await downloadDoc(r, doc);
+          successCount++;
+        } catch (err) {
+          failedDocs.push(`${doc.label}: ${err.message || 'Download failed'}`);
+        }
       }
       await refetch();
-      setMsg({ type: 'success', text: `All documents of ${r.demandNo || 'the demand'} downloaded. Demand marked as completed.` });
+      if (failedDocs.length === 0) {
+        setMsg({ type: 'success', text: `All ${successCount} documents of ${r.demandNo || 'the demand'} downloaded successfully.` });
+      } else if (successCount > 0) {
+        setMsg({ type: 'warning', text: `Downloaded ${successCount} documents. Failed (${failedDocs.length}): ${failedDocs.join('; ')}` });
+      } else {
+        setMsg({ type: 'error', text: `Could not download documents: ${failedDocs.join('; ')}` });
+      }
     } catch (e) {
       setMsg({ type: 'error', text: e?.message || 'Could not download all documents.' });
       refetch();

@@ -3,7 +3,9 @@
 // Components should use `useStoreProducts()` (RTK Query, one shared request). The plain
 // fetch helpers below are kept for non-React callers (e.g. services/product.service.js).
 
-const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+import { API_BASE_URL, API_ORIGIN } from '../config/env.js';
+
+const API_BASE = API_BASE_URL;
 
 const str = (v) => (v === null || v === undefined ? '' : String(v));
 const num = (v) => {
@@ -53,7 +55,7 @@ export function mapBackendProduct(p) {
     const f = String(rawFuel).toLowerCase();
     if (f.includes('petrol')) fuel = ['Petrol'];
     else if (f.includes('diesel')) fuel = ['Diesel'];
-    else if (f.includes('ev') || f.includes('elect')) fuel = ['Electric'];
+    else if (f.includes('ev') || f.includes('elect')) fuel = ['EV'];
     else if (f.includes('cng')) fuel = ['CNG'];
     else fuel = [String(rawFuel)];
   }
@@ -77,12 +79,7 @@ export function mapBackendProduct(p) {
       return url;
     }
     if (url.startsWith('/api/') || url.startsWith('/uploads/')) {
-      const backendBase = (
-        import.meta.env.VITE_API_URL ||
-        import.meta.env.VITE_API_BASE_URL ||
-        'http://localhost:5000/api/v1'
-      ).replace(/\/api\/v1\/?$/, '');
-      return `${backendBase}${url}`;
+      return `${API_ORIGIN || ''}${url}`;
     }
     return url;
   };
