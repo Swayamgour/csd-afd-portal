@@ -4,13 +4,17 @@ import { PageHeader } from '../../components/common/PageHeader.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { Input } from '../../components/common/Input.jsx';
 import { WP_ROLES } from '../../permissions/roles.js';
-import { userService, calculatePasswordScore } from '../../services/user.service.js';
+import { calculatePasswordScore } from '../../services/user.service.js';
 import OrgLinkFields, { ORG_ROLE_BY_WP, emptyOrgLink, validateOrgLink, orgLinkPayload } from '../org/OrgLinkFields.jsx';
-import { useCreateOrgAccountMutation } from '../org/orgApi.js';
+import { useCreateOrgAccountMutation } from '../../redux/api/orgApi.js';
+import { useCheckDuplicatesMutation } from '../../redux/api/authApi.js';
+import { useCreateUserMutation } from '../../redux/api/adminApi.js';
 import { User, Eye, EyeOff, RefreshCw, Copy, Check, ShieldCheck, AlertCircle, FileText, X, CheckCircle2, Layers } from 'lucide-react';
 
 export default function AdminAddUser() {
   const navigate = useNavigate();
+  const [checkDuplicates] = useCheckDuplicatesMutation();
+  const [createUser] = useCreateUserMutation();
 
   // ==========================================
   // 1. BASIC USER INFORMATION (table.form-table)
@@ -136,7 +140,7 @@ export default function AdminAddUser() {
     }
     const timer = setTimeout(async () => {
       setCheckingUsername(true);
-      const exists = await userService.checkUsernameExists(userLogin.trim());
+      const exists = await checkDuplicates({ username: userLogin.trim() }).unwrap().then((r) => Boolean((r?.data?.conflicts || {}).username)).catch(() => false);
       setUsernameAvailable(!exists);
       setCheckingUsername(false);
     }, 350);
@@ -151,7 +155,7 @@ export default function AdminAddUser() {
     }
     const timer = setTimeout(async () => {
       setCheckingEmail(true);
-      const exists = await userService.checkEmailExists(email.trim());
+      const exists = await checkDuplicates({ email: email.trim() }).unwrap().then((r) => Boolean((r?.data?.conflicts || {}).email)).catch(() => false);
       setEmailAvailable(!exists);
       setCheckingEmail(false);
     }, 350);
@@ -303,12 +307,18 @@ export default function AdminAddUser() {
         status: denyReason.trim() ? 'Denied' : 'Active'
       };
 
-      await userService.createUser(payload, 'Admin Officer K. S. Pillai');
+      await createUser({
+        name: [payload.firstName, payload.lastName].filter(Boolean).join(' ') || payload.name || payload.username,
+        email: payload.email,
+        mobile: payload.mobile ? String(payload.mobile).replace(/[^0-9]/g, '').slice(-10) : undefined,
+        role: String(payload.role || 'DEPOT').toUpperCase(),
+        password: payload.password,
+      }).unwrap();
       setLoading(false);
       navigate('/admin/users');
     } catch (err) {
       setLoading(false);
-      setSubmitError(err.message || 'Failed to create user account');
+      setSubmitError(err?.data?.message || err.message || 'Failed to create user account');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };

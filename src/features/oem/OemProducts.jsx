@@ -12,8 +12,8 @@ import { ProductCell, PriceCell } from '../../components/common/ProductGrid.jsx'
 import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetCategoriesQuery } from '../catalog/productApi.js';
-import { useGetOemProductsQuery, useUpdateOemProductStatusMutation, useImportOemProductsExcelMutation } from './oemApi.js';
+import { useGetCategoriesQuery } from '../../redux/api/productApi.js';
+import { useGetOemProductsQuery, useUpdateOemProductStatusMutation, useImportOemProductsExcelMutation } from '../../redux/api/oemApi.js';
 
 export default function OemProducts() {
   const navigate = useNavigate();

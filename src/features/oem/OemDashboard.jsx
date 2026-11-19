@@ -12,7 +12,7 @@ import Button from '../../components/common/Button.jsx';
 import { LoadingState, ErrorState } from '../../components/common/States.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useGetOemDashboardQuery } from './oemApi.js';
+import { useGetOemDashboardQuery } from '../../redux/api/oemApi.js';
 
 export default function OemDashboard() {
   const { user } = useAuth();

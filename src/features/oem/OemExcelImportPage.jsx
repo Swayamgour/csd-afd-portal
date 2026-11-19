@@ -6,9 +6,9 @@ import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
-import { useImportOemProductsExcelMutation } from './oemApi.js';
-import { getAccessToken } from '../../utils/tokenStorage.js';
-import { useImportProductsExcelMutation } from '../catalog/productApi.js';
+import { useImportOemProductsExcelMutation } from '../../redux/api/oemApi.js';
+import { useDownloadFirstAvailableMutation } from '../../redux/api/fileApi.js';
+import { useImportProductsExcelMutation } from '../../redux/api/productApi.js';
 
 export default function OemExcelImportPage() {
   const location = useLocation();
@@ -25,6 +25,7 @@ export default function OemExcelImportPage() {
 
   const [importOem] = useImportOemProductsExcelMutation();
   const [importCsd] = useImportProductsExcelMutation();
+  const [downloadFirstAvailable] = useDownloadFirstAvailableMutation();
 
   const templateUrl = isOem
     ? '/api/v1/oem/products/import-template'
@@ -91,45 +92,11 @@ export default function OemExcelImportPage() {
       setDownloading(true);
       setError(null);
 
-      const token = getAccessToken() || '';
-      const headers = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
       // Try designated template URL first, fallback to public catalog template URL
-      const urlsToTry = [
-        templateUrl,
-        '/api/v1/products/import-template',
-      ];
-
-      let response = null;
-      for (const targetUrl of urlsToTry) {
-        try {
-          const authUrl = token ? `${targetUrl}?token=${encodeURIComponent(token)}` : targetUrl;
-          const res = await fetch(authUrl, { method: 'GET', headers });
-          if (res.ok) {
-            response = res;
-            break;
-          }
-        } catch {
-          // Try next URL candidate
-        }
-      }
-
-      if (!response || !response.ok) {
-        throw new Error('Template download endpoint returned an error.');
-      }
-
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = 'CSD_Product_and_Pricing_Template.xlsx';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(blobUrl);
+      await downloadFirstAvailable({
+        urls: [templateUrl, '/api/v1/products/import-template'],
+        filename: 'CSD_Product_and_Pricing_Template.xlsx',
+      }).unwrap();
     } catch (err) {
       console.error('Template download failed:', err);
       setError('Unable to download template. Please verify backend service is running.');

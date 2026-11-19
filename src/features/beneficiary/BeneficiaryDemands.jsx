@@ -6,7 +6,7 @@ import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
-import { useGetDemandsQuery } from '../demand/demandApi.js';
+import { useGetDemandsQuery } from '../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { isPayable } from '../../utils/demandStatus.js';
 const isAwaitingApproval = (d) => (d.status || '').toUpperCase() === 'CREATED';

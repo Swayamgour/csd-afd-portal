@@ -8,7 +8,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
-import { useGetOemPricingQuery, useGetOemProductsQuery } from './oemApi.js';
+import { useGetOemPricingQuery, useGetOemProductsQuery } from '../../redux/api/oemApi.js';
 
 const INDIAN_STATES = [
   'ANDAMAN AND NICOBAR ISLANDS', 'ANDHRA PRADESH', 'ARUNACHAL PRADESH', 'ASSAM',

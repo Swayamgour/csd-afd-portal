@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart, Heart, User, Menu, X, ShieldCheck, Phone, Bell } from "lucide-react";
-import { useGetNotificationsQuery } from "../features/notifications/notificationApi.js";
+import { useGetNotificationsQuery } from "../redux/api/notificationApi.js";
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import SearchBox from "./SearchBox.jsx";
@@ -28,7 +28,7 @@ const nav = [
   ["/info/about", "About CSD"],
   ["/info/contact", "Contact"],
 ];
-import { useGetBannersQuery } from "../features/admin/adminApi.js";
+import { useGetBannersQuery } from "../redux/api/adminApi.js";
 
 export default function Header() {
   const [open, setOpen] = useState(false);

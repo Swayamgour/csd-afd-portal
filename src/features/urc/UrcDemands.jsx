@@ -6,8 +6,8 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import Modal from '../../components/common/Modal.jsx';
-import { useGetDemandsQuery } from '../demand/demandApi.js';
-import { apiClient } from '../../services/apiClient.js';
+import { useGetDemandsQuery } from '../../redux/api/demandApi.js';
+import { useDownloadFileMutation } from '../../redux/api/fileApi.js';
 
 // The 3 Local Supply Order documents uploaded by the depot.
 // When the URC has downloaded all three, the backend marks the demand COMPLETED.
@@ -57,6 +57,7 @@ const Section = ({ title, children }) => (
 );
 
 export default function UrcDemands() {
+  const [downloadFile] = useDownloadFileMutation();
   const { data: demandsData, isLoading: loading, isFetching, refetch } = useGetDemandsQuery();
 
   const [busyKey, setBusyKey] = useState(null); // `${demandId}:${docKey|all}`
@@ -70,10 +71,10 @@ export default function UrcDemands() {
       : [];
 
   const downloadDoc = (r, doc) =>
-    apiClient.download(
-      `/demands/${r._id}/supply-order-docs/${doc.key}`,
-      `${r.demandNo || r._id}-${doc.key}${extOf(r.supplyOrderDocs?.[doc.urlField])}`
-    );
+    downloadFile({
+      url: `/demands/${r._id}/supply-order-docs/${doc.key}`,
+      filename: `${r.demandNo || r._id}-${doc.key}${extOf(r.supplyOrderDocs?.[doc.urlField])}`,
+    }).unwrap();
 
   const handleDownload = async (r, doc) => {
     setBusyKey(`${r._id}:${doc.key}`);
@@ -82,7 +83,7 @@ export default function UrcDemands() {
       await downloadDoc(r, doc);
       await refetch(); // status may have become COMPLETED
     } catch (e) {
-      setMsg({ type: 'error', text: e?.message || `Could not download ${doc.label}.` });
+      setMsg({ type: 'error', text: e?.data?.message || e?.message || `Could not download ${doc.label}.` });
     } finally {
       setBusyKey(null);
     }

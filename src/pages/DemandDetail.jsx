@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Clock, Building, Store, CreditCard, User, FileText, Printer, AlertCircle, Truck, ChevronRight, ExternalLink, XCircle, Landmark, BadgeCheck } from 'lucide-react';
-import { useGetDemandByIdQuery } from '../features/demand/demandApi.js';
-import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
+import { useGetDemandByIdQuery } from '../redux/api/demandApi.js';
+import { useSubmitDirectTransferMutation } from '../redux/api/paymentApi.js';
 import InlinePaymentCard from '../components/common/InlinePaymentCard.jsx';
 import OnlinePaymentCard from '../components/common/OnlinePaymentCard.jsx';
 import { isPayable, getStatusLabel, isAwaitingDepotApproval, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';

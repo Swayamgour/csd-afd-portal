@@ -6,7 +6,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import FilterBar from '../../components/common/FilterBar.jsx';
 import SearchInput from '../../components/common/SearchInput.jsx';
-import { useGetAuthReportQuery } from '../admin/adminApi.js';
+import { useGetAuthReportQuery } from '../../redux/api/adminApi.js';
 
 export default function CsdLoginHistory() {
   const [searchTerm, setSearchTerm] = useState('');

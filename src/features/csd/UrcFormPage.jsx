@@ -10,7 +10,7 @@ import {
   useGetUrcByIdQuery,
   useCreateOrgAccountMutation,
   useUpdateUrcMutation,
-} from '../org/orgApi.js';
+} from '../../redux/api/orgApi.js';
 import OrgLinkFields, {
   normState,
   emptyOrgLink,

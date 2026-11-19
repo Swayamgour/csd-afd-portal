@@ -6,7 +6,7 @@ import QuickActions from '../../components/common/QuickActions.jsx';
 import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import { Card } from '../../components/common/Card.jsx';
 import { Button } from '../../components/common/Button.jsx';
-import { useGetAdminSummaryQuery, useGetAdminAnalyticsQuery, useGetAdminRecentDemandsQuery, useGetAdminActivityQuery, useGetUsersQuery } from './adminApi.js';
+import { useGetAdminSummaryQuery, useGetAdminAnalyticsQuery, useGetAdminRecentDemandsQuery, useGetAdminActivityQuery, useGetUsersQuery } from '../../redux/api/adminApi.js';
 
 import { Users, UserCheck, Clock, CheckCircle2, RefreshCw, Building2, Store, Warehouse, Layers, ShoppingBag, IndianRupee, Package, Calendar, Shield, FileCheck, XCircle } from 'lucide-react';
 

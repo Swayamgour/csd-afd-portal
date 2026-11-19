@@ -7,7 +7,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 
 import Button from '../../components/common/Button.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetDealersQuery, useGetOemsQuery, useUpdateDealerMutation } from '../org/orgApi.js';
+import { useGetDealersQuery, useGetOemsQuery, useUpdateDealerMutation } from '../../redux/api/orgApi.js';
 
 export default function CsdDealers() {
   const navigate = useNavigate();

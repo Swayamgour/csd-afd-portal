@@ -8,7 +8,7 @@ import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetDemandsQuery } from '../demand/demandApi.js';
+import { useGetDemandsQuery } from '../../redux/api/demandApi.js';
 
 export default function CsdDemands() {
   const [statusFilter, setStatusFilter] = useState('');

@@ -7,7 +7,7 @@ import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import Modal from '../../components/common/Modal.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
-import { useGetDealerRequestsQuery, useGetDealerRequestByIdQuery } from './dealerRequestApi.js';
+import { useGetDealerRequestsQuery, useGetDealerRequestByIdQuery } from '../../redux/api/dealerRequestApi.js';
 import DealerRequestDetail from './DealerRequestDetail.jsx';
 import { statusMeta, fmtDateTime } from './dealerRequestUtils.js';
 

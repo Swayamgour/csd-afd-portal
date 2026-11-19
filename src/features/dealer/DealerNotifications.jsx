@@ -3,7 +3,7 @@ import { RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import { useGetNotificationsQuery } from '../notifications/notificationApi.js';
+import { useGetNotificationsQuery } from '../../redux/api/notificationApi.js';
 
 export default function DealerNotifications() {
   const { data: notifData, isLoading: loading, isFetching, refetch } = useGetNotificationsQuery();

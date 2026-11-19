@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import { useGetDemandsQuery } from '../demand/demandApi.js';
+import { useGetDemandsQuery } from '../../redux/api/demandApi.js';
 import { Users } from 'lucide-react';
 
 export default function DealerCustomers() {

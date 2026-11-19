@@ -3,7 +3,7 @@ import { MapPin, Phone, Mail, Camera, ExternalLink, CheckCircle2, XCircle, Alert
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { STAGES, statusMeta, fmtDateTime, fileSrc, mapsLink } from './dealerRequestUtils.js';
-import { useRecalculateScrutinyMutation } from './dealerRequestApi.js';
+import { useRecalculateScrutinyMutation } from '../../redux/api/dealerRequestApi.js';
 
 const MANDATORY_DOC_LABELS = {
   dealerRegistrationRequest: '1. Dealer Registration Request (OEM Letter)',

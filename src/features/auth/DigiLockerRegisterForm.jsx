@@ -6,11 +6,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath } from '../../permissions/roles.js';
-import { setCredentials } from './authSlice.js';
+import { setCredentials } from '../../redux/slices/authSlice.js';
 import {
   useSendOtpMutation,
   useDigilockerCompleteRegistrationMutation,
-} from './authApi.js';
+} from '../../redux/api/authApi.js';
 import EmailOtpModal from '../../components/modals/EmailOtpModal.jsx';
 import { digilockerMessage } from '../../utils/digilocker.js';
 

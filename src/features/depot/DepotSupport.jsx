@@ -6,7 +6,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { useGetTicketsQuery } from '../helpdesk/ticketApi.js';
+import { useGetTicketsQuery } from '../../redux/api/ticketApi.js';
 
 export default function DepotSupport() {
   const { data: ticketsData, isLoading: loading, isFetching, refetch } = useGetTicketsQuery();

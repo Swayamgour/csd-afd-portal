@@ -8,7 +8,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatDate } from '../../utils/formatters.js';
-import { useGetTicketsQuery, useUpdateTicketStatusMutation, useAddTicketMessageMutation } from '../helpdesk/ticketApi.js';
+import { useGetTicketsQuery, useUpdateTicketStatusMutation, useAddTicketMessageMutation } from '../../redux/api/ticketApi.js';
 
 export default function CsdSupport() {
   const [statusFilter, setStatusFilter] = useState('');

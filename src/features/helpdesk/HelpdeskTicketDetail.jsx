@@ -10,7 +10,7 @@ import { Timeline } from '../../components/common/Timeline';
 import { LoadingState } from '../../components/common/States';
 
 import { useAuth } from '../../context/AuthContext';
-import { useGetTicketByIdQuery, useAddTicketMessageMutation, useAssignTicketMutation, useUpdateTicketStatusMutation, useGetKbArticlesQuery } from './ticketApi';
+import { useGetTicketByIdQuery, useAddTicketMessageMutation, useAssignTicketMutation, useUpdateTicketStatusMutation, useGetKbArticlesQuery } from '../../redux/api/ticketApi';
 
 export const HelpdeskTicketDetail = () => {
   const { id } = useParams();

@@ -4,7 +4,7 @@ import { StatCard } from '../../components/common/StatCard.jsx';
 import { Card } from '../../components/common/Card.jsx';
 import { DataTable } from '../../components/common/DataTable.jsx';
 import { Button } from '../../components/common/Button.jsx';
-import { useGetAllAdminBannersQuery, useCreateBannerMutation, useUpdateBannerMutation, useToggleBannerStatusMutation, useDeleteBannerMutation } from './adminApi.js';
+import { useGetAllAdminBannersQuery, useCreateBannerMutation, useUpdateBannerMutation, useToggleBannerStatusMutation, useDeleteBannerMutation } from '../../redux/api/adminApi.js';
 import { Plus, Trash2, Edit, CheckCircle2, XCircle, ExternalLink, RefreshCw, AlertTriangle, ArrowUpDown } from 'lucide-react';
 
 export default function AdminBanners() {

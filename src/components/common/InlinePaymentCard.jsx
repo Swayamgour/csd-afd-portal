@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Landmark, AlertCircle, CheckCircle2, FileText } from 'lucide-react';
 import Button from './Button.jsx';
-import { useUploadFileMutation } from '../../features/beneficiary/beneficiaryApi.js';
-import { useSubmitDirectTransferMutation } from '../../features/payment/paymentApi.js';
+import { useUploadFileMutation } from '../../redux/api/beneficiaryApi.js';
+import { useSubmitDirectTransferMutation } from '../../redux/api/paymentApi.js';
 
 export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel }) {
   const isLoan = Boolean(demand?.hasLoan || demand?.loan?.isLoan);

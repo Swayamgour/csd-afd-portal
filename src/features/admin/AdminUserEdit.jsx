@@ -7,7 +7,7 @@ import { Button } from '../../components/common/Button.jsx';
 
 import { LoadingState } from '../../components/common/States.jsx';
 import { MASTER_ROLES } from '../../permissions/roles.js';
-import { useGetUserByIdQuery, useGetUsersQuery, useUpdateUserMutation } from './adminApi.js';
+import { useGetUserByIdQuery, useGetUsersQuery, useUpdateUserMutation } from '../../redux/api/adminApi.js';
 
 export function AdminUserEdit() {
   const { id } = useParams();

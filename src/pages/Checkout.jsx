@@ -3,9 +3,9 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
-import { useCreateDemandMutation } from '../features/demand/demandApi.js';
-import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
-import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery, useGetAvailableStatesQuery } from '../features/org/orgApi.js';
+import { useCreateDemandMutation } from '../redux/api/demandApi.js';
+import { useGetMyProfileQuery, useUploadFileMutation } from '../redux/api/beneficiaryApi.js';
+import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery, useGetAvailableStatesQuery } from '../redux/api/orgApi.js';
 import { INDIAN_STATES, PAY_LEVELS } from '../utils/locations.js';
 import CheckoutBreadcrumbs from '../components/checkout/CheckoutBreadcrumbs.jsx';
 import CheckoutBeneficiaryCard from '../components/checkout/CheckoutBeneficiaryCard.jsx';

@@ -10,7 +10,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useGetOrdersQuery, useGetDemandsQuery } from '../demand/demandApi.js';
+import { useGetOrdersQuery, useGetDemandsQuery } from '../../redux/api/demandApi.js';
 
 export default function UrcDashboard() {
   const { user } = useAuth();

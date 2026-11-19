@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ArrowLeft, Mail, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath, isPathAllowedForRole } from '../../permissions/roles.js';
-import { useLoginMutation, useSendOtpMutation } from './authApi.js';
+import { useLoginMutation, useSendOtpMutation } from '../../redux/api/authApi.js';
 import { useDispatch } from 'react-redux';
-import { setCredentials } from './authSlice.js';
+import { setCredentials } from '../../redux/slices/authSlice.js';
 
 function maskEmail(email) {
   if (!email) return 'your registered email';

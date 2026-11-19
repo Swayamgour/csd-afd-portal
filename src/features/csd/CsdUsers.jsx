@@ -10,7 +10,7 @@ import Select from '../../components/common/Select.jsx';
 import SearchInput from '../../components/common/SearchInput.jsx';
 import Input from '../../components/common/Input.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetUsersQuery, useCreateUserMutation, useUpdateUserStatusMutation } from '../admin/adminApi.js';
+import { useGetUsersQuery, useCreateUserMutation, useUpdateUserStatusMutation } from '../../redux/api/adminApi.js';
 import { ROLE_LABELS, ROLES } from '../../permissions/roles.js';
 
 export default function CsdUsers() {

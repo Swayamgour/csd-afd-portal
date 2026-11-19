@@ -8,7 +8,7 @@ import { StatusBadge } from '../../components/common/StatusBadge.jsx';
 import { Tabs } from '../../components/common/Tabs.jsx';
 import { LoadingState, ErrorState } from '../../components/common/States.jsx';
 import { MASTER_ROLES, ROLE_LABELS } from '../../permissions/roles.js';
-import { useGetUserByIdQuery, useGetUsersQuery, useUpdateUserStatusMutation, useApproveUserMutation, useRejectUserMutation } from './adminApi.js';
+import { useGetUserByIdQuery, useGetUsersQuery, useUpdateUserStatusMutation, useApproveUserMutation, useRejectUserMutation } from '../../redux/api/adminApi.js';
 
 export function AdminUserDetail() {
   const { id } = useParams();

@@ -6,7 +6,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 
 import Button from '../../components/common/Button.jsx';
-import { useGetOemsQuery, useUpdateOemMutation } from '../org/orgApi.js';
+import { useGetOemsQuery, useUpdateOemMutation } from '../../redux/api/orgApi.js';
 
 export default function CsdOems() {
   const navigate = useNavigate();

@@ -1,11 +1,9 @@
 // Data access helpers for the public storefront.
 // NO static / fallback data here: whatever the server returns is what the UI shows.
-// Components should use `useStoreProducts()` (RTK Query, one shared request). The plain
-// fetch helpers below are kept for non-React callers (e.g. services/product.service.js).
+// Components should use `useStoreProducts()` (RTK Query, one shared request).
+// All network calls live in src/redux/api/*.
 
-import { API_BASE_URL, API_ORIGIN } from '../config/env.js';
-
-const API_BASE = API_BASE_URL;
+import { API_ORIGIN } from '../config/env.js';
 
 const str = (v) => (v === null || v === undefined ? '' : String(v));
 const num = (v) => {
@@ -121,42 +119,4 @@ export function mapBackendProduct(p) {
     variant: p.variant,
     raw: p,
   };
-}
-
-// ---- plain-fetch helpers (non-React callers). Shared in-flight request + short cache. ----
-const TTL_MS = 60 * 1000;
-let cache = null;
-let inflight = null;
-
-export function invalidateProductsCache() {
-  cache = null;
-  inflight = null;
-}
-
-/** Resolves with the mapped product list, or REJECTS if the server did not answer (no fake fallback). */
-export function fetchProducts({ force = false } = {}) {
-  if (!force && cache && Date.now() - cache.at < TTL_MS) return Promise.resolve(cache.list);
-  if (!force && inflight) return inflight;
-
-  inflight = (async () => {
-    const res = await fetch(`${API_BASE}/products?limit=100`);
-    if (!res.ok) throw new Error(`Products request failed (${res.status})`);
-    const json = await res.json();
-    const raw = json?.data?.items || json?.data || json?.products || [];
-    const list = (Array.isArray(raw) ? raw : []).map(mapBackendProduct).filter(Boolean);
-    cache = { at: Date.now(), list };
-    return list;
-  })().finally(() => {
-    inflight = null;
-  });
-
-  return inflight;
-}
-
-export async function fetchProduct(id) {
-  const res = await fetch(`${API_BASE}/products/${id}`);
-  if (!res.ok) throw new Error(`Product request failed (${res.status})`);
-  const json = await res.json();
-  const p = json?.data || json;
-  return p && (p._id || p.id) ? mapBackendProduct(p) : null;
 }

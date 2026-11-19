@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, FileText, CreditCard, Info, RefreshCw, Plus } from 'lucide-react';
-import { useGetDemandsQuery, useCancelDemandMutation } from '../features/demand/demandApi.js';
-import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
+import { useGetDemandsQuery, useCancelDemandMutation } from '../redux/api/demandApi.js';
+import { useSubmitDirectTransferMutation } from '../redux/api/paymentApi.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { isPayable, canCancel, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
 import { useDebounce } from '../hooks/useDebounce.js';

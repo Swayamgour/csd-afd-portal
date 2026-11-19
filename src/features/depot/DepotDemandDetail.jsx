@@ -6,7 +6,7 @@ import Card from '../../components/common/Card.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import { LoadingState, ErrorState } from '../../components/common/States.jsx';
 import DepotDemandActions from './DepotDemandActions.jsx';
-import { useGetDemandByIdQuery, useGetDemandsQuery } from '../demand/demandApi.js';
+import { useGetDemandByIdQuery, useGetDemandsQuery } from '../../redux/api/demandApi.js';
 import { fmtINR, getStatusLabel, hasPaymentDetails, hasSupplyOrderDocs } from '../../utils/demandStatus.js';
 
 const Step = ({ done, label }) => (

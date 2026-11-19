@@ -4,7 +4,7 @@ import { ArrowUpRight, ArrowRight, Headset, Info, Car, Bike, Refrigerator, Circl
 import Catalog from "../components/Catalog.jsx";
 import { Loader, UnavailableState, InlineNote } from "../components/common/States.jsx";
 import { useStoreProducts } from "../hooks/useStoreProducts.js";
-import { useGetBannersQuery, useGetContentQuery } from "../features/admin/adminApi.js";
+import { useGetBannersQuery, useGetContentQuery } from "../redux/api/adminApi.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeRole } from "../permissions/roles.js";
 import "../styles/home-notice.css";

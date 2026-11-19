@@ -9,7 +9,7 @@ import { Select } from '../../components/common/Select';
 import {
   useGetNotificationsQuery,
   useBroadcastNotificationMutation,
-} from '../notifications/notificationApi';
+} from '../../redux/api/notificationApi';
 import { ROLE_LABELS } from '../../permissions/roles';
 
 export const AdminNotifications = () => {

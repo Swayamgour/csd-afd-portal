@@ -6,7 +6,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 
 import Button from '../../components/common/Button.jsx';
-import { useGetDepotsQuery, useGetPriceZonesQuery, useUpdateDepotMutation } from '../org/orgApi.js';
+import { useGetDepotsQuery, useGetPriceZonesQuery, useUpdateDepotMutation } from '../../redux/api/orgApi.js';
 
 export default function CsdDepots() {
   const navigate = useNavigate();

@@ -3,7 +3,7 @@ import { Bell, CheckCheck } from 'lucide-react';
 
 import Drawer from '../components/common/Drawer.jsx';
 import Button from '../components/common/Button.jsx';
-import { useGetNotificationsQuery, useMarkAllNotificationsReadMutation, useMarkNotificationReadMutation } from '../features/notifications/notificationApi.js';
+import { useGetNotificationsQuery, useMarkAllNotificationsReadMutation, useMarkNotificationReadMutation } from '../redux/api/notificationApi.js';
 
 export default function NotificationCenter() {
   const [open, setOpen] = useState(false);

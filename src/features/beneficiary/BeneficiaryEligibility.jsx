@@ -4,8 +4,8 @@ import { CheckCircle2, XCircle, ArrowRight, Search, Loader2 } from 'lucide-react
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 
-import { useGetProductsQuery, useCheckProductEligibilityMutation } from '../catalog/productApi.js';
-import { useGetMyProfileQuery } from './beneficiaryApi.js';
+import { useGetProductsQuery, useCheckProductEligibilityMutation } from '../../redux/api/productApi.js';
+import { useGetMyProfileQuery } from '../../redux/api/beneficiaryApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 export function BeneficiaryEligibility() {

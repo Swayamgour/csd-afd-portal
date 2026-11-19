@@ -4,7 +4,7 @@ import { Card } from '../../components/common/Card';
 import { DataTable } from '../../components/common/DataTable';
 import { FilterBar } from '../../components/common/FilterBar';
 import { ExportButton } from '../../components/common/ExportButton';
-import { useGetAuditReportQuery } from './adminApi';
+import { useGetAuditReportQuery } from '../../redux/api/adminApi';
 
 export const AdminAuditLogs = () => {
   const [search, setSearch] = useState('');

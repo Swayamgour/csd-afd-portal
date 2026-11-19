@@ -6,7 +6,7 @@ import { DataTable } from '../../components/common/DataTable.jsx';
 import { StatCard } from '../../components/common/StatCard.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetUsersQuery, useApproveUserMutation, useRejectUserMutation } from '../admin/adminApi.js';
+import { useGetUsersQuery, useApproveUserMutation, useRejectUserMutation } from '../../redux/api/adminApi.js';
 import { UserX, Clock, Eye, Edit2, Search, X, ShieldCheck, CheckCircle, AlertTriangle, CreditCard, Check } from 'lucide-react';
 
 export function DirectorApprovals({ defaultTab = 'PENDING' }) {

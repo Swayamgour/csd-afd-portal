@@ -8,7 +8,7 @@ import { FilterBar } from '../../components/common/FilterBar.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { ExportButton } from '../../components/common/ExportButton.jsx';
 import { StatCard } from '../../components/common/StatCard.jsx';
-import { useGetUsersQuery, useUpdateUserStatusMutation } from './adminApi.js';
+import { useGetUsersQuery, useUpdateUserStatusMutation } from '../../redux/api/adminApi.js';
 import { MASTER_ROLES, ROLE_LABELS } from '../../permissions/roles.js';
 import { Users, UserCheck, UserX, Clock, Eye, Edit2, Plus, Lock, Unlock, CheckCircle2 } from 'lucide-react';
 

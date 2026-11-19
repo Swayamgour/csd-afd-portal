@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, MessageSquare, Plus, Clock, User } from 'lucide-react';
-import { useGetDemandNotesQuery, useAddDemandNoteMutation } from '../../demand/demandApi.js';
+import { useGetDemandNotesQuery, useAddDemandNoteMutation } from '../../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../../utils/apiError.js';
 
 export default function DepotNotesModal({ isOpen, onClose, demand }) {

@@ -9,10 +9,11 @@ import Badge from '../../components/common/Badge.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 
 import { formatCurrency } from '../../utils/formatters.js';
-import { apiClient } from '../../services/apiClient.js';
-import { useGetOemProductsReportQuery, useGetOemDealersReportQuery, useGetOemDemandsReportQuery, useGetOemOrdersReportQuery } from './oemApi.js';
+import { useDownloadFileMutation } from '../../redux/api/fileApi.js';
+import { useGetOemProductsReportQuery, useGetOemDealersReportQuery, useGetOemDemandsReportQuery, useGetOemOrdersReportQuery } from '../../redux/api/oemApi.js';
 
 export default function OemReports() {
+  const [downloadFile] = useDownloadFileMutation();
   const [activeTab, setActiveTab] = useState('orders');
   const [isExporting, setIsExporting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
@@ -50,14 +51,14 @@ export default function OemReports() {
     setExportError('');
     setIsExporting(true);
     try {
-      await apiClient.download(
-        `/oem/reports/${endpoint}/excel`,
-        `oem-${endpoint}-${new Date().toISOString().slice(0, 10)}.csv`
-      );
+      await downloadFile({
+        url: `/oem/reports/${endpoint}/excel`,
+        filename: `oem-${endpoint}-${new Date().toISOString().slice(0, 10)}.csv`,
+      }).unwrap();
       setToastMessage(`Official ${endpoint} report exported successfully.`);
       setTimeout(() => setToastMessage(null), 5000);
     } catch (err) {
-      setExportError(err.message || 'Failed to download report export.');
+      setExportError(err?.data?.message || err.message || 'Failed to download report export.');
     } finally {
       setIsExporting(false);
     }

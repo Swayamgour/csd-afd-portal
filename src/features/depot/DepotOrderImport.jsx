@@ -4,8 +4,8 @@ import { UploadCloud, FileText, X, CheckCircle2, AlertCircle, Loader2, RefreshCw
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import { useGetDemandsQuery, useBulkUploadSupplyOrdersMutation } from '../demand/demandApi.js';
-import { useUploadFileMutation } from '../beneficiary/beneficiaryApi.js';
+import { useGetDemandsQuery, useBulkUploadSupplyOrdersMutation } from '../../redux/api/demandApi.js';
+import { useUploadFileMutation } from '../../redux/api/beneficiaryApi.js';
 import { UPLOAD_CONFIG, validateFile, formatFileSize } from '../../config/uploadConfig.js';
 import { DOC_TYPES, newFileItem } from '../../utils/orderImportMatch.js';
 import { getErrorMessage } from '../../utils/apiError.js';

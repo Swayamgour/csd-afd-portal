@@ -7,7 +7,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
-import { useGetOemDealerProductsListQuery, useUpdateOemDealerProductMutation, useDeleteOemDealerProductMutation, useGetOemDealersQuery, useGetOemProductsQuery } from './oemApi.js';
+import { useGetOemDealerProductsListQuery, useUpdateOemDealerProductMutation, useDeleteOemDealerProductMutation, useGetOemDealersQuery, useGetOemProductsQuery } from '../../redux/api/oemApi.js';
 
 export default function OemDealerProducts() {
   const navigate = useNavigate();

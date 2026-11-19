@@ -6,7 +6,7 @@ import Input from '../../components/common/Input.jsx';
 import Select from '../../components/common/Select.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
-import { useCreateDealerRequestMutation, useUploadDealerRequestPhotosMutation } from './dealerRequestApi.js';
+import { useCreateDealerRequestMutation, useUploadDealerRequestPhotosMutation } from '../../redux/api/dealerRequestApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { fileSrc } from './dealerRequestUtils.js';
 

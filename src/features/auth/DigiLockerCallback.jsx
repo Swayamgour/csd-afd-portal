@@ -5,12 +5,12 @@ import { AlertCircle, Loader2, ShieldCheck, ArrowLeft } from 'lucide-react';
 import AuthArt from '../../pages/AuthArt.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath } from '../../permissions/roles.js';
-import { setCredentials } from './authSlice.js';
+import { setCredentials } from '../../redux/slices/authSlice.js';
 import {
   useDigilockerTicketInfoMutation,
   useDigilockerCompleteLoginMutation,
   useDigilockerLinkCompleteMutation,
-} from './authApi.js';
+} from '../../redux/api/authApi.js';
 import { digilockerMessage, startDigiLocker } from '../../utils/digilocker.js';
 import DigiLockerRegisterForm from './DigiLockerRegisterForm.jsx';
 

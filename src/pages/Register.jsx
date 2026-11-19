@@ -3,9 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { RefreshCw, ArrowLeft, KeyRound, AlertCircle, Loader2 } from "lucide-react";
 import AuthArt from "./AuthArt";
 
-import { useRegisterMutation, useSendOtpMutation } from "../features/auth/authApi";
+import { useRegisterMutation, useSendOtpMutation, useCheckDuplicatesMutation } from "../redux/api/authApi";
 import EmailOtpModal from "../components/modals/EmailOtpModal.jsx";
-import { userService } from "../services/user.service.js";
 import { makeCaptcha } from "../utils/captcha.js";
 import DigiLockerButton from "../components/common/DigiLockerButton.jsx";
 import { RegisterCardSection, RegisterServiceSection, RegisterIdentitySection, RegisterAccountSection, RegisterSuccessCard } from "../components/register";
@@ -221,6 +220,7 @@ export default function Register() {
 
   const [register, { isLoading: isRegistering }] = useRegisterMutation();
   const [sendOtpApi] = useSendOtpMutation();
+  const [checkDuplicatesMutation] = useCheckDuplicatesMutation();
 
   const set = (k) => (e) => {
     setF({
@@ -263,11 +263,12 @@ export default function Register() {
     const value = (val || "").trim();
     if (!value || value.length < 3) return;
     try {
-      const res = await userService.checkDuplicates({ [field]: value });
-      if (res.conflicts && res.conflicts[field]) {
+      const res = await checkDuplicatesMutation({ [field]: value }).unwrap();
+      const conflicts = res?.data?.conflicts || {};
+      if (conflicts[field]) {
         setErrs((prev) => ({
           ...prev,
-          [field]: res.conflicts[field],
+          [field]: conflicts[field],
         }));
       }
     } catch (e) {
@@ -319,23 +320,24 @@ export default function Register() {
     setTopErrorBanner("");
     setFormErrorList([]);
     try {
-      const dupCheck = await userService.checkDuplicates({
+      const dupRes = await checkDuplicatesMutation({
         username: f.username,
         email: f.email,
         mobile: f.mobile,
         cardId: f.cardId,
         chipNumber: f.chip,
         pan: f.pan,
-      });
+      }).unwrap();
+      const dupConflicts = dupRes?.data?.conflicts || {};
 
-      if (!dupCheck.available) {
-        const conflictItems = Object.entries(dupCheck.conflicts || {}).map(([key, msg]) => ({
+      if (Object.keys(dupConflicts).length > 0) {
+        const conflictItems = Object.entries(dupConflicts).map(([key, msg]) => ({
           field: FIELD_LABELS[key] || key,
           message: msg,
         }));
         setErrs((prev) => ({
           ...prev,
-          ...dupCheck.conflicts,
+          ...dupConflicts,
           submit:
             "Some details (such as username, email or Card ID) are already registered in the CSD AFD Portal. Please correct the highlighted fields.",
         }));

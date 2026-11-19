@@ -5,7 +5,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
-import { useGetOrdersReportQuery } from '../admin/adminApi.js';
+import { useGetOrdersReportQuery } from '../../redux/api/adminApi.js';
 
 export default function DealerReports() {
   const { data: ordersData, isLoading: loading, isFetching, refetch } = useGetOrdersReportQuery();

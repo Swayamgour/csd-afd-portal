@@ -6,7 +6,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import DepotDemandActions from './DepotDemandActions.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetDemandsQuery } from '../demand/demandApi.js';
+import { useGetDemandsQuery } from '../../redux/api/demandApi.js';
 import { fmtINR, upper, hasPaymentDetails, hasSupplyOrderDocs } from '../../utils/demandStatus.js';
 
 const TABS = [

@@ -7,7 +7,7 @@ import { DataTable } from '../../components/common/DataTable';
 import { ExportButton } from '../../components/common/ExportButton';
 import Badge from '../../components/common/Badge';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { useGetDemandsReportQuery, useGetBeneficiariesReportQuery, useGetPaymentsReportQuery, useGetOrdersReportQuery, useGetOemsReportQuery, useGetDealersReportQuery, useGetDepotsReportQuery, useGetUrcsReportQuery, useGetProductsReportQuery, useGetRefundsReportQuery, useGetAuditReportQuery, useGetAuthReportQuery } from './adminApi';
+import { useGetDemandsReportQuery, useGetBeneficiariesReportQuery, useGetPaymentsReportQuery, useGetOrdersReportQuery, useGetOemsReportQuery, useGetDealersReportQuery, useGetDepotsReportQuery, useGetUrcsReportQuery, useGetProductsReportQuery, useGetRefundsReportQuery, useGetAuditReportQuery, useGetAuthReportQuery } from '../../redux/api/adminApi';
 
 const REPORT_TABS = [
   { id: 'demands', label: '1. Demand Report', icon: FileSpreadsheet },

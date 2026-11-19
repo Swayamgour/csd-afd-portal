@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Upload, AlertCircle } from 'lucide-react';
-import { useUploadFileMutation } from '../../beneficiary/beneficiaryApi.js';
-import { useUploadSupplyOrderMutation } from '../../demand/demandApi.js';
+import { useUploadFileMutation } from '../../../redux/api/beneficiaryApi.js';
+import { useUploadSupplyOrderMutation } from '../../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../../utils/apiError.js';
 
 /**

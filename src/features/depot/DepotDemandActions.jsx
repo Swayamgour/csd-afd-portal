@@ -5,7 +5,7 @@ import UploadSupplyOrderModal from './modals/UploadSupplyOrderModal.jsx';
 import ApproveRejectModal from './modals/ApproveRejectModal.jsx';
 import DepotNotesModal from './modals/DepotNotesModal.jsx';
 import DemandSummaryModal from './modals/DemandSummaryModal.jsx';
-import { useRecordPaymentDetailsMutation } from '../demand/demandApi.js';
+import { useRecordPaymentDetailsMutation } from '../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import {
   depotCanRecordPayment,

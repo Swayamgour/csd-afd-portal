@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft, Loader2, RefreshCw, KeyRound, CheckCircle2, AlertCircle, Clock, User } from 'lucide-react';
 import AuthArt from '../../pages/AuthArt.jsx';
-import { authService } from '../../services/auth.service.js';
+import { useForgotUsernameMutation, useVerifyForgotUsernameMutation } from '../../redux/api/authApi.js';
 import { makeCaptcha } from '../../utils/captcha.js';
 
 function Field({ id, label, req, hint, err, children }) {
@@ -22,6 +22,8 @@ function Field({ id, label, req, hint, err, children }) {
 }
 
 export default function ForgotUsername() {
+  const [forgotUsername] = useForgotUsernameMutation();
+  const [verifyForgotUsername] = useVerifyForgotUsernameMutation();
   const navigate = useNavigate();
 
   // 'request' | 'verify' | 'success'
@@ -131,7 +133,7 @@ export default function ForgotUsername() {
     setLoading(true);
     setErrors({});
     try {
-      const res = await authService.requestForgotUsername({ email: cleanEmail });
+      const res = await forgotUsername({ email: cleanEmail }).unwrap();
       const targetMasked = res.data?.maskedEmail || res.maskedEmail || cleanEmail;
       setMaskedEmail(targetMasked);
       if (res.data?.devOtp || res.devOtp) {
@@ -141,7 +143,7 @@ export default function ForgotUsername() {
       setCooldown(30);
       setSuccessMsg(`A 6-digit verification code has been dispatched to ${targetMasked}.`);
     } catch (err) {
-      setErrors({ form: err.message || 'Unable to process your request. Please check your registered email.' });
+      setErrors({ form: err?.data?.message || 'Unable to process your request. Please check your registered email.' });
       refreshCaptcha();
     } finally {
       setLoading(false);
@@ -155,14 +157,14 @@ export default function ForgotUsername() {
     setErrors({});
     setSuccessMsg('');
     try {
-      const res = await authService.requestForgotUsername({ email: email.trim().toLowerCase() });
+      const res = await forgotUsername({ email: email.trim().toLowerCase() }).unwrap();
       setCooldown(30);
       if (res.data?.devOtp || res.devOtp) {
         setDevOtp(res.data?.devOtp || res.devOtp);
       }
       setSuccessMsg(`A fresh 6-digit verification code has been dispatched to ${maskedEmail || email}.`);
     } catch (err) {
-      setErrors({ form: err.message || 'Failed to dispatch a fresh OTP. Please try again.' });
+      setErrors({ form: err?.data?.message || 'Failed to dispatch a fresh OTP. Please try again.' });
     } finally {
       setResending(false);
     }
@@ -180,15 +182,15 @@ export default function ForgotUsername() {
     setLoading(true);
     setErrors({});
     try {
-      const res = await authService.verifyForgotUsername({
+      const res = await verifyForgotUsername({
         email: email.trim().toLowerCase(),
         otp: fullOtp
-      });
+      }).unwrap();
       const username = res.data?.username || res.username || '';
       setRecoveredUsername(username);
       setStep('success');
     } catch (err) {
-      setErrors({ form: err.message || 'Invalid or expired OTP. Please check the code and try again.' });
+      setErrors({ form: err?.data?.message || 'Invalid or expired OTP. Please check the code and try again.' });
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, FileText, Loader2, AlertCircle } from 'lucide-react';
 import { API_ORIGIN } from '../../config/env.js';
-import { getAccessToken } from '../../utils/tokenStorage.js';
+import { useGetDocumentUrlMutation } from '../../redux/api/fileApi.js';
 
 export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
+  const [getDocumentUrl] = useGetDocumentUrlMutation();
   const [blobUrl, setBlobUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -25,29 +26,22 @@ export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
 
     const fetchFile = async () => {
       try {
-        const token = getAccessToken();
         const backendBase = API_ORIGIN;
         const fullUrl = doc.url.startsWith('http')
           ? doc.url
           : `${backendBase}${doc.url.startsWith('/') ? '' : '/'}${doc.url}`;
 
-        const res = await fetch(fullUrl, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
-
-        if (!res.ok) {
-          throw new Error(`Failed to load document (${res.status} ${res.statusText})`);
-        }
-
-        const blob = await res.blob();
+        const url = await getDocumentUrl(fullUrl).unwrap();
         if (active) {
-          objectUrl = URL.createObjectURL(blob);
-          setBlobUrl(objectUrl);
+          objectUrl = url;
+          setBlobUrl(url);
           setLoading(false);
+        } else {
+          URL.revokeObjectURL(url);
         }
       } catch (err) {
         if (active) {
-          setError(err.message || 'Unable to display document');
+          setError(err?.data?.message || err.message || 'Unable to display document');
           setLoading(false);
         }
       }
@@ -61,7 +55,7 @@ export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [isOpen, doc]);
+  }, [isOpen, doc, getDocumentUrl]);
 
   if (!isOpen || !doc) return null;
 

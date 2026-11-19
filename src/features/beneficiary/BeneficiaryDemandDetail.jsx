@@ -8,8 +8,8 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Timeline from '../../components/common/Timeline.jsx';
 
 import { LoadingState, EmptyState } from '../../components/common/States.jsx';
-import { useGetDemandByIdQuery, useCancelDemandMutation } from '../demand/demandApi.js';
-import { useSubmitDirectTransferMutation } from '../payment/paymentApi.js';
+import { useGetDemandByIdQuery, useCancelDemandMutation } from '../../redux/api/demandApi.js';
+import { useSubmitDirectTransferMutation } from '../../redux/api/paymentApi.js';
 import InlinePaymentCard from '../../components/common/InlinePaymentCard.jsx';
 import OnlinePaymentCard from '../../components/common/OnlinePaymentCard.jsx';
 import { getErrorMessage } from '../../utils/apiError.js';

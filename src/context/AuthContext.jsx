@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { getRoleNavigatePath, normalizeRole } from '../permissions/roles.js';
 import { ROLE_PERMISSIONS } from '../permissions/permissions.js';
-import { API_BASE_URL } from '../config/env.js';
+import { useLazyGetMeQuery, useLoginMutation, useLogoutMutation } from '../redux/api/authApi.js';
 import { getAccessToken, setTokens, clearTokens } from '../utils/tokenStorage.js';
 
 const AuthContext = createContext(null);
@@ -14,12 +14,14 @@ export const useAuth = () => {
   return ctx;
 };
 
-const API_BASE = API_BASE_URL;
-
 // One in-flight GET /auth/me per token (React.StrictMode / re-renders can never double-call it)
 let meInflight = null; // { token, promise }
 
 export function AuthProvider({ children }) {
+  const [triggerGetMe] = useLazyGetMeQuery();
+  const [loginRequest] = useLoginMutation();
+  const [logoutRequest] = useLogoutMutation();
+
   const [token, setToken] = useState(() => getAccessToken());
 
   const [user, setUser] = useState(() => {
@@ -75,26 +77,25 @@ export function AuthProvider({ children }) {
     if (meInflight && meInflight.token === activeToken) return meInflight.promise;
     const run = (async () => {
     try {
-      const res = await fetch(`${API_BASE}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${activeToken}`,
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
+      try {
+        const data = await triggerGetMe(activeToken, false).unwrap();
         const freshUser = data?.data?.user || data?.data || data?.user;
         if (freshUser) {
           setUser(freshUser);
           localStorage.setItem('csd_auth_user', JSON.stringify(freshUser));
           localStorage.setItem('csd_auth_role', freshUser.role);
         }
-      } else if (res.status === 401) {
-        // Expired or invalid token
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem('csd_auth_user');
-        localStorage.removeItem('csd_auth_token');
-        localStorage.removeItem('csd_auth_role');
+      } catch (err) {
+        if (err?.status === 401) {
+          // Expired or invalid token
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('csd_auth_user');
+          localStorage.removeItem('csd_auth_token');
+          localStorage.removeItem('csd_auth_role');
+        } else {
+          throw err;
+        }
       }
     } catch (e) {
       console.warn('Failed to fetch /auth/me on init:', e);
@@ -105,7 +106,7 @@ export function AuthProvider({ children }) {
     })();
     meInflight = { token: activeToken, promise: run };
     return run;
-  }, [token]);
+  }, [token, triggerGetMe]);
 
   // Verify the session ONCE per token. After login() the fresh user is already known,
   // so the token change it causes must not trigger another /auth/me call.
@@ -149,15 +150,11 @@ export function AuthProvider({ children }) {
       }
 
       // Real Express REST backend call
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
-
-      const resData = await res.json();
-      if (!res.ok) {
-        throw new Error(resData?.message || 'Login failed');
+      let resData;
+      try {
+        resData = await loginRequest(credentials).unwrap();
+      } catch (err) {
+        throw new Error(err?.data?.message || 'Login failed');
       }
 
       const userObj = resData?.data?.user || resData?.user;
@@ -182,12 +179,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       if (token) {
-        await fetch(`${API_BASE}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).catch(() => {});
+        await logoutRequest().unwrap().catch(() => {});
       }
     } finally {
       setUser(null);

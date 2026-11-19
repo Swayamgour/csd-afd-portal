@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useGetProductsQuery } from '../features/catalog/productApi.js';
+import { useGetProductsQuery } from '../redux/api/productApi.js';
 import { mapBackendProduct } from '../data/api.js';
 
 /**

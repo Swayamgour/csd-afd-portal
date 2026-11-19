@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, FileText } from 'lucide-react';
-import { useGetDemandSummaryQuery } from '../../demand/demandApi.js';
+import { useGetDemandSummaryQuery } from '../../../redux/api/demandApi.js';
 import { fmtINR } from '../../../utils/demandStatus.js';
 
 const Row = ({ k, v }) => (

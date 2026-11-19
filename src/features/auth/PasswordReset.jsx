@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowLeft, Loader2, RefreshCw, KeyRound, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import AuthArt from '../../pages/AuthArt.jsx';
-import { authService } from '../../services/auth.service.js';
+import { useForgotPasswordMutation, useResetPasswordMutation } from '../../redux/api/authApi.js';
 import { makeCaptcha } from '../../utils/captcha.js';
 
 function getPasswordStrength(pw) {
@@ -36,6 +36,8 @@ function Field({ id, label, req, hint, err, children }) {
 }
 
 export default function PasswordReset() {
+  const [forgotPassword] = useForgotPasswordMutation();
+  const [resetPassword] = useResetPasswordMutation();
   const navigate = useNavigate();
 
   // 'request' | 'verify' | 'success'
@@ -144,11 +146,11 @@ export default function PasswordReset() {
     setLoading(true);
     setErrors({});
     try {
-      const res = await authService.requestPasswordReset({
+      const res = await forgotPassword({
         identifier: cleanId,
         email: cleanId,
         mobile: cleanId,
-      });
+      }).unwrap();
 
       setMaskedContact(res.data?.maskedContact || res.maskedContact || cleanId);
       if (res.data?.devOtp || res.devOtp) {
@@ -158,7 +160,7 @@ export default function PasswordReset() {
       setCooldown(30);
       setSuccessMsg(`A 6-digit verification code has been dispatched to ${res.data?.maskedContact || res.maskedContact || 'your registered contact'}.`);
     } catch (err) {
-      setErrors({ form: err.message || 'Unable to process password reset request. Please check your credentials.' });
+      setErrors({ form: err?.data?.message || 'Unable to process password reset request. Please check your credentials.' });
       refreshCaptcha();
     } finally {
       setLoading(false);
@@ -172,18 +174,18 @@ export default function PasswordReset() {
     setErrors({});
     setSuccessMsg('');
     try {
-      const res = await authService.requestPasswordReset({
+      const res = await forgotPassword({
         identifier: identifier.trim(),
         email: identifier.trim(),
         mobile: identifier.trim(),
-      });
+      }).unwrap();
       setCooldown(30);
       if (res.data?.devOtp || res.devOtp) {
         setDevOtp(res.data?.devOtp || res.devOtp);
       }
       setSuccessMsg(`A fresh 6-digit OTP has been dispatched to ${maskedContact || 'your registered contact'}.`);
     } catch (err) {
-      setErrors({ form: err.message || 'Failed to dispatch a fresh OTP. Please try again.' });
+      setErrors({ form: err?.data?.message || 'Failed to dispatch a fresh OTP. Please try again.' });
     } finally {
       setResending(false);
     }
@@ -219,17 +221,17 @@ export default function PasswordReset() {
     setLoading(true);
     setErrors({});
     try {
-      await authService.resetPassword({
+      await resetPassword({
         identifier: identifier.trim(),
         mobile: identifier.trim(),
         email: identifier.trim(),
         otp: fullOtp,
         newPassword,
-      });
+      }).unwrap();
 
       setStep('success');
     } catch (err) {
-      setErrors({ form: err.message || 'Invalid or expired OTP. Please verify and try again.' });
+      setErrors({ form: err?.data?.message || 'Invalid or expired OTP. Please verify and try again.' });
     } finally {
       setLoading(false);
     }

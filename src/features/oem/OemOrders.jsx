@@ -7,7 +7,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetOemOrdersQuery, useGetOemOrderByIdQuery, useUpdateOemOrderStatusMutation } from './oemApi.js';
+import { useGetOemOrdersQuery, useGetOemOrderByIdQuery, useUpdateOemOrderStatusMutation } from '../../redux/api/oemApi.js';
 
 export default function OemOrders() {
   const [searchTerm, setSearchTerm] = useState('');

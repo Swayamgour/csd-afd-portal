@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, XCircle, AlertTriangle, ShieldCheck } from 'lucide-react';
-import { useApproveDemandMutation, useRejectDemandMutation } from '../../demand/demandApi.js';
+import { useApproveDemandMutation, useRejectDemandMutation } from '../../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../../utils/apiError.js';
 import { depotCanApprove, hasPaymentDetails, hasSupplyOrderDocs, depotCanStage1Approve, upper } from '../../../utils/demandStatus.js';
 

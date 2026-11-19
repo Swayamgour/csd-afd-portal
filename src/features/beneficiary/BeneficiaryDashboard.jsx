@@ -10,8 +10,8 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Timeline from '../../components/common/Timeline.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useGetBeneficiaryDashboardQuery } from './beneficiaryApi.js';
-import { useGetOrdersQuery } from '../demand/demandApi.js';
+import { useGetBeneficiaryDashboardQuery } from '../../redux/api/beneficiaryApi.js';
+import { useGetOrdersQuery } from '../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 export function BeneficiaryDashboard() {

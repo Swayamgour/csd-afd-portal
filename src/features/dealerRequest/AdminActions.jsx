@@ -3,13 +3,13 @@ import { Send, XCircle, UserPlus, Undo2 } from 'lucide-react';
 import Button from '../../components/common/Button.jsx';
 import Select from '../../components/common/Select.jsx';
 import Input from '../../components/common/Input.jsx';
-import { useGetDepotsQuery } from '../org/orgApi.js';
+import { useGetDepotsQuery } from '../../redux/api/orgApi.js';
 import {
   useForwardDealerRequestToDepotMutation,
   useSendBackDealerRequestMutation,
   useRejectDealerRequestMutation,
   useCreateDealerFromRequestMutation,
-} from './dealerRequestApi.js';
+} from '../../redux/api/dealerRequestApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { ErrorBanner, RemarksField, ActionBox } from './ActionBits.jsx';
 

@@ -10,8 +10,8 @@ import {
   useGetDemandsReportQuery,
   useGetOrdersReportQuery,
   useGetPaymentsReportQuery,
-} from '../admin/adminApi.js';
-import { useGetHelpdeskMisQuery } from '../helpdesk/ticketApi.js';
+} from '../../redux/api/adminApi.js';
+import { useGetHelpdeskMisQuery } from '../../redux/api/ticketApi.js';
 
 export default function CsdReports() {
   const [activeReport, setActiveReport] = useState('demands');

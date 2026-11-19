@@ -4,7 +4,7 @@ import Button from '../../components/common/Button.jsx';
 import Select from '../../components/common/Select.jsx';
 import Input from '../../components/common/Input.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
-import { useGetMyUrcsForDealerRequestsQuery, useForwardDealerRequestToUrcMutation, useSubmitDepotVerificationMutation, useUploadDealerRequestPhotosMutation } from './dealerRequestApi.js';
+import { useGetMyUrcsForDealerRequestsQuery, useForwardDealerRequestToUrcMutation, useSubmitDepotVerificationMutation, useUploadDealerRequestPhotosMutation } from '../../redux/api/dealerRequestApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { ErrorBanner, RemarksField, ActionBox } from './ActionBits.jsx';
 

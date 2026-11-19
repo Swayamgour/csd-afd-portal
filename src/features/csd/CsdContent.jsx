@@ -8,7 +8,7 @@ import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Input from '../../components/common/Input.jsx';
 import Select from '../../components/common/Select.jsx';
-import { useGetContentQuery, useCreateContentMutation, useGetAllAdminBannersQuery } from '../admin/adminApi.js';
+import { useGetContentQuery, useCreateContentMutation, useGetAllAdminBannersQuery } from '../../redux/api/adminApi.js';
 
 export default function CsdContent() {
   const [activeTab, setActiveTab] = useState('circulars');

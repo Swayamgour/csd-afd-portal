@@ -12,7 +12,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useGetDemandsQuery, useGetOrdersQuery, useDealerVerifyDemandMutation, useUpdateOrderStatusMutation } from '../demand/demandApi.js';
+import { useGetDemandsQuery, useGetOrdersQuery, useDealerVerifyDemandMutation, useUpdateOrderStatusMutation } from '../../redux/api/demandApi.js';
 
 export default function DealerDashboard() {
   const { user } = useAuth();

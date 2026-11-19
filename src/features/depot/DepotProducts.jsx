@@ -9,7 +9,7 @@ import CatalogToolbar from '../../components/common/CatalogToolbar.jsx';
 import { ProductCell, CategoryBadge, PriceCell } from '../../components/common/ProductGrid.jsx';
 
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetProductsQuery, useGetCategoriesQuery } from '../catalog/productApi.js';
+import { useGetProductsQuery, useGetCategoriesQuery } from '../../redux/api/productApi.js';
 
 export default function DepotProducts() {
   const [searchTerm, setSearchTerm] = useState('');

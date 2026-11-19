@@ -7,7 +7,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
-import { useGetPaymentsQuery, useVerifyPaymentMutation } from '../payment/paymentApi.js';
+import { useGetPaymentsQuery, useVerifyPaymentMutation } from '../../redux/api/paymentApi.js';
 
 export default function CsdPayments() {
   const [searchTerm, setSearchTerm] = useState('');

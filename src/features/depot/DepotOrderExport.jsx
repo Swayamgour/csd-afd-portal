@@ -11,8 +11,8 @@ import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 
-import { useGetDemandsQuery } from '../demand/demandApi.js';
-import { apiClient } from '../../services/apiClient.js';
+import { useGetDemandsQuery } from '../../redux/api/demandApi.js';
+import { useDownloadFileMutation } from '../../redux/api/fileApi.js';
 
 const MONTHS = [
   'January', 'February', 'March', 'April',
@@ -48,6 +48,7 @@ function monthRange(month, year) {
 }
 
 export default function DepotOrderExport() {
+  const [downloadFile] = useDownloadFileMutation();
   const now = new Date();
 
   const [dataset, setDataset] = useState('DEMANDS');
@@ -102,11 +103,11 @@ export default function DepotOrderExport() {
       const path = dataset === 'DEMANDS' ? '/demands' : '/orders';
       const name = `${dataset === 'DEMANDS' ? 'depot-demands' : 'depot-supply-orders'}-${periodLabel}.xlsm`;
 
-      await apiClient.download(`${path}?${qs()}`, name);
+      await downloadFile({ url: `${path}?${qs()}`, filename: name }).unwrap();
 
       setMsg({ type: 'success', text: `${name} downloaded successfully.` });
     } catch (e) {
-      setMsg({ type: 'error', text: e?.message || 'Export failed. Please try again.' });
+      setMsg({ type: 'error', text: e?.data?.message || e?.message || 'Export failed. Please try again.' });
     } finally {
       setBusy(false);
     }

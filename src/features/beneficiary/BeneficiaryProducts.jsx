@@ -11,7 +11,7 @@ import { ErrorState } from '../../components/common/States.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetProductsQuery, useGetCategoriesQuery } from '../catalog/productApi.js';
+import { useGetProductsQuery, useGetCategoriesQuery } from '../../redux/api/productApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 const LOCAL_FALLBACK = '/assets/maruti1.png';

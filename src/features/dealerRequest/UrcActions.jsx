@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { MapPin, Camera, Trash2, CheckCircle2, XCircle } from 'lucide-react';
 import Button from '../../components/common/Button.jsx';
 import Input from '../../components/common/Input.jsx';
-import { useSubmitDealerVerificationMutation, useUploadDealerRequestPhotosMutation } from './dealerRequestApi.js';
+import { useSubmitDealerVerificationMutation, useUploadDealerRequestPhotosMutation } from '../../redux/api/dealerRequestApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { fileSrc } from './dealerRequestUtils.js';
 import { ErrorBanner, RemarksField, ActionBox } from './ActionBits.jsx';

@@ -9,7 +9,7 @@ import {
   useGetOrgDealerQuery,
   useCreateOrgAccountMutation,
   useUpdateDealerAccountMutation,
-} from '../org/orgApi.js';
+} from '../../redux/api/orgApi.js';
 import OrgLinkFields, {
   normState,
   emptyOrgLink,

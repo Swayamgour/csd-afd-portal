@@ -7,7 +7,7 @@ import Button from '../../components/common/Button.jsx';
 import DocumentViewer from '../../components/common/DocumentViewer.jsx';
 import FileUpload from '../../components/common/FileUpload.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useGetMyProfileQuery, useUpdateMyProfileMutation, useUploadBeneficiaryDocumentMutation, useUploadFileMutation } from './beneficiaryApi.js';
+import { useGetMyProfileQuery, useUpdateMyProfileMutation, useUploadBeneficiaryDocumentMutation, useUploadFileMutation } from '../../redux/api/beneficiaryApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 export function BeneficiaryProfile() {

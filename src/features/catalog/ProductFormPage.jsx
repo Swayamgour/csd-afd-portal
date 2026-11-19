@@ -5,9 +5,9 @@ import { PageHeader } from '../../components/common/PageHeader.jsx';
 
 import { Button } from '../../components/common/Button.jsx';
 import { LoadingState } from '../../components/common/States.jsx';
-import { useGetProductByIdQuery, useGetProductsQuery, useGetCategoriesQuery, useCreateProductMutation, useUpdateProductMutation, useUploadFilesMutation } from './productApi.js';
-import { useGetOemProductsQuery, useCreateOemProductMutation, useUpdateOemProductMutation } from '../oem/oemApi.js';
-import { useGetOemsQuery } from '../org/orgApi.js';
+import { useGetProductByIdQuery, useGetProductsQuery, useGetCategoriesQuery, useCreateProductMutation, useUpdateProductMutation, useUploadFilesMutation } from '../../redux/api/productApi.js';
+import { useGetOemProductsQuery, useCreateOemProductMutation, useUpdateOemProductMutation } from '../../redux/api/oemApi.js';
+import { useGetOemsQuery } from '../../redux/api/orgApi.js';
 import { categoryKind, fieldsFor, KIND_LABEL, COMMON_COLORS } from './categoryFields.js';
 
 // colours saved as objects ({name, hex, price}); old products may only have a comma separated string / string array

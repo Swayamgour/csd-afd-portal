@@ -7,7 +7,7 @@ import {
   useCreatePaymentMutation,
   useVerifyPaymentMutation,
   useMockCompletePaymentMutation,
-} from '../../features/payment/paymentApi.js';
+} from '../../redux/api/paymentApi.js';
 import { demandAmount } from '../../utils/demandStatus.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { openRazorpayCheckout } from '../../utils/razorpay.js';

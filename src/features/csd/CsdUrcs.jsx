@@ -6,7 +6,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 
 import Button from '../../components/common/Button.jsx';
-import { useGetUrcsQuery, useUpdateUrcMutation } from '../org/orgApi.js';
+import { useGetUrcsQuery, useUpdateUrcMutation } from '../../redux/api/orgApi.js';
 
 export default function CsdUrcs() {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { useGetOrgMetaQuery } from './orgApi.js';
+import { useGetOrgMetaQuery } from '../../redux/api/orgApi.js';
 
 /**
  * Shared dropdown block for creating / editing OEM, Depot, URC and Dealer.

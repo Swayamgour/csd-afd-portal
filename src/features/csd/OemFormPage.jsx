@@ -11,7 +11,7 @@ import {
   useUpdateOemMutation,
   useGetOrgMetaQuery,
   useCreateOrgAccountMutation,
-} from '../org/orgApi.js';
+} from '../../redux/api/orgApi.js';
 import { LoginFields, emptyLogin, validateLogin, orgErrorMessage } from '../org/OrgLinkFields.jsx';
 
 export default function OemFormPage() {

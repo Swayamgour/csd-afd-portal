@@ -5,8 +5,8 @@ import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 
 
-import { useGetOemsQuery, useGetDealersQuery, useGetDealerProductsQuery, useCreateDealerProductMutation, useUpdateDealerProductMutation, useDeleteDealerProductMutation } from '../org/orgApi.js';
-import { useGetProductsQuery } from '../catalog/productApi.js';
+import { useGetOemsQuery, useGetDealersQuery, useGetDealerProductsQuery, useCreateDealerProductMutation, useUpdateDealerProductMutation, useDeleteDealerProductMutation } from '../../redux/api/orgApi.js';
+import { useGetProductsQuery } from '../../redux/api/productApi.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ROLES } from '../../permissions/roles.js';
 

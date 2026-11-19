@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../../components/common/Button.jsx';
-import { useCancelDealerRequestMutation } from './dealerRequestApi.js';
+import { useCancelDealerRequestMutation } from '../../redux/api/dealerRequestApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { ErrorBanner, RemarksField, ActionBox } from './ActionBits.jsx';
 

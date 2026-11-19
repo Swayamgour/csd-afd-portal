@@ -6,7 +6,7 @@ import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { useGetCategoriesQuery, useGetEligibilityRulesQuery } from '../catalog/productApi.js';
+import { useGetCategoriesQuery, useGetEligibilityRulesQuery } from '../../redux/api/productApi.js';
 
 export default function CsdCategories() {
   const [activeTab, setActiveTab] = useState('categories'); // 'categories' | 'entitlements'

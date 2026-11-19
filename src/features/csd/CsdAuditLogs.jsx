@@ -7,7 +7,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import FilterBar from '../../components/common/FilterBar.jsx';
 import SearchInput from '../../components/common/SearchInput.jsx';
 import Select from '../../components/common/Select.jsx';
-import { useGetAuditReportQuery } from '../admin/adminApi.js';
+import { useGetAuditReportQuery } from '../../redux/api/adminApi.js';
 
 export default function CsdAuditLogs() {
   const [moduleFilter, setModuleFilter] = useState('All');

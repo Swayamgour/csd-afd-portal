@@ -5,7 +5,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
-import { useGetDemandsReportQuery } from '../admin/adminApi.js';
+import { useGetDemandsReportQuery } from '../../redux/api/adminApi.js';
 
 export default function DepotReports() {
   const { data: demandsData, isLoading: loading, isFetching, refetch } = useGetDemandsReportQuery();

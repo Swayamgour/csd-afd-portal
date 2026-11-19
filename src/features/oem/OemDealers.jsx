@@ -7,7 +7,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import { useGetOemDealersQuery, useGetOemDealerByIdQuery, useGetOemDealerProductsQuery, useGetOemDealerAppointmentsQuery } from './oemApi.js';
+import { useGetOemDealersQuery, useGetOemDealerByIdQuery, useGetOemDealerProductsQuery, useGetOemDealerAppointmentsQuery } from '../../redux/api/oemApi.js';
 
 export default function OemDealers() {
   const [searchTerm, setSearchTerm] = useState('');

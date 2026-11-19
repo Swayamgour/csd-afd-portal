@@ -8,7 +8,7 @@ import {
   useGetPaymentsQuery,
   useGetPaymentStatusQuery,
   useReverifyGatewayPaymentMutation,
-} from './paymentApi.js';
+} from '../../redux/api/paymentApi.js';
 import { readPendingPayment, clearPendingPayment, gatewayLabel } from '../../utils/gatewayCheckout.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 

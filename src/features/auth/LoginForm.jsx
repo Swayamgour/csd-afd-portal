@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { API_BASE_URL } from '../../config/env.js';
+import { useVerifyCredentialsMutation } from '../../redux/api/authApi.js';
 import {
   User,
   Lock,
@@ -78,6 +78,7 @@ export default function LoginForm({ onNeedOtp }) {
   const [activeAccount, setActiveAccount] = useState(null);
 
   const { login } = useAuth();
+  const [verifyCredentials] = useVerifyCredentialsMutation();
   const navigate = useNavigate();
 
   const refreshCaptcha = () => {
@@ -114,20 +115,9 @@ export default function LoginForm({ onNeedOtp }) {
       // 1. Verify credentials and trigger backend OTP generation
       let credResult;
       try {
-        const credRes = await fetch(
-          `${API_BASE_URL}/auth/verify-credentials`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: cleanUsername, password }),
-          }
-        );
-        credResult = await credRes.json();
-        if (!credRes.ok) {
-          throw new Error(credResult?.message || 'Invalid username or password.');
-        }
+        credResult = await verifyCredentials({ username: cleanUsername, password }).unwrap();
       } catch (err) {
-        throw new Error(err.message || 'Invalid username or password. Please verify your credentials.');
+        throw new Error(err?.data?.message || 'Invalid username or password. Please verify your credentials.');
       }
 
       const registeredEmail = credResult.maskedEmail || credResult.data?.maskedEmail || 'registered email';

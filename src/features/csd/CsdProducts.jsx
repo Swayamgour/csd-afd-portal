@@ -9,8 +9,8 @@ import Button from '../../components/common/Button.jsx';
 
 import ExcelImportModal from '../../components/common/ExcelImportModal.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
-import { useGetProductsQuery, useGetCategoriesQuery, useUpdateProductMutation, useDeleteProductMutation, useCreateProductMutation, useImportProductsExcelMutation } from '../catalog/productApi.js';
-import { useGetOemsQuery } from '../org/orgApi.js';
+import { useGetProductsQuery, useGetCategoriesQuery, useUpdateProductMutation, useDeleteProductMutation, useCreateProductMutation, useImportProductsExcelMutation } from '../../redux/api/productApi.js';
+import { useGetOemsQuery } from '../../redux/api/orgApi.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 
 export default function CsdProducts() {

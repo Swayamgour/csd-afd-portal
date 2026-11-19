@@ -5,7 +5,7 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
-import { useGetNotificationsQuery, useBroadcastNotificationMutation } from '../notifications/notificationApi';
+import { useGetNotificationsQuery, useBroadcastNotificationMutation } from '../../redux/api/notificationApi';
 import { ROLE_LABELS } from '../../permissions/roles';
 
 export function CsdNotifications() {

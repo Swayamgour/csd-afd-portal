@@ -11,7 +11,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import Button from './Button.jsx';
-import { getAccessToken } from '../../utils/tokenStorage.js';
+import { useDownloadFirstAvailableMutation } from '../../redux/api/fileApi.js';
 
 export default function ExcelImportModal({
   isOpen,
@@ -26,6 +26,7 @@ export default function ExcelImportModal({
   const [result, setResult] = useState(null);
   const [activeTab, setActiveTab] = useState('summary');
   const fileInputRef = useRef(null);
+  const [downloadFirstAvailable] = useDownloadFirstAvailableMutation();
 
   if (!isOpen) return null;
 
@@ -62,41 +63,10 @@ export default function ExcelImportModal({
 
   const handleDownloadTemplate = async () => {
     try {
-      const token = getAccessToken() || '';
-      const headers = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const urlsToTry = [
-        templateUrl,
-        '/api/v1/products/import-template',
-      ];
-
-      let blob = null;
-      for (const url of urlsToTry) {
-        try {
-          const authUrl = token ? `${url}?token=${encodeURIComponent(token)}` : url;
-          const res = await fetch(authUrl, { method: 'GET', headers });
-          if (res.ok) {
-            blob = await res.blob();
-            break;
-          }
-        } catch {
-          // try next URL
-        }
-      }
-
-      if (!blob) {
-        throw new Error('Template download endpoint returned an error.');
-      }
-
-      const blobUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = 'CSD_Product_and_Pricing_Template.xlsx';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(blobUrl);
+      await downloadFirstAvailable({
+        urls: [templateUrl, '/api/v1/products/import-template'],
+        filename: 'CSD_Product_and_Pricing_Template.xlsx',
+      }).unwrap();
     } catch (err) {
       console.error('Template download error:', err);
       setError('Unable to download template. Please ensure backend service is running.');

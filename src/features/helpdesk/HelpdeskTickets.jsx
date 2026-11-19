@@ -7,7 +7,7 @@ import { DataTable } from '../../components/common/DataTable';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { FilterBar } from '../../components/common/FilterBar';
 import { Button } from '../../components/common/Button';
-import { useGetTicketsQuery } from './ticketApi';
+import { useGetTicketsQuery } from '../../redux/api/ticketApi';
 
 export const HelpdeskTickets = ({ filterPreset = 'all' }) => {
   const queryParams = {};

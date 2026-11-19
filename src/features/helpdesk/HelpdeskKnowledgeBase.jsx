@@ -8,7 +8,7 @@ import { SearchInput } from '../../components/common/SearchInput';
 import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
 import { LoadingState } from '../../components/common/States';
-import { useGetKbArticlesQuery, useCreateKbArticleMutation } from './ticketApi';
+import { useGetKbArticlesQuery, useCreateKbArticleMutation } from '../../redux/api/ticketApi';
 
 export const HelpdeskKnowledgeBase = () => {
   const [query, setQuery] = useState('');

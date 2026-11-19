@@ -10,7 +10,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useGetTicketsQuery, useGetHelpdeskMisQuery } from './ticketApi.js';
+import { useGetTicketsQuery, useGetHelpdeskMisQuery } from '../../redux/api/ticketApi.js';
 
 export default function HelpdeskDashboard() {
   const { user } = useAuth();

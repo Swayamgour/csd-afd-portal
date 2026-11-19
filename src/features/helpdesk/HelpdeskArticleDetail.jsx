@@ -4,7 +4,7 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { LoadingState } from '../../components/common/States';
-import { useGetKbArticleByIdQuery } from './ticketApi';
+import { useGetKbArticleByIdQuery } from '../../redux/api/ticketApi';
 
 export const HelpdeskArticleDetail = () => {
   const { id } = useParams();

@@ -12,7 +12,7 @@ import {
   useCreateOemPricingMutation,
   useUpdateOemPricingMutation,
   useGetOemProductsQuery,
-} from './oemApi.js';
+} from '../../redux/api/oemApi.js';
 
 const INDIAN_STATES = [
   'ANDAMAN AND NICOBAR ISLANDS', 'ANDHRA PRADESH', 'ARUNACHAL PRADESH', 'ASSAM',

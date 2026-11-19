@@ -8,7 +8,7 @@ import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ROLES } from '../../permissions/roles.js';
-import { useGetBeneficiariesQuery } from '../admin/adminApi.js';
+import { useGetBeneficiariesQuery } from '../../redux/api/adminApi.js';
 import { formatDate } from '../../utils/formatters.js';
 
 export default function CsdBeneficiaries() {

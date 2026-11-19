@@ -5,7 +5,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
-import { useGetPaymentsQuery } from '../payment/paymentApi.js';
+import { useGetPaymentsQuery } from '../../redux/api/paymentApi.js';
 
 export default function DepotTransactions() {
   const { data: paymentsData, isLoading: loading, isFetching, refetch } = useGetPaymentsQuery();

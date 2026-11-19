@@ -8,7 +8,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import Input from '../../components/common/Input.jsx';
 import Select from '../../components/common/Select.jsx';
-import { useGetTicketsQuery, useCreateTicketMutation } from '../helpdesk/ticketApi.js';
+import { useGetTicketsQuery, useCreateTicketMutation } from '../../redux/api/ticketApi.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 export default function BeneficiaryTickets() {

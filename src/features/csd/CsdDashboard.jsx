@@ -16,9 +16,9 @@ import ChartCard from '../../components/common/ChartCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { useGetAdminSummaryQuery } from '../admin/adminApi.js';
-import { useGetDemandsQuery } from '../demand/demandApi.js';
-import { useGetTicketsQuery } from '../helpdesk/ticketApi.js';
+import { useGetAdminSummaryQuery } from '../../redux/api/adminApi.js';
+import { useGetDemandsQuery } from '../../redux/api/demandApi.js';
+import { useGetTicketsQuery } from '../../redux/api/ticketApi.js';
 
 export default function CsdDashboard() {
   const navigate = useNavigate();

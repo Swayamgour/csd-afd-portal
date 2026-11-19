@@ -7,7 +7,7 @@ import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Timeline from '../../components/common/Timeline.jsx';
 import { LoadingState, EmptyState } from '../../components/common/States.jsx';
-import { useGetOrderByIdQuery } from '../demand/demandApi.js';
+import { useGetOrderByIdQuery } from '../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 export default function BeneficiaryOrderDetail() {

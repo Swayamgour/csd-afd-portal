@@ -5,7 +5,7 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { useGetOrdersQuery } from '../demand/demandApi.js';
+import { useGetOrdersQuery } from '../../redux/api/demandApi.js';
 
 export default function DepotOrders() {
   const { data: ordersData, isLoading: loading, isFetching, refetch } = useGetOrdersQuery();

@@ -5,7 +5,7 @@ import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import { LoadingState, ErrorState } from '../../components/common/States.jsx';
-import { useGetOemProfileQuery, useUpdateOemProfileMutation } from './oemApi.js';
+import { useGetOemProfileQuery, useUpdateOemProfileMutation } from '../../redux/api/oemApi.js';
 
 export default function OemProfile() {
   const { data: profileData, isLoading, isFetching, error, refetch } = useGetOemProfileQuery();

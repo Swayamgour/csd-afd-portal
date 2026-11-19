@@ -5,7 +5,7 @@ import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import { LoadingState } from '../../components/common/States.jsx';
-import { useGetOemDealersQuery, useGetOemProductsQuery, useCreateOemDealerProductMutation } from './oemApi.js';
+import { useGetOemDealersQuery, useGetOemProductsQuery, useCreateOemDealerProductMutation } from '../../redux/api/oemApi.js';
 
 export default function OemDealerProductFormPage() {
   const navigate = useNavigate();
