@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { CheckCircle2, XCircle, ArrowRight, Search, Loader2 } from 'lucide-react';
+import {
+  CheckCircle2, XCircle, ArrowRight, Search
+} from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 
 import { useGetProductsQuery, useCheckProductEligibilityMutation } from '../../redux/api/productApi.js';
 import { useGetMyProfileQuery } from '../../redux/api/beneficiaryApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export function BeneficiaryEligibility() {
   const [searchParams] = useSearchParams();
@@ -81,7 +84,7 @@ export function BeneficiaryEligibility() {
       {/* Main Entitlement Overview Card */}
       <Card title="Entitlement Master Profile" className="mb-3">
         {profileLoading ? (
-          <div className="py-4 text-center muted"><Loader2 size={24} className="spin inline" /> Loading entitlement profile...</div>
+          <Loader label="Loading entitlement profile" />
         ) : (
           <>
             <div className="between align-center flex-wrap gap-2 mb-3">
@@ -157,7 +160,7 @@ export function BeneficiaryEligibility() {
 
         {checkingEligibility && (
           <div className="p-3 text-center muted">
-            <Loader2 size={24} className="spin inline mr-2" /> Validating defence entitlement against product specifications on server...
+            <Loader variant="inline" size="md" label="Validating defence entitlement against product specifications on server..." />
           </div>
         )}
 

@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, Loader2, ShieldCheck, AlertTriangle, ArrowLeft, Package, Layers, Check, RefreshCw } from 'lucide-react';
+import {
+  Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, ShieldCheck, AlertTriangle, ArrowLeft, Package, Layers, Check, RefreshCw
+} from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
@@ -9,6 +11,7 @@ import Tabs from '../../components/common/Tabs.jsx';
 import { useImportOemProductsExcelMutation } from '../../redux/api/oemApi.js';
 import { useDownloadFirstAvailableMutation } from '../../redux/api/fileApi.js';
 import { useImportProductsExcelMutation } from '../../redux/api/productApi.js';
+import Loader, { LoaderIcon } from '../../components/common/Loader.jsx';
 
 export default function OemExcelImportPage() {
   const location = useLocation();
@@ -125,7 +128,7 @@ export default function OemExcelImportPage() {
             <Button
               variant="outline"
               size="sm"
-              icon={downloading ? Loader2 : Download}
+              icon={downloading ? LoaderIcon : Download}
               loading={downloading}
               onClick={handleDownloadTemplate}
             >
@@ -154,7 +157,7 @@ export default function OemExcelImportPage() {
           <Button
             variant="primary"
             size="sm"
-            icon={downloading ? Loader2 : Download}
+            icon={downloading ? LoaderIcon : Download}
             loading={downloading}
             onClick={handleDownloadTemplate}
             className="shrink-0"
@@ -236,7 +239,7 @@ export default function OemExcelImportPage() {
 
             {loading && (
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 text-sm flex items-center gap-3">
-                <Loader2 className="animate-spin text-blue-600 shrink-0" size={24} />
+                <Loader variant="inline" size="md" />
                 <div>
                   <div className="font-semibold text-blue-950">Processing Workbook & Running Automated 8-Point Scrutiny...</div>
                   <div className="text-xs text-blue-700 mt-0.5">
@@ -259,7 +262,7 @@ export default function OemExcelImportPage() {
               </Button>
               <Button
                 variant="primary"
-                icon={loading ? Loader2 : Upload}
+                icon={loading ? LoaderIcon : Upload}
                 loading={loading}
                 disabled={!file}
                 onClick={handleUpload}

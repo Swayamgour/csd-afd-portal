@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, XCircle, Clock, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import {
+  CheckCircle2, XCircle, Clock, RefreshCw, AlertCircle
+} from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
@@ -11,6 +13,7 @@ import {
 } from '../../redux/api/paymentApi.js';
 import { readPendingPayment, clearPendingPayment, gatewayLabel } from '../../utils/gatewayCheckout.js';
 import { getErrorMessage } from '../../utils/apiError.js';
+import Loader from '../../components/common/Loader.jsx';
 
 /**
  * Where SBIePay / NDML send the browser back to:  /payments/result?paymentNo=..&status=SUCCESS|FAILED|PENDING|ERROR
@@ -92,7 +95,7 @@ export default function PaymentResult() {
         <div className="text-center" style={{ padding: '1.5rem 1rem' }} role="status" aria-live="polite">
           {tone === 'success' && <CheckCircle2 size={56} color="#16a34a" aria-hidden />}
           {tone === 'failed' && <XCircle size={56} color="#dc2626" aria-hidden />}
-          {tone === 'pending' && (stillChecking ? <Loader2 size={48} className="spin" aria-hidden /> : <Clock size={52} color="#d97706" aria-hidden />)}
+          {tone === 'pending' && (stillChecking ? <Loader variant="inline" size="lg" /> : <Clock size={52} color="#d97706" aria-hidden />)}
 
           <h2 className="h2 mt-2 mb-1">
             {tone === 'success' && 'Payment successful'}

@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Package, IndianRupee, Layers, CheckCircle2, AlertCircle, Upload, UploadCloud, Image as ImageIcon, Trash2, Star, Plus, Loader2, Link as LinkIcon, Palette } from 'lucide-react';
+import {
+  ArrowLeft, Package, IndianRupee, Layers, CheckCircle2, AlertCircle, Upload, UploadCloud, Image as ImageIcon, Trash2, Star, Plus, Link as LinkIcon, Palette
+} from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
 
 import { Button } from '../../components/common/Button.jsx';
-import { LoadingState } from '../../components/common/States.jsx';
+
 import { useGetProductByIdQuery, useGetProductsQuery, useGetCategoriesQuery, useCreateProductMutation, useUpdateProductMutation, useUploadFilesMutation } from '../../redux/api/productApi.js';
 import { useGetOemProductsQuery, useCreateOemProductMutation, useUpdateOemProductMutation } from '../../redux/api/oemApi.js';
 import { useGetOemsQuery } from '../../redux/api/orgApi.js';
 import { categoryKind, fieldsFor, KIND_LABEL, COMMON_COLORS } from './categoryFields.js';
+import Loader from '../../components/common/Loader.jsx';
 
 // colours saved as objects ({name, hex, price}); old products may only have a comma separated string / string array
 function colorsFromProduct(product) {
@@ -424,7 +427,7 @@ export function ProductFormPage() {
   const isSaving = isCreatingCsd || isUpdatingCsd || isCreatingOem || isUpdatingOem;
 
   if (isEdit && isLoadingProduct) {
-    return <LoadingState text="Loading product data..." />;
+    return <Loader label="Loading product data..." />;
   }
 
   return (
@@ -789,7 +792,7 @@ export function ProductFormPage() {
                     </div>
                   ))}
                   <label className="oem-photo-toggle-btn" style={{ cursor: 'pointer' }}>
-                    {colorUploading === i ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} Upload {c.name || 'colour'} photos
+                    {colorUploading === i ? <Loader variant="inline" size="sm" /> : <Upload size={14} />} Upload {c.name || 'colour'} photos
                     <input type="file" accept="image/*" multiple hidden onChange={(e) => { uploadColorImages(i, e.target.files); e.target.value = ''; }} />
                   </label>
                   <input
@@ -853,7 +856,7 @@ export function ProductFormPage() {
               >
                 {isUploadingFiles ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" /> Uploading...
+                    <Loader variant="inline" size="sm" label="Uploading..." />
                   </>
                 ) : (
                   <>
@@ -927,7 +930,7 @@ export function ProductFormPage() {
             >
               <div className="oem-photo-icon-circle">
                 {isUploadingFiles ? (
-                  <Loader2 size={24} className="animate-spin" />
+                  <Loader variant="inline" size="md" />
                 ) : (
                   <UploadCloud size={24} />
                 )}

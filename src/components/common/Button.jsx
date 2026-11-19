@@ -1,4 +1,5 @@
 import React from 'react';
+import Loader from './Loader.jsx';
 
 export function Button({
   children,
@@ -42,7 +43,7 @@ export function Button({
       {...props}
     >
       {loading ? (
-        <span className="spinner-sm" aria-hidden="true" />
+        <Loader variant="inline" size="sm" />
       ) : (
         Icon && <Icon size={size === 'sm' ? 14 : 16} aria-hidden="true" />
       )}

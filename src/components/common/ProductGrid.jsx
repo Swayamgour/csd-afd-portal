@@ -2,7 +2,8 @@ import React from 'react';
 import { Tag } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters.js';
 import Badge from './Badge.jsx';
-import { LoadingState } from './States.jsx';
+import Loader from './Loader.jsx';
+
 
 export const FALLBACK_IMG = '/assets/maruti1.png';
 
@@ -108,7 +109,7 @@ export default function ProductGrid({
   emptyTitle = 'No products found',
   emptyText = 'Try adjusting your search query or category filter.'
 }) {
-  if (loading) return <LoadingState message="Loading catalogue..." />;
+  if (loading) return <Loader label="Loading catalogue..." />;
 
   if (!products.length) {
     return (

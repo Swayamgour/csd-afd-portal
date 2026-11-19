@@ -8,6 +8,7 @@ import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetOemDealersQuery, useGetOemDealerByIdQuery, useGetOemDealerProductsQuery, useGetOemDealerAppointmentsQuery } from '../../redux/api/oemApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function OemDealers() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -149,7 +150,7 @@ export default function OemDealers() {
           }
         >
           {loadingDetail ? (
-            <div className="py-8 text-center text-muted">Loading dealer details...</div>
+            <Loader label="Loading dealer details" />
           ) : (
             <div className="space-y-4">
               {/* Dealer Details Grid */}
@@ -187,7 +188,7 @@ export default function OemDealers() {
                   Regional CSD Depot Appointments ({dealerAppointments.length})
                 </h4>
                 {loadingAppointments ? (
-                  <div className="text-xs text-muted py-2">Loading appointments...</div>
+                  <Loader variant="inline" size="sm" label="Loading appointments" />
                 ) : dealerAppointments.length === 0 ? (
                   <div className="text-xs text-muted p-2 bg-slate-50 rounded border">
                     No explicit depot appointment records found. Operating under primary OEM dealership scope.
@@ -219,7 +220,7 @@ export default function OemDealers() {
                   Authorized Vehicle Lineup ({dealerProducts.length})
                 </h4>
                 {loadingProducts ? (
-                  <div className="text-xs text-muted py-2">Loading products...</div>
+                  <Loader variant="inline" size="sm" label="Loading products" />
                 ) : dealerProducts.length === 0 ? (
                   <div className="text-xs text-muted p-2 bg-slate-50 rounded border">
                     No individual vehicle allotments configured yet. Use "Dealer Products" tab to map models.

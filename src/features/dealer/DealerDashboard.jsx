@@ -13,6 +13,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useGetDemandsQuery, useGetOrdersQuery, useDealerVerifyDemandMutation, useUpdateOrderStatusMutation } from '../../redux/api/demandApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function DealerDashboard() {
   const { user } = useAuth();
@@ -454,7 +455,7 @@ export default function DealerDashboard() {
               }}
               disabled={fetchingDemands || fetchingOrders}
             >
-              <RefreshCw size={14} className={fetchingDemands || fetchingOrders ? 'spin' : ''} />
+              {fetchingDemands || fetchingOrders ? <Loader variant="inline" size="sm" /> : <RefreshCw size={14} />}
               <span>Sync Portal</span>
             </button>
             <div className="badge success px-3 py-1 font-semibold text-center ic-inline">

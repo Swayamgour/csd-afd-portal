@@ -4,7 +4,7 @@ import { ArrowLeft, Shield, Save, AlertCircle, Mail, MapPin, Lock } from 'lucide
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import { LoadingState } from '../../components/common/States.jsx';
+
 import {
   useGetUrcsQuery,
   useGetUrcByIdQuery,
@@ -21,6 +21,7 @@ import OrgLinkFields, {
   orgErrorMessage,
   LoginFields,
 } from '../org/OrgLinkFields.jsx';
+import Loader from '../../components/common/Loader.jsx';
 
 const ROLE = 'URC';
 
@@ -121,7 +122,7 @@ export default function UrcFormPage() {
     }
   };
 
-  if (isEdit && isLoadingUrc) return <LoadingState text="Loading URC Canteen profile details..." />;
+  if (isEdit && isLoadingUrc) return <Loader label="Loading URC Canteen profile details..." />;
 
   return (
     <div className="csd-module-page">

@@ -2,6 +2,7 @@ import React from 'react';
 import { X, FileText } from 'lucide-react';
 import { useGetDemandSummaryQuery } from '../../../redux/api/demandApi.js';
 import { fmtINR } from '../../../utils/demandStatus.js';
+import Loader from '../../../components/common/Loader.jsx';
 
 const Row = ({ k, v }) => (
   <tr>
@@ -35,7 +36,7 @@ export default function DemandSummaryModal({ isOpen, onClose, demand }) {
           <button type="button" className="csd-modal-close-btn" onClick={onClose} aria-label="Close modal"><X size={18} /></button>
         </div>
         <div className="csd-modal-body">
-          {isLoading && <p className="muted">Loading summary...</p>}
+          {isLoading && <Loader variant="inline" size="sm" label="Loading summary" />}
           {error && <div className="alert-banner error">Could not load summary.</div>}
           {s && (
             <>

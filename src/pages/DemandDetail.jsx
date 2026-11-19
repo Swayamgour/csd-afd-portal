@@ -6,6 +6,7 @@ import { useSubmitDirectTransferMutation } from '../redux/api/paymentApi.js';
 import InlinePaymentCard from '../components/common/InlinePaymentCard.jsx';
 import OnlinePaymentCard from '../components/common/OnlinePaymentCard.jsx';
 import { isPayable, getStatusLabel, isAwaitingDepotApproval, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
+import Loader from '../components/common/Loader.jsx';
 
 export default function DemandDetail() {
   const { id } = useParams();
@@ -52,10 +53,7 @@ export default function DemandDetail() {
 
   if (loading) {
     return (
-      <div className="demand-loading-box">
-        <Clock size={36} className="spin portal-spinner-icon" />
-        <h2 className="portal-loading-title">Loading demand details...</h2>
-      </div>
+      <Loader variant="page" label="Loading demand details" />
     );
   }
 

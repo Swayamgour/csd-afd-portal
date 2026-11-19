@@ -2,7 +2,8 @@ import React, { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from '../components/Header.jsx';
 import Footer from '../components/Footer.jsx';
-import { LoadingState } from '../components/common/States.jsx';
+import Loader from '../components/common/Loader.jsx';
+
 
 export function PublicLayout({ children }) {
   return (
@@ -11,9 +12,7 @@ export function PublicLayout({ children }) {
       <main id="main" tabIndex={-1}>
         <Suspense
           fallback={
-            <div className="portal-content-loader-container">
-              <LoadingState text="Loading page..." />
-            </div>
+            <Loader variant="page" label="Loading page" />
           }
         >
           {children || <Outlet />}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Filter, RefreshCw, LayoutGrid, List } from 'lucide-react';
 import SearchInput from './SearchInput.jsx';
+import Loader from './Loader.jsx';
 
 /**
  * Shared toolbar for every product catalogue page
@@ -59,7 +60,7 @@ export function CatalogToolbar({
             aria-label="Refresh catalogue"
             disabled={refreshing}
           >
-            <RefreshCw size={16} className={refreshing ? 'spin' : ''} aria-hidden="true" />
+            {refreshing ? <Loader variant="inline" size="sm" /> : <RefreshCw size={16} />}
           </button>
         )}
 

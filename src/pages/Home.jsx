@@ -2,12 +2,13 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowUpRight, ArrowRight, Headset, Info, Car, Bike, Refrigerator, CircleCheck, Phone, FileText } from "lucide-react";
 import Catalog from "../components/Catalog.jsx";
-import { Loader, UnavailableState, InlineNote } from "../components/common/States.jsx";
+import { UnavailableState, InlineNote } from "../components/common/States.jsx";
 import { useStoreProducts } from "../hooks/useStoreProducts.js";
 import { useGetBannersQuery, useGetContentQuery } from "../redux/api/adminApi.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { normalizeRole } from "../permissions/roles.js";
 import "../styles/home-notice.css";
+import Loader from '../components/common/Loader.jsx';
 
 // Category tiles: only labels/icons live here (UI). Counts and images come from the server data.
 const CATEGORY_TILES = [

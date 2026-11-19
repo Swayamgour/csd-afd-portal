@@ -4,10 +4,11 @@ import { ArrowLeft } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
-import { LoadingState, ErrorState } from '../../components/common/States.jsx';
+import { ErrorState } from '../../components/common/States.jsx';
 import DepotDemandActions from './DepotDemandActions.jsx';
 import { useGetDemandByIdQuery, useGetDemandsQuery } from '../../redux/api/demandApi.js';
 import { fmtINR, getStatusLabel, hasPaymentDetails, hasSupplyOrderDocs } from '../../utils/demandStatus.js';
+import Loader from '../../components/common/Loader.jsx';
 
 const Step = ({ done, label }) => (
   <li style={{ listStyle: 'none', margin: '4px 0' }}>{done ? '✅' : '⬜'} {label}</li>
@@ -19,7 +20,7 @@ export function DepotDemandDetail() {
   // list items carry latestPayment (incl. bank-transfer details); the single-demand endpoint may not
   const { data: list } = useGetDemandsQuery();
 
-  if (isLoading) return <LoadingState message="Loading demand..." />;
+  if (isLoading) return <Loader label="Loading demand..." />;
   if (error || !raw) return <ErrorState message="Demand could not be loaded." />;
 
   const fromList = (list?.items || []).find((d) => String(d._id || d.id) === String(id));

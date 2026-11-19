@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { SlidersHorizontal, X, LayoutGrid, Rows3, Car, Bike, Refrigerator, Check } from "lucide-react";
 import ProductCard from "./ProductCard.jsx";
-import { Loader, EmptyState, UnavailableState } from "./common/States.jsx";
+import { EmptyState, UnavailableState } from "./common/States.jsx";
 import { useStoreProducts } from "../hooks/useStoreProducts.js";
 import { useDebounce } from "../hooks/useDebounce.js";
 import { useStore } from "../context/Store.jsx";
 import { useCanSeePrice } from "./PriceLock.jsx";
 import { CAT_PLURAL, matches, rupees } from "../data/utils.js";
+import Loader from './common/Loader.jsx';
 
 const SORTS = [
   ["rec", "Recommended"],

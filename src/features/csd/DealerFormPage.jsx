@@ -4,7 +4,7 @@ import { ArrowLeft, Store, Save, AlertCircle, Lock } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import { LoadingState } from '../../components/common/States.jsx';
+
 import {
   useGetOrgDealerQuery,
   useCreateOrgAccountMutation,
@@ -20,6 +20,7 @@ import OrgLinkFields, {
   orgErrorMessage,
   LoginFields,
 } from '../org/OrgLinkFields.jsx';
+import Loader from '../../components/common/Loader.jsx';
 
 const ROLE = 'DEALER';
 const idOf = (x) => String(x?._id || x?.id || x || '');
@@ -85,7 +86,7 @@ export default function DealerFormPage() {
     }
   };
 
-  if (isEdit && isLoadingDealer) return <LoadingState text="Loading Dealership profile details..." />;
+  if (isEdit && isLoadingDealer) return <Loader label="Loading Dealership profile details..." />;
 
   const saving = isCreating || isUpdating;
 

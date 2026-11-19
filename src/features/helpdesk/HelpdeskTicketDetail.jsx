@@ -7,10 +7,11 @@ import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
 import { Timeline } from '../../components/common/Timeline';
-import { LoadingState } from '../../components/common/States';
+
 
 import { useAuth } from '../../context/AuthContext';
 import { useGetTicketByIdQuery, useAddTicketMessageMutation, useAssignTicketMutation, useUpdateTicketStatusMutation, useGetKbArticlesQuery } from '../../redux/api/ticketApi';
+import Loader from '../../components/common/Loader.jsx';
 
 export const HelpdeskTicketDetail = () => {
   const { id } = useParams();
@@ -120,7 +121,7 @@ export const HelpdeskTicketDetail = () => {
     }
   };
 
-  if (loading) return <LoadingState text="Loading ticket dossier, audit timeline, and escalation matrix..." />;
+  if (loading) return <Loader label="Loading ticket dossier, audit timeline, and escalation matrix..." />;
   if (!ticket) return <div className="alert alert-danger">Ticket reference not found.</div>;
 
   const ticketId = ticket.ticketNo || ticket._id || ticket.id;

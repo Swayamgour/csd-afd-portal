@@ -1,4 +1,4 @@
-import { api, BASE_URL } from '../baseApi';
+import { api } from '../baseApi';
 
 /**
  * File / binary endpoints (CSV, XLSX, XLSM exports, templates, protected documents).
@@ -9,13 +9,11 @@ import { api, BASE_URL } from '../baseApi';
  * `getDocumentUrl` stores only a short-lived object URL string.
  */
 
-const API_ORIGIN_PREFIX = /^\/api\/v1(?=\/|$)/;
+// Matches '/api/v1' and 'https://host[:port]/api/v1' at the start of a url.
+const API_PREFIX = /^(?:https?:\/\/[^/]+)?\/api\/v1(?=\/|$)/;
 
-/** '/api/v1/products/x' | `${BASE_URL}/products/x` -> '/products/x' (absolute non-API urls are left alone). */
-export const toApiPath = (url = '') => {
-  if (url.startsWith(BASE_URL)) return url.slice(BASE_URL.length) || '/';
-  return url.replace(API_ORIGIN_PREFIX, '') || '/';
-};
+/** '/api/v1/products/x' | 'https://host/api/v1/products/x' -> '/products/x' (other absolute urls are left alone). */
+export const toApiPath = (url = '') => url.replace(API_PREFIX, '') || '/';
 
 const blobQuery = (baseQuery, url) =>
   baseQuery({ url, method: 'GET', responseHandler: (res) => res.blob() });

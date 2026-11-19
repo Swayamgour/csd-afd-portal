@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, MessageSquare, Plus, Clock, User } from 'lucide-react';
 import { useGetDemandNotesQuery, useAddDemandNoteMutation } from '../../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../../utils/apiError.js';
+import Loader from '../../../components/common/Loader.jsx';
 
 export default function DepotNotesModal({ isOpen, onClose, demand }) {
   const id = demand?._id || demand?.id;
@@ -43,7 +44,7 @@ export default function DepotNotesModal({ isOpen, onClose, demand }) {
         <div className="csd-modal-body">
           <div className="depot-notes-history-list">
             {isLoading ? (
-              <p className="small muted text-center p-2">Loading notes...</p>
+              <Loader variant="inline" size="sm" label="Loading notes" />
             ) : notes.length === 0 ? (
               <p className="small muted text-center p-2">No notes recorded yet for this demand.</p>
             ) : (

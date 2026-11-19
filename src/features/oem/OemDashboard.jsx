@@ -9,10 +9,11 @@ import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { LoadingState, ErrorState } from '../../components/common/States.jsx';
+import { ErrorState } from '../../components/common/States.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useGetOemDashboardQuery } from '../../redux/api/oemApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function OemDashboard() {
   const { user } = useAuth();
@@ -33,7 +34,7 @@ export default function OemDashboard() {
           title="OEM Institutional Directorate"
           subtitle="Loading manufacturer production, dealer allocations, and order pipelines..."
         />
-        <LoadingState message="Fetching real-time OEM dashboard metrics..." />
+        <Loader label="Fetching real-time OEM dashboard metrics..." />
       </div>
     );
   }

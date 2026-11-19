@@ -9,6 +9,7 @@ import { Button } from '../../components/common/Button.jsx';
 import { useGetAdminSummaryQuery, useGetAdminAnalyticsQuery, useGetAdminRecentDemandsQuery, useGetAdminActivityQuery, useGetUsersQuery } from '../../redux/api/adminApi.js';
 
 import { Users, UserCheck, Clock, CheckCircle2, RefreshCw, Building2, Store, Warehouse, Layers, ShoppingBag, IndianRupee, Package, Calendar, Shield, FileCheck, XCircle } from 'lucide-react';
+import Loader from '../../components/common/Loader.jsx';
 
 const toPctClass = (pct, prefix = 'w-pct') => `${prefix}-${Math.min(100, Math.max(0, Math.round(Number(pct || 0) / 5) * 5))}`;
 
@@ -168,10 +169,11 @@ export const AdminDashboard = () => {
               onClick={handleRefreshAll}
               disabled={isRefreshing}
             >
-              <RefreshCw
-                size={14}
-                className={`mr-xs ${isRefreshing ? 'portal-spinner-icon' : ''}`}
-              />
+              {isRefreshing ? (
+                <Loader variant="inline" size="sm" className="mr-xs" />
+              ) : (
+                <RefreshCw size={14} className="mr-xs" />
+              )}
               {isRefreshing ? 'Syncing...' : 'Sync Data'}
             </Button>
             <Link to="/admin/demands">
@@ -378,10 +380,7 @@ export const AdminDashboard = () => {
         </div>
 
         {isAnalyticsLoading ? (
-          <div className="chart-loading-box">
-            <RefreshCw size={24} className="spin-icon" />
-            <div>Loading live analytics aggregation from database...</div>
-          </div>
+          <Loader label="Loading live analytics aggregation from database" />
         ) : (
           <div>
             {activeChartTab === 'demands' && (

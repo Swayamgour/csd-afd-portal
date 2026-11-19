@@ -3,8 +3,9 @@ import { useParams, Link } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
-import { LoadingState } from '../../components/common/States';
+
 import { useGetKbArticleByIdQuery } from '../../redux/api/ticketApi';
+import Loader from '../../components/common/Loader.jsx';
 
 export const HelpdeskArticleDetail = () => {
   const { id } = useParams();
@@ -16,7 +17,7 @@ export const HelpdeskArticleDetail = () => {
     setVoted(true);
   };
 
-  if (loading) return <LoadingState text="Loading Knowledge Base SOP and policy references..." />;
+  if (loading) return <Loader label="Loading Knowledge Base SOP and policy references..." />;
   if (!article) return <div className="alert alert-danger">Knowledge Base Article not found.</div>;
 
   return (

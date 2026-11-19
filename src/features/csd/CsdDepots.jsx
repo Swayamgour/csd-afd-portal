@@ -7,6 +7,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 
 import Button from '../../components/common/Button.jsx';
 import { useGetDepotsQuery, useGetPriceZonesQuery, useUpdateDepotMutation } from '../../redux/api/orgApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function CsdDepots() {
   const navigate = useNavigate();
@@ -166,7 +167,7 @@ export default function CsdDepots() {
         actions={
           <div className="csd-toolbar-actions">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={refreshing}>
-              <RefreshCw size={14} className={`mr-xs ${refreshing ? 'spin-icon' : ''}`} />
+              {refreshing ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
               {refreshing ? 'Syncing...' : 'Sync Depots'}
             </Button>
             <Button variant="primary" size="sm" onClick={() => navigate('/csd/depots/new')}>

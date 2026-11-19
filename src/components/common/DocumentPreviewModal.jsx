@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Download, FileText, Loader2, AlertCircle } from 'lucide-react';
+import {
+  X, Download, FileText, AlertCircle
+} from 'lucide-react';
 import { API_ORIGIN } from '../../config/env.js';
 import { useGetDocumentUrlMutation } from '../../redux/api/fileApi.js';
+import Loader from './Loader.jsx';
 
 export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
   const [getDocumentUrl] = useGetDocumentUrlMutation();
@@ -206,7 +209,7 @@ export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
         >
           {loading && (
             <div style={{ textAlign: 'center', padding: '2rem', color: '#ffffff' }}>
-              <Loader2 size={38} className="animate-spin text-brand mx-auto mb-2" style={{ margin: '0 auto 0.75rem' }} />
+              <Loader variant="inline" size="lg" />
               <p style={{ margin: '0 0 0.35rem', fontWeight: 600, fontSize: '0.9rem' }}>
                 Loading document securely within portal...
               </p>

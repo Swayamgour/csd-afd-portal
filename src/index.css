@@ -4522,15 +4522,6 @@ select.select-input {
     flex: 1;
 }
 
-.portal-content-loader-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: calc(100vh - 20vh);
-    width: 100%;
-    padding: 2rem 1rem;
-}
-
 .spin {
     animation: spinLoader 0.9s linear infinite;
 }
@@ -4560,16 +4551,6 @@ select.select-input {
     max-width: 440px;
     width: 100%;
     margin: 0 auto;
-}
-
-.state-spinner-wrap {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: rgba(30, 79, 216, 0.08);
 }
 
 .state-message {

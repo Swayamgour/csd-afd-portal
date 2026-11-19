@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowLeft, Loader2, RefreshCw, KeyRound, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import {
+  Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowLeft, RefreshCw, KeyRound, CheckCircle2, AlertCircle, Clock
+} from 'lucide-react';
 import AuthArt from '../../pages/AuthArt.jsx';
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../../redux/api/authApi.js';
 import { makeCaptcha } from '../../utils/captcha.js';
+import Loader from '../../components/common/Loader.jsx';
 
 function getPasswordStrength(pw) {
   if (!pw) return null;
@@ -340,7 +343,7 @@ export default function PasswordReset() {
             type="submit"
             disabled={isRequestDisabled}
           >
-            {loading && <Loader2 size={18} className="spin" />}
+            {loading && <Loader variant="inline" size="sm" />}
             <span>{loading ? 'Transmitting OTP...' : 'Send Verification OTP'}</span>
           </button>
         </form>
@@ -532,7 +535,7 @@ export default function PasswordReset() {
             type="submit"
             disabled={isResetDisabled}
           >
-            {loading && <Loader2 size={18} className="spin" />}
+            {loading && <Loader variant="inline" size="sm" />}
             <span>{loading ? 'Updating Password...' : 'Verify OTP & Set New Password'}</span>
           </button>
         </form>

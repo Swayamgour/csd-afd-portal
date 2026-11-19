@@ -8,6 +8,7 @@ import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetOemOrdersQuery, useGetOemOrderByIdQuery, useUpdateOemOrderStatusMutation } from '../../redux/api/oemApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function OemOrders() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -398,7 +399,7 @@ export default function OemOrders() {
           }
         >
           {loadingDetail ? (
-            <div className="py-8 text-center text-muted">Loading order details...</div>
+            <Loader label="Loading order details" />
           ) : (
             <div className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">

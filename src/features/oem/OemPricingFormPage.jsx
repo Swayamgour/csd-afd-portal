@@ -4,7 +4,7 @@ import { ArrowLeft, Save, AlertCircle, CheckCircle2, Search, Wand2 } from 'lucid
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import { LoadingState } from '../../components/common/States.jsx';
+
 import { formatCurrency } from '../../utils/formatters.js';
 import {
   useGetOemPricingByIdQuery,
@@ -13,6 +13,7 @@ import {
   useUpdateOemPricingMutation,
   useGetOemProductsQuery,
 } from '../../redux/api/oemApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 const INDIAN_STATES = [
   'ANDAMAN AND NICOBAR ISLANDS', 'ANDHRA PRADESH', 'ARUNACHAL PRADESH', 'ASSAM',
@@ -190,7 +191,7 @@ export default function OemPricingFormPage() {
   if ((id && loadingEditDoc) || loadingProducts) {
     return (
       <div className="py-12">
-        <LoadingState text="Loading..." />
+        <Loader label="Loading..." />
       </div>
     );
   }

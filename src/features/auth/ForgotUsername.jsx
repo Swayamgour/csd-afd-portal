@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, ArrowLeft, Loader2, RefreshCw, KeyRound, CheckCircle2, AlertCircle, Clock, User } from 'lucide-react';
+import {
+  Mail, ArrowLeft, RefreshCw, KeyRound, CheckCircle2, AlertCircle, Clock, User
+} from 'lucide-react';
 import AuthArt from '../../pages/AuthArt.jsx';
 import { useForgotUsernameMutation, useVerifyForgotUsernameMutation } from '../../redux/api/authApi.js';
 import { makeCaptcha } from '../../utils/captcha.js';
+import Loader from '../../components/common/Loader.jsx';
 
 function Field({ id, label, req, hint, err, children }) {
   return (
@@ -300,7 +303,7 @@ export default function ForgotUsername() {
             type="submit"
             disabled={isRequestDisabled}
           >
-            {loading && <Loader2 size={18} className="spin" />}
+            {loading && <Loader variant="inline" size="sm" />}
             <span>{loading ? 'Validating Email...' : 'Send Verification OTP'}</span>
           </button>
         </form>
@@ -422,7 +425,7 @@ export default function ForgotUsername() {
             type="submit"
             disabled={isVerifyDisabled}
           >
-            {loading && <Loader2 size={18} className="spin" />}
+            {loading && <Loader variant="inline" size="sm" />}
             <span>{loading ? 'Verifying OTP...' : 'Verify OTP & Send Username'}</span>
           </button>
         </form>

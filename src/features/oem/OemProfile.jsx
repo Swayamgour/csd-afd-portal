@@ -4,8 +4,9 @@ import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import Badge from '../../components/common/Badge.jsx';
-import { LoadingState, ErrorState } from '../../components/common/States.jsx';
+import { ErrorState } from '../../components/common/States.jsx';
 import { useGetOemProfileQuery, useUpdateOemProfileMutation } from '../../redux/api/oemApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function OemProfile() {
   const { data: profileData, isLoading, isFetching, error, refetch } = useGetOemProfileQuery();
@@ -81,7 +82,7 @@ export default function OemProfile() {
     return (
       <div className="oem-profile-page">
         <PageHeader title="OEM Corporate Profile" subtitle="Loading institutional records..." />
-        <LoadingState message="Fetching official manufacturer profile from registry..." />
+        <Loader label="Fetching official manufacturer profile from registry..." />
       </div>
     );
   }

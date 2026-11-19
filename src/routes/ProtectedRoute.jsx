@@ -1,14 +1,15 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { LoadingState } from '../components/common/States.jsx';
+import Loader from '../components/common/Loader.jsx';
+
 
 export function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    return <LoadingState message="Verifying security credentials..." />;
+    return <Loader label="Verifying security credentials..." />;
   }
 
   if (!isAuthenticated) {

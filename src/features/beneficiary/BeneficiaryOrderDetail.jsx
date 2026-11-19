@@ -6,9 +6,10 @@ import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Timeline from '../../components/common/Timeline.jsx';
-import { LoadingState, EmptyState } from '../../components/common/States.jsx';
+import { EmptyState } from '../../components/common/States.jsx';
 import { useGetOrderByIdQuery } from '../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function BeneficiaryOrderDetail() {
   const { id } = useParams();
@@ -18,7 +19,7 @@ export default function BeneficiaryOrderDetail() {
 
   const order = orderData?.data || orderData;
 
-  if (loading) return <LoadingState message="Retrieving supply order from CSD logs..." />;
+  if (loading) return <Loader label="Retrieving supply order from CSD logs..." />;
 
   if (isError || !order) {
     return (

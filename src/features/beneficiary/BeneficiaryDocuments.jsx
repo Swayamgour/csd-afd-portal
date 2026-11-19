@@ -4,8 +4,11 @@ import Card from '../../components/common/Card.jsx';
 import DocumentViewer from '../../components/common/DocumentViewer.jsx';
 import FileUpload from '../../components/common/FileUpload.jsx';
 import { useGetMyProfileQuery, useUploadBeneficiaryDocumentMutation, useUploadFileMutation } from '../../redux/api/beneficiaryApi.js';
-import { Loader2, AlertCircle, CheckCircle2, FileText } from 'lucide-react';
+import {
+  AlertCircle, CheckCircle2, FileText
+} from 'lucide-react';
 import { getErrorMessage } from '../../utils/apiError.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function BeneficiaryDocuments() {
   const { data: profileResp, isLoading } = useGetMyProfileQuery();
@@ -70,7 +73,7 @@ export default function BeneficiaryDocuments() {
       <div className="grid-2-col gap-2 mb-3">
         <Card title="Verified Service & Procurement Documents">
           {isLoading ? (
-            <div className="py-4 text-center muted"><Loader2 size={24} className="spin inline" /> Loading documents...</div>
+            <Loader label="Loading documents" />
           ) : documents.length === 0 ? (
             <div className="text-center py-4 muted">
               <FileText size={32} className="muted block mx-auto mb-2 opacity-50" />
@@ -117,7 +120,7 @@ export default function BeneficiaryDocuments() {
 
           {(isUploadingFile || isSavingDoc) && (
             <div className="mt-2 text-center small muted">
-              <Loader2 size={16} className="spin inline mr-1" /> Archiving file in government vault...
+              <Loader variant="inline" size="sm" label="Archiving file in government vault..." />
             </div>
           )}
         </Card>

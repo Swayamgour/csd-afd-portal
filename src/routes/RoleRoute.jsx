@@ -2,14 +2,15 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { normalizeRole, getRoleNavigatePath } from '../permissions/roles.js';
-import { LoadingState } from '../components/common/States.jsx';
+import Loader from '../components/common/Loader.jsx';
+
 
 export function RoleRoute({ allowedRoles = [], children }) {
   const { role, user, isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    return <LoadingState message="Verifying role permissions..." />;
+    return <Loader label="Verifying role permissions..." />;
   }
 
   if (!isAuthenticated) {

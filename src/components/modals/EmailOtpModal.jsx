@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mail, ShieldCheck, Clock, RefreshCw, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import Loader from '../common/Loader.jsx';
 
 /**
  * Dedicated CSD Email OTP Verification Modal
@@ -365,7 +366,7 @@ export default function EmailOtpModal({
                 disabled={resendCooldown > 0 || isSending || isSubmitting}
                 className="csd-otp-resend-btn"
               >
-                <RefreshCw size={13} className={isSending ? 'spin' : ''} />
+                {isSending ? <Loader variant="inline" size="sm" /> : <RefreshCw size={13} />}
                 <span>
                   {isSending
                     ? 'Transmitting...'
@@ -404,8 +405,7 @@ export default function EmailOtpModal({
             >
               {isSubmitting ? (
                 <>
-                  <RefreshCw size={16} className="spin" />
-                  <span>Completing Registration...</span>
+                  <Loader variant="inline" size="sm" label="Completing Registration..." />
                 </>
               ) : (
                 <>

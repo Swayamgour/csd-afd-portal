@@ -5,9 +5,10 @@ import { PageHeader } from '../../components/common/PageHeader.jsx';
 
 import { Button } from '../../components/common/Button.jsx';
 
-import { LoadingState } from '../../components/common/States.jsx';
+
 import { MASTER_ROLES } from '../../permissions/roles.js';
 import { useGetUserByIdQuery, useGetUsersQuery, useUpdateUserMutation } from '../../redux/api/adminApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export function AdminUserEdit() {
   const { id } = useParams();
@@ -136,7 +137,7 @@ export function AdminUserEdit() {
   const backUrl = isDirector ? `/director/users/${id}` : `/admin/users/${id}`;
 
   if (isLoading) {
-    return <LoadingState text="Loading user profile..." />;
+    return <Loader label="Loading user profile..." />;
   }
 
   return (

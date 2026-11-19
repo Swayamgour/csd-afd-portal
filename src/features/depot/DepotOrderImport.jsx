@@ -1,6 +1,8 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UploadCloud, FileText, X, CheckCircle2, AlertCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import {
+  UploadCloud, FileText, X, CheckCircle2, AlertCircle, RefreshCw, Trash2
+} from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
@@ -9,6 +11,7 @@ import { useUploadFileMutation } from '../../redux/api/beneficiaryApi.js';
 import { UPLOAD_CONFIG, validateFile, formatFileSize } from '../../config/uploadConfig.js';
 import { DOC_TYPES, newFileItem } from '../../utils/orderImportMatch.js';
 import { getErrorMessage } from '../../utils/apiError.js';
+import Loader from '../../components/common/Loader.jsx';
 
 const CHUNK = 20; // POST /files accepts up to 20 files per request
 const MAX_FILES = 120;
@@ -311,7 +314,7 @@ export default function DepotOrderImport() {
 
             <div className="row between align-center flex-wrap gap-2">
               <span className="small muted" aria-live="polite">
-                {running ? <><Loader2 size={14} className="spin" /> Importing {progress.done} / {progress.total}…</> : 'Imported demands move on to “Approve” in Received Demands once payment details are also recorded.'}
+                {running ? <><Loader variant="inline" size="sm" /> Importing {progress.done} / {progress.total}…</> : 'Imported demands move on to “Approve” in Received Demands once payment details are also recorded.'}
               </span>
               <div className="row gap-1">
                 <Link to="/depot/demands" className="btn out">Received Demands</Link>

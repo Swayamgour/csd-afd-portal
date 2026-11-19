@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { ROLES } from '../../permissions/roles.js';
 import { useGetBeneficiariesQuery } from '../../redux/api/adminApi.js';
 import { formatDate } from '../../utils/formatters.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function CsdBeneficiaries() {
   const { user } = useAuth();
@@ -135,7 +136,7 @@ export default function CsdBeneficiaries() {
             disabled={isFetching}
             title="Refresh Beneficiaries"
           >
-            <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+            {isFetching ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
             {isFetching ? 'Syncing...' : 'Sync Beneficiaries'}
           </Button>
         }
@@ -197,10 +198,7 @@ export default function CsdBeneficiaries() {
       {/* Main Table */}
       <Card title="Entitled Beneficiaries" subtitle={`Showing ${beneficiaries.length} records retrieved from server`}>
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand mb-3" />
-            <p className="font-semibold text-sm">Loading beneficiaries from registry...</p>
-          </div>
+          <Loader label="Loading beneficiaries from registry" />
         ) : beneficiaries.length === 0 ? (
           <div className="p-12 text-center text-slate-400">
             <Users className="w-12 h-12 mx-auto mb-2 text-slate-300" />

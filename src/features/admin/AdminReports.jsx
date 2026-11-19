@@ -8,6 +8,7 @@ import { ExportButton } from '../../components/common/ExportButton';
 import Badge from '../../components/common/Badge';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { useGetDemandsReportQuery, useGetBeneficiariesReportQuery, useGetPaymentsReportQuery, useGetOrdersReportQuery, useGetOemsReportQuery, useGetDealersReportQuery, useGetDepotsReportQuery, useGetUrcsReportQuery, useGetProductsReportQuery, useGetRefundsReportQuery, useGetAuditReportQuery, useGetAuthReportQuery } from '../../redux/api/adminApi';
+import Loader from '../../components/common/Loader.jsx';
 
 const REPORT_TABS = [
   { id: 'demands', label: '1. Demand Report', icon: FileSpreadsheet },
@@ -296,7 +297,7 @@ export const AdminReports = () => {
               className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition"
               title="Refresh Data"
             >
-              <RefreshCw className={`w-4 h-4 ${currentQuery.isFetching ? 'animate-spin text-brand' : ''}`} />
+              {currentQuery.isFetching ? <Loader variant="inline" size="sm" /> : <RefreshCw className="w-4 h-4" />}
             </button>
             <ExportButton
               filename={`CSD_AFD_${activeReport.toUpperCase()}_REPORT_${new Date().toISOString().slice(0, 10)}`}
@@ -462,10 +463,7 @@ export const AdminReports = () => {
         subtitle={`Displaying ${filteredData.length} records retrieved from database`}
       >
         {currentQuery.isLoading ? (
-          <div className="p-12 text-center text-slate-500">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand mb-3" />
-            <p className="font-semibold text-sm">Aggregating live report records...</p>
-          </div>
+          <Loader label="Aggregating live report records" />
         ) : currentQuery.isError ? (
           <div className="p-8 text-center text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
             <p className="font-semibold text-sm">Unable to load report data from server.</p>

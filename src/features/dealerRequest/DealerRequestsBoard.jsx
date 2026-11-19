@@ -10,6 +10,7 @@ import Tabs from '../../components/common/Tabs.jsx';
 import { useGetDealerRequestsQuery, useGetDealerRequestByIdQuery } from '../../redux/api/dealerRequestApi.js';
 import DealerRequestDetail from './DealerRequestDetail.jsx';
 import { statusMeta, fmtDateTime } from './dealerRequestUtils.js';
+import Loader from '../../components/common/Loader.jsx';
 
 
 
@@ -132,7 +133,7 @@ export default function DealerRequestsBoard({ title, subtitle, breadcrumbs, tabs
           maxWidth="860px"
         >
           {!detail || (loadingDetail && detail._id !== openId) ? (
-            <div className="py-8 text-center muted">Loading…</div>
+            <Loader label="Loading" />
           ) : (
             <>
               <DealerRequestDetail request={detail} />

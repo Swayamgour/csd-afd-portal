@@ -6,6 +6,7 @@ import { useSubmitDirectTransferMutation } from '../redux/api/paymentApi.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { isPayable, canCancel, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
 import { useDebounce } from '../hooks/useDebounce.js';
+import Loader from '../components/common/Loader.jsx';
 
 export default function Demands() {
   const { user } = useAuth();
@@ -183,8 +184,7 @@ export default function Demands() {
               {loading ? (
                 <tr>
                   <td colSpan="6" className="demands-empty-cell">
-                    <RefreshCw size={24} className="demands-loading-spinner" />
-                    Loading beneficiary demands...
+                    <Loader label="Loading beneficiary demands" />
                   </td>
                 </tr>
               ) : demands.length === 0 ? (

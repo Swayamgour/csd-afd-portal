@@ -9,6 +9,7 @@ import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetDemandsQuery } from '../../redux/api/demandApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function CsdDemands() {
   const [statusFilter, setStatusFilter] = useState('');
@@ -164,7 +165,7 @@ export default function CsdDemands() {
             disabled={isFetching}
             title="Refresh Demands"
           >
-            <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+            {isFetching ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
             {isFetching ? 'Syncing...' : 'Sync Demands'}
           </Button>
         }
@@ -234,10 +235,7 @@ export default function CsdDemands() {
       {/* Demand Table */}
       <Card title="AFD Demand Indents" subtitle={`Displaying ${demands.length} registered demands`}>
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand mb-3" />
-            <p className="font-semibold text-sm">Retrieving demands from server...</p>
-          </div>
+          <Loader label="Retrieving demands from server" />
         ) : demands.length === 0 ? (
           <div className="p-12 text-center text-slate-400">
             <FileText className="w-12 h-12 mx-auto mb-2 text-slate-300" />

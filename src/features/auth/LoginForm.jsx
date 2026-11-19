@@ -2,30 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useVerifyCredentialsMutation } from '../../redux/api/authApi.js';
 import {
-  User,
-  Lock,
-  Eye,
-  EyeOff,
-  AlertCircle,
-  Loader2,
-  RefreshCw,
-  KeyRound,
-  ArrowLeft,
-  ChevronDown,
-  Settings,
-  Landmark,
-  Building2,
-  Warehouse,
-  Store,
-  Factory,
-  Car,
-  Medal,
-  Hourglass,
+  User, Lock, Eye, EyeOff, AlertCircle, RefreshCw, KeyRound, ArrowLeft, ChevronDown, Settings, Landmark, Building2, Warehouse, Store, Factory, Car, Medal, Hourglass
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath, isPathAllowedForRole } from '../../permissions/roles.js';
 import { makeCaptcha } from '../../utils/captcha.js';
 import DigiLockerButton from '../../components/common/DigiLockerButton.jsx';
+import Loader from '../../components/common/Loader.jsx';
 
 // Test / demo accounts are visible in development mode only.
 const SHOW_DEMO_ACCOUNTS = Boolean(import.meta.env.DEV);
@@ -322,7 +305,7 @@ export default function LoginForm({ onNeedOtp }) {
         disabled={isSubmitDisabled}
         style={{ display: 'flex' }}
       >
-        {loading && <Loader2 size={18} className="spin" />}
+        {loading && <Loader variant="inline" size="sm" />}
         <span>{loading ? 'Checking your details…' : 'Sign in'}</span>
       </button>
 

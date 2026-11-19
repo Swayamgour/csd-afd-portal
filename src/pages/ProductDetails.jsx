@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Check, ChevronRight, ShieldCheck, BadgePercent, Fuel, Gauge, Zap, Cog, Package, Armchair, Disc3, CircleDollarSign, Cpu, BadgeCheck, ArrowRight, Lock } from "lucide-react";
 
 import ProductCard from "../components/ProductCard.jsx";
-import { Loader, EmptyState, UnavailableState } from "../components/common/States.jsx";
+import { EmptyState, UnavailableState } from "../components/common/States.jsx";
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -17,6 +17,7 @@ import { useGetAvailableStatesQuery, useGetStateDealersQuery, useGetStateDepotsQ
 import { DealerDetailsModal } from "../components/modals/DealerDetailsModal.jsx";
 import { URCDetailsModal } from "../components/modals/URCDetailsModal.jsx";
 import { EligibilityModal } from "../components/modals/EligibilityModal.jsx";
+import Loader from '../components/common/Loader.jsx';
 
 const val = (v) =>
   Array.isArray(v) ? v.join(" / ") : v && v !== "-" ? v : null;

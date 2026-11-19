@@ -1,0 +1,66 @@
+/* Single app-wide loader. See src/components/common/Loader.jsx */
+.app-loader {
+  color: var(--brand, #1a3f8f);
+}
+
+.app-loader__ring {
+  display: inline-block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border-style: solid;
+  border-color: currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: app-loader-spin 0.8s linear infinite;
+}
+
+@keyframes app-loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+.app-loader--block,
+.app-loader--page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.app-loader--page {
+  min-height: 60vh;
+}
+
+.app-loader--inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  vertical-align: middle;
+  color: inherit; /* inherit the button / text colour */
+}
+
+.app-loader__label {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.app-loader--inline .app-loader__label {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.app-loader__hint {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loader__ring { animation-duration: 2s; }
+}

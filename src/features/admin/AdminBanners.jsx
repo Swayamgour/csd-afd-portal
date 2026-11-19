@@ -6,6 +6,7 @@ import { DataTable } from '../../components/common/DataTable.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { useGetAllAdminBannersQuery, useCreateBannerMutation, useUpdateBannerMutation, useToggleBannerStatusMutation, useDeleteBannerMutation } from '../../redux/api/adminApi.js';
 import { Plus, Trash2, Edit, CheckCircle2, XCircle, ExternalLink, RefreshCw, AlertTriangle, ArrowUpDown } from 'lucide-react';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function AdminBanners() {
   const {
@@ -254,10 +255,7 @@ export default function AdminBanners() {
         actions={
           <div className="portal-flex-align-center-gap-sm">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
-              <RefreshCw
-                size={14}
-                className={`mr-xs ${isFetching ? 'spin' : ''}`}
-              />
+              {isFetching ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
               {isFetching ? 'Refreshing...' : 'Refresh'}
             </Button>
             <Button variant="primary" size="sm" onClick={openCreateModal}>

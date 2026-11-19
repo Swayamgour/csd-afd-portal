@@ -9,6 +9,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import { useGetDemandsQuery } from '../../redux/api/demandApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { isPayable } from '../../utils/demandStatus.js';
+import Loader from '../../components/common/Loader.jsx';
 const isAwaitingApproval = (d) => (d.status || '').toUpperCase() === 'CREATED';
 
 export function BeneficiaryDemands() {
@@ -225,7 +226,7 @@ export function BeneficiaryDemands() {
               disabled={isFetching}
               title="Refresh demands data from backend"
             >
-              <RefreshCw size={14} className={isFetching ? 'spin' : ''} />
+              {isFetching ? <Loader variant="inline" size="sm" /> : <RefreshCw size={14} />}
               <span className="hidden sm:inline">Refresh</span>
             </Button>
             <Link to="/products" className="btn btn-primary font-bold">

@@ -8,6 +8,7 @@ import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
 import { useGetPaymentsQuery, useVerifyPaymentMutation } from '../../redux/api/paymentApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function CsdPayments() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -142,7 +143,7 @@ export default function CsdPayments() {
               disabled={isVerifying}
               title="Verify & Reconcile against Treasury"
             >
-              <RotateCcw size={13} className={isVerifying ? 'spin-icon' : ''} />
+              {isVerifying ? <Loader variant="inline" size="sm" /> : <RotateCcw size={13} />}
               <span>Verify & Reconcile</span>
             </button>
           ) : (
@@ -172,7 +173,7 @@ export default function CsdPayments() {
             disabled={isFetching}
             title="Refresh Transactions"
           >
-            <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+            {isFetching ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
             {isFetching ? 'Syncing...' : 'Sync Payments'}
           </Button>
         }
@@ -242,10 +243,7 @@ export default function CsdPayments() {
       {/* Main Table */}
       <Card title="Payment & Treasury Transactions" subtitle={`Showing ${payments.length} transactions from database`}>
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand mb-3" />
-            <p className="font-semibold text-sm">Loading transactions from server...</p>
-          </div>
+          <Loader label="Loading transactions from server" />
         ) : payments.length === 0 ? (
           <div className="p-12 text-center text-slate-400">
             <CreditCard className="w-12 h-12 mx-auto mb-2 text-slate-300" />

@@ -5,6 +5,7 @@ import { useStoreProducts } from '../hooks/useStoreProducts.js'
 import { useDebounce } from '../hooks/useDebounce.js'
 import { useCanSeePrice } from './PriceLock.jsx'
 import { CAT_LABEL, matches, priceFrom, onImgError } from '../data/utils.js'
+import Loader from './common/Loader.jsx';
 
 const MIN = 2
 
@@ -109,7 +110,7 @@ export default function SearchBox({ variant = 'header', placeholder = 'Search ca
               <p>{q.trim() ? `Type ${MIN - q.trim().length} more letter${MIN - q.trim().length > 1 ? 's' : ''} to see suggestions` : `Type at least ${MIN} letters to see suggestions`}</p>
             </div>
           )}
-          {ready && isLoading && <p className="sbox-empty">Loading products…</p>}
+          {ready && isLoading && <Loader variant="inline" size="sm" label="Loading products" />}
           {ready && isError && <p className="sbox-empty">Search suggestions are not available right now. <button type="button" className="link" onMouseDown={e => e.preventDefault()} onClick={refetch}>Retry</button></p>}
           {ready && !isLoading && !isError && !items.length && <p className="sbox-empty">No matches for “{q}”. Try another name or brand.</p>}
           {items.map((it, i) => (

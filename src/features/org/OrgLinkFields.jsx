@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useGetOrgMetaQuery } from '../../redux/api/orgApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 /**
  * Shared dropdown block for creating / editing OEM, Depot, URC and Dealer.
@@ -117,7 +118,7 @@ export default function OrgLinkFields({ role, value, onChange, disabled = false 
   const catName = (id) => categories.find((c) => idOf(c) === String(id))?.name;
   const oemCategoryText = (o) => (o.categoryIds || []).map((c) => catName(idOf(c))).filter(Boolean).join(', ');
 
-  if (isLoading) return <p className="micro muted">Loading dropdown data...</p>;
+  if (isLoading) return <Loader variant="inline" size="sm" label="Loading dropdown data" />;
   if (isError) {
     return (
       <div className="alert alert-danger">

@@ -2,11 +2,12 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { X, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useStore } from '../context/Store.jsx';
-import { EmptyState, Loader, UnavailableState } from '../components/common/States.jsx';
+import { EmptyState, UnavailableState } from '../components/common/States.jsx';
 import { priceText } from '../data/utils.js';
 import PriceLock, { useCanSeePrice } from '../components/PriceLock.jsx';
 import { Stars, Img } from '../components/ProductCard.jsx';
 import { useStoreProducts } from '../hooks/useStoreProducts.js';
+import Loader from '../components/common/Loader.jsx';
 
 const rows = [
   ['Transmission', 'transmission'],

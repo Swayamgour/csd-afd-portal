@@ -7,13 +7,14 @@ import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Timeline from '../../components/common/Timeline.jsx';
 
-import { LoadingState, EmptyState } from '../../components/common/States.jsx';
+import { EmptyState } from '../../components/common/States.jsx';
 import { useGetDemandByIdQuery, useCancelDemandMutation } from '../../redux/api/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../../redux/api/paymentApi.js';
 import InlinePaymentCard from '../../components/common/InlinePaymentCard.jsx';
 import OnlinePaymentCard from '../../components/common/OnlinePaymentCard.jsx';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { isPayable, canCancel, paymentStatusLabel } from '../../utils/demandStatus.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function BeneficiaryDemandDetail() {
   const { id } = useParams();
@@ -79,7 +80,7 @@ export default function BeneficiaryDemandDetail() {
     }
   };
 
-  if (isLoading) return <LoadingState message="Retrieving demand details from CSD database..." />;
+  if (isLoading) return <Loader label="Retrieving demand details from CSD database..." />;
 
   if (isError || !demand) {
     return (

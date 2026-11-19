@@ -9,6 +9,7 @@ import Button from '../../components/common/Button.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetOrdersQuery } from '../../redux/api/demandApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function CsdOrders() {
   const [statusFilter, setStatusFilter] = useState('');
@@ -163,7 +164,7 @@ export default function CsdOrders() {
             disabled={isFetching}
             title="Refresh Orders"
           >
-            <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+            {isFetching ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
             {isFetching ? 'Syncing...' : 'Sync Orders'}
           </Button>
         }
@@ -227,10 +228,7 @@ export default function CsdOrders() {
       {/* Orders Table */}
       <Card title="Official Supply Orders" subtitle={`Showing ${orders.length} orders registered in database`}>
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand mb-3" />
-            <p className="font-semibold text-sm">Loading supply orders from server...</p>
-          </div>
+          <Loader label="Loading supply orders from server" />
         ) : orders.length === 0 ? (
           <div className="p-12 text-center text-slate-400">
             <Truck className="w-12 h-12 mx-auto mb-2 text-slate-300" />

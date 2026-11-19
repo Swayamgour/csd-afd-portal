@@ -1,17 +1,10 @@
 import React, { useState, useRef } from 'react';
 import {
-  Upload,
-  FileSpreadsheet,
-  Download,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Loader2,
-  ShieldCheck,
-  AlertTriangle,
+  Upload, FileSpreadsheet, Download, CheckCircle2, AlertCircle, X, ShieldCheck, AlertTriangle
 } from 'lucide-react';
 import Button from './Button.jsx';
 import { useDownloadFirstAvailableMutation } from '../../redux/api/fileApi.js';
+import Loader from './Loader.jsx';
 
 export default function ExcelImportModal({
   isOpen,
@@ -275,7 +268,7 @@ export default function ExcelImportModal({
               >
                 {loading ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <Loader variant="inline" size="sm" />
                     Checking & Importing...
                   </>
                 ) : (

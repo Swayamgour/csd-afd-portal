@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { CreditCard, ShieldCheck, AlertCircle, Loader2, Landmark } from 'lucide-react';
+import {
+  CreditCard, ShieldCheck, AlertCircle, Landmark
+} from 'lucide-react';
 import Button from './Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import {
@@ -18,6 +20,7 @@ import {
   gatewayLabel,
   gatewayUnavailableText,
 } from '../../utils/gatewayCheckout.js';
+import Loader from './Loader.jsx';
 
 /**
  * Pay a depot-approved demand online.
@@ -137,7 +140,7 @@ export default function OnlinePaymentCard({ demand, onCancel, onPaid }) {
         )}
 
         {!hasLoan && loadingGateways && (
-          <div className="row align-center gap-1 mb-3"><Loader2 size={16} className="spin" /> <span className="small">Loading payment options…</span></div>
+          <div className="mb-3"><Loader variant="inline" size="sm" label="Loading payment options…" /></div>
         )}
 
         {!hasLoan && redirectMode && (

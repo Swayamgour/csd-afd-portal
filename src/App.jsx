@@ -5,7 +5,8 @@ import { AppShell } from './layouts/AppShell.jsx';
 import { ProtectedRoute } from './routes/ProtectedRoute.jsx';
 import { RoleRoute } from './routes/RoleRoute.jsx';
 import { ROLES } from './permissions/roles.js';
-import { LoadingState } from './components/common/States.jsx';
+import Loader from './components/common/Loader.jsx';
+
 
 // Public Storefront Pages (100% Preserved)
 const Home = lazy(() => import('./pages/Home.jsx'));
@@ -185,7 +186,7 @@ export default function App() {
   }, [pathname]);
 
   return (
-    <Suspense fallback={<LoadingState text="Loading certified portal module..." />}>
+    <Suspense fallback={<Loader label="Loading certified portal module..." />}>
       <Routes>
         {/* PUBLIC STOREFRONT LAYER */}
         <Route element={<PublicLayout />}>

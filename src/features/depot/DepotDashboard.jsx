@@ -11,6 +11,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useGetDemandsQuery, useGetOrdersQuery } from '../../redux/api/demandApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function DepotDashboard() {
   const { user } = useAuth();
@@ -168,10 +169,7 @@ export default function DepotDashboard() {
               }}
               disabled={fetchingDemands}
             >
-              <RefreshCw
-                size={14}
-                className={fetchingDemands ? 'depot-refresh-spin' : 'depot-refresh-icon'}
-              />
+              {fetchingDemands ? <Loader variant="inline" size="sm" /> : <RefreshCw size={14} className="depot-refresh-icon" />}
               {fetchingDemands ? 'Syncing...' : 'Sync Demands'}
             </Button>
             <Link to="/depot/demands">

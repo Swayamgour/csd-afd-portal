@@ -9,6 +9,7 @@ import { useGetOemsQuery, useGetDealersQuery, useGetDealerProductsQuery, useCrea
 import { useGetProductsQuery } from '../../redux/api/productApi.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ROLES } from '../../permissions/roles.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function DealerProducts() {
   const { user } = useAuth();
@@ -157,7 +158,7 @@ export default function DealerProducts() {
         ]}
         actions={
           <Button variant="outline" size="sm" onClick={() => refetchMappings()} disabled={refreshingMappings}>
-            <RefreshCw size={14} className={`mr-xs ${refreshingMappings ? 'spin-icon' : ''}`} />
+            {refreshingMappings ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
             {refreshingMappings ? 'Syncing...' : 'Sync Authorizations'}
           </Button>
         }
@@ -252,10 +253,7 @@ export default function DealerProducts() {
           }
         >
           {loadingProducts || loadingMappings ? (
-            <div className="p-8 text-center text-slate-500">
-              <RefreshCw size={24} className="spin-icon mx-auto mb-2 text-brand" />
-              Loading authorized catalog for selected dealer...
-            </div>
+            <Loader label="Loading authorized catalog for selected dealer" />
           ) : displayedProducts.length === 0 ? (
             <div className="p-8 text-center text-slate-500">
               No products found under this OEM. Please check product catalog.

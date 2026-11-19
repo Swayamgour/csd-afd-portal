@@ -1,6 +1,9 @@
 import React from 'react';
-import { Loader2, SearchX } from 'lucide-react';
+import {
+  SearchX
+} from 'lucide-react';
 import Pagination from './Pagination.jsx';
+import Loader from './Loader.jsx';
 
 export function DataTable({
   columns = [],
@@ -38,10 +41,7 @@ export function DataTable({
             {loading ? (
               <tr>
                 <td colSpan={columns.length} className="table-state-cell">
-                  <div className="table-loader">
-                    <Loader2 className="spin" size={24} aria-hidden="true" />
-                    <span>Loading records...</span>
-                  </div>
+                  <Loader label="Loading records" />
                 </td>
               </tr>
             ) : data.length === 0 ? (

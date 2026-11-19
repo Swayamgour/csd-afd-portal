@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import {
-  User, CreditCard, Mail, Lock, Phone, IdCard, ShieldCheck, CheckCircle2, Clock, AlertCircle, Loader2, Eye, EyeOff,
+  User, CreditCard, Mail, Lock, Phone, IdCard, ShieldCheck, CheckCircle2, Clock, AlertCircle, Eye, EyeOff
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath } from '../../permissions/roles.js';
@@ -13,6 +13,7 @@ import {
 } from '../../redux/api/authApi.js';
 import EmailOtpModal from '../../components/modals/EmailOtpModal.jsx';
 import { digilockerMessage } from '../../utils/digilocker.js';
+import Loader from '../../components/common/Loader.jsx';
 
 const EMPLOYMENT = [
   { label: 'Serving', value: 'SERVING' },
@@ -354,7 +355,7 @@ export default function DigiLockerRegisterForm({ ticket, info }) {
       <p className="err" role={errs.agree ? 'alert' : undefined}>{errs.agree && `⚠ ${errs.agree}`}</p>
 
       <button className="btn big wide row align-center justify-center gap-1" type="submit" disabled={sending || registering} style={{ display: 'flex' }}>
-        {(sending || registering) && <Loader2 size={18} className="spin" />}
+        {(sending || registering) && <Loader variant="inline" size="sm" />}
         <span>{sending ? 'Sending verification code…' : 'Verify email & complete registration'}</span>
       </button>
 

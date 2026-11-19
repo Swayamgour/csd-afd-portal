@@ -7,8 +7,9 @@ import { Button } from '../../components/common/Button';
 import { SearchInput } from '../../components/common/SearchInput';
 import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
-import { LoadingState } from '../../components/common/States';
+
 import { useGetKbArticlesQuery, useCreateKbArticleMutation } from '../../redux/api/ticketApi';
+import Loader from '../../components/common/Loader.jsx';
 
 export const HelpdeskKnowledgeBase = () => {
   const [query, setQuery] = useState('');
@@ -98,7 +99,7 @@ export const HelpdeskKnowledgeBase = () => {
 
       {/* ARTICLE GRID */}
       {loading ? (
-        <LoadingState text="Loading certified operating guidelines..." />
+        <Loader label="Loading certified operating guidelines..." />
       ) : filteredArticles.length === 0 ? (
         <Card>
           <p className="csd-notif-empty">

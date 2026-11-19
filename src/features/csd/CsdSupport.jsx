@@ -9,6 +9,7 @@ import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatDate } from '../../utils/formatters.js';
 import { useGetTicketsQuery, useUpdateTicketStatusMutation, useAddTicketMessageMutation } from '../../redux/api/ticketApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function CsdSupport() {
   const [statusFilter, setStatusFilter] = useState('');
@@ -178,7 +179,7 @@ export default function CsdSupport() {
             disabled={isFetching}
             title="Refresh Tickets"
           >
-            <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+            {isFetching ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
             {isFetching ? 'Syncing...' : 'Sync Tickets'}
           </Button>
         }
@@ -255,10 +256,7 @@ export default function CsdSupport() {
       {/* Main Table */}
       <Card title="Grievance & Support Tickets" subtitle={`Showing ${tickets.length} database records`}>
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand mb-3" />
-            <p className="font-semibold text-sm">Loading tickets from server...</p>
-          </div>
+          <Loader label="Loading tickets from server" />
         ) : tickets.length === 0 ? (
           <div className="p-12 text-center text-slate-400">
             <HelpCircle className="w-12 h-12 mx-auto mb-2 text-slate-300" />

@@ -6,9 +6,10 @@ import { PageHeader } from '../../components/common/PageHeader.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { StatusBadge } from '../../components/common/StatusBadge.jsx';
 import { Tabs } from '../../components/common/Tabs.jsx';
-import { LoadingState, ErrorState } from '../../components/common/States.jsx';
+import { ErrorState } from '../../components/common/States.jsx';
 import { MASTER_ROLES, ROLE_LABELS } from '../../permissions/roles.js';
 import { useGetUserByIdQuery, useGetUsersQuery, useUpdateUserStatusMutation, useApproveUserMutation, useRejectUserMutation } from '../../redux/api/adminApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export function AdminUserDetail() {
   const { id } = useParams();
@@ -84,7 +85,7 @@ export function AdminUserDetail() {
   };
 
   if (isLoading) {
-    return <LoadingState text="Loading official user file..." />;
+    return <Loader label="Loading official user file..." />;
   }
 
   if (!user && !isLoading) {

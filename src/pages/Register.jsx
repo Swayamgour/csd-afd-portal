@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { RefreshCw, ArrowLeft, KeyRound, AlertCircle, Loader2 } from "lucide-react";
+import {
+  RefreshCw, ArrowLeft, KeyRound, AlertCircle
+} from "lucide-react";
 import AuthArt from "./AuthArt";
 
 import { useRegisterMutation, useSendOtpMutation, useCheckDuplicatesMutation } from "../redux/api/authApi";
@@ -8,6 +10,7 @@ import EmailOtpModal from "../components/modals/EmailOtpModal.jsx";
 import { makeCaptcha } from "../utils/captcha.js";
 import DigiLockerButton from "../components/common/DigiLockerButton.jsx";
 import { RegisterCardSection, RegisterServiceSection, RegisterIdentitySection, RegisterAccountSection, RegisterSuccessCard } from "../components/register";
+import Loader from '../components/common/Loader.jsx';
 
 const EMPLOYMENT = ["Serving", "Retired", "Defence Civilian"];
 const ORGS = ["Army", "Navy", "Air Force", "Defence Civilian / Other"];
@@ -682,7 +685,7 @@ export default function Register() {
           title={!canSubmit ? `${missingCount} required item(s) still pending` : undefined}
           style={{ display: "flex" }}
         >
-          {(isDispatchingOtp || isRegistering) && <Loader2 size={18} className="spin" />}
+          {(isDispatchingOtp || isRegistering) && <Loader variant="inline" size="sm" />}
           <span>
             {isDispatchingOtp
               ? "Validating & Sending Email OTP..."

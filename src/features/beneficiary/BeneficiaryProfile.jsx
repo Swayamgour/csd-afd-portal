@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { User, ShieldCheck, MapPin, FileCheck, CheckCircle2, Edit2, Save, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
+import {
+  User, ShieldCheck, MapPin, FileCheck, CheckCircle2, Edit2, Save, AlertCircle, RefreshCw
+} from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
@@ -9,6 +11,7 @@ import FileUpload from '../../components/common/FileUpload.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useGetMyProfileQuery, useUpdateMyProfileMutation, useUploadBeneficiaryDocumentMutation, useUploadFileMutation } from '../../redux/api/beneficiaryApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export function BeneficiaryProfile() {
   const { user: authUser } = useAuth();
@@ -154,12 +157,7 @@ export function BeneficiaryProfile() {
 
   if (isProfileLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-2" />
-          <p className="text-slate-600 text-sm">Loading verified beneficiary profile...</p>
-        </div>
-      </div>
+      <Loader variant="page" label="Loading verified beneficiary profile" />
     );
   }
 
@@ -603,7 +601,7 @@ export function BeneficiaryProfile() {
             />
             {(isUploadingFile || isAttachingDoc) && (
               <p className="text-brand text-xs mt-2 flex items-center gap-1 font-medium">
-                <Loader2 className="w-3 h-3 animate-spin" /> Uploading and attaching to profile...
+                <Loader variant="inline" size="sm" label="Uploading and attaching to profile..." />
               </p>
             )}
           </div>

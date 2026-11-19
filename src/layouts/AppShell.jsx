@@ -3,10 +3,11 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import HeaderBar from './HeaderBar.jsx';
 import Breadcrumbs from './Breadcrumbs.jsx';
-import { LoadingState } from '../components/common/States.jsx';
+
 // Admin-only styles (single file). Every selector is scoped to .app-shell-root / .admin-portal,
 // so the public storefront is never affected.
 import '../styles/admin.css';
+import Loader from '../components/common/Loader.jsx';
 
 export function AppShell({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -36,9 +37,7 @@ export function AppShell({ children }) {
         <main id="portal-main" className="app-content-body" tabIndex={-1}>
           <Suspense
             fallback={
-              <div className="portal-content-loader-container">
-                <LoadingState text="Loading module..." />
-              </div>
+              <Loader variant="page" label="Loading module" />
             }
           >
             {children || <Outlet />}

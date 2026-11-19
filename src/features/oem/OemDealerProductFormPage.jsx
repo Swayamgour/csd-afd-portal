@@ -4,8 +4,9 @@ import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import { LoadingState } from '../../components/common/States.jsx';
+
 import { useGetOemDealersQuery, useGetOemProductsQuery, useCreateOemDealerProductMutation } from '../../redux/api/oemApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function OemDealerProductFormPage() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ export default function OemDealerProductFormPage() {
   if (isLoadingDealers || isLoadingProducts) {
     return (
       <div className="py-12">
-        <LoadingState text="Loading authorized dealerships and vehicle models..." />
+        <Loader label="Loading authorized dealerships and vehicle models..." />
       </div>
     );
   }

@@ -11,6 +11,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useGetOrdersQuery, useGetDemandsQuery } from '../../redux/api/demandApi.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function UrcDashboard() {
   const { user } = useAuth();
@@ -140,10 +141,7 @@ export default function UrcDashboard() {
               }}
               disabled={fetchingOrders}
             >
-              <RefreshCw
-                size={14}
-                className={`mr-xs ${fetchingOrders ? 'spin' : ''}`}
-              />
+              {fetchingOrders ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
               {fetchingOrders ? 'Syncing...' : 'Sync Orders'}
             </Button>
             <Link to="/urc/orders">

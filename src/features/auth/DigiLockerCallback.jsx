@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { AlertCircle, Loader2, ShieldCheck, ArrowLeft } from 'lucide-react';
+import {
+  AlertCircle, ShieldCheck, ArrowLeft
+} from 'lucide-react';
 import AuthArt from '../../pages/AuthArt.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getRoleNavigatePath } from '../../permissions/roles.js';
@@ -13,6 +15,7 @@ import {
 } from '../../redux/api/authApi.js';
 import { digilockerMessage, startDigiLocker } from '../../utils/digilocker.js';
 import DigiLockerRegisterForm from './DigiLockerRegisterForm.jsx';
+import Loader from '../../components/common/Loader.jsx';
 
 /**
  * Landing page for the DigiLocker round trip:
@@ -119,7 +122,7 @@ export default function DigiLockerCallback() {
       <div className="panel logincard authcard" role="status" aria-live="polite">
         {phase === 'working' && (
           <div className="row align-center justify-center gap-1" style={{ padding: '2rem 0' }}>
-            <Loader2 size={22} className="spin" aria-hidden />
+            <Loader variant="inline" size="md" />
             <span>
               {mode === 'LOGIN' ? 'Signing you in…' : mode === 'LINK' ? 'Linking your DigiLocker account…' : 'Verifying with DigiLocker…'}
             </span>

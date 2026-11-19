@@ -12,6 +12,7 @@ import { formatCurrency } from '../../utils/formatters.js';
 import { useGetProductsQuery, useGetCategoriesQuery, useUpdateProductMutation, useDeleteProductMutation, useCreateProductMutation, useImportProductsExcelMutation } from '../../redux/api/productApi.js';
 import { useGetOemsQuery } from '../../redux/api/orgApi.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function CsdProducts() {
   const navigate = useNavigate();
@@ -318,7 +319,7 @@ export default function CsdProducts() {
         actions={
           <div className="csd-toolbar-actions">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
-              <RefreshCw size={14} className={`mr-xs ${isFetching ? 'spin-icon' : ''}`} />
+              {isFetching ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
               {isFetching ? 'Syncing...' : 'Sync Products'}
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate('/csd/excel-import')}>
@@ -446,10 +447,7 @@ export default function CsdProducts() {
 
         {loadingProducts ? (
           <div className="table-state-cell">
-            <div className="table-loader">
-              <RefreshCw size={24} className="spin text-brand" />
-              <p className="table-loader-msg">Synchronizing catalogue from database...</p>
-            </div>
+            <Loader label="Synchronizing catalogue from database" />
           </div>
         ) : productsList.length === 0 ? (
           <div className="table-state-cell">

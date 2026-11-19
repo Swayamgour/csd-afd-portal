@@ -4,7 +4,7 @@ import { ArrowLeft, Building2, Save, AlertCircle, Mail, Lock } from 'lucide-reac
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import { LoadingState } from '../../components/common/States.jsx';
+
 import {
   useGetOemsQuery,
   useGetOemByIdQuery,
@@ -13,6 +13,7 @@ import {
   useCreateOrgAccountMutation,
 } from '../../redux/api/orgApi.js';
 import { LoginFields, emptyLogin, validateLogin, orgErrorMessage } from '../org/OrgLinkFields.jsx';
+import Loader from '../../components/common/Loader.jsx';
 
 export default function OemFormPage() {
   const { id } = useParams();
@@ -92,7 +93,7 @@ export default function OemFormPage() {
     }
   };
 
-  if (isEdit && isLoadingOem) return <LoadingState text="Loading OEM profile details..." />;
+  if (isEdit && isLoadingOem) return <Loader label="Loading OEM profile details..." />;
 
   return (
     <div className="csd-module-page">
