@@ -3,12 +3,10 @@
  * Communicates with backend Express REST API with standard authentication headers
  * and automated silent token refresh on 401.
  */
+import { API_BASE_URL } from '../config/env.js';
 import { getAccessToken, getRefreshToken, setTokens } from '../utils/tokenStorage.js';
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  (typeof window !== 'undefined' ? window.location.origin + '/api/v1' : '/api/v1');
+const BASE_URL = API_BASE_URL;
 
 const getHeaders = (extraHeaders = {}) => {
   const token = getAccessToken();

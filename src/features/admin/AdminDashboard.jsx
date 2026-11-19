@@ -6,37 +6,9 @@ import QuickActions from '../../components/common/QuickActions.jsx';
 import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import { Card } from '../../components/common/Card.jsx';
 import { Button } from '../../components/common/Button.jsx';
-import {
-  useGetAdminSummaryQuery,
-  useGetAdminAnalyticsQuery,
-  useGetAdminRecentDemandsQuery,
-  useGetAdminActivityQuery,
-  useGetUsersQuery,
-} from './adminApi.js';
-import { ROLE_LABELS } from '../../permissions/roles.js';
-import {
-  Users,
-  UserCheck,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
-  Eye,
-  Search,
-  Building2,
-  Store,
-  Warehouse,
-  Layers,
-  ShoppingBag,
-  TrendingUp,
-  IndianRupee,
-  Activity,
-  Package,
-  Calendar,
-  Shield,
-  FileCheck,
-  XCircle,
-} from 'lucide-react';
+import { useGetAdminSummaryQuery, useGetAdminAnalyticsQuery, useGetAdminRecentDemandsQuery, useGetAdminActivityQuery, useGetUsersQuery } from './adminApi.js';
+
+import { Users, UserCheck, Clock, CheckCircle2, RefreshCw, Building2, Store, Warehouse, Layers, ShoppingBag, IndianRupee, Package, Calendar, Shield, FileCheck, XCircle } from 'lucide-react';
 
 const toPctClass = (pct, prefix = 'w-pct') => `${prefix}-${Math.min(100, Math.max(0, Math.round(Number(pct || 0) / 5) * 5))}`;
 

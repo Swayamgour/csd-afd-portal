@@ -1,21 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  User,
-  ShieldCheck,
-  Award,
-  Phone,
-  Mail,
-  MapPin,
-  Lock,
-  FileCheck,
-  CheckCircle2,
-  Edit2,
-  Save,
-  Upload,
-  AlertCircle,
-  RefreshCw,
-  Loader2,
-} from 'lucide-react';
+import { User, ShieldCheck, MapPin, FileCheck, CheckCircle2, Edit2, Save, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
@@ -23,12 +7,7 @@ import Button from '../../components/common/Button.jsx';
 import DocumentViewer from '../../components/common/DocumentViewer.jsx';
 import FileUpload from '../../components/common/FileUpload.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import {
-  useGetMyProfileQuery,
-  useUpdateMyProfileMutation,
-  useUploadBeneficiaryDocumentMutation,
-  useUploadFileMutation,
-} from './beneficiaryApi.js';
+import { useGetMyProfileQuery, useUpdateMyProfileMutation, useUploadBeneficiaryDocumentMutation, useUploadFileMutation } from './beneficiaryApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 export function BeneficiaryProfile() {

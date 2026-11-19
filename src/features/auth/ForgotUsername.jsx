@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  Mail, ArrowLeft, Loader2, RefreshCw, KeyRound, CheckCircle2, AlertCircle, Clock, ShieldCheck, User
-} from 'lucide-react';
+import { Mail, ArrowLeft, Loader2, RefreshCw, KeyRound, CheckCircle2, AlertCircle, Clock, User } from 'lucide-react';
 import AuthArt from '../../pages/AuthArt.jsx';
 import { authService } from '../../services/auth.service.js';
 import { makeCaptcha } from '../../utils/captcha.js';

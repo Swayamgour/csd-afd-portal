@@ -1,26 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import {
-  ChevronRight,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  Building,
-  Store,
-  MapPin,
-  CreditCard,
-  Landmark,
-  User,
-  FileText,
-  Upload,
-  Lock,
-  ArrowRight,
-  ArrowLeft,
-  Copy,
-  Sparkles
-} from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { DocumentUpload } from '../components/common/DocumentUpload.jsx';
+
 import { useCreateDemandMutation } from '../features/demand/demandApi.js';
 import { useGetMyProfileQuery, useUploadFileMutation } from '../features/beneficiary/beneficiaryApi.js';
 import { useGetDepotsQuery, useGetDealersQuery, useGetUrcsQuery, useGetPriceZonesQuery, useGetAvailableStatesQuery } from '../features/org/orgApi.js';

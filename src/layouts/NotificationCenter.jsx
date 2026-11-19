@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { Bell, CheckCheck, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Bell, CheckCheck } from 'lucide-react';
+
 import Drawer from '../components/common/Drawer.jsx';
 import Button from '../components/common/Button.jsx';
-import {
-  useGetNotificationsQuery,
-  useMarkAllNotificationsReadMutation,
-  useMarkNotificationReadMutation,
-} from '../features/notifications/notificationApi.js';
+import { useGetNotificationsQuery, useMarkAllNotificationsReadMutation, useMarkNotificationReadMutation } from '../features/notifications/notificationApi.js';
 
 export default function NotificationCenter() {
   const [open, setOpen] = useState(false);

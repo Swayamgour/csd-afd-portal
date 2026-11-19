@@ -4,7 +4,7 @@ import { Card } from '../../components/common/Card';
 import { StatCard } from '../../components/common/StatCard';
 import { DataTable } from '../../components/common/DataTable';
 import { ExportButton } from '../../components/common/ExportButton';
-import { FilterBar } from '../../components/common/FilterBar';
+
 
 export const HelpdeskReports = () => {
   const [tierFilter, setTierFilter] = useState('ALL');

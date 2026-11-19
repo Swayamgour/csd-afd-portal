@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, FileText, Loader2, AlertCircle } from 'lucide-react';
+import { API_ORIGIN } from '../../config/env.js';
 import { getAccessToken } from '../../utils/tokenStorage.js';
 
 export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
@@ -25,11 +26,7 @@ export default function DocumentPreviewModal({ isOpen, onClose, doc }) {
     const fetchFile = async () => {
       try {
         const token = getAccessToken();
-        const backendBase = (
-          import.meta.env.VITE_API_BASE_URL ||
-          import.meta.env.VITE_API_URL ||
-          (typeof window !== 'undefined' ? window.location.origin : '')
-        ).replace(/\/api\/v1\/?$/, '');
+        const backendBase = API_ORIGIN;
         const fullUrl = doc.url.startsWith('http')
           ? doc.url
           : `${backendBase}${doc.url.startsWith('/') ? '' : '/'}${doc.url}`;

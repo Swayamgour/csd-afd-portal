@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { ShieldCheck, CheckCircle2, XCircle, ArrowRight, Info, Search, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight, Search, Loader2 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
-import Button from '../../components/common/Button.jsx';
+
 import { useGetProductsQuery, useCheckProductEligibilityMutation } from '../catalog/productApi.js';
 import { useGetMyProfileQuery } from './beneficiaryApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';

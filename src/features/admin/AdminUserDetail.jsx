@@ -1,41 +1,14 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import {
-  User,
-  ShieldCheck,
-  Calendar,
-  Star,
-  History,
-  FileText,
-  Mail,
-  Phone,
-  Globe,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  ArrowLeft,
-  Edit2,
-  Lock,
-  Unlock,
-  Building,
-  CreditCard,
-  Award
-} from 'lucide-react';
+import { User, ShieldCheck, Star, History, Clock, CheckCircle, XCircle, AlertTriangle, ArrowLeft, Edit2, Lock, Unlock } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
-import { Card } from '../../components/common/Card.jsx';
+
 import { Button } from '../../components/common/Button.jsx';
 import { StatusBadge } from '../../components/common/StatusBadge.jsx';
 import { Tabs } from '../../components/common/Tabs.jsx';
 import { LoadingState, ErrorState } from '../../components/common/States.jsx';
 import { MASTER_ROLES, ROLE_LABELS } from '../../permissions/roles.js';
-import {
-  useGetUserByIdQuery,
-  useGetUsersQuery,
-  useUpdateUserStatusMutation,
-  useApproveUserMutation,
-  useRejectUserMutation,
-} from './adminApi.js';
+import { useGetUserByIdQuery, useGetUsersQuery, useUpdateUserStatusMutation, useApproveUserMutation, useRejectUserMutation } from './adminApi.js';
 
 export function AdminUserDetail() {
   const { id } = useParams();

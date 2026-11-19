@@ -23,7 +23,6 @@ export default function OemFormPage() {
   const { data: oemsList } = useGetOemsQuery({}, { skip: !isEdit || Boolean(rawOem) });
   const { data: meta } = useGetOrgMetaQuery();
   const categories = meta?.categories || [];
-  console.log(categories);
 
   const [createOrgAccount, { isLoading: isCreating }] = useCreateOrgAccountMutation();
   const [updateOem, { isLoading: isUpdating }] = useUpdateOemMutation();

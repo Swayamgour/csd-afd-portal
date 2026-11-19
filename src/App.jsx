@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect } from 'react';
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { PublicLayout } from './layouts/PublicLayout.jsx';
 import { AppShell } from './layouts/AppShell.jsx';
 import { ProtectedRoute } from './routes/ProtectedRoute.jsx';

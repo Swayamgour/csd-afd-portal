@@ -3,7 +3,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { ROLE_SIDEBAR_NAV } from './navConfig.js';
 import { ROLE_LABELS, normalizeRole } from '../permissions/roles.js';
-import { ShieldCheck, ExternalLink, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ExternalLink, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Sidebar({
   isOpen,

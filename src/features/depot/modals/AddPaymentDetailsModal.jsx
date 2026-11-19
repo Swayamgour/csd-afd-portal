@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, FileText, CheckCircle2 } from 'lucide-react';
+import { X, FileText } from 'lucide-react';
 
 /**
  * AddPaymentDetailsModal (Fig. 5 in CSD Depot Manual)

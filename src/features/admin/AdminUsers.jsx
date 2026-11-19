@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
 import { Card } from '../../components/common/Card.jsx';
@@ -10,20 +10,7 @@ import { ExportButton } from '../../components/common/ExportButton.jsx';
 import { StatCard } from '../../components/common/StatCard.jsx';
 import { useGetUsersQuery, useUpdateUserStatusMutation } from './adminApi.js';
 import { MASTER_ROLES, ROLE_LABELS } from '../../permissions/roles.js';
-import {
-  Users,
-  UserCheck,
-  UserX,
-  Clock,
-  Eye,
-  Edit2,
-  Shield,
-  Plus,
-  RefreshCw,
-  Lock,
-  Unlock,
-  CheckCircle2
-} from 'lucide-react';
+import { Users, UserCheck, UserX, Clock, Eye, Edit2, Plus, Lock, Unlock, CheckCircle2 } from 'lucide-react';
 
 export const AdminUsers = () => {
   const navigate = useNavigate();

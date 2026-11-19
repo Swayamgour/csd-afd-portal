@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Layers, ShieldCheck, RefreshCw, Car, Bike, Refrigerator, CheckCircle } from 'lucide-react';
+import { Layers, ShieldCheck, RefreshCw, Car, Bike, Refrigerator } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatCard from '../../components/common/StatCard.jsx';

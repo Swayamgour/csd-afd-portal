@@ -1,19 +1,5 @@
 import React, { useState } from 'react';
-import {
-  MapPin,
-  Phone,
-  Mail,
-  Camera,
-  ExternalLink,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  FileText,
-  ShieldCheck,
-  RefreshCw,
-  Building,
-  UserCheck,
-} from 'lucide-react';
+import { MapPin, Phone, Mail, Camera, ExternalLink, CheckCircle2, XCircle, AlertTriangle, FileText, RefreshCw, Building, UserCheck } from 'lucide-react';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { STAGES, statusMeta, fmtDateTime, fileSrc, mapsLink } from './dealerRequestUtils.js';

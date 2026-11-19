@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Download, Truck, Store, Calendar, ShieldCheck, MapPin, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';

@@ -1,34 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  Warehouse,
-  CheckCircle2,
-  Plus,
-  Edit2,
-  Eye,
-  RefreshCw,
-  Search,
-  Phone,
-  Mail,
-  MapPin,
-  Building,
-  X,
-} from 'lucide-react';
+import { CheckCircle2, Plus, Edit2, Eye, RefreshCw, Search, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import StatusBadge from '../../components/common/StatusBadge.jsx';
+
 import Button from '../../components/common/Button.jsx';
-import {
-  useGetDepotsQuery,
-  useUpdateDepotMutation,
-} from '../org/orgApi.js';
+import { useGetDepotsQuery, useGetPriceZonesQuery, useUpdateDepotMutation } from '../org/orgApi.js';
 
 export default function CsdDepots() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const { data: depots = [], isLoading: loading, isFetching: refreshing, refetch } = useGetDepotsQuery();
+  const { data: priceZones = [] } = useGetPriceZonesQuery();
   const [updateDepot] = useUpdateDepotMutation();
 
   const [searchQuery, setSearchQuery] = useState('');

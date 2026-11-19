@@ -1,41 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Save,
-  Package,
-  IndianRupee,
-  Layers,
-  Building2,
-  CheckCircle2,
-  AlertCircle,
-  Upload,
-  UploadCloud,
-  Image as ImageIcon,
-  Trash2,
-  Star,
-  Plus,
-  Loader2,
-  Link as LinkIcon,
-  Palette,
-} from 'lucide-react';
+import { ArrowLeft, Package, IndianRupee, Layers, CheckCircle2, AlertCircle, Upload, UploadCloud, Image as ImageIcon, Trash2, Star, Plus, Loader2, Link as LinkIcon, Palette } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
-import { Card } from '../../components/common/Card.jsx';
+
 import { Button } from '../../components/common/Button.jsx';
 import { LoadingState } from '../../components/common/States.jsx';
-import {
-  useGetProductByIdQuery,
-  useGetProductsQuery,
-  useGetCategoriesQuery,
-  useCreateProductMutation,
-  useUpdateProductMutation,
-  useUploadFilesMutation,
-} from './productApi.js';
-import {
-  useGetOemProductsQuery,
-  useCreateOemProductMutation,
-  useUpdateOemProductMutation,
-} from '../oem/oemApi.js';
+import { useGetProductByIdQuery, useGetProductsQuery, useGetCategoriesQuery, useCreateProductMutation, useUpdateProductMutation, useUploadFilesMutation } from './productApi.js';
+import { useGetOemProductsQuery, useCreateOemProductMutation, useUpdateOemProductMutation } from '../oem/oemApi.js';
 import { useGetOemsQuery } from '../org/orgApi.js';
 import { categoryKind, fieldsFor, KIND_LABEL, COMMON_COLORS } from './categoryFields.js';
 

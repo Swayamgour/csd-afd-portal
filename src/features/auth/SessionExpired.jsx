@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, LogIn } from 'lucide-react';
-import Button from '../../components/common/Button.jsx';
+
 
 export default function SessionExpired() {
   return (

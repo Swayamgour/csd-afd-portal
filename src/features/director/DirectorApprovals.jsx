@@ -1,30 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PageHeader } from '../../components/common/PageHeader.jsx';
+
 import { Card } from '../../components/common/Card.jsx';
 import { DataTable } from '../../components/common/DataTable.jsx';
 import { StatCard } from '../../components/common/StatCard.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetUsersQuery, useApproveUserMutation, useRejectUserMutation } from '../admin/adminApi.js';
-import {
-  Users,
-  UserCheck,
-  UserX,
-  Clock,
-  Eye,
-  Edit2,
-  RefreshCw,
-  Search,
-  X,
-  ShieldCheck,
-  CheckCircle,
-  AlertTriangle,
-  Building,
-  CreditCard,
-  FileCheck,
-  Check,
-} from 'lucide-react';
+import { UserX, Clock, Eye, Edit2, Search, X, ShieldCheck, CheckCircle, AlertTriangle, CreditCard, Check } from 'lucide-react';
 
 export function DirectorApprovals({ defaultTab = 'PENDING' }) {
   const navigate = useNavigate();
@@ -101,9 +84,7 @@ export function DirectorApprovals({ defaultTab = 'PENDING' }) {
 
   const handleUserUpdated = (updatedUser) => {
     showToast(`✓ Details updated for "${updatedUser.name || updatedUser.username}".`);
-    setUsers((prev) =>
-      prev.map((u) => ((u.id === updatedUser.id || u._id === updatedUser.id) ? { ...u, ...updatedUser } : u))
-    );
+    refetch();
   };
 
   // Metrics computation

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Settings, Shield, Bell, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import Input from '../../components/common/Input.jsx';
+
 
 export default function CsdSettings() {
   const [toast, setToast] = useState('');

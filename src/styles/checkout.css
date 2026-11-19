@@ -395,32 +395,8 @@
   font-weight: 500;
 }
 
-.beneficiary-read-only-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.85rem;
-}
-
-.beneficiary-field-box {
-  background: var(--color-slate-50);
-  border: 1px solid var(--color-slate-200);
-  border-radius: 8px;
-  padding: 0.65rem 0.85rem;
-}
-
-.beneficiary-field-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--color-slate-500);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 2px;
-}
-
 .beneficiary-field-value {
   font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--color-slate-900);
   word-break: break-word;
 }
 
@@ -755,30 +731,14 @@
   max-width: 840px;
 }
 
-@keyframes csdModalPop {
-  0% {
-    opacity: 0;
-    transform: scale(0.96) translateY(8px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
 .csd-modal-header {
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--color-slate-200);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--color-slate-50);
 }
 
 .csd-modal-title {
   margin: 0;
-  font-size: 1.12rem;
   font-weight: 700;
   color: var(--color-slate-900);
 }
@@ -808,8 +768,6 @@
 
 .csd-modal-footer {
   padding: 0.85rem 1.25rem;
-  border-top: 1px solid var(--color-slate-200);
-  background: var(--color-slate-50);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1043,56 +1001,6 @@
   color: var(--color-danger-dark);
   line-height: 1.5;
   margin: 0 0 0.75rem;
-}
-
-.modal-navy-header {
-  background: var(--color-navy) !important;
-  color: var(--color-white) !important;
-}
-
-.modal-navy-header .csd-modal-title {
-  color: var(--color-white) !important;
-}
-
-.modal-navy-header .csd-modal-close-btn {
-  color: var(--color-slate-400) !important;
-}
-
-.modal-navy-header .csd-modal-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: var(--color-white) !important;
-}
-
-.confirm-net-price-box {
-  background: var(--color-success-soft);
-  border: 1px solid var(--color-success-border);
-  border-radius: 8px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.confirm-disclaimer-box {
-  background: var(--color-warning-soft);
-  border: 1px solid var(--color-warning-border);
-  border-radius: 8px;
-  padding: 0.85rem;
-}
-
-.bank-info-table-box {
-  background: var(--color-slate-50);
-  padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-slate-300);
-  margin-bottom: 1.25rem;
-}
-
-.bank-info-grid {
-  display: grid;
-  grid-template-columns: 130px 1fr;
-  row-gap: 6px;
-  font-size: 0.88rem;
 }
 
 /* 5. General Form Elements & Utility Classes */
@@ -1367,24 +1275,13 @@
 }
 
 .demand-detail-section {
-  background: var(--color-white);
-  border: 1px solid var(--color-slate-200);
-  border-radius: 12px;
-  padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
 .demand-detail-section-title {
-  font-size: 1.05rem;
-  font-weight: 700;
   color: var(--color-slate-900);
-  margin: 0 0 1rem 0;
   padding-bottom: 0.65rem;
   border-bottom: 1px solid var(--color-slate-100);
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .demand-detail-meta-table {
@@ -1410,267 +1307,6 @@
 }
 
 /* 8. Online Payment Gateway (Razorpay Simulator) Styles */
-.razorpay-modal-box {
-  background: var(--color-white);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 440px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
-  animation: csdModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.razorpay-header {
-  background: var(--color-primary);
-  color: var(--color-white);
-  padding: 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.razorpay-header-merchant {
-  font-size: 0.82rem;
-  opacity: 0.9;
-}
-
-.razorpay-header-order {
-  font-size: 0.74rem;
-  opacity: 0.75;
-}
-
-.razorpay-header-amount {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin-top: 4px;
-}
-
-.razorpay-header-amount small {
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.razorpay-header-close {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  color: var(--color-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.razorpay-header-close:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
-.razorpay-content {
-  padding: 1.25rem;
-}
-
-.razorpay-success-body {
-  padding: 2.5rem 1.5rem;
-  text-align: center;
-}
-
-.razorpay-success-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--color-success-badge);
-  color: var(--color-success);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
-}
-
-.razorpay-success-title {
-  margin: 0 0 0.5rem;
-  font-size: 1.2rem;
-  color: var(--color-success-dark);
-  font-weight: 700;
-}
-
-.razorpay-success-desc {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--color-slate-500);
-}
-
-.razorpay-methods-label {
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: var(--color-slate-500);
-  text-transform: uppercase;
-  margin-bottom: 0.65rem;
-  letter-spacing: 0.04em;
-}
-
-.razorpay-methods-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-}
-
-.razorpay-method-card {
-  border: 1.5px solid var(--color-slate-200);
-  background: var(--color-white);
-  border-radius: 10px;
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  transition: all 0.15s ease;
-}
-
-.razorpay-method-card:hover {
-  border-color: var(--color-primary-border);
-  background: var(--color-slate-50);
-}
-
-.razorpay-method-card.selected {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
-}
-
-.razorpay-method-text {
-  flex: 1;
-}
-
-.razorpay-method-title {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--color-slate-900);
-}
-
-.razorpay-method-desc {
-  font-size: 0.74rem;
-  color: var(--color-slate-500);
-}
-
-.razorpay-card-form {
-  background: var(--color-slate-50);
-  padding: 0.85rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-slate-200);
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.razorpay-input {
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border-radius: 6px;
-  border: 1px solid var(--color-slate-300);
-  font-size: 0.85rem;
-  box-sizing: border-box;
-  color: var(--color-slate-800);
-  background: var(--color-white);
-}
-
-.razorpay-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.razorpay-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-
-.razorpay-popular-banks-box {
-  background: var(--color-slate-50);
-  padding: 0.85rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-slate-200);
-  margin-bottom: 1rem;
-}
-
-.razorpay-popular-banks-title {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--color-slate-600);
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.razorpay-banks-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.4rem;
-  text-align: center;
-}
-
-.razorpay-bank-btn {
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: 1px solid var(--color-slate-300);
-  background: var(--color-white);
-  font-weight: 700;
-  font-size: 0.8rem;
-  color: var(--color-slate-700);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.razorpay-bank-btn:hover {
-  border-color: var(--color-primary-border);
-  color: var(--color-primary);
-}
-
-.razorpay-bank-btn.selected {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
-}
-
-.razorpay-pay-btn {
-  width: 100%;
-  background: var(--color-primary);
-  color: var(--color-white);
-  border: none;
-  padding: 0.75rem;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 6px -1px rgba(29, 78, 216, 0.3);
-  transition: background 0.15s ease;
-}
-
-.razorpay-pay-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.razorpay-pay-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.razorpay-secured-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 0.85rem;
-  font-size: 0.75rem;
-  color: var(--color-slate-500);
-}
 
 /* 9. Product Details Page (Procurement Form) Classes */
 .pdp-eyebrow-row {
@@ -1722,11 +1358,6 @@
   color: var(--color-navy);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.pdp-spec-header-sku {
-  font-size: 0.75rem;
-  color: var(--color-slate-500);
 }
 
 .pdp-spec-desc-text {
@@ -1860,190 +1491,7 @@
   opacity: 0.7;
 }
 
-.pdp-subrow-mt {
-  margin-top: 1rem;
-}
-
 /* 10. Modal Helper Specific Classes */
-.modal-header-with-icon {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.price-box-title {
-  font-size: 0.78rem;
-  color: var(--color-success-dark);
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.price-box-amount {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--color-success-dark);
-}
-
-.price-box-meta {
-  font-size: 0.8rem;
-  color: var(--color-slate-600);
-  text-align: right;
-}
-
-.account-type-badge {
-  background: var(--color-warning-badge);
-  color: var(--color-warning-dark);
-  padding: 0.35rem 0.65rem;
-  border-radius: 4px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  margin-bottom: 0.85rem;
-  display: inline-block;
-}
-
-.btn-modal-close {
-  padding: 0.5rem 1.25rem;
-  font-size: 0.86rem;
-}
-
-.btn-modal-submit-red {
-  background: var(--color-danger) !important;
-  color: var(--color-white) !important;
-  padding: 0.5rem 1.5rem !important;
-  font-size: 0.86rem !important;
-  border: none !important;
-  border-radius: 6px !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-}
-
-.btn-modal-submit-red:hover:not(:disabled) {
-  background: var(--color-danger-dark) !important;
-}
-
-.confirm-summary-box {
-  background: var(--color-slate-50);
-  padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-slate-200);
-  margin-bottom: 1rem;
-}
-
-.confirm-summary-title {
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
-  color: var(--color-navy);
-  font-weight: 700;
-}
-
-.confirm-summary-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.5rem;
-  font-size: 0.82rem;
-  color: var(--color-slate-600);
-}
-
-.confirm-grid-span-2 {
-  grid-column: span 2;
-}
-
-.confirm-net-amount-title {
-  font-size: 0.8rem;
-  color: var(--color-success-dark);
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.confirm-net-amount-val {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--color-success-dark);
-}
-
-.confirm-mode-meta {
-  text-align: right;
-}
-
-.confirm-mode-meta span {
-  font-size: 0.78rem;
-  color: var(--color-success-dark);
-}
-
-.confirm-mode-meta div {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--color-slate-900);
-}
-
-.confirm-disclaimer-label {
-  margin: 0;
-}
-
-.confirm-disclaimer-checkbox {
-  margin-top: 3px;
-}
-
-.confirm-disclaimer-text {
-  font-size: 0.84rem;
-  color: var(--color-warning-dark);
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.btn-confirm-submit {
-  padding: 0.55rem 1.5rem !important;
-  background: var(--color-primary);
-  color: var(--color-white);
-  cursor: pointer;
-}
-
-.btn-confirm-submit:disabled {
-  background: var(--color-slate-400) !important;
-  color: var(--color-white) !important;
-  cursor: not-allowed !important;
-}
-
-.bank-info-body {
-  line-height: 1.6;
-  font-size: 0.92rem;
-  color: var(--color-slate-800);
-}
-
-.bank-info-p-header {
-  margin: 0 0 1rem;
-  font-weight: 500;
-}
-
-.bank-info-p-footer {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--color-slate-600);
-}
-
-.bank-info-label-muted {
-  color: var(--color-slate-500);
-}
-
-.bank-info-ifsc-val {
-  color: var(--color-primary);
-}
-
-.bank-info-acc-val {
-  font-size: 1.05rem;
-  color: var(--color-navy);
-}
-
-.bank-info-price-val {
-  color: var(--color-success);
-  font-size: 1.1rem;
-}
-
-.bank-btn-ok {
-  background: var(--color-danger) !important;
-  color: var(--color-white) !important;
-  padding: 0.55rem 1.5rem !important;
-}
 
 .eligibility-body-center {
   text-align: center;
@@ -2086,74 +1534,7 @@
   background: var(--color-white);
 }
 
-.mb-1 {
-  margin-bottom: 1rem;
-}
-
-.mt-1 {
-  margin-top: 1rem;
-}
-
-.mt-125 {
-  margin-top: 1.25rem;
-}
-
 /* 11. Accessibility Font Size Resizer Controller (| A- A A+ |) */
-.font-resizer-control {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  user-select: none;
-  line-height: 1;
-}
-
-.font-resizer-sep {
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 300;
-  font-size: 0.95rem;
-  padding: 0 1px;
-}
-
-.font-resizer-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-white);
-  padding: 3px 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 4px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  letter-spacing: -0.2px;
-}
-
-.font-resizer-btn sup {
-  font-size: 0.72em;
-  line-height: 0;
-  vertical-align: super;
-  margin-left: 1px;
-  font-weight: 800;
-}
-
-.font-resizer-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--color-warning-border);
-}
-
-.font-resizer-btn.active {
-  color: var(--color-warning-border);
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: inset 0 -2px 0 var(--color-warning);
-}
-
-.font-resizer-btn:focus-visible {
-  outline: 2px solid var(--color-warning);
-  outline-offset: 1px;
-}
 
 /* 12. Product Display, Range Sliders & Storefront Interactive Controls */
 .range input[type="range"].range-pct-0 {

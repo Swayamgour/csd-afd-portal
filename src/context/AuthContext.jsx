@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { ROLES, ROLE_HOMES, getRoleNavigatePath, normalizeRole } from '../permissions/roles.js';
+import { getRoleNavigatePath, normalizeRole } from '../permissions/roles.js';
 import { ROLE_PERMISSIONS } from '../permissions/permissions.js';
+import { API_BASE_URL } from '../config/env.js';
 import { getAccessToken, setTokens, clearTokens } from '../utils/tokenStorage.js';
 
 const AuthContext = createContext(null);
@@ -13,10 +14,7 @@ export const useAuth = () => {
   return ctx;
 };
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  (typeof window !== 'undefined' ? window.location.origin + '/api/v1' : '/api/v1');
+const API_BASE = API_BASE_URL;
 
 // One in-flight GET /auth/me per token (React.StrictMode / re-renders can never double-call it)
 let meInflight = null; // { token, promise }
@@ -89,7 +87,6 @@ export function AuthProvider({ children }) {
           setUser(freshUser);
           localStorage.setItem('csd_auth_user', JSON.stringify(freshUser));
           localStorage.setItem('csd_auth_role', freshUser.role);
-          setCookie('csd_auth_role', freshUser.role, 7);
         }
       } else if (res.status === 401) {
         // Expired or invalid token

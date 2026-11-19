@@ -1,17 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  ArrowUpRight,
-  ArrowRight,
-  Headset,
-  Info,
-  Car,
-  Bike,
-  Refrigerator,
-  CircleCheck,
-  Phone,
-  FileText,
-} from "lucide-react";
+import { ArrowUpRight, ArrowRight, Headset, Info, Car, Bike, Refrigerator, CircleCheck, Phone, FileText } from "lucide-react";
 import Catalog from "../components/Catalog.jsx";
 import { Loader, UnavailableState, InlineNote } from "../components/common/States.jsx";
 import { useStoreProducts } from "../hooks/useStoreProducts.js";
@@ -66,8 +55,6 @@ export default function Home() {
   }, [isAuthenticated, role, roleHome, user, navigate]);
 
   // Category tiles built from real data (count + first available image); empty categories are not shown
-
-  console.log(CATEGORY_TILES);
 
   const cats = useMemo(
     () =>
@@ -174,7 +161,6 @@ export default function Home() {
             <ul className="grid3 cats">
               {cats.map((t, i) => (
                 <li key={t.key} className={i === 2 ? "wide2" : ""}>
-                  {console.log(cats)}
                   <Link className={`cat ${t.cls}`} to={t.to}>
                     <small>{t.group}</small>
                     <strong>{t.label}</strong>

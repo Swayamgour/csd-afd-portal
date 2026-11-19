@@ -1,30 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Store,
-  RefreshCw,
-  Search,
-  MapPin,
-  Phone,
-  Mail,
-  CheckCircle2,
-  Package,
-  Layers,
-  Building2,
-  Calendar,
-} from 'lucide-react';
+import { Store, RefreshCw, Search, Phone, Mail, Package, Building2 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import StatusBadge from '../../components/common/StatusBadge.jsx';
+
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import {
-  useGetOemDealersQuery,
-  useGetOemDealerByIdQuery,
-  useGetOemDealerProductsQuery,
-  useGetOemDealerAppointmentsQuery,
-} from './oemApi.js';
+import { useGetOemDealersQuery, useGetOemDealerByIdQuery, useGetOemDealerProductsQuery, useGetOemDealerAppointmentsQuery } from './oemApi.js';
 
 export default function OemDealers() {
   const [searchTerm, setSearchTerm] = useState('');

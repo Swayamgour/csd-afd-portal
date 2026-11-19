@@ -14,6 +14,7 @@ import { store } from './redux/store.js'
 import { StoreProvider } from './context/Store.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 
+import './styles/tokens.css'
 import './index.css'
 import './styles/theme.css'
 

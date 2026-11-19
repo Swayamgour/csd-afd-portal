@@ -1,30 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  Layers,
-  PlusCircle,
-  RefreshCw,
-  Search,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
-  X,
-  Store,
-  Package,
-} from 'lucide-react';
+import { PlusCircle, RefreshCw, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
-import {
-  useGetOemDealerProductsListQuery,
-  useUpdateOemDealerProductMutation,
-  useDeleteOemDealerProductMutation,
-  useGetOemDealersQuery,
-  useGetOemProductsQuery,
-} from './oemApi.js';
+import { useGetOemDealerProductsListQuery, useUpdateOemDealerProductMutation, useDeleteOemDealerProductMutation, useGetOemDealersQuery, useGetOemProductsQuery } from './oemApi.js';
 
 export default function OemDealerProducts() {
   const navigate = useNavigate();

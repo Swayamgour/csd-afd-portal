@@ -1,29 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  RefreshCw,
-  ArrowLeft,
-  KeyRound,
-  AlertCircle,
-  Loader2,
-} from "lucide-react";
+import { RefreshCw, ArrowLeft, KeyRound, AlertCircle, Loader2 } from "lucide-react";
 import AuthArt from "./AuthArt";
 
-import {
-  useRegisterMutation,
-  useSendOtpMutation,
-} from "../features/auth/authApi";
+import { useRegisterMutation, useSendOtpMutation } from "../features/auth/authApi";
 import EmailOtpModal from "../components/modals/EmailOtpModal.jsx";
 import { userService } from "../services/user.service.js";
 import { makeCaptcha } from "../utils/captcha.js";
 import DigiLockerButton from "../components/common/DigiLockerButton.jsx";
-import {
-  RegisterCardSection,
-  RegisterServiceSection,
-  RegisterIdentitySection,
-  RegisterAccountSection,
-  RegisterSuccessCard,
-} from "../components/register";
+import { RegisterCardSection, RegisterServiceSection, RegisterIdentitySection, RegisterAccountSection, RegisterSuccessCard } from "../components/register";
 
 const EMPLOYMENT = ["Serving", "Retired", "Defence Civilian"];
 const ORGS = ["Army", "Navy", "Air Force", "Defence Civilian / Other"];

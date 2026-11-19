@@ -1,17 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  RefreshCw,
-  Filter,
-  PlusCircle,
-  Edit3,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Send,
-  Eye,
-  FileSpreadsheet,
-} from 'lucide-react';
+import { RefreshCw, Filter, PlusCircle, Edit3, CheckCircle2, AlertCircle, X, Send, FileSpreadsheet } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
@@ -24,11 +13,7 @@ import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetCategoriesQuery } from '../catalog/productApi.js';
-import {
-  useGetOemProductsQuery,
-  useUpdateOemProductStatusMutation,
-  useImportOemProductsExcelMutation,
-} from './oemApi.js';
+import { useGetOemProductsQuery, useUpdateOemProductStatusMutation, useImportOemProductsExcelMutation } from './oemApi.js';
 
 export default function OemProducts() {
   const navigate = useNavigate();

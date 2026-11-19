@@ -1,18 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  HelpCircle,
-  ShieldAlert,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Search,
-  RefreshCw,
-  XCircle,
-  Eye,
-  MessageSquare,
-  X
-} from 'lucide-react';
+
+import { HelpCircle, Search, RefreshCw, Eye, MessageSquare, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
@@ -20,11 +8,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatDate } from '../../utils/formatters.js';
-import {
-  useGetTicketsQuery,
-  useUpdateTicketStatusMutation,
-  useAddTicketMessageMutation
-} from '../helpdesk/ticketApi.js';
+import { useGetTicketsQuery, useUpdateTicketStatusMutation, useAddTicketMessageMutation } from '../helpdesk/ticketApi.js';
 
 export default function CsdSupport() {
   const [statusFilter, setStatusFilter] = useState('');

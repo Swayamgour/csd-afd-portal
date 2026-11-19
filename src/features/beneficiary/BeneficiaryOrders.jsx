@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Truck, Eye, CheckCircle2, RefreshCw, AlertCircle } from 'lucide-react';
+import { Eye, RefreshCw, AlertCircle } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';

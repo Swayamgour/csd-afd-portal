@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { UploadCloud, FileText, CheckCircle2, Trash2, AlertCircle } from 'lucide-react';
+import { UploadCloud, FileText, Trash2, AlertCircle } from 'lucide-react';
 
 export default function FileUpload({
   label,

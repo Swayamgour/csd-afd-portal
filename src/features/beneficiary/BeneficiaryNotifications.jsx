@@ -1,14 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Bell, CheckCheck, ExternalLink, RefreshCw, AlertCircle } from 'lucide-react';
+
+import { Bell, CheckCheck, RefreshCw, AlertCircle } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
-import {
-  useGetNotificationsQuery,
-  useMarkNotificationReadMutation,
-  useMarkAllNotificationsReadMutation,
-} from '../notifications/notificationApi.js';
+import { useGetNotificationsQuery, useMarkNotificationReadMutation, useMarkAllNotificationsReadMutation } from '../notifications/notificationApi.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 export default function BeneficiaryNotifications() {

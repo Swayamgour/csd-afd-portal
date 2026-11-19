@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { DataTable } from '../../components/common/DataTable';
-import { StatusBadge } from '../../components/common/StatusBadge';
+
 import { FilterBar } from '../../components/common/FilterBar';
 import { ExportButton } from '../../components/common/ExportButton';
 

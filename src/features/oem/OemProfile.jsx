@@ -1,17 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Building2,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Edit3,
-  Phone,
-  Mail,
-  MapPin,
-  ShieldCheck,
-  User,
-  RefreshCw,
-} from 'lucide-react';
+import { CheckCircle2, AlertCircle, X, Edit3, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';

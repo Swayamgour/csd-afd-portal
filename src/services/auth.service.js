@@ -1,4 +1,5 @@
-import { setTokens, clearTokens } from '../utils/tokenStorage.js';
+import { setTokens, clearTokens, getAccessToken } from '../utils/tokenStorage.js';
+import { API_BASE_URL } from '../config/env.js';
 
 export const authService = {
   async verifyCredentials({ username, password }) {
@@ -7,7 +8,7 @@ export const authService = {
       throw new Error('Please enter both username and password.');
     }
 
-    const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/verify-credentials`, {
+    const apiRes = await fetch(`${API_BASE_URL}/auth/verify-credentials`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier: username.trim(), password })
@@ -32,7 +33,7 @@ export const authService = {
       throw new Error('Please enter both username and password.');
     }
 
-    const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/login`, {
+    const apiRes = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier: username.trim(), password })
@@ -86,7 +87,7 @@ export const authService = {
   },
 
   async requestPasswordReset({ identifier, mobile, email }) {
-    const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/forgot-password`, {
+    const apiRes = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, mobile, email })
@@ -99,7 +100,7 @@ export const authService = {
   },
 
   async resetPassword({ identifier, mobile, email, target, otp, newPassword }) {
-    const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/reset-password`, {
+    const apiRes = await fetch(`${API_BASE_URL}/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, mobile, email, target, otp, newPassword })
@@ -112,7 +113,7 @@ export const authService = {
   },
 
   async requestForgotUsername({ email }) {
-    const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/forgot-username`, {
+    const apiRes = await fetch(`${API_BASE_URL}/auth/forgot-username`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: (email || '').trim() })
@@ -125,7 +126,7 @@ export const authService = {
   },
 
   async verifyForgotUsername({ email, otp }) {
-    const apiRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/verify-forgot-username`, {
+    const apiRes = await fetch(`${API_BASE_URL}/auth/verify-forgot-username`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: (email || '').trim(), otp: (otp || '').trim() })
@@ -139,8 +140,8 @@ export const authService = {
 
   async logout() {
     try {
-      const token = localStorage.getItem('csd_auth_token');
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/logout`, {
+      const token = getAccessToken();
+      await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

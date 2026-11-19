@@ -1,13 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  MessageSquare,
-  Clock,
-  ShieldAlert,
-  CheckCircle2,
-  Award,
-  RefreshCw,
-} from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle2, Award, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import QuickActions from '../../components/common/QuickActions.jsx';
 import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';

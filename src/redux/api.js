@@ -1,10 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { API_BASE_URL } from "../config/env.js";
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "../utils/tokenStorage.js";
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  (typeof window !== "undefined" ? window.location.origin + "/api/v1" : "/api/v1");
+const BASE_URL = API_BASE_URL;
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
@@ -68,8 +66,9 @@ const requestTokenRefresh = async (refreshToken) => {
   }
 };
 
-const clearSessionAndRedirect = () => {
+const clearSessionAndRedirect = (apiInstance) => {
   clearTokens();
+  try { apiInstance?.dispatch?.({ type: "auth/logout" }); } catch { /* ignore */ }
   localStorage.removeItem("csd_auth_user");
   localStorage.removeItem("csd_auth_role");
 
@@ -124,7 +123,7 @@ const baseQueryWithReauth = async (args, apiInstance, extraOptions) => {
       }
 
       // No refresh token or refresh failed: drop stale session and redirect if protected
-      clearSessionAndRedirect();
+      clearSessionAndRedirect(apiInstance);
     }
   }
 

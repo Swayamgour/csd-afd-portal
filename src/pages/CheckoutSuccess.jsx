@@ -1,20 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import {
-  CheckCircle2,
-  FileText,
-  Building,
-  Store,
-  MapPin,
-  CreditCard,
-  ArrowRight,
-  ShoppingBag,
-  ExternalLink,
-  ShieldCheck,
-  AlertTriangle,
-  Download,
-  Printer
-} from 'lucide-react';
+import { CheckCircle2, FileText, Building, Store, CreditCard, ArrowRight, ShoppingBag, ShieldCheck } from 'lucide-react';
 
 export default function CheckoutSuccess() {
   const location = useLocation();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Filter, RotateCcw } from 'lucide-react';
-import Button from './Button.jsx';
+
+
 
 export function FilterBar({
   children,

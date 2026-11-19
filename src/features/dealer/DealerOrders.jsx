@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { Truck, CheckCircle2, Download, Check, AlertCircle } from 'lucide-react';
+import { Truck, CheckCircle2, Check } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
-import {
-  useGetOrdersQuery,
-  useUpdateOrderStatusMutation
-} from '../demand/demandApi.js';
+import { useGetOrdersQuery, useUpdateOrderStatusMutation } from '../demand/demandApi.js';
 
 export default function DealerOrders() {
   const { data: ordersData, isLoading, refetch } = useGetOrdersQuery();

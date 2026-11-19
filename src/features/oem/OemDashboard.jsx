@@ -1,17 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  Package,
-  Truck,
-  CheckCircle2,
-  RefreshCw,
-  Store,
-  FileText,
-  Clock,
-  Layers,
-  ArrowRight,
-  TrendingUp,
-} from 'lucide-react';
+import { Package, Truck, RefreshCw, Store, FileText } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import QuickActions from '../../components/common/QuickActions.jsx';
 import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';

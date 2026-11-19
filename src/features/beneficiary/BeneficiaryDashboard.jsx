@@ -1,19 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  ShieldCheck,
-  FileText,
-  Truck,
-  CreditCard,
-  PlusCircle,
-  HelpCircle,
-  Clock,
-  ArrowRight,
-  AlertCircle,
-  RefreshCw,
-  CheckCircle,
-} from 'lucide-react';
-import PageHeader from '../../components/common/PageHeader.jsx';
+import { ShieldCheck, FileText, Truck, CreditCard, PlusCircle, Clock, ArrowRight, AlertCircle, RefreshCw, CheckCircle } from 'lucide-react';
+
 import QuickActions from '../../components/common/QuickActions.jsx';
 import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import StatCard from '../../components/common/StatCard.jsx';

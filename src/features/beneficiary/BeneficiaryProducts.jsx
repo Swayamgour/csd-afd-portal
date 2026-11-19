@@ -3,17 +3,10 @@ import { Link } from 'react-router-dom';
 import { Clock, ShieldCheck, ShoppingCart } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
-import Button from '../../components/common/Button.jsx';
+
 import DataTable from '../../components/common/DataTable.jsx';
 import CatalogToolbar from '../../components/common/CatalogToolbar.jsx';
-import ProductGrid, {
-  ProductCell,
-  CategoryBadge,
-  PriceCell,
-  getProductBrand,
-  getProductPrice,
-  getProductMrp
-} from '../../components/common/ProductGrid.jsx';
+import ProductGrid, { ProductCell, CategoryBadge, PriceCell, getProductBrand, getProductPrice, getProductMrp } from '../../components/common/ProductGrid.jsx';
 import { ErrorState } from '../../components/common/States.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext';

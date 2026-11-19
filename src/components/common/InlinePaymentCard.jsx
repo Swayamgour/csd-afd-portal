@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Landmark, AlertCircle, CheckCircle2, Upload, FileText } from 'lucide-react';
+import { Landmark, AlertCircle, CheckCircle2, FileText } from 'lucide-react';
 import Button from './Button.jsx';
 import { useUploadFileMutation } from '../../features/beneficiary/beneficiaryApi.js';
 import { useSubmitDirectTransferMutation } from '../../features/payment/paymentApi.js';

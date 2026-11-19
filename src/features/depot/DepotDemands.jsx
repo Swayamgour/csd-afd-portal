@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { RefreshCw, Search, Eye } from 'lucide-react';
+import { RefreshCw, Search } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import DepotDemandActions from './DepotDemandActions.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
-import { getStatusLabel, fmtINR, upper, hasPaymentDetails, hasSupplyOrderDocs } from '../../utils/demandStatus.js';
+import { fmtINR, upper, hasPaymentDetails, hasSupplyOrderDocs } from '../../utils/demandStatus.js';
 
 const TABS = [
   { key: 'all', label: 'All', test: () => true },

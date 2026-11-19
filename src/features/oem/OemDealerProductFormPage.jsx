@@ -1,23 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Building2,
-  Car,
-  Clock,
-  Save,
-  AlertCircle,
-  ShieldCheck,
-} from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import { LoadingState } from '../../components/common/States.jsx';
-import {
-  useGetOemDealersQuery,
-  useGetOemProductsQuery,
-  useCreateOemDealerProductMutation,
-} from './oemApi.js';
+import { useGetOemDealersQuery, useGetOemProductsQuery, useCreateOemDealerProductMutation } from './oemApi.js';
 
 export default function OemDealerProductFormPage() {
   const navigate = useNavigate();

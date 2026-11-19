@@ -1,21 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  CreditCard,
-  ShieldCheck,
-  Download,
-  ExternalLink,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
-  Search,
-  Filter,
-  FileText,
-  Clock,
-  Landmark,
-  Upload,
-  ArrowUpRight,
-} from 'lucide-react';
+import { CreditCard, Download, CheckCircle2, AlertCircle, RefreshCw, Search, Filter, FileText, Clock, Landmark, Upload } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';

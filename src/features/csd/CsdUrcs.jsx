@@ -1,28 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  Shield,
-  Warehouse,
-  CheckCircle2,
-  Plus,
-  Edit2,
-  Eye,
-  RefreshCw,
-  Search,
-  Phone,
-  Mail,
-  MapPin,
-  X,
-} from 'lucide-react';
+import { Warehouse, CheckCircle2, Plus, Edit2, Eye, RefreshCw, Search, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import StatusBadge from '../../components/common/StatusBadge.jsx';
+
 import Button from '../../components/common/Button.jsx';
-import {
-  useGetUrcsQuery,
-  useUpdateUrcMutation,
-} from '../org/orgApi.js';
+import { useGetUrcsQuery, useUpdateUrcMutation } from '../org/orgApi.js';
 
 export default function CsdUrcs() {
   const navigate = useNavigate();

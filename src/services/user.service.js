@@ -1,4 +1,4 @@
-import { apiClient } from './apiClient.js';
+
 import { getAccessToken } from '../utils/tokenStorage.js';
 import { API_BASE_URL } from '../config/env.js';
 
@@ -98,7 +98,7 @@ export const userService = {
    */
   async getUsers(filter = {}) {
     try {
-      const token = localStorage.getItem('csd_auth_token');
+      const token = getAccessToken();
       const params = new URLSearchParams();
       if (filter.limit) params.set('limit', filter.limit);
       else params.set('limit', '200');

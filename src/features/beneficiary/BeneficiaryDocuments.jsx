@@ -4,7 +4,7 @@ import Card from '../../components/common/Card.jsx';
 import DocumentViewer from '../../components/common/DocumentViewer.jsx';
 import FileUpload from '../../components/common/FileUpload.jsx';
 import { useGetMyProfileQuery, useUploadBeneficiaryDocumentMutation, useUploadFileMutation } from './beneficiaryApi.js';
-import { Loader2, AlertCircle, CheckCircle2, Shield, FileText } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, FileText } from 'lucide-react';
 import { getErrorMessage } from '../../utils/apiError.js';
 
 export default function BeneficiaryDocuments() {

@@ -1,32 +1,19 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import {
-  FileText,
-  Truck,
-  CreditCard,
-  Download,
-  AlertCircle,
-  CheckCircle2,
-  ArrowLeft,
-  XCircle,
-  Building,
-  Store,
-  RefreshCw,
-  Loader2,
-} from 'lucide-react';
+import { CreditCard, AlertCircle, CheckCircle2, ArrowLeft, XCircle, Building, Store, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Timeline from '../../components/common/Timeline.jsx';
-import DocumentViewer from '../../components/common/DocumentViewer.jsx';
+
 import { LoadingState, EmptyState } from '../../components/common/States.jsx';
 import { useGetDemandByIdQuery, useCancelDemandMutation } from '../demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../payment/paymentApi.js';
 import InlinePaymentCard from '../../components/common/InlinePaymentCard.jsx';
 import OnlinePaymentCard from '../../components/common/OnlinePaymentCard.jsx';
 import { getErrorMessage } from '../../utils/apiError.js';
-import { isPayable, canCancel, getStatusLabel, paymentStatusLabel, paymentMethodLabel } from '../../utils/demandStatus.js';
+import { isPayable, canCancel, paymentStatusLabel } from '../../utils/demandStatus.js';
 
 export default function BeneficiaryDemandDetail() {
   const { id } = useParams();
@@ -84,7 +71,7 @@ export default function BeneficiaryDemandDetail() {
   const handleCancel = async () => {
     try {
       await cancelDemandMutation({ id, reason: cancelReason }).unwrap();
-      setCancelModalOpen(false);
+      setShowCancelPrompt(false);
       showToast('success', 'Demand has been cancelled successfully.');
       refetch();
     } catch (err) {

@@ -1,16 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import {
-  SlidersHorizontal,
-  X,
-  LayoutGrid,
-  Rows3,
-  Car,
-  Bike,
-  Refrigerator,
-  Star,
-  Check,
-} from "lucide-react";
+import { SlidersHorizontal, X, LayoutGrid, Rows3, Car, Bike, Refrigerator, Check } from "lucide-react";
 import ProductCard from "./ProductCard.jsx";
 import { Loader, EmptyState, UnavailableState } from "./common/States.jsx";
 import { useStoreProducts } from "../hooks/useStoreProducts.js";

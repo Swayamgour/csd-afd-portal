@@ -1,32 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  Store,
-  Building2,
-  CheckCircle2,
-  Plus,
-  Edit2,
-  Eye,
-  RefreshCw,
-  Search,
-  MapPin,
-  Phone,
-  Mail,
-  AlertCircle,
-  ShieldCheck,
-  X,
-} from 'lucide-react';
+import { CheckCircle2, Plus, Edit2, Eye, RefreshCw, Search, ShieldCheck, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
-import StatusBadge from '../../components/common/StatusBadge.jsx';
+
 import Button from '../../components/common/Button.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import {
-  useGetDealersQuery,
-  useGetOemsQuery,
-  useUpdateDealerMutation,
-} from '../org/orgApi.js';
+import { useGetDealersQuery, useGetOemsQuery, useUpdateDealerMutation } from '../org/orgApi.js';
 
 export default function CsdDealers() {
   const navigate = useNavigate();

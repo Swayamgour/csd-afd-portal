@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Lock, Bell, Shield, Smartphone, Mail, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Shield, Smartphone, Mail, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';

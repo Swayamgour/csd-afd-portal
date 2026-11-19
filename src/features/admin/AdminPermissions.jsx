@@ -4,7 +4,7 @@ import { Card } from '../../components/common/Card';
 import { DataTable } from '../../components/common/DataTable';
 import { SearchInput } from '../../components/common/SearchInput';
 import { PERMISSIONS, ROLE_PERMISSIONS } from '../../permissions/permissions';
-import { ROLES, ROLE_LABELS } from '../../permissions/roles';
+import { ROLE_LABELS } from '../../permissions/roles';
 
 export const AdminPermissions = () => {
   const [search, setSearch] = useState('');

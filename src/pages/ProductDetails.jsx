@@ -1,66 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import {
-  RefreshCw,
-  ShoppingCart,
-  Copy,
-  Heart,
-  Check,
-  ChevronRight,
-  ShieldCheck,
-  BadgePercent,
-  Truck,
-  Fuel,
-  Gauge,
-  Zap,
-  Cog,
-  Package,
-  Armchair,
-  Disc3,
-  Palette,
-  CircleDollarSign,
-  Share2,
-  CalendarCheck,
-  Cpu,
-  BadgeCheck,
-  ArrowRight,
-  Eye,
-  AlertCircle,
-  Building2,
-  Store,
-  Lock,
-} from "lucide-react";
-import { Stars } from "../components/ProductCard.jsx";
+import { ShoppingCart, Check, ChevronRight, ShieldCheck, BadgePercent, Fuel, Gauge, Zap, Cog, Package, Armchair, Disc3, CircleDollarSign, Cpu, BadgeCheck, ArrowRight, Lock } from "lucide-react";
+
 import ProductCard from "../components/ProductCard.jsx";
 import { Loader, EmptyState, UnavailableState } from "../components/common/States.jsx";
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-import PriceLock from "../components/PriceLock.jsx";
+
 import { useStoreProducts } from "../hooks/useStoreProducts.js";
 import ProductGallery from "../components/product/ProductGallery.jsx";
 import ProductTabs from "../components/product/ProductTabs.jsx";
 import ProductBuyBox from "../components/product/ProductBuyBox.jsx";
-import {
-  CAT_LABEL,
-  CAT_PLURAL,
-  inr,
-  priceText,
-  priceFrom,
-  rupees,
-  onImgError,
-} from "../data/utils.js";
-import {
-  useGetProductByIdQuery,
-  useCheckProductEligibilityMutation,
-  useGetProductOptionsQuery,
-} from "../features/catalog/productApi.js";
-import {
-  useGetAvailableStatesQuery,
-  useGetStateDealersQuery,
-  useGetStateDepotsQuery,
-  useGetDepotUrcsQuery,
-  useGetStateProductPriceQuery,
-} from "../features/org/orgApi.js";
+import { CAT_LABEL, CAT_PLURAL, inr, priceFrom, rupees, onImgError } from "../data/utils.js";
+import { useGetProductByIdQuery, useCheckProductEligibilityMutation } from "../features/catalog/productApi.js";
+import { useGetAvailableStatesQuery, useGetStateDealersQuery, useGetStateDepotsQuery, useGetDepotUrcsQuery, useGetStateProductPriceQuery } from "../features/org/orgApi.js";
 import { DealerDetailsModal } from "../components/modals/DealerDetailsModal.jsx";
 import { URCDetailsModal } from "../components/modals/URCDetailsModal.jsx";
 import { EligibilityModal } from "../components/modals/EligibilityModal.jsx";

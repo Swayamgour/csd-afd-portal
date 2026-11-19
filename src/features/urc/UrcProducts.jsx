@@ -7,7 +7,7 @@ import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
 import CatalogToolbar from '../../components/common/CatalogToolbar.jsx';
 import { ProductCell, CategoryBadge, PriceCell } from '../../components/common/ProductGrid.jsx';
-import { formatCurrency } from '../../utils/formatters.js';
+
 import { useGetProductsQuery, useGetCategoriesQuery } from '../catalog/productApi.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 

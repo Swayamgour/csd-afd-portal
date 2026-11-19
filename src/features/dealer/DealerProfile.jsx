@@ -2,7 +2,7 @@ import React from 'react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { Store, ShieldCheck, MapPin, Phone, Mail, FileText, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export default function DealerProfile() {
   const { user } = useAuth();

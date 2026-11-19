@@ -1,21 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Save,
-  User,
-  Mail,
-  Phone,
-  ShieldCheck,
-  CreditCard,
-  Building,
-  CheckCircle2,
-  AlertCircle
-} from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
-import { Card } from '../../components/common/Card.jsx';
+
 import { Button } from '../../components/common/Button.jsx';
-import { Input } from '../../components/common/Input.jsx';
+
 import { LoadingState } from '../../components/common/States.jsx';
 import { MASTER_ROLES } from '../../permissions/roles.js';
 import { useGetUserByIdQuery, useGetUsersQuery, useUpdateUserMutation } from './adminApi.js';

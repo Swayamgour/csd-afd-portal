@@ -1,27 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Search,
-  CheckCircle2,
-  XCircle,
-  FileText,
-  Download,
-  Eye,
-  RefreshCw,
-  Building2,
-  Store,
-  Warehouse,
-  Package,
-  CreditCard,
-  ExternalLink,
-  X
-} from 'lucide-react';
+import { Search, FileText, Eye, RefreshCw, Warehouse, Package, ExternalLink, X } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { formatCurrency, formatDate } from '../../utils/formatters.js';
+import { formatCurrency } from '../../utils/formatters.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetDemandsQuery } from '../demand/demandApi.js';
 

@@ -1,28 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  Search,
-  Filter,
-  Eye,
-  FileText,
-  Upload,
-  CreditCard,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  XCircle,
-  ChevronRight,
-  Download,
-  Info,
-  Calendar,
-  Building,
-  RefreshCw,
-  Plus
-} from 'lucide-react';
+import { Search, FileText, CreditCard, Info, RefreshCw, Plus } from 'lucide-react';
 import { useGetDemandsQuery, useCancelDemandMutation } from '../features/demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { isPayable, canCancel, getStatusLabel, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
+import { isPayable, canCancel, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
 import { useDebounce } from '../hooks/useDebounce.js';
 
 export default function Demands() {
@@ -41,6 +23,16 @@ export default function Demands() {
   } = useGetDemandsQuery({ q: debouncedSearch || undefined });
 
   const [cancelDemand] = useCancelDemandMutation();
+  const handleCancelDemand = async (demandId) => {
+    if (!window.confirm('Are you sure you want to cancel this demand?')) return;
+    try {
+      await cancelDemand({ id: demandId, reason: 'Cancelled by beneficiary' }).unwrap();
+      refetch();
+    } catch (err) {
+      window.alert(err?.data?.message || err?.message || 'Failed to cancel demand.');
+    }
+  };
+
   const [submitDirectTransfer] = useSubmitDirectTransferMutation();
 
   const demands = (demandsData?.items || []).map((d) => ({

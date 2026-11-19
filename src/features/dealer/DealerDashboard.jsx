@@ -1,33 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { API_ORIGIN } from '../../config/env.js';
-import { Link, useNavigate } from 'react-router-dom';
-import {
-  Store,
-  Truck,
-  Users,
-  CheckCircle2,
-  FileCheck,
-  ShieldCheck,
-  Clock,
-  AlertTriangle,
-  FileText,
-  Search,
-  ExternalLink,
-  Eye,
-  Check,
-  X,
-  Phone,
-  Mail,
-  MapPin,
-  Car,
-  Calendar,
-  Sparkles,
-  RefreshCw,
-  Building2,
-  ShieldAlert,
-  Palette,
-} from 'lucide-react';
-import PageHeader from '../../components/common/PageHeader.jsx';
+import { useNavigate } from 'react-router-dom';
+import { Truck, CheckCircle2, FileCheck, ShieldCheck, Clock, AlertTriangle, FileText, Eye, Check, X, Phone, Mail, MapPin, RefreshCw, Palette } from 'lucide-react';
+import DocumentPreviewModal from '../../components/common/DocumentPreviewModal.jsx';
+
 import QuickActions from '../../components/common/QuickActions.jsx';
 import { DASHBOARD_ACTIONS } from '../../components/common/dashboardActions.js';
 import StatCard from '../../components/common/StatCard.jsx';
@@ -36,12 +12,7 @@ import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import {
-  useGetDemandsQuery,
-  useGetOrdersQuery,
-  useDealerVerifyDemandMutation,
-  useUpdateOrderStatusMutation
-} from '../demand/demandApi.js';
+import { useGetDemandsQuery, useGetOrdersQuery, useDealerVerifyDemandMutation, useUpdateOrderStatusMutation } from '../demand/demandApi.js';
 
 export default function DealerDashboard() {
   const { user } = useAuth();
@@ -62,6 +33,7 @@ export default function DealerDashboard() {
 
   // Selected order for vehicle handover modal
   const [handoverOrder, setHandoverOrder] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null);
   const [handoverNotes, setHandoverNotes] = useState('');
 
   // RTK Query calls
@@ -936,6 +908,7 @@ export default function DealerDashboard() {
           </div>
         </Card>
       )}
+      <DocumentPreviewModal isOpen={!!previewDoc} doc={previewDoc} onClose={() => setPreviewDoc(null)} />
     </div>
   );
 }

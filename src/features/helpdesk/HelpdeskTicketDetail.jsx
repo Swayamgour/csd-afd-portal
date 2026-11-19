@@ -8,15 +8,9 @@ import { Input } from '../../components/common/Input';
 import { Select } from '../../components/common/Select';
 import { Timeline } from '../../components/common/Timeline';
 import { LoadingState } from '../../components/common/States';
-import { Can } from '../../permissions/Can';
+
 import { useAuth } from '../../context/AuthContext';
-import {
-  useGetTicketByIdQuery,
-  useAddTicketMessageMutation,
-  useAssignTicketMutation,
-  useUpdateTicketStatusMutation,
-  useGetKbArticlesQuery,
-} from './ticketApi';
+import { useGetTicketByIdQuery, useAddTicketMessageMutation, useAssignTicketMutation, useUpdateTicketStatusMutation, useGetKbArticlesQuery } from './ticketApi';
 
 export const HelpdeskTicketDetail = () => {
   const { id } = useParams();

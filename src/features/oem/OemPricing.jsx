@@ -1,27 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  CreditCard,
-  PlusCircle,
-  RefreshCw,
-  Search,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Edit3,
-  Calendar,
-} from 'lucide-react';
+import { PlusCircle, RefreshCw, CheckCircle2, X, Edit3 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
-import Badge from '../../components/common/Badge.jsx';
+
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
-import {
-  useGetOemPricingQuery,
-  useGetOemProductsQuery,
-} from './oemApi.js';
+import { useGetOemPricingQuery, useGetOemProductsQuery } from './oemApi.js';
 
 const INDIAN_STATES = [
   'ANDAMAN AND NICOBAR ISLANDS', 'ANDHRA PRADESH', 'ARUNACHAL PRADESH', 'ASSAM',

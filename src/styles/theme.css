@@ -3,37 +3,6 @@
    Loaded last (main.jsx) so it re-skins the existing components
    without touching their markup.
    ===================================================================== */
-:root {
-  --navy: #0c1f47;
-  --navy-2: #163a82;
-  --brand: #1a3f8f;
-  --brand-d: #13306f;
-  --brand-soft: #e9eef9;
-  --brass: #b8861f;
-  --brass-soft: #f8efd9;
-  --ink: #0f1c38;
-  --muted: #56627f;
-  --bg: #f2f4f9;
-  --line: #dfe5f0;
-  --r: 14px;
-  --r-sm: 9px;
-  --sh: 0 1px 2px rgba(12, 31, 71, .06), 0 6px 18px rgba(12, 31, 71, .05);
-  --sh-lg: 0 18px 44px rgba(12, 31, 71, .18);
-
-  /* Layering / z-index scale */
-  --z-base: 0;
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-header: 300;
-  --z-drawer: 400;
-  --z-modal-backdrop: 500;
-  --z-modal: 510;
-  --z-toast: 600;
-  --z-tooltip: 700;
-  /* --f: 'Space Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif; */
-  /* --fd: 'Fraunces', Georgia, 'Times New Roman', serif; */
-}
-
 body, button, input, select, textarea { font-family: var(--f); }
 body { background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
 .app-shell-root, .app-main-wrapper { background: var(--bg); }
@@ -300,19 +269,12 @@ body .app-shell-root .card .form-control, body .app-shell-root .csd-products-too
   font-size: .9rem; padding: .55rem .8rem; border-radius: 10px; border: 1px solid var(--line);
 }
 body .app-shell-root .card .relative > .form-control { padding-left: 2.2rem; }
-body .app-shell-root .card .flex.flex-col.md\:flex-row > .relative { flex: 1 1 280px; max-width: 420px; }
-body .app-shell-root .card .flex.flex-col.md\:flex-row select.form-control { width: auto; min-width: 190px; }
 @media (max-width: 720px) {
   body .app-shell-root .csd-products-toolbar .csd-search-wrap { max-width: none; flex-basis: 100%; }
   body .app-shell-root .csd-filter-group .form-control { flex: 1 1 140px; }
 }
 
 /* tailwind-style utilities used by a few pages (no tailwind build) */
-@media (min-width: 768px) {
-  body .md\:flex-row { flex-direction: row !important; }
-  body .md\:w-80 { width: 20rem; }
-  body .md\:w-auto { width: auto; }
-}
 body .app-shell-root .card .relative > svg { pointer-events: none; }
 body .app-shell-root .card .relative > svg.absolute { top: 50%; transform: translateY(-50%); }
 /* depot toolbar: tabs on one row, search + sort beneath on one line */

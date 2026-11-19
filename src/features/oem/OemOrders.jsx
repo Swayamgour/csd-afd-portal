@@ -1,16 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Truck,
-  RefreshCw,
-  Search,
-  Edit3,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Eye,
-  FileCheck,
-  Send,
-} from 'lucide-react';
+import { RefreshCw, Search, Edit3, CheckCircle2, AlertCircle, X, Eye } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
@@ -18,11 +7,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import Button from '../../components/common/Button.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
-import {
-  useGetOemOrdersQuery,
-  useGetOemOrderByIdQuery,
-  useUpdateOemOrderStatusMutation,
-} from './oemApi.js';
+import { useGetOemOrdersQuery, useGetOemOrderByIdQuery, useUpdateOemOrderStatusMutation } from './oemApi.js';
 
 export default function OemOrders() {
   const [searchTerm, setSearchTerm] = useState('');

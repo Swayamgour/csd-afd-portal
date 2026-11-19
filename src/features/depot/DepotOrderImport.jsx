@@ -1,8 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  UploadCloud, FileText, X, CheckCircle2, AlertCircle, Loader2, RefreshCw, Trash2, Download,
-} from 'lucide-react';
+import { UploadCloud, FileText, X, CheckCircle2, AlertCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';

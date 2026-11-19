@@ -1,15 +1,6 @@
 import { useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
-import {
-  ShoppingCart,
-  Heart,
-  User,
-  Menu,
-  X,
-  ShieldCheck,
-  Phone,
-  Bell,
-} from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { ShoppingCart, Heart, User, Menu, X, ShieldCheck, Phone, Bell } from "lucide-react";
 import { useGetNotificationsQuery } from "../features/notifications/notificationApi.js";
 import { useStore } from "../context/Store.jsx";
 import { useAuth } from "../context/AuthContext.jsx";

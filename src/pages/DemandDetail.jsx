@@ -1,30 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Clock,
-  Building,
-  Store,
-  MapPin,
-  CreditCard,
-  User,
-  FileText,
-  Printer,
-  Download,
-  ShieldCheck,
-  AlertCircle,
-  Truck,
-  Phone,
-  Mail,
-  ChevronRight,
-  ExternalLink,
-  Check,
-  XCircle,
-  Landmark,
-  BadgeCheck,
-  Lock
-} from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, Building, Store, CreditCard, User, FileText, Printer, AlertCircle, Truck, ChevronRight, ExternalLink, XCircle, Landmark, BadgeCheck } from 'lucide-react';
 import { useGetDemandByIdQuery } from '../features/demand/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../features/payment/paymentApi.js';
 import InlinePaymentCard from '../components/common/InlinePaymentCard.jsx';

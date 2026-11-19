@@ -1,21 +1,4 @@
-import {
-  Users,
-  FileText,
-  Package,
-  FileSpreadsheet,
-  CreditCard,
-  Truck,
-  Store,
-  Factory,
-  MessageSquare,
-  HelpCircle,
-  ShieldAlert,
-  BookOpen,
-  FileCheck,
-  Banknote,
-  UserCheck,
-  Building2,
-} from 'lucide-react';
+import { Users, FileText, Package, FileSpreadsheet, CreditCard, Truck, Store, Factory, MessageSquare, HelpCircle, ShieldAlert, BookOpen, FileCheck, Banknote, UserCheck } from 'lucide-react';
 
 // Big, simple shortcuts shown at the top of every role dashboard.
 // Routes match layouts/navConfig.js.

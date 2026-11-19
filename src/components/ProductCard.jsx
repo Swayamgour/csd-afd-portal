@@ -1,14 +1,7 @@
 import { Link } from "react-router-dom";
-import {
-  Heart,
-  Star,
-  GitCompareArrows,
-  ShoppingCart,
-  Fuel,
-  Gauge,
-} from "lucide-react";
+import { Heart, Star, GitCompareArrows, Fuel } from "lucide-react";
 import { useStore } from "../context/Store.jsx";
-import { CAT_LABEL, priceText, inr, onImgError } from "../data/utils.js";
+import { CAT_LABEL, onImgError } from "../data/utils.js";
 import { placeholder } from "../data/art.js";
 import { API_ORIGIN } from "../config/env.js";
 

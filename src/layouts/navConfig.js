@@ -1,33 +1,4 @@
-import {
-  LayoutDashboard,
-  User,
-  ShieldCheck,
-  Package,
-  FileText,
-  Truck,
-  CreditCard,
-  Bell,
-  HelpCircle,
-  FileSpreadsheet,
-  Settings,
-  Users,
-  Store,
-  Layers,
-  Building2,
-  Warehouse,
-  History,
-  FileCheck,
-  ShieldAlert,
-  PhoneCall,
-  MessageSquare,
-  BookOpen,
-  KeyRound,
-  Image,
-  UserCheck,
-  Upload,
-  Download,
-  UserPlus
-} from 'lucide-react';
+import { LayoutDashboard, User, Package, FileText, Truck, CreditCard, Bell, HelpCircle, FileSpreadsheet, Users, Store, Layers, Building2, Warehouse, History, FileCheck, ShieldAlert, PhoneCall, MessageSquare, BookOpen, Image, UserCheck, Upload, Download, UserPlus } from 'lucide-react';
 import { ROLES } from '../permissions/roles.js';
 
 export const ROLE_SIDEBAR_NAV = {

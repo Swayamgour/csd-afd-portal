@@ -1,4 +1,4 @@
-import { ShieldCheck, BadgePercent, Truck } from "lucide-react";
+
 
 // Shared left panel for Login and Register so both pages look identical.
 export default function AuthArt({ title, text }) {

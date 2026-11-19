@@ -3,35 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/common/PageHeader.jsx';
 import { Button } from '../../components/common/Button.jsx';
 import { Input } from '../../components/common/Input.jsx';
-import { WP_ROLES, MASTER_ROLES } from '../../permissions/roles.js';
+import { WP_ROLES } from '../../permissions/roles.js';
 import { userService, calculatePasswordScore } from '../../services/user.service.js';
 import OrgLinkFields, { ORG_ROLE_BY_WP, emptyOrgLink, validateOrgLink, orgLinkPayload } from '../org/OrgLinkFields.jsx';
 import { useCreateOrgAccountMutation } from '../org/orgApi.js';
-import {
-  User,
-  Mail,
-  Lock,
-  Globe,
-  Eye,
-  EyeOff,
-  RefreshCw,
-  Copy,
-  Check,
-  ShieldCheck,
-  Bell,
-  Star,
-  Calendar,
-  AlertCircle,
-  FileText,
-  X,
-  Plus,
-  ArrowLeft,
-  RotateCcw,
-  CheckCircle2,
-  Layers,
-  Settings,
-  HelpCircle
-} from 'lucide-react';
+import { User, Eye, EyeOff, RefreshCw, Copy, Check, ShieldCheck, AlertCircle, FileText, X, CheckCircle2, Layers } from 'lucide-react';
 
 export default function AdminAddUser() {
   const navigate = useNavigate();

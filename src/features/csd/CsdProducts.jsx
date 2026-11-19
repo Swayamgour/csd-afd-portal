@@ -1,43 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  PlusCircle,
-  Search,
-  Edit3,
-  Trash2,
-  CheckCircle2,
-  Package,
-  RefreshCw,
-  Building2,
-  Layers,
-  Car,
-  Bike,
-  Refrigerator,
-  Check,
-  X,
-  AlertCircle,
-  Eye,
-  IndianRupee,
-  ShieldCheck,
-  Sparkles,
-  FileSpreadsheet
-} from 'lucide-react';
+import { PlusCircle, Search, Edit3, CheckCircle2, Package, RefreshCw, Car, Bike, Check, X, FileSpreadsheet } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 import DataTable from '../../components/common/DataTable.jsx';
 import Button from '../../components/common/Button.jsx';
-import Badge from '../../components/common/Badge.jsx';
+
 import ExcelImportModal from '../../components/common/ExcelImportModal.jsx';
 import { formatCurrency } from '../../utils/formatters.js';
-import {
-  useGetProductsQuery,
-  useGetCategoriesQuery,
-  useUpdateProductMutation,
-  useDeleteProductMutation,
-  useCreateProductMutation,
-  useImportProductsExcelMutation
-} from '../catalog/productApi.js';
+import { useGetProductsQuery, useGetCategoriesQuery, useUpdateProductMutation, useDeleteProductMutation, useCreateProductMutation, useImportProductsExcelMutation } from '../catalog/productApi.js';
 import { useGetOemsQuery } from '../org/orgApi.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 

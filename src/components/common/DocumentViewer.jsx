@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Download, ExternalLink, ShieldCheck } from 'lucide-react';
+import { FileText, Download, ShieldCheck } from 'lucide-react';
 import Button from './Button.jsx';
 
 export default function DocumentViewer({

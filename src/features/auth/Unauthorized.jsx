@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldAlert, ArrowLeft, Home } from 'lucide-react';
-import Button from '../../components/common/Button.jsx';
+
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ROLE_HOMES } from '../../permissions/roles.js';
 

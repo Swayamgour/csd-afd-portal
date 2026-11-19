@@ -1,25 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  PlusCircle,
-  Search,
-  Eye,
-  Filter,
-  RefreshCw,
-  AlertCircle,
-  Clock,
-  CreditCard,
-  RotateCcw,
-  X,
-  Car,
-  Building2,
-  CheckCircle2,
-  ShieldCheck,
-  FileText,
-  Calendar,
-  ExternalLink,
-  Palette,
-} from 'lucide-react';
+import { PlusCircle, Search, Eye, Filter, RefreshCw, AlertCircle, Clock, CreditCard, RotateCcw, X, Car, Building2, CheckCircle2, ShieldCheck, FileText, Calendar, Palette } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
