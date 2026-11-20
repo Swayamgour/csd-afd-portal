@@ -15,6 +15,7 @@ import OnlinePaymentCard from '../../components/common/OnlinePaymentCard.jsx';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { isPayable, canCancel, paymentStatusLabel } from '../../utils/demandStatus.js';
 import Loader from '../../components/common/Loader.jsx';
+import DemandRejectionBanner from '../../components/common/DemandRejectionBanner.jsx';
 
 export default function BeneficiaryDemandDetail() {
   const { id } = useParams();
@@ -150,6 +151,8 @@ export default function BeneficiaryDemandDetail() {
           Back to All Demands
         </Link>
       </div>
+
+      <DemandRejectionBanner demand={demand} />
 
       <PageHeader
         title={`Demand Details · ${demand.demandNo || demand._id?.slice(-8).toUpperCase()}`}

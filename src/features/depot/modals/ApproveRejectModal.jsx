@@ -109,7 +109,7 @@ export default function ApproveRejectModal({ isOpen, onClose, demand, mode = 'ap
                   <span>The order can be rejected if any check does not match. <strong>{hasPaid ? 'The payment will be refunded upon rejection.' : 'No payment has been made yet.'}</strong></span>
                 </div>
                 <div className="form-field mt-1">
-                  <label className="form-label">Rejection Reason:<span className="text-danger">*</span></label>
+                  <label className="form-label">Rejection Reason / Remark (shown to beneficiary, who can correct and resubmit):<span className="text-danger">*</span></label>
                   <textarea
                     rows={3}
                     className="form-control"

@@ -128,6 +128,17 @@ export const demandApi = api.injectEndpoints({
       invalidatesTags: ['Demand', 'Dashboard', 'Order'],
     }),
 
+    // Beneficiary edits the form / documents after a depot rejection and sends the demand back for approval
+    resubmitDemand: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/demands/${id}/resubmit`,
+        method: 'PATCH',
+        body,
+      }),
+      transformResponse: (response) => response?.data || response,
+      invalidatesTags: ['Demand', 'Dashboard', 'Order'],
+    }),
+
     recordPaymentDetails: builder.mutation({
       query: ({ id, ...body }) => ({
         url: `/demands/${id}/payment-details`,
@@ -200,5 +211,6 @@ export const {
   useUpdateOrderStatusMutation,
   useApproveDemandMutation,
   useRejectDemandMutation,
+  useResubmitDemandMutation,
   useRecordPaymentDetailsMutation,
 } = demandApi;

@@ -22,6 +22,7 @@ const NotFound = lazy(() => import('./pages/NotFound.jsx'));
 const Checkout = lazy(() => import('./pages/Checkout.jsx'));
 const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess.jsx'));
 const Demands = lazy(() => import('./pages/Demands.jsx'));
+const ResubmitDemand = lazy(() => import('./pages/ResubmitDemand.jsx'));
 const DemandDetail = lazy(() => import('./pages/DemandDetail.jsx'));
 const DigiLockerCallback = lazy(() => import('./features/auth/DigiLockerCallback.jsx'));
 const PaymentResult = lazy(() => import('./features/payment/PaymentResult.jsx'));
@@ -203,6 +204,7 @@ export default function App() {
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/demands" element={<Demands />} />
           <Route path="/demands/:id" element={<DemandDetail />} />
+          <Route path="/demands/:id/resubmit" element={<ResubmitDemand />} />
           <Route path="/payment/:demandId" element={<DemandDetail />} />
 
 

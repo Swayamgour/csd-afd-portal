@@ -1563,7 +1563,7 @@ section.hero {
     background: #ff4d6d
 }
 
-.card-body {
+article.card .card-body {
     display: flex;
     flex-direction: column;
     gap: .35rem;
@@ -6907,6 +6907,7 @@ img.product-table-thumb {
 
 .card-body {
     padding: 1.5rem;
+    text-align: left;
 }
 
 .card-footer {
@@ -6923,6 +6924,7 @@ img.product-table-thumb {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.25rem;
+    text-align: left;
 }
 
 @media (max-width: 768px) {
@@ -6937,12 +6939,19 @@ img.product-table-thumb {
     gap: 0.35rem;
     width: 100%;
     margin-bottom: 1rem;
+    text-align: left;
 }
 
 .form-label {
     font-size: 0.82rem;
     font-weight: 600;
     color: #1e293b;
+    text-align: left;
+}
+
+.section-title,
+.form-section-title {
+    text-align: left;
 }
 
 .form-control,
@@ -6964,6 +6973,31 @@ img.product-table-thumb {
 .form-textarea:focus {
     border-color: var(--brand, #1e4fd8);
     box-shadow: 0 0 0 3px rgba(30, 79, 216, 0.15);
+}
+
+.form-control.has-error,
+.form-select.has-error,
+.form-textarea.has-error {
+    border-color: #ef4444 !important;
+    background-color: #fffaf0;
+}
+
+.form-control.has-error:focus,
+.form-select.has-error:focus,
+.form-textarea.has-error:focus {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+.form-error-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #dc2626;
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    text-align: left;
 }
 
 .form-control:disabled,

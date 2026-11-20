@@ -8,7 +8,21 @@ export function CheckoutWorkflowNotice({
   formErrors,
   remarks,
   setRemarks,
+  onlineChannel,
+  setOnlineChannel,
+  accountHolderName,
+  setAccountHolderName,
+  bankAccountNumber,
+  setBankAccountNumber,
+  ownAccountCertified,
+  setOwnAccountCertified,
+  undertakingAccepted,
+  setUndertakingAccepted,
 }) {
+  // Online-payment details are asked only when no loan is taken and Online Payment is chosen
+  const showOnlineDetails = hasLoan !== 'Yes' && paymentMode === 'ONLINE_PAYMENT';
+  const needsAccountDetails = showOnlineDetails && onlineChannel === 'NETBANKING_UPI_CHALLAN';
+
   return (
     <>
       <div className="checkout-workflow-notice">
@@ -51,6 +65,99 @@ export function CheckoutWorkflowNotice({
         )}
         {formErrors?.paymentMode && (
           <span className="csd-form-error"><AlertCircle size={14} /> {formErrors.paymentMode}</span>
+        )}
+
+        {showOnlineDetails && (
+          <div className="checkout-online-details">
+            <label className="csd-form-label">
+              Payment made through <span className="doc-upload-required-star">*</span>
+            </label>
+            <div className="checkout-radio-card-group">
+              <label className={`checkout-radio-card ${onlineChannel === 'NETBANKING_UPI_CHALLAN' ? 'active' : ''}`}>
+                <input
+                  type="radio"
+                  name="onlineChannel"
+                  value="NETBANKING_UPI_CHALLAN"
+                  checked={onlineChannel === 'NETBANKING_UPI_CHALLAN'}
+                  onChange={() => setOnlineChannel('NETBANKING_UPI_CHALLAN')}
+                />
+                <span className="checkout-radio-card-title">Netbanking / UPI / E-Challan</span>
+              </label>
+              <label className={`checkout-radio-card ${onlineChannel === 'CARD' ? 'active' : ''}`}>
+                <input
+                  type="radio"
+                  name="onlineChannel"
+                  value="CARD"
+                  checked={onlineChannel === 'CARD'}
+                  onChange={() => setOnlineChannel('CARD')}
+                />
+                <span className="checkout-radio-card-title">Credit / Debit Card</span>
+              </label>
+            </div>
+            {formErrors?.onlineChannel && (
+              <span className="csd-form-error"><AlertCircle size={14} /> {formErrors.onlineChannel}</span>
+            )}
+
+            {needsAccountDetails && (
+              <>
+                <div className="csd-form-group">
+                  <label className="csd-form-label" htmlFor="accountHolderName">
+                    Name of the first account holder <span className="doc-upload-required-star">*</span>
+                  </label>
+                  <input
+                    id="accountHolderName"
+                    type="text"
+                    className={`csd-form-input ${formErrors?.accountHolderName ? 'has-error' : ''}`}
+                    value={accountHolderName}
+                    onChange={(e) => setAccountHolderName(e.target.value)}
+                    autoComplete="off"
+                  />
+                  {formErrors?.accountHolderName && (
+                    <span className="csd-form-error"><AlertCircle size={14} /> {formErrors.accountHolderName}</span>
+                  )}
+                </div>
+                <div className="csd-form-group">
+                  <label className="csd-form-label" htmlFor="bankAccountNumber">
+                    Bank Account Number <span className="doc-upload-required-star">*</span>
+                  </label>
+                  <input
+                    id="bankAccountNumber"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={18}
+                    className={`csd-form-input ${formErrors?.bankAccountNumber ? 'has-error' : ''}`}
+                    value={bankAccountNumber}
+                    onChange={(e) => setBankAccountNumber(e.target.value.replace(/\D/g, ''))}
+                    autoComplete="off"
+                  />
+                  {formErrors?.bankAccountNumber && (
+                    <span className="csd-form-error"><AlertCircle size={14} /> {formErrors.bankAccountNumber}</span>
+                  )}
+                </div>
+              </>
+            )}
+
+            <label className="checkout-check-row">
+              <input
+                type="checkbox"
+                checked={ownAccountCertified}
+                onChange={(e) => setOwnAccountCertified(e.target.checked)}
+              />
+              <span>
+                This is to certify that online payment is being made from my own account.{' '}
+                <span className="doc-upload-required-star">*</span>
+              </span>
+            </label>
+            {formErrors?.ownAccountCertified && (
+              <span className="csd-form-error"><AlertCircle size={14} /> {formErrors.ownAccountCertified}</span>
+            )}
+
+            <div className="checkout-gateway-box">
+              <strong>Pay Gov Payment Gateway</strong>
+              <div className="small muted">Pay by Razorpay - Cards, Netbanking, Wallet &amp; UPI</div>
+              <div className="small muted">The payment link is enabled after the depot approves your demand.</div>
+            </div>
+          </div>
         )}
 
         <div className="checkout-workflow-timeline">
@@ -104,6 +211,24 @@ export function CheckoutWorkflowNotice({
           value={remarks}
           onChange={(e) => setRemarks(e.target.value)}
         />
+      </div>
+
+      <div className="csd-form-group">
+        <label className="checkout-check-row">
+          <input
+            type="checkbox"
+            checked={undertakingAccepted}
+            onChange={(e) => setUndertakingAccepted(e.target.checked)}
+          />
+          <span>
+            I accept an undertaking that in case details provided by me are found to be incorrect, I will be liable
+            for disciplinary action (serving) / CSD facility will be withdrawn (ESM).{' '}
+            <span className="doc-upload-required-star">*</span>
+          </span>
+        </label>
+        {formErrors?.undertaking && (
+          <span className="csd-form-error"><AlertCircle size={14} /> {formErrors.undertaking}</span>
+        )}
       </div>
     </>
   );

@@ -75,3 +75,18 @@ export const PAYMENT_STATUS_LABELS = {
   REFUNDED: 'Refunded',
 };
 export const paymentStatusLabel = (s) => PAYMENT_STATUS_LABELS[upper(s)] || PAYMENT_STATUS_LABELS.UNPAID;
+
+// ---- Rejection / resubmission (depot rejects with a remark -> beneficiary edits and resubmits) ----
+// Reason typed by the depot official in the Reject dialog (field name differs between API versions).
+export function getRejectionReason(d) {
+  const direct = d?.rejectionReason || d?.rejectReason || d?.rejectionRemark || d?.depotRemarks;
+  if (direct) return String(direct);
+  const hist = Array.isArray(d?.statusHistory) ? [...d.statusHistory].reverse() : [];
+  const h = hist.find((x) => upper(x?.to) === 'REJECTED');
+  return h?.note ? String(h.note) : '';
+}
+const UNPAID_STATES = ['', 'UNPAID', 'PENDING', 'FAILED'];
+// A rejected demand can be corrected & resubmitted only while no payment is held (otherwise it is refunded).
+export const canResubmit = (d) =>
+  upper(d?.status) === 'REJECTED' && UNPAID_STATES.includes(upper(d?.paymentStatus)) && d?.canResubmit !== false;
+export const isResubmitted = (d) => Number(d?.resubmissionCount || 0) > 0;

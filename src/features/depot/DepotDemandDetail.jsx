@@ -36,6 +36,16 @@ export function DepotDemandDetail() {
         subtitle={`${demand.productSnapshot?.name || ''} · ${fmtINR(demand.totalAmount)}`}
         badge={<StatusBadge status={demand.status} />}
       />
+      {Number(demand.resubmissionCount) > 0 && (
+        <div className="csd-alert-banner info mb-2">
+          <div>
+            <strong>Resubmitted by beneficiary ({demand.resubmissionCount})</strong>
+            <p className="mb-0 text-xs">
+              Previously rejected: {(demand.rejectionHistory || []).map((r) => r.reason).filter(Boolean).join(' | ') || demand.rejectionReason || '—'}. Please re-verify the corrected details and documents.
+            </p>
+          </div>
+        </div>
+      )}
       <Card title="Depot workflow" subtitle={getStatusLabel(demand)}>
         <ol style={{ padding: 0 }}>
           <Step done={!['CREATED'].includes(String(demand.status).toUpperCase())} label="Stage 1: demand scrutinised and approved (payment enabled)" />

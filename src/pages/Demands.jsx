@@ -4,7 +4,7 @@ import { Search, FileText, CreditCard, Info, RefreshCw, Plus } from 'lucide-reac
 import { useGetDemandsQuery, useCancelDemandMutation } from '../redux/api/demandApi.js';
 import { useSubmitDirectTransferMutation } from '../redux/api/paymentApi.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { isPayable, canCancel, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
+import { isPayable, canCancel, canResubmit, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
 import { useDebounce } from '../hooks/useDebounce.js';
 import Loader from '../components/common/Loader.jsx';
 
@@ -275,6 +275,16 @@ export default function Demands() {
                           >
                             Summary Sheet
                           </button>
+
+                          {canResubmit(d) && (
+                            <Link
+                              to={`/demands/${encodeURIComponent(d._id || d.id)}/resubmit`}
+                              className="btn-action-upload-details"
+                              style={{ fontWeight: 700, background: '#b45309', color: '#fff', border: '1px solid #92400e' }}
+                            >
+                              Edit &amp; Resubmit
+                            </Link>
+                          )}
 
                           {/* Payment opens after the depot approves the demand */}
                           {isPayable(d) && (

@@ -7,6 +7,7 @@ import InlinePaymentCard from '../components/common/InlinePaymentCard.jsx';
 import OnlinePaymentCard from '../components/common/OnlinePaymentCard.jsx';
 import { isPayable, getStatusLabel, isAwaitingDepotApproval, paymentMethodLabel, paymentStatusLabel } from '../utils/demandStatus.js';
 import Loader from '../components/common/Loader.jsx';
+import DemandRejectionBanner from '../components/common/DemandRejectionBanner.jsx';
 
 export default function DemandDetail() {
   const { id } = useParams();
@@ -164,6 +165,7 @@ export default function DemandDetail() {
       </div>
 
       {/* Workflow Phase Notification Banners */}
+      <DemandRejectionBanner demand={demand} />
       {isAwaitingDepotApproval(demand) && (
         <div className="csd-alert-banner info mb-4">
           <Clock size={20} className="alert-banner-icon" color="#1e4fd8" />
@@ -243,7 +245,7 @@ export default function DemandDetail() {
       )}
 
       {/* Termination Notice if Cancelled / Rejected */}
-      {isTerminated && (
+      {isTerminated && currentStatus !== 'REJECTED' && (
         <div className="csd-alert-banner danger mb-4">
           <XCircle size={20} className="alert-banner-icon" />
           <div>

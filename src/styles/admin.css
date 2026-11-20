@@ -14,11 +14,28 @@
    }
 
    & .depot-payment-modal-box {
-      max-width: 680px;
+      max-width: 720px;
       width: 95%;
       max-height: 90vh;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      border-radius: 12px;
+   }
+
+   & .depot-payment-modal-form {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+   }
+
+   & .depot-payment-modal-body {
+      flex: 1;
+      overflow-y: auto;
+      max-height: calc(90vh - 130px);
+      padding: 1.25rem 1.5rem;
    }
 
    & .depot-manual-form-grid {

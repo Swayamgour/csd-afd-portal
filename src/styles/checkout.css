@@ -1787,3 +1787,36 @@
   color: #64748b;
   margin: 0;
 }
+/* ---------- checkout: online-payment details & declarations ---------- */
+.checkout-online-details {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+.checkout-check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  cursor: pointer;
+}
+.checkout-check-row input[type="checkbox"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.checkout-gateway-box {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.resubmit-doc-list {
+  margin: 0;
+  padding: 0 0 4px 18px;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}

@@ -103,6 +103,13 @@ export default function Checkout() {
   // Payment mode (manual: Online Payment only when no loan; Direct Bank Transfer otherwise)
   const [paymentMode, setPaymentMode] = useState('DIRECT_BANK_TRANSFER');
 
+  // Online payment details (asked only when no loan + Online Payment)
+  const [onlineChannel, setOnlineChannel] = useState('');
+  const [accountHolderName, setAccountHolderName] = useState('');
+  const [bankAccountNumber, setBankAccountNumber] = useState('');
+  const [ownAccountCertified, setOwnAccountCertified] = useState(false);
+  const [undertakingAccepted, setUndertakingAccepted] = useState(false);
+
   // Loan Section
   const [hasLoan, setHasLoan] = useState('No');
   const [loanAmount, setLoanAmount] = useState('');
@@ -182,6 +189,17 @@ export default function Checkout() {
     } else if (enteredDealerPrice !== netPrice) {
       errs.dealerPrice = 'Dealer Price and Net Price to be Paid must be the same.';
     }
+
+    // Online payment details (only when no loan and Online Payment is chosen)
+    if (hasLoan !== 'Yes' && paymentMode === 'ONLINE_PAYMENT') {
+      if (!onlineChannel) errs.onlineChannel = 'Select how the payment will be made.';
+      if (onlineChannel === 'NETBANKING_UPI_CHALLAN') {
+        if (accountHolderName.trim().length < 3) errs.accountHolderName = 'Name of the first account holder is required.';
+        if (!/^\d{9,18}$/.test(bankAccountNumber)) errs.bankAccountNumber = 'Enter a valid bank account number (9-18 digits).';
+      }
+      if (!ownAccountCertified) errs.ownAccountCertified = 'Please certify that the payment is made from your own account.';
+    }
+    if (!undertakingAccepted) errs.undertaking = 'You must accept the undertaking to submit the demand.';
 
     // Loan Validation
     if (hasLoan === 'Yes') {
@@ -287,6 +305,16 @@ export default function Checkout() {
           bankName: hasLoan === 'Yes' ? 'Nationalized / Armed Forces Bank' : '',
           sanctionLetterUrl,
         },
+        onlinePayment:
+          hasLoan !== 'Yes' && paymentMode === 'ONLINE_PAYMENT'
+            ? {
+                channel: onlineChannel,
+                accountHolderName: onlineChannel === 'NETBANKING_UPI_CHALLAN' ? accountHolderName.trim() : undefined,
+                bankAccountNumber: onlineChannel === 'NETBANKING_UPI_CHALLAN' ? bankAccountNumber : undefined,
+                ownAccountCertified,
+              }
+            : undefined,
+        undertakingAccepted,
         remarks: remarks || undefined,
       };
 
@@ -394,6 +422,16 @@ export default function Checkout() {
               formErrors={formErrors}
               remarks={remarks}
               setRemarks={setRemarks}
+              onlineChannel={onlineChannel}
+              setOnlineChannel={setOnlineChannel}
+              accountHolderName={accountHolderName}
+              setAccountHolderName={setAccountHolderName}
+              bankAccountNumber={bankAccountNumber}
+              setBankAccountNumber={setBankAccountNumber}
+              ownAccountCertified={ownAccountCertified}
+              setOwnAccountCertified={setOwnAccountCertified}
+              undertakingAccepted={undertakingAccepted}
+              setUndertakingAccepted={setUndertakingAccepted}
             />
           </div>
 
