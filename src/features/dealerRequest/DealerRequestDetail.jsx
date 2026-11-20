@@ -352,6 +352,8 @@ export function VerificationReport({ verification }) {
                 style={{ padding: 0, border: '1px solid var(--border, #d8dee6)', borderRadius: 8, overflow: 'hidden', background: 'none', cursor: 'zoom-in', textAlign: 'left' }}
                 aria-label={`Open photo ${i + 1}`}
               >
+
+               
                 <img src={fileSrc(p.url)} alt={p.caption || `Verification photo ${i + 1}`} style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block' }} />
                 {p.caption && <div className="micro muted" style={{ padding: '4px 6px' }}>{p.caption}</div>}
               </button>

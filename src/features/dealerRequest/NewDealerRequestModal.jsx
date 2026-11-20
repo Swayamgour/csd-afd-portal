@@ -98,25 +98,66 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
   const [uploadFile] = useUploadDealerRequestPhotosMutation();
 
   const set = (k) => (e) => {
-    const val = e?.target?.type === 'checkbox' ? e.target.checked : e?.target?.value ?? e;
+    let val = e?.target?.type === 'checkbox' ? e.target.checked : e?.target?.value ?? e;
+
+    // Strict input sanitization based on field type
+    if (typeof val === 'string') {
+      if (k === 'phone') {
+        // Only allow numeric digits, max 10
+        val = val.replace(/\D/g, '').slice(0, 10);
+      } else if (k === 'pincode') {
+        // Only allow numeric digits, max 6
+        val = val.replace(/\D/g, '').slice(0, 6);
+      } else if (k === 'landline') {
+        // Digits, spaces, hyphens, max 15
+        val = val.replace(/[^\d\s-]/g, '').slice(0, 15);
+      } else if (k === 'person') {
+        // Letters, spaces, dots, hyphens, apostrophes only (cannot type numbers)
+        val = val.replace(/[^a-zA-Z\s.'-]/g, '').slice(0, 80);
+      } else if (k === 'gstin') {
+        // Alphanumeric uppercase only, max 15
+        val = val.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 15);
+      } else if (k === 'panNumber') {
+        // Alphanumeric uppercase only, max 10
+        val = val.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 10);
+      } else if (k === 'proposedCode') {
+        // Letters, numbers, hyphens, underscores, max 30
+        val = val.replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase().slice(0, 30);
+      } else if (k === 'city' || k === 'district') {
+        // Letters, spaces, hyphens, dots
+        val = val.replace(/[^a-zA-Z\s.-]/g, '').slice(0, 80);
+      }
+    }
+
+    // Clear error for field k as user updates it
+    if (errors[k]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[k];
+        return next;
+      });
+    }
+
     setF((prev) => {
       const next = { ...prev, [k]: val };
 
-      // Auto-populate PAN and State Code from GSTIN if 15 chars
+      // Auto-populate PAN and State Code from GSTIN (if 15 or partial GSTIN)
       if (k === 'gstin' && typeof val === 'string') {
         const cleanGst = val.trim().toUpperCase();
-        if (cleanGst.length >= 2 && !prev.stateCode) {
+        if (cleanGst.length >= 2) {
           const prefix = cleanGst.substring(0, 2);
-          next.stateCode = prefix;
           const matchState = GST_STATE_CODES.find((s) => s.code === prefix);
-          if (matchState && !prev.state) next.state = matchState.name;
+          if (matchState) {
+            next.stateCode = prefix;
+            next.state = matchState.name;
+          }
         }
-        if (cleanGst.length >= 12 && !prev.panNumber) {
+        if (cleanGst.length >= 12) {
           next.panNumber = cleanGst.substring(2, 12);
         }
       }
 
-      // Auto-populate State from State Code
+      // Auto-populate State name when State Code is selected
       if (k === 'stateCode' && typeof val === 'string') {
         const matchState = GST_STATE_CODES.find((s) => s.code === val);
         if (matchState) next.state = matchState.name;
@@ -134,8 +175,8 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
 
     const gstStateMatch = Boolean(gstin.length >= 2 && stateCode && gstin.startsWith(stateCode));
     const gstPanMatch = Boolean(gstin.length >= 12 && pan && gstin.substring(2, 12) === pan);
-    const mobileValid = /^[6-9]\d{9}$/.test(f.phone.trim());
-    const emailValid = !f.email || /^\S+@\S+\.\S+$/.test(f.email.trim());
+    const mobileValid = /^[6-9]\d{9}$/.test((f.phone || '').trim());
+    const emailValid = !f.email || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(f.email.trim());
 
     let docCount = Object.keys(docs).filter((k) => docs[k] && k !== 'indemnityBond').length;
     if (showroomPhotos.length >= 5) docCount += 1;
@@ -196,15 +237,121 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
 
   const validate = () => {
     const e = {};
-    if (f.name.trim().length < 2) e.name = 'Dealer name is required';
-    if (f.proposedCode && !/^[A-Za-z0-9_-]{2,40}$/.test(f.proposedCode.trim())) {
-      e.proposedCode = 'Only letters, digits, - and _ allowed';
+
+    // 1. Proposed Dealer Name
+    const trimmedName = (f.name || '').trim();
+    if (!trimmedName) {
+      e.name = 'Proposed Dealer Name is required';
+    } else if (trimmedName.length < 3) {
+      e.name = 'Dealer Name must be at least 3 characters';
     }
-    if (!/^[6-9]\d{9}$/.test(f.phone.trim())) e.phone = 'Valid 10 digit Indian mobile is required';
-    if (f.email && !/^\S+@\S+\.\S+$/.test(f.email.trim())) e.email = 'Valid email is required';
-    if (!f.city.trim()) e.city = 'City is required';
-    if (!f.state.trim()) e.state = 'State is required';
-    if (f.pincode && !/^\d{6}$/.test(f.pincode.trim())) e.pincode = 'Pincode must be 6 digits';
+
+    // 2. Proposed Dealer Code (Optional, but if given must match format)
+    if (f.proposedCode) {
+      const trimmedCode = f.proposedCode.trim();
+      if (!/^[A-Za-z0-9_-]{2,30}$/.test(trimmedCode)) {
+        e.proposedCode = 'Only letters, digits, - and _ allowed (2-30 chars)';
+      }
+    }
+
+    // 3. Contact Person / Proprietor
+    const trimmedPerson = (f.person || '').trim();
+    if (!trimmedPerson) {
+      e.person = 'Contact Person / Proprietor name is required';
+    } else if (trimmedPerson.length < 2) {
+      e.person = 'Name must be at least 2 characters';
+    } else if (!/^[a-zA-Z\s.'-]+$/.test(trimmedPerson)) {
+      e.person = 'Contact person name must contain letters only';
+    }
+
+    // 4. Mobile Number (Strict 10 numeric digits starting with 6-9)
+    const trimmedPhone = (f.phone || '').trim();
+    if (!trimmedPhone) {
+      e.phone = '10-digit Mobile Number is required';
+    } else if (trimmedPhone.length !== 10) {
+      e.phone = 'Mobile Number must be exactly 10 digits';
+    } else if (!/^[6-9]\d{9}$/.test(trimmedPhone)) {
+      e.phone = 'Invalid mobile number. Must start with 6, 7, 8, or 9';
+    }
+
+    // 5. Landline / Alt Phone (Optional)
+    if (f.landline && f.landline.trim()) {
+      const digitsOnly = f.landline.replace(/\D/g, '');
+      if (digitsOnly.length < 6 || digitsOnly.length > 12) {
+        e.landline = 'Landline / Alt Phone must contain 6 to 12 digits';
+      }
+    }
+
+    // 6. Email Address
+    const trimmedEmail = (f.email || '').trim();
+    if (!trimmedEmail) {
+      e.email = 'Email Address is required for official CSD notifications';
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmedEmail)) {
+      e.email = 'Enter a valid email address (e.g. dealer@company.com)';
+    }
+
+    // 7. GSTIN (15 Digits Alphanumeric)
+    const cleanGst = (f.gstin || '').trim().toUpperCase();
+    if (!cleanGst) {
+      e.gstin = 'GSTIN is required for dealer registration';
+    } else if (cleanGst.length !== 15) {
+      e.gstin = 'GSTIN must be exactly 15 characters';
+    } else if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(cleanGst)) {
+      e.gstin = 'Invalid GSTIN format (e.g. 09AAACH2234P1Z2)';
+    } else {
+      // Scrutiny checks against state code & PAN
+      if (f.stateCode && !cleanGst.startsWith(f.stateCode)) {
+        e.gstin = `GSTIN state code prefix (${cleanGst.substring(0, 2)}) does not match State Code (${f.stateCode})`;
+      } else if (f.panNumber && cleanGst.substring(2, 12) !== f.panNumber.trim().toUpperCase()) {
+        e.gstin = 'GSTIN PAN segment does not match entered PAN Number';
+      }
+    }
+
+    // 8. PAN Number (10 Digits Alphanumeric)
+    const cleanPan = (f.panNumber || '').trim().toUpperCase();
+    if (!cleanPan) {
+      e.panNumber = 'PAN Number is required';
+    } else if (cleanPan.length !== 10) {
+      e.panNumber = 'PAN Number must be exactly 10 characters';
+    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(cleanPan)) {
+      e.panNumber = 'Invalid PAN format (e.g. AAACH2234P)';
+    }
+
+    // 9. State Code
+    if (!f.stateCode) {
+      e.stateCode = 'State Code is required';
+    }
+
+    // 10. State
+    if (!f.state || !f.state.trim()) {
+      e.state = 'State is required';
+    }
+
+    // 11. City
+    if (!f.city || !f.city.trim()) {
+      e.city = 'City is required';
+    } else if (f.city.trim().length < 2) {
+      e.city = 'City must be at least 2 characters';
+    }
+
+    // 12. Pincode (6 Numeric Digits, not starting with 0)
+    const trimmedPin = (f.pincode || '').trim();
+    if (!trimmedPin) {
+      e.pincode = 'Pincode is required';
+    } else if (trimmedPin.length !== 6) {
+      e.pincode = 'Pincode must be exactly 6 digits';
+    } else if (!/^[1-9][0-9]{5}$/.test(trimmedPin)) {
+      e.pincode = 'Invalid 6-digit Pincode (cannot start with 0)';
+    }
+
+    // 13. Full Address
+    const trimmedAddr = (f.address || '').trim();
+    if (!trimmedAddr) {
+      e.address = 'Full showroom / dealership address is required';
+    } else if (trimmedAddr.length < 5) {
+      e.address = 'Address must be at least 5 characters';
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -214,6 +361,33 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
     setApiErr('');
     if (!validate()) {
       setActiveTab('details');
+      setTimeout(() => {
+        const errorFieldKeys = [
+          'name',
+          'proposedCode',
+          'dealershipType',
+          'person',
+          'phone',
+          'landline',
+          'email',
+          'gstin',
+          'panNumber',
+          'stateCode',
+          'state',
+          'district',
+          'city',
+          'pincode',
+          'address',
+        ];
+        for (const k of errorFieldKeys) {
+          const el = document.getElementById(`dr-${k}`);
+          if (el && (el.getAttribute('aria-invalid') === 'true' || el.classList.contains('has-error'))) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.focus();
+            break;
+          }
+        }
+      }, 50);
       return;
     }
 
@@ -302,6 +476,13 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
           </div>
         )}
 
+        {Object.keys(errors).length > 0 && (
+          <div className="alert-banner error small mb-2 row align-center gap-1" role="alert">
+            <AlertCircle size={16} />
+            <span>Please correct the {Object.keys(errors).length} highlighted field error(s) below before submitting.</span>
+          </div>
+        )}
+
         {/* TAB 1: DEALERSHIP DETAILS */}
         {activeTab === 'details' && (
           <div>
@@ -341,13 +522,35 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
-              <Input id="dr-name" label="Proposed Dealer Name" required value={f.name} onChange={set('name')} error={errors.name} />
-              <Input id="dr-code" label="Proposed Dealer Code" value={f.proposedCode} onChange={set('proposedCode')} error={errors.proposedCode} helperText="Unique code (e.g. DL-ND-001)" />
+              <Input
+                id="dr-name"
+                label="Proposed Dealer Name"
+                required
+                value={f.name}
+                onChange={set('name')}
+                error={errors.name}
+                placeholder="e.g. Supreme Automobiles Pvt Ltd"
+                maxLength={120}
+              />
+
+              <Input
+                id="dr-proposedCode"
+                label="Proposed Dealer Code"
+                value={f.proposedCode}
+                onChange={set('proposedCode')}
+                error={errors.proposedCode}
+                helperText="Unique code (e.g. DL-ND-001)"
+                placeholder="e.g. DL-ND-001"
+                maxLength={30}
+              />
+
               <Select
-                id="dr-type"
+                id="dr-dealershipType"
                 label="Dealership Type"
+                required
                 value={f.dealershipType}
                 onChange={set('dealershipType')}
+                error={errors.dealershipType}
                 options={[
                   { value: '4W', label: 'Four Wheeler (4W)' },
                   { value: '2W', label: 'Two Wheeler (2W)' },
@@ -355,37 +558,146 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
                   { value: 'COMMERCIAL', label: 'Commercial Vehicle' },
                 ]}
               />
-              <Input id="dr-person" label="Contact Person / Proprietor" value={f.person} onChange={set('person')} />
-              <Input id="dr-phone" label="Mobile Number" required inputMode="numeric" maxLength={10} value={f.phone} onChange={set('phone')} error={errors.phone} />
-              <Input id="dr-landline" label="Landline / Alt Phone" value={f.landline} onChange={set('landline')} />
-              <Input id="dr-email" label="Email Address" type="email" value={f.email} onChange={set('email')} error={errors.email} />
+
+              <Input
+                id="dr-person"
+                label="Contact Person / Proprietor"
+                required
+                value={f.person}
+                onChange={set('person')}
+                error={errors.person}
+                placeholder="e.g. Rakesh Kumar"
+                maxLength={80}
+                helperText="Letters and spaces only"
+              />
+
+              <Input
+                id="dr-phone"
+                label="Mobile Number"
+                required
+                inputMode="numeric"
+                maxLength={10}
+                value={f.phone}
+                onChange={set('phone')}
+                error={errors.phone}
+                placeholder="e.g. 9876543210 (10 digits)"
+                helperText="Strict 10-digit numeric mobile (6-9)"
+              />
+
+              <Input
+                id="dr-landline"
+                label="Landline / Alt Phone"
+                value={f.landline}
+                onChange={set('landline')}
+                error={errors.landline}
+                placeholder="e.g. 01662-234567"
+                maxLength={15}
+              />
+
+              <Input
+                id="dr-email"
+                label="Email Address"
+                type="email"
+                required
+                value={f.email}
+                onChange={set('email')}
+                error={errors.email}
+                placeholder="e.g. dealer.hisar@gmail.com"
+              />
 
               <Input
                 id="dr-gstin"
                 label="GSTIN (15 Digits)"
+                required
                 maxLength={15}
                 value={f.gstin}
                 onChange={set('gstin')}
-                helperText={scrutiny.gstStateMatch && scrutiny.gstPanMatch ? '✓ State code and PAN match GSTIN' : 'e.g. 09AAACH2234P1Z2'}
+                error={errors.gstin}
+                placeholder="e.g. 06AAACH2234P1Z2"
+                helperText={
+                  scrutiny.gstStateMatch && scrutiny.gstPanMatch
+                    ? '✓ State code and PAN match GSTIN'
+                    : 'Auto-populates State Code and PAN'
+                }
               />
-              <Input id="dr-pan" label="PAN Number (10 Digits)" maxLength={10} value={f.panNumber} onChange={set('panNumber')} helperText="Chars 3-12 of GSTIN" />
+
+              <Input
+                id="dr-panNumber"
+                label="PAN Number (10 Digits)"
+                required
+                maxLength={10}
+                value={f.panNumber}
+                onChange={set('panNumber')}
+                error={errors.panNumber}
+                placeholder="e.g. AAACH2234P"
+                helperText="Chars 3-12 of GSTIN"
+              />
+
               <Select
-                id="dr-statecode"
+                id="dr-stateCode"
                 label="State Code (2 Digits)"
+                required
                 value={f.stateCode}
                 onChange={set('stateCode')}
+                error={errors.stateCode}
                 options={GST_STATE_CODES.map((s) => ({ value: s.code, label: `${s.code} - ${s.name}` }))}
                 placeholder="Select State Code"
               />
 
-              <Input id="dr-state" label="State" required value={f.state} onChange={set('state')} error={errors.state} />
-              <Input id="dr-district" label="District" value={f.district} onChange={set('district')} />
-              <Input id="dr-city" label="City" required value={f.city} onChange={set('city')} error={errors.city} />
-              <Input id="dr-pin" label="Pincode" inputMode="numeric" maxLength={6} value={f.pincode} onChange={set('pincode')} error={errors.pincode} />
+              <Input
+                id="dr-state"
+                label="State"
+                required
+                value={f.state}
+                onChange={set('state')}
+                error={errors.state}
+                placeholder="e.g. HARYANA"
+              />
+
+              <Input
+                id="dr-district"
+                label="District"
+                value={f.district}
+                onChange={set('district')}
+                error={errors.district}
+                placeholder="e.g. Hisar"
+              />
+
+              <Input
+                id="dr-city"
+                label="City"
+                required
+                value={f.city}
+                onChange={set('city')}
+                error={errors.city}
+                placeholder="e.g. Hisar"
+              />
+
+              <Input
+                id="dr-pincode"
+                label="Pincode"
+                required
+                inputMode="numeric"
+                maxLength={6}
+                value={f.pincode}
+                onChange={set('pincode')}
+                error={errors.pincode}
+                placeholder="e.g. 125001"
+                helperText="6-digit numeric PIN code"
+              />
             </div>
 
             <div style={{ marginTop: 12 }}>
-              <Input id="dr-address" label="Full Dealership / Showroom Address" value={f.address} onChange={set('address')} />
+              <Input
+                id="dr-address"
+                label="Full Dealership / Showroom Address"
+                required
+                value={f.address}
+                onChange={set('address')}
+                error={errors.address}
+                placeholder="e.g. Plot No. 4-5, Auto Market, Delhi Road"
+                maxLength={250}
+              />
             </div>
 
             <div style={{ marginTop: 12, padding: '10px 14px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
@@ -399,7 +711,15 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
               <label htmlFor="dr-remarks" className="form-label">
                 Remarks for CSD HO
               </label>
-              <textarea id="dr-remarks" className="form-control" rows={2} maxLength={1000} value={f.remarks} onChange={set('remarks')} placeholder="Additional information..." />
+              <textarea
+                id="dr-remarks"
+                className="form-control"
+                rows={2}
+                maxLength={1000}
+                value={f.remarks}
+                onChange={set('remarks')}
+                placeholder="Additional information..."
+              />
             </div>
           </div>
         )}

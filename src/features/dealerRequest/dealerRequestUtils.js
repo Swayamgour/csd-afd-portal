@@ -30,10 +30,26 @@ export const fmtDateTime = (d) =>
     : '—';
 
 // Uploaded files are served by the backend (images are public); build an absolute URL for <img src>
+// export const fileSrc = (url) => {
+//   if (!url) return '';
+//   if (/^https?:\/\//i.test(url)) return url;
+//   const base = API_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : '');
+//   return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
+// };
+
+
 export const fileSrc = (url) => {
   if (!url) return '';
-  if (/^https?:\/\//i.test(url)) return url;
-  const base = API_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : '');
+
+  // Already a complete URL
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  const base =
+    API_ORIGIN ||
+    (typeof window !== 'undefined' ? window.location.origin : '');
+
   return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
