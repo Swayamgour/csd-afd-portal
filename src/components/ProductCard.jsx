@@ -4,6 +4,7 @@ import { useStore } from "../context/Store.jsx";
 import { CAT_LABEL, onImgError } from "../data/utils.js";
 import { placeholder } from "../data/art.js";
 import { API_ORIGIN } from "../config/env.js";
+import PriceLock, { useCanSeePrice } from "./PriceLock.jsx";
 
 export const Stars = ({ v, n }) => (typeof v !== "number" || !v) ? null : (
 
@@ -83,7 +84,8 @@ export default function ProductCard({ p, list }) {
   const { wish, cmp, toggleWish, toggleCmp, addCart } = useStore(),
     w = wish.includes(p.id),
     c = cmp.includes(p.id),
-    appl = p.category === "white-goods";
+    appl = p.category === "white-goods",
+    canSeePrice = useCanSeePrice();
 
   const minPrice =
     p.minPrice ??
@@ -126,7 +128,7 @@ export default function ProductCard({ p, list }) {
           <Img p={p} />
         </Link>
         <span className="tag">{CAT_LABEL[p.category]}</span>
-        {appl && p.discount > 0 && (
+        {canSeePrice && appl && p.discount > 0 && (
           <span className="disc">{p.discount}% OFF</span>
         )}
         <div className="card-act">
@@ -170,19 +172,28 @@ export default function ProductCard({ p, list }) {
           </p>
         )}
         <div className="card-foot">
-          <div className="card-price-block">
-            <div className="card-price-main">
-              <span className="card-price-amount">
-                {formattedPrice || "Price on request"}
-              </span>
-              {p.mrp && p.mrp > (minPrice || 0) && (
-                <s className="card-mrp">₹ {Number(p.mrp).toLocaleString("en-IN")}</s>
-              )}
+          {canSeePrice ? (
+            <div className="card-price-block">
+              <div className="card-price-main">
+                <span className="card-price-amount">
+                  {formattedPrice || "Price on request"}
+                </span>
+                {p.mrp && p.mrp > (minPrice || 0) && (
+                  <s className="card-mrp">₹ {Number(p.mrp).toLocaleString("en-IN")}</s>
+                )}
+              </div>
+              <p className="card-price-note">
+                Ex-CSD Price of item inclusive of taxes and levies, excluding charges viz RTO, Insurance Etc, if applicable
+              </p>
             </div>
-            <p className="card-price-note">
-              Ex-CSD Price of item inclusive of taxes and levies, excluding charges viz RTO, Insurance Etc, if applicable
-            </p>
-          </div>
+          ) : (
+            <div className="card-price-block card-price-locked">
+              <PriceLock />
+              <p className="card-price-note">
+                Ex-CSD Price visible after login
+              </p>
+            </div>
+          )}
         </div>
         <div className="row">
           <Link className="btn out" to={`/products/${p.id}`}>
