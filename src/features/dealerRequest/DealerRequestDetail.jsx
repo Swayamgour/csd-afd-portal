@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Camera, ExternalLink, CheckCircle2, XCircle, AlertTriangle, FileText, RefreshCw, Building, UserCheck } from 'lucide-react';
 import Badge from '../../components/common/Badge.jsx';
 import Button from '../../components/common/Button.jsx';
-import { STAGES, statusMeta, fmtDateTime, fileSrc, mapsLink } from './dealerRequestUtils.js';
+import { STAGES, statusMeta, fmtDateTime, fileSrc, mapsLink, placeholderPhoto } from './dealerRequestUtils.js';
 import { useRecalculateScrutinyMutation } from '../../redux/api/dealerRequestApi.js';
 
 const MANDATORY_DOC_LABELS = {
@@ -198,7 +198,15 @@ function MandatoryDocumentsList({ documents, indemnityBondSubmitted }) {
                 onClick={() => setZoom(url)}
                 style={{ padding: 0, border: '1px solid #cbd5e1', borderRadius: 6, overflow: 'hidden', background: '#fff', cursor: 'zoom-in' }}
               >
-                <img src={fileSrc(url)} alt={`Showroom Photo ${i + 1}`} style={{ width: '100%', height: 75, objectFit: 'cover', display: 'block' }} />
+                <img
+                  src={fileSrc(url)}
+                  alt={`Showroom Photo ${i + 1}`}
+                  style={{ width: '100%', height: 75, objectFit: 'cover', display: 'block' }}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = placeholderPhoto(`Showroom Photo ${i + 1}`);
+                  }}
+                />
               </button>
             ))}
           </div>
@@ -344,20 +352,38 @@ export function VerificationReport({ verification }) {
             <Camera size={13} aria-hidden /> Photos ({verification.photos.length})
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10 }}>
-            {verification.photos.map((p, i) => (
-              <button
-                key={p.url || i}
-                type="button"
-                onClick={() => setZoom(p)}
-                style={{ padding: 0, border: '1px solid var(--border, #d8dee6)', borderRadius: 8, overflow: 'hidden', background: 'none', cursor: 'zoom-in', textAlign: 'left' }}
-                aria-label={`Open photo ${i + 1}`}
-              >
-
-               
-                <img src={fileSrc(p.url)} alt={p.caption || `Verification photo ${i + 1}`} style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block' }} />
-                {p.caption && <div className="micro muted" style={{ padding: '4px 6px' }}>{p.caption}</div>}
-              </button>
-            ))}
+            {verification.photos.map((p, i) => {
+              const photoUrl = typeof p === 'string' ? p : p?.url || p?.path || p?.fileUrl || '';
+              const photoCaption = typeof p === 'object' ? p?.caption : '';
+              return (
+                <button
+                  key={photoUrl || i}
+                  type="button"
+                  onClick={() => setZoom(p)}
+                  style={{
+                    padding: 0,
+                    border: '1px solid var(--border, #d8dee6)',
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                    background: '#f8fafc',
+                    cursor: 'zoom-in',
+                    textAlign: 'left',
+                  }}
+                  aria-label={`Open photo ${i + 1}`}
+                >
+                  <img
+                    src={fileSrc(photoUrl)}
+                    alt={photoCaption || `Verification photo ${i + 1}`}
+                    style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block' }}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = placeholderPhoto(`Verification photo ${i + 1}`);
+                    }}
+                  />
+                  {photoCaption && <div className="micro muted" style={{ padding: '4px 6px' }}>{photoCaption}</div>}
+                </button>
+              );
+            })}
           </div>
         </>
       )}
@@ -369,7 +395,15 @@ export function VerificationReport({ verification }) {
           onClick={() => setZoom(null)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, cursor: 'zoom-out' }}
         >
-          <img src={fileSrc(zoom.url)} alt={zoom.caption || 'Verification photo'} style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 8 }} />
+          <img
+            src={fileSrc(typeof zoom === 'string' ? zoom : zoom?.url || zoom?.path || '')}
+            alt={zoom?.caption || 'Verification photo'}
+            style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 8 }}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = placeholderPhoto('Verification Photo');
+            }}
+          />
         </div>
       )}
     </Section>
