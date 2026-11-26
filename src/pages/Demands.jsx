@@ -335,9 +335,9 @@ export default function Demands() {
             <Info size={18} color="#1e4fd8" />
             <span>Meaning of the status are as follows (from CSD Beneficiary Manual):</span>
           </h2>
-          <span className="demand-status-toggle-link">
+          {/* <span className="demand-status-toggle-link">
             {showStatusLegend ? 'Hide' : 'Show'}
-          </span>
+          </span> */}
         </div>
 
         {showStatusLegend && (
