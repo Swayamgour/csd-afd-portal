@@ -337,7 +337,7 @@ export default function LoginForm({ onNeedOtp }) {
         DigiLocker sign-in is for beneficiaries. No password or OTP needed.
       </p>
 
-      {SHOW_DEMO_ACCOUNTS && (
+      {/* {SHOW_DEMO_ACCOUNTS && ( */}
         <details className="av2-demo">
           <summary>
             <span>Demo accounts for testing</span>
@@ -369,7 +369,7 @@ export default function LoginForm({ onNeedOtp }) {
             })}
           </div>
         </details>
-      )}
+      {/* )} */}
     </form>
   );
 }
