@@ -3,11 +3,11 @@ import DealerRequestsBoard from '../dealerRequest/DealerRequestsBoard.jsx';
 import AdminActions from '../dealerRequest/AdminActions.jsx';
 
 const TABS = [
+  { id: 'all', label: 'All', statuses: '' },
   { id: 'action', label: 'Needs my action', statuses: 'PENDING_ADMIN,DEPOT_VERIFIED' },
   { id: 'field', label: 'With Depot', statuses: 'WITH_DEPOT' },
   { id: 'created', label: 'Dealer created', statuses: 'DEALER_CREATED' },
   { id: 'closed', label: 'Rejected / Cancelled', statuses: 'REJECTED,CANCELLED' },
-  { id: 'all', label: 'All', statuses: '' },
 ];
 
 export default function CsdDealerRequests() {

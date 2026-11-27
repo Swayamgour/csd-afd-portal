@@ -112,6 +112,12 @@ export const oemApi = api.injectEndpoints({
       ],
     }),
 
+    // rejected NEW product, corrected -> back to the HO approval queue
+    resubmitOemProduct: builder.mutation({
+      query: (id) => ({ url: `/oem/products/${id}/resubmit`, method: 'POST' }),
+      invalidatesTags: (_res, _err, id) => [{ type: 'OemProduct', id }, 'OemProduct', 'OemDashboard', 'Product'],
+    }),
+
     // 3. Dealer Network
     getOemDealers: builder.query({
       query: (params = {}) => ({
@@ -363,6 +369,7 @@ export const {
   useCreateOemProductMutation,
   useUpdateOemProductMutation,
   useUpdateOemProductStatusMutation,
+  useResubmitOemProductMutation,
   useGetOemDealersQuery,
   useGetOemDealerByIdQuery,
   useGetOemDealerProductsQuery,

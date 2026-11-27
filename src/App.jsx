@@ -69,6 +69,7 @@ const CsdDashboard = lazyImport(() => import('./features/csd/CsdDashboard.jsx'),
 const CsdUsers = lazyImport(() => import('./features/csd/CsdUsers.jsx'), 'CsdUsers');
 const CsdBeneficiaries = lazyImport(() => import('./features/csd/CsdBeneficiaries.jsx'), 'CsdBeneficiaries');
 const CsdProducts = lazyImport(() => import('./features/csd/CsdProducts.jsx'), 'CsdProducts');
+const CsdProductApprovals = lazyImport(() => import('./features/csd/CsdProductApprovals.jsx'), 'CsdProductApprovals');
 const CsdCategories = lazyImport(() => import('./features/csd/CsdCategories.jsx'), 'CsdCategories');
 const CsdOems = lazyImport(() => import('./features/csd/CsdOems.jsx'), 'CsdOems');
 const CsdDealers = lazyImport(() => import('./features/csd/CsdDealers.jsx'), 'CsdDealers');
@@ -248,6 +249,7 @@ export default function App() {
           <Route path="/csd/users" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdUsers /></RoleRoute>} />
           <Route path="/csd/beneficiaries" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdBeneficiaries /></RoleRoute>} />
           <Route path="/csd/products" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdProducts /></RoleRoute>} />
+          <Route path="/csd/product-approvals" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><CsdProductApprovals /></RoleRoute>} />
           <Route path="/csd/excel-import" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><OemExcelImportPage /></RoleRoute>} />
           <Route path="/csd/products/new" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><ProductFormPage /></RoleRoute>} />
           <Route path="/csd/products/:id/edit" element={<RoleRoute allowedRoles={[ROLES.CSD_OFFICIAL, ROLES.ADMIN]}><ProductFormPage /></RoleRoute>} />

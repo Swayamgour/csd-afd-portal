@@ -62,6 +62,11 @@ export function ProductFormPage() {
     return [...csdList, ...oemList].find((p) => String(p._id || p.id) === String(id)) || null;
   }, [isEdit, rawProduct, csdProductsData, oemProductsData, id]);
 
+  // OEM + existing product that is live: only price and images can be changed (HO verifies the change).
+  // A NEW product that is still waiting / rejected can be edited fully.
+  const unapprovedNew = product?.approval?.type === 'NEW' && ['PENDING', 'REJECTED'].includes(product?.approval?.status);
+  const lockedEdit = Boolean(isOem && isEdit && product && !unapprovedNew);
+
   const [formState, setFormState] = useState({
     name: '',
     sku: '',
@@ -90,8 +95,11 @@ export function ProductFormPage() {
 
   useEffect(() => {
     if (product) {
-      const prodImages = Array.isArray(product.images) && product.images.length > 0
-        ? product.images.filter(Boolean)
+      // a price / image update that is still waiting for HO: show the OEM what it sent
+      const pend = product.approval?.status === 'PENDING' && product.approval?.type === 'UPDATE' ? product.approval.pendingChanges || {} : {};
+      const baseImages = Array.isArray(pend.images) ? pend.images : product.images;
+      const prodImages = Array.isArray(baseImages) && baseImages.length > 0
+        ? baseImages.filter(Boolean)
         : (product.imageUrl ? [product.imageUrl] : []);
 
       setFormState({
@@ -102,8 +110,8 @@ export function ProductFormPage() {
         oemId: product.oemId?._id || product.oemId || (oems[0]?._id || ''),
         variant: product.variant || '',
         afdType: product.afdType || 'AFD_I',
-        price: product.price || product.priceToCustomer || '',
-        mrp: product.mrp || '',
+        price: pend.price ?? (product.price || product.priceToCustomer || ''),
+        mrp: pend.mrp ?? (product.mrp || ''),
         basicPrice: product.basicPrice || '',
         taxPercent: product.taxPercent || '28',
         engineCapacity: product.engineCapacity || '',
@@ -400,16 +408,30 @@ export function ProductFormPage() {
         taxPercent: Number(formState.taxPercent),
         imageUrl: primaryImage,
         images: allImages,
-        status: formState.status,
+        ...(isOem ? {} : { status: formState.status }), // OEM can not set the status
         description: formState.description.trim(),
       };
 
       if (isOem) {
         if (isEdit) {
-          await updateOemProduct({ id, ...payload }).unwrap();
+          // live product: server accepts ONLY price / mrp / images from an OEM
+          const body = lockedEdit
+            ? { price: payload.price, mrp: payload.mrp, imageUrl: payload.imageUrl, images: payload.images }
+            : payload;
+          await updateOemProduct({ id, ...body }).unwrap();
         } else {
           await createOemProduct(payload).unwrap();
         }
+        navigate(backUrl, {
+          state: {
+            toast: lockedEdit
+              ? 'Update sent to CSD HO for verification. The product stays Draft until it is approved.'
+              : isEdit
+                ? 'Product saved. It is waiting for CSD HO approval.'
+                : 'Product submitted to CSD HO for approval. It goes live after approval.',
+          },
+        });
+        return;
       } else {
         if (isEdit) {
           await updateCsdProduct({ id, ...payload }).unwrap();
@@ -443,6 +465,18 @@ export function ProductFormPage() {
       />
 
       <form onSubmit={handleSubmit}>
+        {isOem && (
+          <div className="alert-banner warning small mb-2" role="status">
+            {lockedEdit
+              ? 'You can change only the price and images of an existing product. After you save, the product becomes Draft until CSD HO verifies the change.'
+              : product?.approval?.status === 'REJECTED'
+                ? `Rejected by CSD HO${product.approval.remarks ? `: ${product.approval.remarks}` : ''}. Correct it, save, then press Resubmit on the product list.`
+                : isEdit
+                  ? 'This product is waiting for CSD HO approval. You can still correct any detail.'
+                  : 'Fill all the details and submit. The product goes to CSD HO for approval and becomes live only after it is approved.'}
+          </div>
+        )}
+        <fieldset disabled={lockedEdit} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <div className="card mb-2">
           <div className="card-header">
             <h3 className="card-title row align-center gap-1">
@@ -510,33 +544,41 @@ export function ProductFormPage() {
                 </div>
               )}
 
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label className="form-label">AFD Classification</label>
                 <select
                   className="form-select"
                   value={formState.afdType}
                   onChange={(e) => setFormState({ ...formState, afdType: e.target.value })}
                 >
-                  <option value="AFD_I">AFD-I (Four-Wheelers, Two-Wheelers, Major Consumer Durables)</option>
+                  <option value="AFD_I">AFD-I (Four-Wheelers, Two-Wheelers)</option>
                   <option value="AFD_II">AFD-II (White Goods, Electronics & Appliances)</option>
                 </select>
-              </div>
+              </div> */}
 
               <div className="form-group">
                 <label className="form-label">Catalogue Status</label>
-                <select
-                  className="form-select"
-                  value={formState.status}
-                  onChange={(e) => setFormState({ ...formState, status: e.target.value })}
-                >
-                  <option value="ACTIVE">ACTIVE (Available for Indenting)</option>
-                  <option value="INACTIVE">INACTIVE (Hidden from Storefront)</option>
-                  <option value="DRAFT">DRAFT (Under Review)</option>
-                </select>
+                {isOem ? (
+                  <div className="form-control" style={{ background: '#f4f6fa' }}>
+                    {isEdit && product?.status ? product.status : 'DRAFT'} - managed by CSD HO
+                  </div>
+                ) : (
+                  <select
+                    className="form-select"
+                    value={formState.status}
+                    onChange={(e) => setFormState({ ...formState, status: e.target.value })}
+                  >
+                    <option value="ACTIVE">ACTIVE (Available for Indenting)</option>
+                    <option value="INACTIVE">INACTIVE (Hidden from Storefront)</option>
+                    <option value="DRAFT">DRAFT (Under Review)</option>
+                  </select>
+                )}
               </div>
             </div>
           </div>
         </div>
+
+        </fieldset>
 
         {/* Pricing Card */}
         <div className="card mb-2">
@@ -583,6 +625,7 @@ export function ProductFormPage() {
                   placeholder="e.g. 980000"
                   className="form-control font-mono"
                   value={formState.basicPrice}
+                  disabled={lockedEdit}
                   onChange={(e) => setFormState({ ...formState, basicPrice: e.target.value })}
                 />
               </div>
@@ -594,6 +637,7 @@ export function ProductFormPage() {
                   placeholder="28"
                   className="form-control font-mono"
                   value={formState.taxPercent}
+                  disabled={lockedEdit}
                   onChange={(e) => setFormState({ ...formState, taxPercent: e.target.value })}
                 />
               </div>
@@ -601,6 +645,7 @@ export function ProductFormPage() {
           </div>
         </div>
 
+        <fieldset disabled={lockedEdit} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         {/* Technical Specs Card - fields change with the selected category */}
         <div className="card mb-2">
           <div className="card-header">
@@ -608,9 +653,7 @@ export function ProductFormPage() {
               <Layers size={18} />
               3. {KIND_LABEL[kind]} Specifications
             </h3>
-            <p className="muted fs-xs" style={{ margin: 0 }}>
-              Fields below change with the Product Category selected above.
-            </p>
+         
           </div>
           <div className="card-body">
             <div className="form-grid">
@@ -686,15 +729,13 @@ export function ProductFormPage() {
               <Palette size={18} />
               Colour Variants
             </h3>
-            <p className="muted fs-xs" style={{ margin: 0 }}>
-              Car, bike aur home appliance - sab me colours add kar sakte hain.
-            </p>
+           
           </div>
           <div className="card-body">
             <div className="row gap-2 mb-2" style={{ flexWrap: 'wrap' }}>
               {[
-                ['SAME', 'Same price for all colours', `Product price (₹${formState.price || '—'}) har colour par lagega`],
-                ['PER_COLOR', 'Different price per colour', 'Har colour ka apna price set karo'],
+                ['SAME', 'Same price for all colours'],
+                ['PER_COLOR', 'Different price per colour'],
               ].map(([val, title, hint]) => (
                 <label
                   key={val}
@@ -818,6 +859,8 @@ export function ProductFormPage() {
             )}
           </div>
         </div>
+
+        </fieldset>
 
         {/* 4. Multiple Images & Media Gallery Card */}
         <div className="card mb-2">
@@ -1090,7 +1133,7 @@ export function ProductFormPage() {
                 type="submit"
                 loading={isSaving}
               >
-                {isEdit ? 'Save Changes' : 'Catalogue Product'}
+                {isOem ? (lockedEdit ? 'Send update for approval' : isEdit ? 'Save Changes' : 'Submit for approval') : (isEdit ? 'Save Changes' : 'Catalogue Product')}
               </Button>
             </div>
           </div>

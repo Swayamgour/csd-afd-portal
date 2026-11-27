@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { RefreshCw, Filter, PlusCircle, Edit3, CheckCircle2, AlertCircle, X, Send, FileSpreadsheet } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader.jsx';
 import Card from '../../components/common/Card.jsx';
@@ -13,7 +13,7 @@ import { formatCurrency } from '../../utils/formatters.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useGetCategoriesQuery } from '../../redux/api/productApi.js';
-import { useGetOemProductsQuery, useUpdateOemProductStatusMutation, useImportOemProductsExcelMutation } from '../../redux/api/oemApi.js';
+import { useGetOemProductsQuery, useResubmitOemProductMutation, useImportOemProductsExcelMutation } from '../../redux/api/oemApi.js';
 
 export default function OemProducts() {
   const navigate = useNavigate();
@@ -27,13 +27,26 @@ export default function OemProducts() {
   const [pageSize, setPageSize] = useState(15);
 
   const [toastMessage, setToastMessage] = useState(null);
+  const location = useLocation();
+
+  // message sent by the product form after "Submit for approval" / "Send update for approval"
+  React.useEffect(() => {
+    if (location.state?.toast) {
+      setToastMessage(location.state.toast);
+      navigate(location.pathname, { replace: true, state: null });
+      const t = setTimeout(() => setToastMessage(null), 6000);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [location.state]); // eslint-disable-line react-hooks/exhaustive-deps
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const queryParams = useMemo(() => {
     const p = { page, limit: pageSize };
     if (debouncedSearch) p.q = debouncedSearch;
     if (categoryFilter) p.categoryId = categoryFilter;
-    if (statusFilter) p.status = statusFilter;
+    if (statusFilter.startsWith('approval:')) p.approval = statusFilter.slice(9);
+    else if (statusFilter) p.status = statusFilter;
     return p;
   }, [debouncedSearch, categoryFilter, statusFilter, page, pageSize]);
 
@@ -46,7 +59,7 @@ export default function OemProducts() {
 
   const { data: categories = [] } = useGetCategoriesQuery();
 
-  const [updateProductStatus, { isLoading: isSubmittingStatus }] = useUpdateOemProductStatusMutation();
+  const [resubmitProduct, { isLoading: isResubmitting }] = useResubmitOemProductMutation();
   const [importOemProductsExcel] = useImportOemProductsExcelMutation();
 
   const products = productsData?.items || [];
@@ -61,16 +74,14 @@ export default function OemProducts() {
   };
 
 
-  const handleSubmitForApproval = async (product) => {
+  // rejected NEW product, corrected -> back to the approval queue
+  const handleResubmit = async (product) => {
     try {
-      await updateProductStatus({
-        id: product._id,
-        status: 'PENDING_APPROVAL',
-      }).unwrap();
-      setToastMessage(`Product "${product.name}" submitted for CSD HO approval.`);
+      await resubmitProduct(product._id).unwrap();
+      setToastMessage(`Product "${product.name}" resubmitted for CSD HO approval.`);
       setTimeout(() => setToastMessage(null), 5000);
     } catch (err) {
-      setFormError(err?.data?.message || err?.message || 'Failed to submit product for approval.');
+      setFormError(err?.data?.message || err?.message || 'Failed to resubmit product.');
     }
   };
 
@@ -116,7 +127,33 @@ export default function OemProducts() {
     {
       header: 'Status',
       accessor: 'status',
-      render: (r) => <StatusBadge status={r.status} />,
+      render: (r) => {
+        const ap = r.approval;
+        if (ap?.status === 'PENDING') {
+          const isUpd = ap.type === 'UPDATE';
+          const ch = ap.pendingChanges || {};
+          return (
+            <div>
+              <span className="badge status-badge">Draft</span>
+              <span className="micro muted block">
+                {isUpd ? 'Update waiting for CSD HO verification' : 'New product waiting for CSD HO approval'}
+              </span>
+              {isUpd && ch.price !== undefined && (
+                <span className="micro block">New price: {formatCurrency(ch.price)}</span>
+              )}
+            </div>
+          );
+        }
+        if (ap?.status === 'REJECTED') {
+          return (
+            <div>
+              <span className="badge status-badge status-rejected">{ap.type === 'UPDATE' ? 'Update rejected' : 'Rejected'}</span>
+              {ap.remarks && <span className="micro muted block">{ap.remarks}</span>}
+            </div>
+          );
+        }
+        return <StatusBadge status={r.status} />;
+      },
     },
     {
       header: 'Actions',
@@ -128,20 +165,20 @@ export default function OemProducts() {
             variant="outline"
             icon={Edit3}
             onClick={() => handleOpenEdit(r)}
-            title="Edit Specifications"
+            title="Update price and images"
           >
             Edit
           </Button>
-          {r.status === 'DRAFT' && (
+          {r.approval?.status === 'REJECTED' && r.approval?.type === 'NEW' && (
             <Button
               size="sm"
               variant="primary"
               icon={Send}
-              loading={isSubmittingStatus}
-              onClick={() => handleSubmitForApproval(r)}
-              title="Submit to CSD HO for Rate Contract Approval"
+              loading={isResubmitting}
+              onClick={() => handleResubmit(r)}
+              title="Send the corrected product to CSD HO again"
             >
-              Submit
+              Resubmit
             </Button>
           )}
         </div>
@@ -242,17 +279,23 @@ export default function OemProducts() {
         />
 
         <div className="flex gap-1 mb-2 px-2">
-          {['', 'ACTIVE', 'PUBLISHED', 'PENDING_APPROVAL', 'DRAFT', 'INACTIVE'].map((st) => (
+          {[
+            { key: '', label: 'All' },
+            { key: 'approval:PENDING', label: 'Waiting for approval' },
+            { key: 'approval:REJECTED', label: 'Rejected' },
+            { key: 'ACTIVE', label: 'Active' },
+            { key: 'INACTIVE', label: 'Inactive' },
+          ].map((chip) => (
             <button
-              key={st}
+              key={chip.key}
               type="button"
-              className={`btn sm ${statusFilter === st ? 'primary' : 'out'}`}
+              className={`btn sm ${statusFilter === chip.key ? 'primary' : 'out'}`}
               onClick={() => {
-                setStatusFilter(st);
+                setStatusFilter(chip.key);
                 setPage(1);
               }}
             >
-              {st || 'All Statuses'}
+              {chip.label}
             </button>
           ))}
         </div>
