@@ -49,7 +49,7 @@ export const AdminProfile = () => {
         <Card title="Root Privileges & Delegation">
           <div className="flex-col-gap-md">
             <div className="privileged-operations-box">
-              <h4 className="m-0 mb-sm fs-md">Privileged Operations</h4>
+              <h4 className="m-0 mb-sm text-md">Privileged Operations</h4>
               <ul className="privileged-operations-list">
                 <li>Global tenant user provisioning, account termination, and lockout overrides</li>
                 <li>Emergency maintenance mode triggering and cyber treasury pause</li>

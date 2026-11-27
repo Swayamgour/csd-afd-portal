@@ -196,7 +196,7 @@ export default function CsdUrcs() {
 
       {/* URC DETAILS INSPECTION INLINE CARD */}
       {selectedUrcForView && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">URC Station Profile: {selectedUrcForView.name}</h3>

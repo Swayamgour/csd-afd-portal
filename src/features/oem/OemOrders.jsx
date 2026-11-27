@@ -209,7 +209,7 @@ export default function OemOrders() {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-emerald-600 hover:text-emerald-800 cursor-pointer"
+            className="text-emerald-600 hover-text-ok cursor-pointer"
           >
             <X size={15} />
           </button>
@@ -275,7 +275,7 @@ export default function OemOrders() {
       {/* Update Order Status / Allocate VIN Inline Section */}
       {Boolean(selectedOrder) && (
         <Card
-          className="mt-4 border-primary"
+          className="mt-4 border-accent"
           title={`Update Order Status · ${selectedOrder?.orderNo || '...'}`}
           subtitle="Advance order through factory fulfillment lifecycle with tracking telemetry"
           headerAction={
@@ -286,7 +286,7 @@ export default function OemOrders() {
         >
           <form onSubmit={handleStatusSubmit} className="space-y-4">
             {formError && (
-              <div className="p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
+              <div className="p-snug bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
                 <AlertCircle size={16} />
                 <span>{formError}</span>
               </div>
@@ -389,7 +389,7 @@ export default function OemOrders() {
       {/* Order Details Inline Dossier */}
       {Boolean(detailOrderId) && (
         <Card
-          className="mt-4 border-primary"
+          className="mt-4 border-accent"
           title={`Order Details: ${orderDetail?.orderNo || '...'}`}
           subtitle="Institutional CSD Supply Order Dossier"
           headerAction={
@@ -402,7 +402,7 @@ export default function OemOrders() {
             <Loader label="Loading order details" />
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">
+              <div className="grid grid-cols-2 cols-md-3 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">
                 <div>
                   <span className="text-muted block text-xs">Order Number:</span>
                   <span className="font-mono font-semibold text-brand">{orderDetail?.orderNo}</span>

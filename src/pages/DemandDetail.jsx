@@ -126,14 +126,14 @@ export default function DemandDetail() {
               Demand #{demandId}
             </h1>
             <span className={`checkout-spec-pill ${
-              ['SUPPLY_ORDER_ISSUED', 'COMPLETED'].includes(currentStatus)
-                ? 'badge-verified-pill'
-                : isTerminated
-                ? 'status-onhold text-danger'
-                : currentStatus === 'CREATED'
-                ? 'status-onhold'
-                : 'status-processing'
-            }`}>
+ ['SUPPLY_ORDER_ISSUED', 'COMPLETED'].includes(currentStatus)
+ ? 'badge-verified-pill'
+ : isTerminated
+ ? 'status-onhold text-danger'
+ : currentStatus === 'CREATED'
+ ? 'status-onhold'
+ : 'status-processing'
+ }`}>
               {getStatusLabel(demand).toUpperCase()}
             </span>
           </div>

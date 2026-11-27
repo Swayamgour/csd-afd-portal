@@ -142,7 +142,7 @@ export const HelpdeskKnowledgeBase = () => {
       {/* CREATE ARTICLE INLINE SECTION */}
       {showCreateModal && (
         <Card
-          className="mt-4 border-primary"
+          className="mt-4 border-accent"
           title="Author Knowledge Article"
           subtitle="Standard Operating Procedure & Troubleshooting Guide for Beneficiaries"
           headerAction={

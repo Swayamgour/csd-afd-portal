@@ -191,7 +191,7 @@ export default function CsdOems() {
 
       {/* OEM DETAILS INSPECTION INLINE CARD */}
       {selectedOemForView && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">OEM Profile: {selectedOemForView.name}</h3>

@@ -83,7 +83,7 @@ export default function CsdPayments() {
           <span className="font-semibold text-xs block text-ink">
             {row.beneficiaryId?.fullName || row.beneficiaryId?.name || 'Applicant'}
           </span>
-          <span className="text-[10px] text-muted font-mono">{row.beneficiaryId?.serviceNumber || ''}</span>
+          <span className="text-tiny text-muted font-mono">{row.beneficiaryId?.serviceNumber || ''}</span>
         </div>
       ),
     },
@@ -101,10 +101,10 @@ export default function CsdPayments() {
       accessor: 'method',
       render: (row) => (
         <div>
-          <span className="badge-pill badge-outline badge-sm uppercase text-[10px] font-mono">
+          <span className="badge-pill badge-outline badge-sm uppercase text-tiny font-mono">
             {row.method || row.provider || 'ONLINE'}
           </span>
-          <div className="text-[10px] font-mono text-slate-500 mt-0.5">{row.utr || row.gatewayTxnId || 'Direct Treasury'}</div>
+          <div className="text-tiny font-mono text-slate-500 mt-hair">{row.utr || row.gatewayTxnId || 'Direct Treasury'}</div>
         </div>
       ),
     },
@@ -200,9 +200,9 @@ export default function CsdPayments() {
 
       {/* Filter and Search Bar */}
       <Card>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+        <div className="flex flex-col bar-row items-center justify-between gap-4 p-2">
+          <div className="relative w-full bar-search">
+            <Search className="absolute left-3 icon-center-y h-4 w-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search by Payment No, Demand, or UTR..."
@@ -212,7 +212,7 @@ export default function CsdPayments() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full bar-auto">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -231,7 +231,7 @@ export default function CsdPayments() {
                   setStatusFilter('');
                   setSearchTerm('');
                 }}
-                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded"
+                className="text-xs text-rose-600 hover-text-bad font-medium px-2 py-1 rounded"
               >
                 Reset Filters
               </button>
@@ -257,7 +257,7 @@ export default function CsdPayments() {
 
       {/* Payment Inspection Inline Card */}
       {selectedPayment && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Payment Dossier: {selectedPayment.paymentNo || selectedPayment._id?.slice(-8)}</h3>

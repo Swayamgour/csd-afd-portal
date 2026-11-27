@@ -136,7 +136,7 @@ export function BeneficiaryEligibility() {
         subtitle="Select any car, bike, or appliance from the official CSD catalogue to compute immediate sanction eligibility via backend."
         className="mb-3"
       >
-        <div className="max-w-xl mb-3">
+        <div className="maxw-xl mb-3">
           <label className="form-label">
             Select Product from Catalogue
           </label>
@@ -165,7 +165,7 @@ export function BeneficiaryEligibility() {
         )}
 
         {evalError && (
-          <div className="panel p-3 border-danger bg-red-soft mb-2 text-danger small">
+          <div className="panel p-3 border-bad bg-red-soft mb-2 text-danger small">
             ⚠ {evalError}
           </div>
         )}
@@ -173,8 +173,8 @@ export function BeneficiaryEligibility() {
         {checkResult && !checkingEligibility && (
           <div
             className={`panel p-3 border-2 ${
-              checkResult.eligible ? 'border-green bg-green-soft' : 'border-danger bg-red-soft'
-            }`}
+ checkResult.eligible ? 'border-green bg-green-soft' : 'border-bad bg-red-soft'
+ }`}
           >
             <div className="between align-center flex-wrap gap-2 mb-2">
               <div className="row align-center gap-1">

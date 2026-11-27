@@ -244,7 +244,7 @@ export default function BeneficiaryPayments() {
 
       {/* 4. Filter and Search Bar identical to BeneficiaryProducts.jsx */}
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mb-4 flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex flex-1 min-w-[280px] items-center gap-2 border border-slate-300 rounded px-3 py-2 bg-slate-50">
+        <div className="flex flex-1 minw-280 items-center gap-2 border border-slate-300 rounded px-3 py-2 bg-slate-50">
           <Search size={18} className="text-slate-400" />
           <input
             type="text"
@@ -274,7 +274,7 @@ export default function BeneficiaryPayments() {
               refetchPayments();
               refetchDemands();
             }}
-            className="p-2 border border-slate-300 rounded hover:bg-slate-50 text-slate-600 transition-colors"
+            className="p-2 border border-slate-300 rounded hover-bg-subtle text-slate-600 transition-colors"
             title="Refresh payments list"
           >
             <RefreshCw size={18} />
@@ -294,7 +294,7 @@ export default function BeneficiaryPayments() {
             {pendingDemands.map((dem) => (
               <div
                 key={dem._id || dem.id}
-                className="panel p-3 between align-center flex-wrap gap-2 bg-slate-50 border border-slate-200 rounded-lg hover:border-brand transition-colors"
+                className="panel p-3 between align-center flex-wrap gap-2 bg-slate-50 border border-slate-200 rounded-lg hover-border-brand transition-colors"
               >
                 <div>
                   <div className="row align-center gap-1 mb-05">

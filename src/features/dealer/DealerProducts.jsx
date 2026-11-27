@@ -169,7 +169,7 @@ export default function DealerProducts() {
         title="Hierarchy Selection"
         subtitle="Select the Manufacturer (OEM) and Dealership to inspect or authorize vehicle models"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 cols-md-2 gap-4">
           <div>
             <label className="form-label">1. Select Manufacturer (OEM) *</label>
             <select
@@ -221,7 +221,7 @@ export default function DealerProducts() {
 
       {/* PRODUCT AUTHORIZATION MATRIX */}
       {mappingToDelete && (
-        <Card className="mb-3 border-danger">
+        <Card className="mb-3 border-bad">
           <div className="card-header between mb-2">
             <div>
               <h4 className="card-title text-danger">Revoke Authorization Mapping</h4>
@@ -272,7 +272,7 @@ export default function DealerProducts() {
                     <th className="text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="rows-divided ">
                   {displayedProducts.map((prod) => {
                     const pId = prod._id || prod.id;
                     const mapping = mappingMap.get(String(pId));
@@ -281,15 +281,15 @@ export default function DealerProducts() {
                     return (
                       <tr
                         key={pId}
-                        className={`hover:bg-slate-50/80 transition ${
-                          isAuthorized ? 'bg-emerald-50/30' : ''
-                        }`}
+                        className={`hover-bg-subtle transition ${
+ isAuthorized ? 'bg-ok-faint' : ''
+ }`}
                       >
                         <td className="text-center">
                           <button
                             type="button"
                             onClick={() => handleToggleProduct(prod)}
-                            className="text-slate-600 hover:text-brand transition"
+                            className="text-slate-600 hover-text-brand transition"
                             title={isAuthorized ? 'Revoke Authorization' : 'Authorize Model'}
                           >
                             {isAuthorized ? (
@@ -301,7 +301,7 @@ export default function DealerProducts() {
                         </td>
                         <td>
                           <div className="font-semibold text-slate-900">{prod.name}</div>
-                          <div className="text-[10px] text-slate-500">{prod.variant || ''}</div>
+                          <div className="text-tiny text-slate-500">{prod.variant || ''}</div>
                         </td>
                         <td className="font-mono text-slate-600">
                           {prod.sku || prod.indexNo || '—'}
@@ -312,16 +312,16 @@ export default function DealerProducts() {
                         <td>
                           {mapping ? (
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                mapping.active
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : 'bg-slate-100 text-slate-600'
-                              }`}
+                              className={`px-2 py-hair rounded text-tiny font-bold ${
+ mapping.active
+ ? 'bg-ok-soft text-emerald-800'
+ : 'bg-muted-soft text-slate-600'
+ }`}
                             >
                               {mapping.active ? mapping.availabilityStatus || 'AVAILABLE' : 'INACTIVE'}
                             </span>
                           ) : (
-                            <span className="text-slate-400 text-[11px]">Not Authorized</span>
+                            <span className="text-slate-400 text-xsmall">Not Authorized</span>
                           )}
                         </td>
                         <td className="font-mono text-slate-600">
@@ -332,7 +332,7 @@ export default function DealerProducts() {
                             <button
                               type="button"
                               onClick={() => setMappingToDelete(mapping)}
-                              className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition"
+                              className="text-red-500 hover-text-bad p-1 rounded hover-bg-bad-soft transition"
                               title="Delete Authorization Record"
                             >
                               <Trash2 size={14} />

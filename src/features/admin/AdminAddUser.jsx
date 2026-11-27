@@ -597,7 +597,7 @@ export default function AdminAddUser() {
                   <div>
                     <div className="flex-align-center mb-xs min-h-30">
                       <label htmlFor="pass2" className="form-label">
-                        Repeat Password <span className="description fw-normal text-muted fs-sm">(required)</span>
+                        Repeat Password <span className="description font-regular text-muted fs-sm">(required)</span>
                       </label>
                     </div>
 

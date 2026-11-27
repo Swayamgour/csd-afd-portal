@@ -149,7 +149,7 @@ export function BeneficiaryDashboard() {
             <p className="text-sm mb-3">{getErrorMessage(dashboardError)}</p>
             <button
               onClick={() => refetchDashboard()}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium text-sm transition"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover-bg-bad-strong text-white rounded font-medium text-sm transition"
             >
               <RefreshCw size={14} /> Retry
             </button>

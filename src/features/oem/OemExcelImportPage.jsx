@@ -142,13 +142,13 @@ export default function OemExcelImportPage() {
 
       {/* Guidelines Card */}
       <Card>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-1">
+        <div className="flex flex-col bar-row justify-between gap-4 p-1">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-slate-800 font-semibold text-base">
               <ShieldCheck className="text-emerald-600" size={20} />
               <span>Excel Format</span>
             </div>
-            <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
+            <p className="text-sm text-slate-600 lh-relaxed maxw-3xl">
               Upload one Excel sheet with one row per product. Price rule: the <b>Sale Price</b> is used; if it is empty the <b>Base Price</b> is used.
               GST (CSD) and incidental charges are then added as per the product's <b>Tax Class</b> (TCS 1% above ₹10 Lakh), and that final amount is shown to the beneficiary.
             </p>
@@ -159,16 +159,16 @@ export default function OemExcelImportPage() {
             icon={downloading ? LoaderIcon : Download}
             loading={downloading}
             onClick={handleDownloadTemplate}
-            className="shrink-0"
+            className="flex-shrink-0"
           >
             Download Template (.xlsx)
           </Button>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-lg text-xs space-y-1">
-            <div className="font-semibold text-blue-900 flex items-center gap-1.5">
-              <Package size={14} className="text-blue-700" />
+        <div className="mt-4 pt-lg border-t border-slate-100">
+          <div className="p-3 bg-info-soft border border-info-soft rounded-lg text-xs space-y-1">
+            <div className="font-semibold text-info-strong flex items-center gap-tight">
+              <Package size={14} className="text-info" />
               <span>Columns</span>
             </div>
             <p className="text-blue-800">
@@ -189,15 +189,15 @@ export default function OemExcelImportPage() {
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition ${
-                file ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-300 hover:border-brand bg-slate-50/50'
-              }`}
+ file ? 'border-ok bg-ok-faint' : 'border-slate-300 hover-border-brand bg-subtle'
+ }`}
               style={{ minHeight: '220px' }}
             >
               <input
                 ref={fileInputRef}
                 type="file"
                 accept=".xlsx, .xls, .csv"
-                className="hidden"
+                className="is-hidden"
                 onChange={handleFileChange}
               />
               <FileSpreadsheet className={file ? 'text-emerald-600' : 'text-slate-400'} size={48} />
@@ -210,7 +210,7 @@ export default function OemExcelImportPage() {
 
               {file && (
                 <div className="mt-4 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-ok-soft text-emerald-800 text-xs font-semibold pill">
                     <Check size={13} /> Ready to process
                   </span>
                   <button
@@ -219,7 +219,7 @@ export default function OemExcelImportPage() {
                       e.stopPropagation();
                       handleReset();
                     }}
-                    className="text-xs text-red-600 hover:text-red-800 underline px-2 py-1"
+                    className="text-xs text-red-600 hover-text-bad link-underline px-2 py-1"
                   >
                     Remove file
                   </button>
@@ -228,11 +228,11 @@ export default function OemExcelImportPage() {
             </div>
 
             {loading && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 text-sm flex items-center gap-3">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-info-strong text-sm flex items-center gap-3">
                 <Loader variant="inline" size="md" />
                 <div>
-                  <div className="font-semibold text-blue-950">Processing workbook...</div>
-                  <div className="text-xs text-blue-700 mt-0.5">
+                  <div className="font-semibold text-info-strong">Processing workbook...</div>
+                  <div className="text-xs text-info mt-hair">
                     Validating columns, applying Tax Class and calculating the price to beneficiary.
                   </div>
                 </div>
@@ -241,8 +241,8 @@ export default function OemExcelImportPage() {
 
             {error && (
               <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-                <AlertCircle size={18} className="shrink-0 mt-0.5 text-red-600" />
-                <div className="leading-snug">{error}</div>
+                <AlertCircle size={18} className="flex-shrink-0 mt-hair text-red-600" />
+                <div className="lh-snug">{error}</div>
               </div>
             )}
 
@@ -266,18 +266,18 @@ export default function OemExcelImportPage() {
         /* Processing Results Screen */
         <div className="space-y-6">
           {/* Success Banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 shadow-sm">
+          <div className="flex flex-col bar-row-sm justify-between gap-4 p-5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 shadow-sm">
             <div className="flex items-center gap-3">
-              <CheckCircle2 size={36} className="text-emerald-600 shrink-0" />
+              <CheckCircle2 size={36} className="text-emerald-600 flex-shrink-0" />
               <div>
                 <h3 className="font-bold text-lg">Excel Workbook Successfully Processed</h3>
-                <p className="text-xs text-emerald-700 mt-0.5">
+                <p className="text-xs text-emerald-700 mt-hair">
                   Manufacturer / OEM: <b>{result.oemName || 'Identified OEM'}</b> · All products synchronized.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
+              <span className="inline-flex items-center gap-1 px-3 py-tight bg-ok-soft text-emerald-800 text-xs font-bold pill">
                 <ShieldCheck size={16} /> Import Complete
               </span>
               <Button variant="outline" size="sm" icon={RefreshCw} onClick={handleReset}>
@@ -314,14 +314,14 @@ export default function OemExcelImportPage() {
 
             {/* TAB 1: SUMMARY */}
             {activeTab === 'summary' && (
-              <div className="space-y-5">
+              <div className="stack-lg">
                 {scrutiny?.invalidTaxClasses?.length > 0 && (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-warn">
                     <b>{scrutiny.invalidTaxClasses.length}</b> product(s) have a missing / unknown Tax Class, so no tax was added: {scrutiny.invalidTaxClasses.slice(0, 10).map((t) => t.index).join(', ')}
                   </div>
                 )}
                 {result.errors?.length > 0 && (
-                  <ul className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 list-disc pl-6">
+                  <ul className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 list-bulleted pl-indent-lg">
                     {result.errors.slice(0, 10).map((e, i) => <li key={i}>{e}</li>)}
                   </ul>
                 )}
@@ -337,29 +337,29 @@ export default function OemExcelImportPage() {
             {/* TAB 2: AUTOMATED SCRUTINY CHECKS */}
             {activeTab === 'scrutiny' && (
               <div className="space-y-4">
-                <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-lg text-xs text-blue-900">
+                <div className="p-3 bg-info-soft border border-blue-200 rounded-lg text-xs text-info-strong">
                   <span className="font-semibold">Automated checks:</span>{' '}
                   All rules are automatically applied during file intake to prevent pricing discrepancies, formula breaks, and duplicate rows.
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 cols-md-2 gap-3">
                   {(scrutiny?.checks || []).map((chk) => (
                     <div
                       key={chk.id}
-                      className="p-3 rounded-lg border flex items-start gap-2.5 bg-slate-50 border-slate-200"
+                      className="p-3 rounded-lg border flex items-start gap-snug bg-slate-50 border-slate-200"
                     >
                       {chk.status === 'PASSED' ? (
-                        <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                        <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0 mt-hair" />
                       ) : (
-                        <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                        <AlertTriangle size={16} className="text-amber-500 flex-shrink-0 mt-hair" />
                       )}
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-slate-800 text-xs">{chk.name}</span>
                           <span
-                            className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                              chk.status === 'PASSED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                            }`}
+                            className={`text-tiny font-bold px-tight py-hair rounded ${
+ chk.status === 'PASSED' ? 'bg-ok-soft text-emerald-800' : 'bg-warn-tint text-warn'
+ }`}
                           >
                             {chk.status}
                           </span>
@@ -371,8 +371,8 @@ export default function OemExcelImportPage() {
                 </div>
 
                 {scrutiny?.formulaErrorsCleaned > 0 && (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-center gap-2">
-                    <AlertTriangle size={16} className="shrink-0 text-amber-600" />
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-warn flex items-center gap-2">
+                    <AlertTriangle size={16} className="flex-shrink-0 text-amber-600" />
                     <span>
                       Cleaned <b>{scrutiny.formulaErrorsCleaned}</b> formula error cells (#REF!, #VALUE!, #N/A) automatically.
                     </span>
@@ -384,19 +384,19 @@ export default function OemExcelImportPage() {
             {/* TAB 3: IMPORTED PRODUCTS PREVIEW */}
             {activeTab === 'preview' && (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full text-left text-xs table-collapse">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-                      <th className="py-2.5 px-3">Index No</th>
-                      <th className="py-2.5 px-3">Vehicle Model / Variant</th>
-                      <th className="py-2.5 px-3">Category</th>
-                      <th className="py-2.5 px-3 text-right">Price (Sale / Base)</th>
-                      <th className="py-2.5 px-3 text-right">Price to Beneficiary</th>
+                      <th className="py-snug px-3">Index No</th>
+                      <th className="py-snug px-3">Vehicle Model / Variant</th>
+                      <th className="py-snug px-3">Category</th>
+                      <th className="py-snug px-3 text-right">Price (Sale / Base)</th>
+                      <th className="py-snug px-3 text-right">Price to Beneficiary</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-800">
+                  <tbody className="rows-divided text-slate-800">
                     {result.products.map((p, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/60">
+                      <tr key={idx} className="hover-bg-subtle">
                         <td className="py-2 px-3 font-semibold text-brand">{p.indexNo || p.sku}</td>
                         <td className="py-2 px-3">{p.name}</td>
                         <td className="py-2 px-3">{p.category || 'CAR'}</td>

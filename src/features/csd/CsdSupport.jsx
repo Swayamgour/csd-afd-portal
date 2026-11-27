@@ -93,7 +93,7 @@ export default function CsdSupport() {
       render: (row) => (
         <div>
           <div className="font-semibold text-xs text-ink">{row.requester?.name || 'Authorized Beneficiary'}</div>
-          <div className="text-[10px] text-muted font-mono">{row.requester?.mobile || row.requester?.email || row.requester?.userType}</div>
+          <div className="text-tiny text-muted font-mono">{row.requester?.mobile || row.requester?.email || row.requester?.userType}</div>
         </div>
       ),
     },
@@ -103,7 +103,7 @@ export default function CsdSupport() {
       render: (row) => (
         <div>
           <div className="font-medium text-xs text-slate-800 line-clamp-1">{row.subject}</div>
-          <span className="badge-pill badge-outline badge-sm text-[10px] uppercase font-mono">{row.category}</span>
+          <span className="badge-pill badge-outline badge-sm text-tiny uppercase font-mono">{row.category}</span>
         </div>
       ),
     },
@@ -199,9 +199,9 @@ export default function CsdSupport() {
 
       {/* Filter and Search Bar */}
       <Card>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+        <div className="flex flex-col bar-row items-center justify-between gap-4 p-2">
+          <div className="relative w-full bar-search">
+            <Search className="absolute left-3 icon-center-y h-4 w-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search by Ticket No, Complainant, or Keyword..."
@@ -211,7 +211,7 @@ export default function CsdSupport() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full bar-auto">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -244,7 +244,7 @@ export default function CsdSupport() {
                   setSeverityFilter('');
                   setSearchTerm('');
                 }}
-                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded"
+                className="text-xs text-rose-600 hover-text-bad font-medium px-2 py-1 rounded"
               >
                 Reset Filters
               </button>
@@ -270,7 +270,7 @@ export default function CsdSupport() {
 
       {/* Ticket Review & Action Inline Card */}
       {selectedTicket && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Review Ticket {selectedTicket.ticketNo}</h3>
@@ -281,7 +281,7 @@ export default function CsdSupport() {
             </Button>
           </div>
           <div className="space-y-4 text-xs">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="grid grid-cols-2 cols-md-4 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
               <div>
                 <span className="text-slate-500 block">Complainant:</span>
                 <span className="font-semibold text-ink">{selectedTicket.requester?.name || 'N/A'}</span>
@@ -302,7 +302,7 @@ export default function CsdSupport() {
 
             <div>
               <h4 className="font-bold text-slate-800 text-sm mb-1">{selectedTicket.subject}</h4>
-              <p className="p-3 bg-white border border-slate-200 rounded-lg text-slate-700 whitespace-pre-wrap leading-relaxed">
+              <p className="p-3 bg-white border border-slate-200 rounded-lg text-slate-700 pre-wrap lh-relaxed">
                 {selectedTicket.description}
               </p>
             </div>
@@ -310,7 +310,7 @@ export default function CsdSupport() {
             {/* Quick Status Update Form */}
             <div className="border-t border-slate-200 pt-3 space-y-3">
               <h5 className="font-semibold text-slate-800">Operational Resolution & Stage Update</h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 cols-md-2 gap-3">
                 <div>
                   <label className="form-label">Target Status</label>
                   <select
@@ -326,7 +326,7 @@ export default function CsdSupport() {
                   </select>
                 </div>
                 {actionStatus === 'RESOLVED' && (
-                  <div className="md:col-span-2">
+                  <div className="span-md-2">
                     <label className="form-label">Resolution Summary (Mandatory for Resolution)</label>
                     <textarea
                       rows={2}

@@ -141,7 +141,7 @@ export default function OemProfile() {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-emerald-600 hover:text-emerald-800 cursor-pointer"
+            className="text-emerald-600 hover-text-ok cursor-pointer"
           >
             <X size={15} />
           </button>
@@ -155,19 +155,19 @@ export default function OemProfile() {
           subtitle="Registered automobile manufacturer corporate details"
         >
           <div className="info-kv-list">
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">Registered Entity:</span>
               <span className="font-semibold text-slate-900">{org.name || '—'}</span>
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">Legal Name:</span>
               <span className="font-medium">{org.legalName || org.name}</span>
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">CSD Vendor Code:</span>
               <span className="font-mono font-semibold text-brand">{org.vendorCode || org.firmCode || '—'}</span>
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">CSD Empanelment Status:</span>
               {org.approvalStatus ? (
                 <Badge variant={org.approvalStatus === 'APPROVED' ? 'success' : 'warning'}>
@@ -177,15 +177,15 @@ export default function OemProfile() {
                 <span>—</span>
               )}
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">Corporate Address:</span>
               <span>{org.address || '—'}</span>
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">City / State:</span>
               <span>{org.city || '—'}, {org.state || '—'} {org.pincode ? `(${org.pincode})` : ''}</span>
             </div>
-            <div className="kv-row between small py-1.5">
+            <div className="kv-row between small py-tight">
               <span className="muted">Institutional Helpline:</span>
               <span>{org.phone || org.alternatePhone || '—'}</span>
             </div>
@@ -198,31 +198,31 @@ export default function OemProfile() {
           subtitle="Designated representative authorized for CSD AFD institutional transactions"
         >
           <div className="info-kv-list">
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">Authenticated User:</span>
               <span className="font-semibold text-slate-900">{user.name || '—'}</span>
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">User Role:</span>
               <Badge variant="primary">{user.role || 'OEM'}</Badge>
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">Official Email:</span>
               <span className="font-mono">{user.email || '—'}</span>
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">Registered Mobile:</span>
               <span className="font-mono">{user.mobile || '—'}</span>
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">Contact Person:</span>
               <span className="font-medium">{org.contactPerson?.name || '—'}</span>
             </div>
-            <div className="kv-row between small py-1.5 border-bottom">
+            <div className="kv-row between small py-tight border-bottom">
               <span className="muted">Contact Email:</span>
               <span>{org.contactPerson?.email || user.email || '—'}</span>
             </div>
-            <div className="kv-row between small py-1.5">
+            <div className="kv-row between small py-tight">
               <span className="muted">Contact Phone:</span>
               <span>{org.contactPerson?.phone || user.mobile || '—'}</span>
             </div>
@@ -233,7 +233,7 @@ export default function OemProfile() {
       {/* Edit Profile Section */}
       {modalOpen && (
         <Card
-          className="mt-4 border-primary"
+          className="mt-4 border-accent"
           title="Edit Corporate Institutional Profile"
           subtitle="Update manufacturer communication addresses and designated contact person"
           headerAction={
@@ -244,7 +244,7 @@ export default function OemProfile() {
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             {formError && (
-              <div className="p-2.5 bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
+              <div className="p-snug bg-red-50 border border-red-200 rounded text-red-700 text-sm flex items-center gap-2">
                 <AlertCircle size={16} />
                 <span>{formError}</span>
               </div>

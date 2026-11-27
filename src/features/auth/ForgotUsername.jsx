@@ -433,9 +433,9 @@ export default function ForgotUsername() {
 
       {/* STEP 3: SUCCESS CONFIRMATION & USERNAME SENT */}
       {step === 'success' && (
-        <div className="panel logincard authcard text-center py-6">
+        <div className="panel logincard authcard text-center py-xl">
           <div className="mb-3">
-            <CheckCircle2 size={56} className="text-emerald-500 mx-auto" style={{ color: '#10b981', margin: '0 auto' }} />
+            <CheckCircle2 size={56} className="text-ok mx-auto" style={{ color: '#10b981', margin: '0 auto' }} />
           </div>
 
           <h1 style={{ marginBottom: '0.5rem' }}>Username Sent to Your Email!</h1>
@@ -447,7 +447,7 @@ export default function ForgotUsername() {
 
           {recoveredUsername && (
             <div
-              className="panel p-3 my-3 text-center"
+              className="panel p-3 my-md text-center"
               style={{
                 background: '#f0fdf4',
                 border: '1px solid #86efac',

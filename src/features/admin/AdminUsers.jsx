@@ -146,7 +146,7 @@ export const AdminUsers = () => {
       accessor: 'email',
       render: (u) => (
         <div>
-          <div className="fs-sm fw-medium">{u.email || 'N/A'}</div>
+          <div className="fs-sm font-medium">{u.email || 'N/A'}</div>
           <div className="portal-subtext-muted fs-xs">{u.mobile || u.phone || 'No phone'}</div>
           <div className="portal-flex-wrap-gap-xs mt-xs">
             {u.isEmailVerified ? (

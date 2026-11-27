@@ -18,6 +18,7 @@ import './styles/tokens.css'
 import './index.css'
 import './styles/theme.css'
 import './styles/loader.css'
+import './styles/ui-layout.css'
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

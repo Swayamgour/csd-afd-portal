@@ -23,7 +23,7 @@ export default function CheckoutSuccess() {
 
   if (!demand) {
     return (
-      <div className="checkout-success-container text-center py-5">
+      <div className="checkout-success-container text-center py-lg">
         <div className="success-card p-5">
           <h2>No Demand Found</h2>
           <p className="muted mb-4">No recent demand record found in session. Please check your Demands dashboard.</p>

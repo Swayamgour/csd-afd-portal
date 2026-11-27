@@ -218,7 +218,7 @@ export default function CsdUsers() {
 
       {/* User Details Section */}
       {selectedUser && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">User Dossier · {selectedUser.name}</h3>
@@ -263,7 +263,7 @@ export default function CsdUsers() {
 
       {/* Create User Card */}
       {createModalOpen && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Provision New Official User</h3>

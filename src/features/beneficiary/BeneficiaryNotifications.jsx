@@ -89,8 +89,8 @@ export default function BeneficiaryNotifications() {
                 key={item._id}
                 onClick={() => handleItemClick(item)}
                 className={`panel p-3 mb-2 between align-start cursor-pointer transition ${
-                  item.readAt ? 'bg-white' : 'bg-brand-soft border-brand'
-                }`}
+ item.readAt ? 'bg-white' : 'bg-brand-soft border-accent'
+ }`}
               >
                 <div>
                   <div className="row align-center gap-1 mb-1">
@@ -101,7 +101,7 @@ export default function BeneficiaryNotifications() {
                       ● {new Date(item.createdAt).toLocaleString('en-IN')}
                     </span>
                     {!item.readAt && (
-                      <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-semibold ml-2">
+                      <span className="text-xs bg-blue-100 text-blue-800 px-tight py-hair rounded font-semibold ml-2">
                         Unread
                       </span>
                     )}

@@ -113,10 +113,10 @@ export default function Home() {
                     src={slide.imageUrl}
                     alt={slide.name || `Hero Banner ${idx + 1}`}
                     className={
-                      isSingle
-                        ? "hero-single-slide"
-                        : `hero-slide-duration-${Math.min(30, Math.max(10, Math.round(duration / 5) * 5))} hero-slide-delay-${Math.min(5, idx)}`
-                    }
+ isSingle
+ ? "hero-single-slide"
+ : `hero-slide-duration-${Math.min(30, Math.max(10, Math.round(duration / 5) * 5))} hero-slide-delay-${Math.min(5, idx)}`
+ }
                     onError={(e) => {
                       e.currentTarget.style.display = "none";
                     }}

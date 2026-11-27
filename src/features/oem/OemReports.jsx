@@ -216,7 +216,7 @@ export default function OemReports() {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-emerald-600 hover:text-emerald-800 cursor-pointer"
+            className="text-emerald-600 hover-text-ok cursor-pointer"
           >
             ×
           </button>
@@ -229,7 +229,7 @@ export default function OemReports() {
           <button
             type="button"
             onClick={() => setExportError('')}
-            className="text-red-600 hover:text-red-800 cursor-pointer"
+            className="text-red-600 hover-text-bad cursor-pointer"
           >
             ×
           </button>

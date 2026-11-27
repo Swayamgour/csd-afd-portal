@@ -238,17 +238,17 @@ export function ProductBuyBox({
             </span>
             <div className="h3 font-bold text-brand pdp-price-amount">
               {!selectedState ? (
-                <span className="micro text-muted font-normal">
+                <span className="micro text-muted font-regular">
                   Select State to view price
                 </span>
               ) : loadingStatePrice || fetchingStatePrice ? (
-                <span className="micro text-muted font-normal">
+                <span className="micro text-muted font-regular">
                   Loading price...
                 </span>
               ) : statePricing ? (
                 inr(statePricing.unitPrice || statePricing.totalAmount)
               ) : (
-                <span className="micro text-danger font-normal">
+                <span className="micro text-danger font-regular">
                   State price not available
                 </span>
               )}

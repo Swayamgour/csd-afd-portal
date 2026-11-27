@@ -63,7 +63,7 @@ export default function CsdDemands() {
       render: (d) => (
         <div>
           <div className="font-semibold text-xs text-ink">{d.beneficiaryId?.fullName || d.userId?.name || 'Applicant'}</div>
-          <div className="text-[10px] text-muted font-mono">{d.beneficiaryId?.serviceNumber} {d.beneficiaryId?.rank ? `(${d.beneficiaryId.rank})` : ''}</div>
+          <div className="text-tiny text-muted font-mono">{d.beneficiaryId?.serviceNumber} {d.beneficiaryId?.rank ? `(${d.beneficiaryId.rank})` : ''}</div>
         </div>
       ),
     },
@@ -73,7 +73,7 @@ export default function CsdDemands() {
       render: (d) => (
         <div>
           <div className="font-medium text-xs text-ink">{d.productSnapshot?.name || 'AFD Item'}</div>
-          <div className="text-[10px] text-muted font-mono">SKU: {d.productSnapshot?.sku || d.productSnapshot?.indexNo || 'N/A'}</div>
+          <div className="text-tiny text-muted font-mono">SKU: {d.productSnapshot?.sku || d.productSnapshot?.indexNo || 'N/A'}</div>
         </div>
       ),
     },
@@ -83,7 +83,7 @@ export default function CsdDemands() {
       render: (d) => (
         <div className="text-xs">
           <div className="font-semibold text-slate-800">{d.dealerId?.name || 'Authorized Dealership'}</div>
-          <div className="text-[10px] text-muted">{d.dealerId?.city ? `${d.dealerId.city}` : ''}</div>
+          <div className="text-tiny text-muted">{d.dealerId?.city ? `${d.dealerId.city}` : ''}</div>
         </div>
       ),
     },
@@ -185,9 +185,9 @@ export default function CsdDemands() {
 
       {/* Search and Filters */}
       <Card>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+        <div className="flex flex-col bar-row items-center justify-between gap-4 p-2">
+          <div className="relative w-full bar-search">
+            <Search className="absolute left-3 icon-center-y h-4 w-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search by Demand No, Service No, or Model..."
@@ -197,7 +197,7 @@ export default function CsdDemands() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full bar-auto">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -223,7 +223,7 @@ export default function CsdDemands() {
                   setStatusFilter('');
                   setSearchTerm('');
                 }}
-                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded"
+                className="text-xs text-rose-600 hover-text-bad font-medium px-2 py-1 rounded"
               >
                 Reset Filters
               </button>
@@ -266,7 +266,7 @@ export default function CsdDemands() {
 
       {/* Scrutiny & Dossier Inline Card */}
       {selectedDemand && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Scrutiny Dossier · Indent {selectedDemand.demandNo}</h3>
@@ -277,7 +277,7 @@ export default function CsdDemands() {
             </Button>
           </div>
           <div className="space-y-4 text-xs">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="grid grid-cols-2 cols-md-4 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
               <div>
                 <span className="text-slate-500 block">Applicant:</span>
                 <span className="font-semibold text-ink">{selectedDemand.beneficiaryId?.fullName || selectedDemand.userId?.name || 'N/A'}</span>
@@ -298,10 +298,10 @@ export default function CsdDemands() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 cols-md-2 gap-4">
               <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-2">
-                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <Package className="w-3.5 h-3.5 text-brand" /> Product & Pricing Structure
+                <h5 className="font-bold text-slate-800 flex items-center gap-tight">
+                  <Package className="icon-14 icon-14 text-brand" /> Product & Pricing Structure
                 </h5>
                 <div className="space-y-1">
                   <div className="flex justify-between">
@@ -324,8 +324,8 @@ export default function CsdDemands() {
               </div>
 
               <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-2">
-                <h5 className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <Warehouse className="w-3.5 h-3.5 text-brand" /> Operational & Commercial Allocation
+                <h5 className="font-bold text-slate-800 flex items-center gap-tight">
+                  <Warehouse className="icon-14 icon-14 text-brand" /> Operational & Commercial Allocation
                 </h5>
                 <div className="space-y-1">
                   <div className="flex justify-between">
@@ -361,10 +361,10 @@ export default function CsdDemands() {
                       href={doc.url || doc.fileUrl || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded hover:bg-slate-100 transition text-brand font-medium text-left"
+                      className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded hover-bg-muted transition text-brand font-medium text-left"
                     >
                       <span className="truncate">{doc.name || doc.type}</span>
-                      <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 ml-2" />
+                      <ExternalLink className="icon-14 icon-14 flex-shrink-0 ml-2" />
                     </a>
                   ))}
                 </div>

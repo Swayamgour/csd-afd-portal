@@ -1,0 +1,609 @@
+/* =====================================================================
+   ui-layout.css
+   Replaces every Tailwind-style class that used to be written in the JSX
+   (md:flex-row, top-2.5, text-[10px], hover:text-rose-800 ...). The project
+   does not use Tailwind, so those classes had no CSS and the layouts broke.
+   Now the JSX uses the project's own names, defined here.
+   Import AFTER index.css / theme.css / admin.css (main.jsx).
+   ===================================================================== */
+
+/* ---------- 1. search / icon fields : one layout everywhere ---------- */
+:root:root .fld {
+  position: relative;
+}
+
+:root:root .app-shell-root .fld,
+:root:root .admin-portal .fld {
+  display: flex;
+  align-items: center;
+}
+
+/* icon is placed by position, so the old inline margin must go (it was added twice: left + margin-left) */
+:root:root .app-shell-root .fld>.fld-icon,
+:root:root .admin-portal .fld>.fld-icon {
+  position: absolute;
+  left: .8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+:root:root .app-shell-root .fld>.fld-icon+input,
+:root:root .app-shell-root .fld>.fld-icon+select,
+:root:root .admin-portal .fld>.fld-icon+input {
+  padding-left: 2.5rem;
+}
+
+:root:root .app-shell-root .fld>input {
+  width: 100%;
+}
+
+/* same height for every control in a filter row */
+:root:root .app-shell-root .fld input,
+:root:root .app-shell-root .fld select,
+:root:root .app-shell-root select.form-control,
+:root:root .app-shell-root input.form-control {
+  min-height: 40px;
+}
+
+/* ---------- 2. filter / toolbar rows ---------- */
+.bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bar-search {
+  position: relative;
+  width: 100%;
+}
+
+.bar-auto {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .bar-row-sm {
+    flex-direction: row !important;
+    align-items: center;
+  }
+}
+
+@media (min-width: 768px) {
+  .bar-row {
+    flex-direction: row !important;
+    align-items: center;
+  }
+
+  .bar-search {
+    width: 22rem !important;
+    flex: 0 1 22rem;
+  }
+
+  .bar-auto {
+    width: auto !important;
+  }
+
+  .cols-md-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .cols-md-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .cols-md-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .span-md-2 {
+    grid-column: span 2 / span 2 !important;
+  }
+}
+
+@media (min-width: 640px) {
+  .show-sm-inline {
+    display: inline !important;
+  }
+}
+
+/* ---------- 3. visibility / position ---------- */
+.is-hidden {
+  display: none !important;
+}
+
+.show-sm-inline {
+  display: none;
+}
+
+.pos-fixed {
+  position: fixed !important;
+}
+
+.inset-fill {
+  inset: 0 !important;
+}
+
+.z-overlay {
+  z-index: 1000 !important;
+}
+
+.clip {
+  overflow: hidden !important;
+}
+
+.scroll-y {
+  overflow-y: auto !important;
+}
+
+.items-end {
+  align-items: flex-end !important;
+}
+
+.pre-wrap {
+  white-space: pre-wrap !important;
+}
+
+.dim {
+  opacity: .5 !important;
+}
+
+.cursor-disabled {
+  cursor: not-allowed !important;
+}
+
+.smooth {
+  transition: all .15s ease;
+}
+
+.pill {
+  border-radius: 999px !important;
+}
+
+.shadow-xl {
+  box-shadow: 0 24px 56px rgba(13, 27, 54, .28) !important;
+}
+
+.table-collapse {
+  border-collapse: collapse !important;
+}
+
+.list-bulleted {
+  list-style: disc !important;
+}
+
+/* ---------- 4. type ---------- */
+.text-tiny {
+  font-size: 10px !important;
+  line-height: 1.4;
+}
+
+.text-xsmall {
+  font-size: 11px !important;
+  line-height: 1.45;
+}
+
+.text-md {
+  font-size: 1rem !important;
+}
+
+.text-xl {
+  font-size: 1.25rem !important;
+}
+
+.lh-relaxed {
+  line-height: 1.6 !important;
+}
+
+.lh-snug {
+  line-height: 1.35 !important;
+}
+
+.lh-tight {
+  line-height: 1.2 !important;
+}
+
+.ls-wide {
+  letter-spacing: .12em !important;
+}
+
+.font-regular {
+  font-weight: 400 !important;
+}
+
+.link-underline {
+  text-decoration: underline !important;
+}
+
+.link-hover-underline:hover {
+  text-decoration: underline !important;
+}
+
+/* ---------- 5. spacing / size ---------- */
+.gap-tight {
+  gap: .375rem !important;
+}
+
+.gap-snug {
+  gap: .625rem !important;
+}
+
+.mt-hair {
+  margin-top: .125rem !important;
+}
+
+.ml-xs {
+  margin-left: .25rem !important;
+}
+
+.my-sm {
+  margin-top: .5rem !important;
+  margin-bottom: .5rem !important;
+}
+
+.my-md {
+  margin-top: .75rem !important;
+  margin-bottom: .75rem !important;
+}
+
+.py-hair {
+  padding-top: .125rem !important;
+  padding-bottom: .125rem !important;
+}
+
+.py-tight {
+  padding-top: .375rem !important;
+  padding-bottom: .375rem !important;
+}
+
+.py-snug {
+  padding-top: .625rem !important;
+  padding-bottom: .625rem !important;
+}
+
+.py-lg {
+  padding-top: 1.25rem !important;
+  padding-bottom: 1.25rem !important;
+}
+
+.py-xl {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+
+.py-xxl {
+  padding-top: 3rem !important;
+  padding-bottom: 3rem !important;
+}
+
+.px-tight {
+  padding-left: .375rem !important;
+  padding-right: .375rem !important;
+}
+
+.px-snug {
+  padding-left: .625rem !important;
+  padding-right: .625rem !important;
+}
+
+.px-lg {
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+}
+
+.p-snug {
+  padding: .625rem !important;
+}
+
+.pl-indent {
+  padding-left: 1rem !important;
+}
+
+.pl-indent-lg {
+  padding-left: 1.5rem !important;
+}
+
+.pr-xs {
+  padding-right: .25rem !important;
+}
+
+.pt-lg {
+  padding-top: 1rem !important;
+}
+
+.stack-tight>*+* {
+  margin-top: .375rem;
+}
+
+.stack-hair>*+* {
+  margin-top: .125rem;
+}
+
+.stack-lg>*+* {
+  margin-top: 1.25rem;
+}
+
+.inline-gap-sm>*+* {
+  margin-left: .5rem;
+}
+
+.icon-14 {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.w-xs {
+  width: 5rem !important;
+}
+
+.h-compact {
+  height: 1.75rem !important;
+}
+
+.maxw-xs {
+  max-width: 20rem !important;
+}
+
+.maxw-xl {
+  max-width: 36rem !important;
+  width: 100%;
+}
+
+.maxw-3xl {
+  max-width: 48rem !important;
+}
+
+.maxw-4xl {
+  max-width: 56rem !important;
+}
+
+.maxw-5xl {
+  max-width: 64rem !important;
+}
+
+.maxh-sm {
+  max-height: 6rem !important;
+}
+
+.maxh-md {
+  max-height: 12rem !important;
+}
+
+.maxh-lg {
+  max-height: 15rem !important;
+}
+
+.minw-280 {
+  min-width: 280px !important;
+}
+
+.minw-max {
+  min-width: max-content !important;
+}
+
+.icon-center-y {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ---------- 6. tones (replace the Tailwind palette with portal colours) ---------- */
+.text-info {
+  color: #1d4ed8 !important;
+}
+
+.text-info-strong {
+  color: #1e3a8a !important;
+}
+
+.text-warn {
+  color: #b45309 !important;
+}
+
+.text-warn-strong {
+  color: #78350f !important;
+}
+
+.text-ok {
+  color: #059669 !important;
+}
+
+.text-ok-strong {
+  color: #064e3b !important;
+}
+
+.text-bad-strong {
+  color: #7f1d1d !important;
+}
+
+.bg-info-soft {
+  background: #eff6ff !important;
+}
+
+.bg-warn-soft {
+  background: #fffbeb !important;
+}
+
+.bg-warn-tint {
+  background: #fef3c7 !important;
+}
+
+.bg-ok-faint {
+  background: #f3fbf7 !important;
+}
+
+.bg-ok-soft {
+  background: #d1fae5 !important;
+}
+
+.bg-muted-soft {
+  background: #f1f5f9 !important;
+}
+
+.backdrop-dim {
+  background: rgba(15, 23, 42, .5) !important;
+}
+
+.border-info-soft {
+  border-color: #dbeafe !important;
+}
+
+.border-ok {
+  border-color: #10b981 !important;
+}
+
+.border-accent {
+  border: 1px solid var(--brand, #1f4aa8) !important;
+}
+
+.border-bad {
+  border-color: #dc2626 !important;
+}
+
+.border-left-danger {
+  border-left: 4px solid #dc2626 !important;
+}
+
+.border-b-thick {
+  border-bottom: 2px solid transparent;
+}
+
+.rows-divided>*+* {
+  border-top: 1px solid #f1f5f9;
+}
+
+/* hover / focus states */
+.hover-bg-subtle:hover {
+  background: #f8fafc !important;
+}
+
+.hover-bg-muted:hover {
+  background: #f1f5f9 !important;
+}
+
+.hover-bg-bad-soft:hover {
+  background: #fef2f2 !important;
+}
+
+.hover-bg-bad-strong:hover {
+  background: #b91c1c !important;
+}
+
+.hover-text-ink:hover {
+  color: #0f172a !important;
+}
+
+.hover-text-ok:hover {
+  color: #065f46 !important;
+}
+
+.hover-text-bad:hover {
+  color: #991b1b !important;
+}
+
+.hover-text-info:hover {
+  color: #1e3a8a !important;
+}
+
+.hover-text-brand:hover {
+  color: var(--brand, #1f4aa8) !important;
+}
+
+.hover-border-brand:hover {
+  border-color: var(--brand, #1f4aa8) !important;
+}
+
+.focus-ring-within:focus-within {
+  background: #fff !important;
+  border-color: var(--brand, #1f4aa8) !important;
+  box-shadow: 0 0 0 3px rgba(31, 74, 168, .18);
+}
+
+/* ---------- 7. pagination footer (was wrapping "Per page:" onto two lines) ---------- */
+.table-pagination-footer {
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.table-pagination-footer .per-page {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  white-space: nowrap;
+}
+
+.table-pagination-footer .per-page select {
+  width: 5rem;
+  min-height: 32px;
+  padding: .25rem .5rem;
+}
+
+.page-count-chip {
+  background: #f1f5f9;
+  color: #475569;
+  padding: .25rem .75rem;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 500;
+}
+
+/* ---------- 8. filter panel fields ---------- */
+.filter-bar-fields,
+.filter-panel-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.filter-panel-fields>.fld-group {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+/* tab-style underline: "border-b-thick border-accent" must only draw the bottom line */
+.border-b-thick.border-accent {
+  border: 0 !important;
+  border-bottom: 2px solid var(--brand, #1f4aa8) !important;
+}
+
+/* ---------- 9. small shared pieces ---------- */
+.zone-chip {
+  display: inline-block;
+  padding: .2rem .6rem;
+  border-radius: 6px;
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+  font-size: .78rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* filter bar: every control the same height, labels sit on one line */
+:root:root .app-shell-root .filter-bar-container .filter-bar-fields {
+  align-items: flex-end;
+}
+
+:root:root .app-shell-root .filter-bar-container :is(input.form-control, select.form-control, select) {
+  height: 40px;
+  min-height: 40px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+:root:root .app-shell-root .filter-bar-container .form-label,
+:root:root .app-shell-root .filter-bar-container .filter-select-label {
+  display: block;
+  margin: 0 0 .25rem !important;
+  line-height: 1.2;
+  min-height: 1.2em;
+}
+
+:root:root .app-shell-root .filter-bar-container .form-field {
+  margin: 0;
+}

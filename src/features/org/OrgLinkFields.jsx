@@ -93,11 +93,11 @@ export default function OrgLinkFields({ role, value, onChange, disabled = false 
       <label className="form-label required">
         {label} <span className="micro muted">({(value[key] || []).length} selected)</span>
       </label>
-      <div className="d-flex flex-wrap gap-2 p-2 border rounded" style={{ maxHeight: 180, overflowY: 'auto' }}>
+      <div className="flex flex-wrap gap-2 p-2 border rounded" style={{ maxHeight: 180, overflowY: 'auto' }}>
         {items.map((it) => {
           const id = idOf(it);
           return (
-            <label key={id} className="d-flex align-items-center gap-1" style={{ cursor: 'pointer', minWidth: 240 }}>
+            <label key={id} className="flex items-center gap-1" style={{ cursor: 'pointer', minWidth: 240 }}>
               <input
                 type="checkbox"
                 disabled={disabled}
@@ -323,7 +323,7 @@ export function LoginFields({ value, onChange, disabled = false }) {
       </div>
       <div>
         <label className="form-label required">Password</label>
-        <div className="d-flex gap-1">
+        <div className="flex gap-1">
           <input
             className="form-control"
             type={show ? 'text' : 'password'}

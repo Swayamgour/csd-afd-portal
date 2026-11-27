@@ -101,7 +101,7 @@ export default function DealerOrders() {
 
       {handoverModalOrder && (
         <Card
-          className="mb-4 border-primary"
+          className="mb-4 border-accent"
           title={`Confirm Customer Vehicle Handover · Order #${handoverModalOrder.orderNo || handoverModalOrder.id}`}
           subtitle={`Beneficiary: ${handoverModalOrder.beneficiaryName || 'Defence Personnel'}`}
           headerAction={
@@ -113,7 +113,7 @@ export default function DealerOrders() {
           <div className="handover-form p-2">
             <div className="alert-banner info mb-3">
               <strong>Mandatory Handover Verification:</strong>
-              <ul className="mt-1 pl-4 list-disc text-sm">
+              <ul className="mt-1 pl-indent list-bulleted text-sm">
                 <li>Verify original CSD Smart Card of the serving/retired personnel.</li>
                 <li>Ensure zero handling/documentation fee is levied as per official CSD circular.</li>
                 <li>Verify chassis and engine numbers against the CSD Supply Order Sanction.</li>

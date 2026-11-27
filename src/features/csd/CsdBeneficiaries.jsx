@@ -59,7 +59,7 @@ export default function CsdBeneficiaries() {
       render: (row) => (
         <div>
           <span className="font-mono font-bold text-brand">{row.serviceNumber || row.cardId || 'DEF-SVC'}</span>
-          {row.cardId && <div className="text-[10px] text-muted font-mono">Card: {row.cardId}</div>}
+          {row.cardId && <div className="text-tiny text-muted font-mono">Card: {row.cardId}</div>}
         </div>
       ),
     },
@@ -69,7 +69,7 @@ export default function CsdBeneficiaries() {
       render: (row) => (
         <div>
           <span className="font-semibold text-xs block text-ink">{row.name}</span>
-          <span className="text-[10px] text-muted">{row.rank || 'Armed Forces Member'} ({row.category || 'DEFENCE'})</span>
+          <span className="text-tiny text-muted">{row.rank || 'Armed Forces Member'} ({row.category || 'DEFENCE'})</span>
         </div>
       ),
     },
@@ -110,7 +110,7 @@ export default function CsdBeneficiaries() {
             <Eye size={13} /> View
           </button>
           {!isDirector && (row.verificationStatus === 'PENDING' || !row.verificationStatus) && (
-            <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+            <span className="text-tiny text-amber-700 bg-amber-50 px-2 py-hair rounded border border-amber-200">
               Pending CS Director Approval
             </span>
           )}
@@ -156,9 +156,9 @@ export default function CsdBeneficiaries() {
 
       {/* Filter and Search Bar */}
       <Card>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+        <div className="flex flex-col bar-row items-center justify-between gap-4 p-2">
+          <div className="relative w-full bar-search">
+            <Search className="absolute left-3 icon-center-y h-4 w-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search by Service No, PAN, or Name..."
@@ -168,7 +168,7 @@ export default function CsdBeneficiaries() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full bar-auto">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -186,7 +186,7 @@ export default function CsdBeneficiaries() {
                   setStatusFilter('');
                   setSearchTerm('');
                 }}
-                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded"
+                className="text-xs text-rose-600 hover-text-bad font-medium px-2 py-1 rounded"
               >
                 Reset Filters
               </button>
@@ -212,7 +212,7 @@ export default function CsdBeneficiaries() {
 
       {/* Dossier Inline Card */}
       {selectedBeneficiary && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Beneficiary Dossier · {selectedBeneficiary.name}</h3>
@@ -244,7 +244,7 @@ export default function CsdBeneficiaries() {
               </div>
             </div>
 
-            <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5">
+            <div className="p-3 bg-white border border-slate-200 rounded-lg stack-tight">
               <div className="flex justify-between">
                 <span className="text-slate-500">Permanent Account Number (PAN):</span>
                 <span className="font-mono font-semibold">{selectedBeneficiary.pan || 'N/A'}</span>
@@ -264,7 +264,7 @@ export default function CsdBeneficiaries() {
             </div>
 
             {!isDirector && (
-              <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-[11px]">
+              <div className="p-snug bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-xsmall">
                 <strong>Governance Rule:</strong> Admin & CSD-HO have strictly View-Only access to the Beneficiary Registry. Registration approvals and profile modifications are exclusively exercised by the <strong>CS Director</strong>.
               </div>
             )}

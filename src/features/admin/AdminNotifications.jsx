@@ -114,7 +114,7 @@ export const AdminNotifications = () => {
       {/* Broadcast Notification Inline Form Card */}
       {showModal && (
         <Card
-          className="mb-4 border-primary"
+          className="mb-4 border-accent"
           title="Dispatch System Notification"
           subtitle="Broadcast official alert across portal roles"
           headerAction={

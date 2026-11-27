@@ -133,7 +133,7 @@ export default function OemDemands() {
       {/* Demand Details Inline Dossier */}
       {Boolean(selectedDemandId) && (
         <Card
-          className="mb-4 border-primary"
+          className="mb-4 border-accent"
           title={`Demand Ref: ${demandDetail?.demandNo || '...'}`}
           subtitle="Sanctioned Defence Purchase Demand Profile"
           headerAction={
@@ -146,7 +146,7 @@ export default function OemDemands() {
             <Loader label="Loading demand specifications" />
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">
+              <div className="grid grid-cols-2 cols-md-4 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">
                 <div>
                   <span className="text-muted block text-xs">Demand Number:</span>
                   <span className="font-mono font-semibold text-brand">{demandDetail?.demandNo}</span>

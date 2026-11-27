@@ -107,7 +107,7 @@ export function CsdNotifications() {
       </Card>
 
       {showModal && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Issue Directorate Advisory Bulletin</h3>

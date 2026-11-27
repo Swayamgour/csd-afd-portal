@@ -174,7 +174,7 @@ export default function OemPricing() {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-emerald-600 hover:text-emerald-800 cursor-pointer"
+            className="text-emerald-600 hover-text-ok cursor-pointer"
           >
             <X size={15} />
           </button>

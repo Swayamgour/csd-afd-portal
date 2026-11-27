@@ -54,14 +54,14 @@ export default function OemDealerProductFormPage() {
 
   if (isLoadingDealers || isLoadingProducts) {
     return (
-      <div className="py-12">
+      <div className="py-xxl">
         <Loader label="Loading authorized dealerships and vehicle models..." />
       </div>
     );
   }
 
   return (
-    <div className="oem-dealer-product-form-page space-y-6 max-w-4xl mx-auto">
+    <div className="oem-dealer-product-form-page space-y-6 maxw-4xl mx-auto">
       <PageHeader
         title="Authorize Dealership for Vehicle Model"
         subtitle="Grant an empaneled regional dealership showroom permission to stock, book, and handover defense rate vehicles"
@@ -85,7 +85,7 @@ export default function OemDealerProductFormPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {formError && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-3 shadow-sm">
-            <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+            <AlertCircle size={18} className="mt-hair flex-shrink-0" />
             <div>
               <div className="font-semibold">Validation Error</div>
               <div>{formError}</div>
@@ -97,7 +97,7 @@ export default function OemDealerProductFormPage() {
           title="Dealership Showroom & Vehicle Selection"
           subtitle="Pair an empaneled dealership location with an authorized vehicle SKU"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 cols-md-2 gap-4">
             <div className="form-field">
               <label className="form-label font-medium text-slate-700">
                 Select Dealership Showroom <span className="text-red-500">*</span>
@@ -169,7 +169,7 @@ export default function OemDealerProductFormPage() {
           title="Availability & Handover Commitments"
           subtitle="Configure default showroom inventory posture and estimated customer delivery timeline"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 cols-md-2 gap-4">
             <div className="form-field">
               <label className="form-label font-medium text-slate-700">
                 Initial Stock Availability
@@ -206,7 +206,7 @@ export default function OemDealerProductFormPage() {
           </div>
         </Card>
 
-        <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+        <div className="flex items-center justify-between pt-lg border-t border-slate-200">
           <Button
             type="button"
             variant="outline"

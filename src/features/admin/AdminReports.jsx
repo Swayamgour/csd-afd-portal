@@ -259,7 +259,7 @@ export const AdminReports = () => {
       case 'audit':
         return [
           { header: 'Timestamp', accessor: 'timestamp', render: (a) => <span className="text-xs font-mono">{formatDate(a.timestamp)}</span> },
-          { header: 'Actor & Role', accessor: 'userName', render: (a) => <div><div className="font-semibold text-xs">{a.userName || 'System'}</div><div className="text-[10px] text-muted font-mono">{a.role}</div></div> },
+          { header: 'Actor & Role', accessor: 'userName', render: (a) => <div><div className="font-semibold text-xs">{a.userName || 'System'}</div><div className="text-tiny text-muted font-mono">{a.role}</div></div> },
           { header: 'Action Executed', accessor: 'action', render: (a) => <span className="badge-pill badge-primary badge-sm font-mono">{a.action}</span> },
           { header: 'Module & Entity', accessor: 'module', render: (a) => <span className="text-xs font-medium">{a.module} / {a.entityType}</span> },
           { header: 'Client IP', accessor: 'ip', render: (a) => <span className="font-mono text-xs text-muted">{a.ip || '127.0.0.1'}</span> },
@@ -271,7 +271,7 @@ export const AdminReports = () => {
           { header: 'Account / Service No', accessor: 'identifier', render: (l) => <span className="font-mono font-bold text-brand">{l.identifier}</span> },
           { header: 'Auth Event', accessor: 'event', render: (l) => <Badge variant={l.event === 'LOGIN' ? 'brand' : 'outline'}>{l.event}</Badge> },
           { header: 'Authentication Outcome', accessor: 'success', render: (l) => <Badge variant={l.success ? 'success' : 'danger'}>{l.success ? 'SUCCESS' : 'FAILED'}</Badge> },
-          { header: 'Client Machine & IP', accessor: 'ip', render: (l) => <div className="text-xs font-mono"><div>{l.ip}</div><div className="text-[10px] text-muted">{l.browser || l.device || ''}</div></div> },
+          { header: 'Client Machine & IP', accessor: 'ip', render: (l) => <div className="text-xs font-mono"><div>{l.ip}</div><div className="text-tiny text-muted">{l.browser || l.device || ''}</div></div> },
         ];
 
       default:
@@ -294,7 +294,7 @@ export const AdminReports = () => {
           <div className="flex items-center gap-2">
             {/* <button
               onClick={() => currentQuery.refetch()}
-              className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition"
+              className="p-2 border border-slate-200 rounded-lg hover-bg-subtle text-slate-600 transition"
               title="Refresh Data"
             >
               {currentQuery.isFetching ? <Loader variant="inline" size="sm" /> : <RefreshCw className="w-4 h-4" />}
@@ -310,7 +310,7 @@ export const AdminReports = () => {
 
       {/* 13-Report Tab Navigation Bar */}
       <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-        <div className="flex items-center gap-1 min-w-max">
+        <div className="flex items-center gap-1 minw-max">
           {REPORT_TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeReport === tab.id;
@@ -322,12 +322,12 @@ export const AdminReports = () => {
                   setStatusFilter('');
                 }}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition ${
-                  isActive
-                    ? 'bg-brand text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
+ isActive
+ ? 'bg-brand text-white shadow-sm'
+ : 'text-slate-600 hover-bg-muted hover-text-ink'
+ }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="icon-14 icon-14" />
                 <span>{tab.label}</span>
               </button>
             );
@@ -349,9 +349,9 @@ export const AdminReports = () => {
 
       {/* Filter and Search Bar */}
       <Card>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+        <div className="flex flex-col bar-row items-center justify-between gap-4 p-2">
+          <div className="relative w-full bar-search">
+            <Search className="absolute left-3 icon-center-y h-4 w-4 text-slate-400" />
             <input
               type="text"
               placeholder={`Search in ${activeTabObj?.label.replace(/^\d+\.\s*/, '')}...`}
@@ -361,7 +361,7 @@ export const AdminReports = () => {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full bar-auto">
             {/* Status dropdown where applicable */}
             {['demands', 'beneficiaries', 'payments', 'products', 'orders', 'refunds'].includes(activeReport) && (
               <select
@@ -448,7 +448,7 @@ export const AdminReports = () => {
                   setEndDate('');
                   setSearch('');
                 }}
-                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded"
+                className="text-xs text-rose-600 hover-text-bad font-medium px-2 py-1 rounded"
               >
                 Reset Filters
               </button>

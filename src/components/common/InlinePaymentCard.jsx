@@ -591,7 +591,7 @@ export default function InlinePaymentCard({ demand, onPaymentSubmitted, onCancel
                   className={`form-control text-sm ${errors.receiptFile ? 'has-error' : ''}`}
                 />
                 {receiptFile && !errors.receiptFile && (
-                  <span className="text-xs text-success font-medium flex items-center gap-1 shrink-0">
+                  <span className="text-xs text-success font-medium flex items-center gap-1 flex-shrink-0">
                     <FileText size={14} /> {receiptFile.name}
                   </span>
                 )}

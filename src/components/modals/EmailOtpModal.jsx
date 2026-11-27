@@ -298,7 +298,7 @@ export default function EmailOtpModal({
           {/* 6-Digit Code Input Boxes */}
           <div className="fgrp">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
-              <label className="small fw-bold" style={{ margin: 0 }}>
+              <label className="small font-bold" style={{ margin: 0 }}>
                 ENTER 6-DIGIT VERIFICATION CODE
               </label>
               {digits.some((d) => d !== '') && (

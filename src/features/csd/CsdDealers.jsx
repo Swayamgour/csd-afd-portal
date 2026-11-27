@@ -149,10 +149,10 @@ export default function CsdDealers() {
       render: (row) => (
         <span
           className={
-            row.active
-              ? 'csd-badge-active'
-              : 'csd-badge-inactive'
-          }
+ row.active
+ ? 'csd-badge-active'
+ : 'csd-badge-inactive'
+ }
         >
           {row.active ? 'ACTIVE' : 'INACTIVE'}
         </span>
@@ -203,10 +203,10 @@ export default function CsdDealers() {
             type="button"
             onClick={() => handleToggleStatus(row)}
             className={
-              row.active
-                ? 'csd-btn-action-delete'
-                : 'csd-btn-action-view'
-            }
+ row.active
+ ? 'csd-btn-action-delete'
+ : 'csd-btn-action-view'
+ }
           >
             {row.active ? 'Deactivate' : 'Activate'}
           </button>
@@ -286,7 +286,7 @@ export default function CsdDealers() {
 
       {/* DEALER DETAILS INSPECTION INLINE CARD */}
       {selectedDealerForView && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Dealership Profile: {selectedDealerForView.name}</h3>

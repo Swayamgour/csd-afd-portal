@@ -123,7 +123,7 @@ export default function OemDealerProducts() {
             <span className="muted small">—</span>
           )}
           {r.estimatedDeliveryDays ? (
-            <div className="muted small mt-0.5">Est. {r.estimatedDeliveryDays} days</div>
+            <div className="muted small mt-hair">Est. {r.estimatedDeliveryDays} days</div>
           ) : null}
         </div>
       ),
@@ -194,7 +194,7 @@ export default function OemDealerProducts() {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-emerald-600 hover:text-emerald-800 cursor-pointer"
+            className="text-emerald-600 hover-text-ok cursor-pointer"
           >
             <X size={15} />
           </button>
@@ -210,7 +210,7 @@ export default function OemDealerProducts() {
           <button
             type="button"
             onClick={() => setFormError('')}
-            className="text-red-600 hover:text-red-800 cursor-pointer"
+            className="text-red-600 hover-text-bad cursor-pointer"
           >
             <X size={15} />
           </button>

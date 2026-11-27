@@ -47,7 +47,7 @@ export function RegisterSuccessCard({ registeredUser, f }) {
         </div>
         <div className="reg-summary-row">
           <span className="reg-summary-label">Verified Email:</span>
-          <span className="text-green fw-bold">{f.email} ✓</span>
+          <span className="text-green font-bold">{f.email} ✓</span>
         </div>
         <div className="reg-summary-row">
           <span className="reg-summary-label">Grocery Card ID:</span>

@@ -122,7 +122,7 @@ export default function Checkout() {
   // If no product in state or session, show clean empty state
   if (!product) {
     return (
-      <div className="checkout-page-container text-center py-5">
+      <div className="checkout-page-container text-center py-lg">
         <div className="checkout-card p-5 text-center">
           <AlertCircle size={40} className="text-danger mx-auto mb-2" />
           <h2>No Product Selected for Checkout</h2>

@@ -391,7 +391,7 @@ export default function PasswordReset() {
 
           {devOtp && (
             <div className="dev-otp">
-              <span><b>Development OTP:</b> <span className="font-mono tracking-widest text-sm font-bold">{devOtp}</span></span>
+              <span><b>Development OTP:</b> <span className="font-mono ls-wide text-sm font-bold">{devOtp}</span></span>
               <button
                 type="button"
                 className="otp-link-btn"
@@ -542,9 +542,9 @@ export default function PasswordReset() {
       )}
 
       {step === 'success' && (
-        <div className="panel logincard authcard text-center py-6">
+        <div className="panel logincard authcard text-center py-xl">
           <div className="mb-3">
-            <CheckCircle2 size={54} className="text-emerald-500 mx-auto" />
+            <CheckCircle2 size={54} className="text-ok mx-auto" />
           </div>
           <h1>Password Reset Complete</h1>
           <p className="text-muted small mb-4">

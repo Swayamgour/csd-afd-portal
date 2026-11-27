@@ -64,7 +64,7 @@ export default function BeneficiaryDocuments() {
       />
 
       {uploadMsg.text && (
-        <div className={`panel p-3 mb-3 row align-center gap-1 small ${uploadMsg.type === 'success' ? 'bg-green-soft border-green text-green' : 'bg-red-soft border-danger text-danger'}`}>
+        <div className={`panel p-3 mb-3 row align-center gap-1 small ${uploadMsg.type === 'success' ? 'bg-green-soft border-green text-green' : 'bg-red-soft border-bad text-danger'}`}>
           {uploadMsg.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
           <span>{uploadMsg.text}</span>
         </div>
@@ -76,7 +76,7 @@ export default function BeneficiaryDocuments() {
             <Loader label="Loading documents" />
           ) : documents.length === 0 ? (
             <div className="text-center py-4 muted">
-              <FileText size={32} className="muted block mx-auto mb-2 opacity-50" />
+              <FileText size={32} className="muted block mx-auto mb-2 dim" />
               <p className="small mb-0">No documents uploaded yet in your digital vault.</p>
               <p className="micro muted">Upload your service certificates or pension statements using the form.</p>
             </div>

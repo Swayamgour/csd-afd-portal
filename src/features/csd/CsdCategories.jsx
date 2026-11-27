@@ -107,12 +107,12 @@ export default function CsdCategories() {
         <div className="flex gap-1 flex-wrap">
           {row.categoryIds && row.categoryIds.length > 0 ? (
             row.categoryIds.map((c, i) => (
-              <span key={i} className="badge-pill badge-primary badge-sm text-[10px]">
+              <span key={i} className="badge-pill badge-primary badge-sm text-tiny">
                 {c.code || c.name || 'Allotted Category'}
               </span>
             ))
           ) : (
-            <span className="badge-pill badge-primary badge-sm text-[10px]">All AFD Categories</span>
+            <span className="badge-pill badge-primary badge-sm text-tiny">All AFD Categories</span>
           )}
         </div>
       ),

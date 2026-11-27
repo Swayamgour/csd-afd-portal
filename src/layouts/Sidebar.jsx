@@ -79,8 +79,8 @@ export default function Sidebar({
                     to={item.to}
                     end={item.to.endsWith('/dashboard')}
                     className={({ isActive }) =>
-                      `sidebar-nav-link row align-center gap-1 ${isActive ? 'active' : ''}`
-                    }
+ `sidebar-nav-link row align-center gap-1 ${isActive ? 'active' : ''}`
+ }
                     onClick={() => {
                       if (window.innerWidth < 1024) onClose();
                     }}

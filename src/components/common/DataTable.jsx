@@ -83,10 +83,10 @@ export function DataTable({
               )}
             </span>
             {pagination.onPageSizeChange && (
-              <div className="flex items-center gap-1.5 small muted text-xs">
+              <div className="per-page small muted">
                 <span>Per page:</span>
                 <select
-                  className="form-control text-xs py-0.5 px-2 h-7 w-20 rounded border-slate-300"
+                  className="form-control"
                   value={pageSize}
                   onChange={(e) => pagination.onPageSizeChange(Number(e.target.value))}
                 >
@@ -105,7 +105,7 @@ export function DataTable({
               onPageChange={pagination.onPageChange}
             />
           ) : (
-            <span className="small muted text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium">
+            <span className="page-count-chip">
               Page 1 of 1
             </span>
           )}

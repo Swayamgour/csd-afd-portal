@@ -315,7 +315,7 @@ export default function AdminBanners() {
       {/* CREATE / EDIT MODAL */}
       {modalOpen && (
         <Card
-          className="mt-4 border-primary"
+          className="mt-4 border-accent"
           title={editingBanner ? `Edit Banner: ${editingBanner.name}` : 'Add New Banner'}
           subtitle="Enter image URL/path and placement settings for dynamic portal display"
           headerAction={
@@ -448,7 +448,7 @@ export default function AdminBanners() {
       {/* DELETE CONFIRM INLINE CARD */}
       {deleteModalBanner && (
         <Card
-          className="mt-4 border-danger"
+          className="mt-4 border-bad"
           title={`Confirm Deletion: "${deleteModalBanner.name}"`}
           subtitle="This graphic will immediately stop appearing on the portal"
           headerAction={

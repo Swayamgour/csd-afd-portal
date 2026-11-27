@@ -642,7 +642,7 @@ export default function DealerDashboard() {
       {/* INLINE WORKFLOW 1: DEMAND VERIFICATION */}
       {verifyingDemand && (
         <Card
-          className="mt-4 border-primary"
+          className="mt-4 border-accent"
           title={`Review & Verify Demand · ${verifyingDemand.demandNo}`}
           subtitle="Dealership Verification Desk · Authorized Sign-off"
           headerAction={
@@ -863,7 +863,7 @@ export default function DealerDashboard() {
       {/* INLINE WORKFLOW 2: VEHICLE HANDOVER */}
       {handoverOrder && (
         <Card
-          className="mt-4 border-primary"
+          className="mt-4 border-accent"
           title={`Confirm Customer Vehicle Handover · ${handoverOrder.orderNo || handoverOrder.id}`}
           subtitle="Issue Physical Gatepass & Release Vehicle"
           headerAction={

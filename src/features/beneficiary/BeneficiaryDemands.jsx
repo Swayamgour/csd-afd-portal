@@ -90,7 +90,7 @@ export function BeneficiaryDemands() {
           <div>
             <Link
               to={`/beneficiary/demands/${row._id || row.id}`}
-              className="font-semibold text-brand font-mono block hover:underline"
+              className="font-semibold text-brand font-mono block link-hover-underline"
               title="View Demand Details"
             >
               {dNo}
@@ -154,7 +154,7 @@ export function BeneficiaryDemands() {
       render: (row) => {
         const depotName = row.depotId?.name || 'Assigned CSD Depot';
         return (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-tight">
             <Building2 size={14} className="text-slate-400 flex-shrink-0" />
             <span className="text-xs text-slate-700 font-medium block">
               {depotName}
@@ -227,7 +227,7 @@ export function BeneficiaryDemands() {
               title="Refresh demands data from backend"
             >
               {isFetching ? <Loader variant="inline" size="sm" /> : <RefreshCw size={14} />}
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="show-sm-inline">Refresh</span>
             </Button> */}
             <Link to="/products" className="btn btn-primary font-bold">
               <PlusCircle size={15} />
@@ -271,7 +271,7 @@ export function BeneficiaryDemands() {
         <div className="panel p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
           <div className="row between align-center mb-1">
             <span className="small muted font-medium">Supply Orders / Delivered</span>
-            <CheckCircle2 size={18} className="text-indigo-600" />
+            <CheckCircle2 size={18} className="text-info" />
           </div>
           <div className="h2 text-ink font-bold">{completedCount}</div>
           <span className="micro muted">Supply order issued to URC or delivered</span>
@@ -305,7 +305,7 @@ export function BeneficiaryDemands() {
 
       {/* 4. Enhanced Search & Filter Bar */}
       <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm mb-4 flex flex-wrap gap-3 items-center justify-between">
-        <div className="flex flex-1 min-w-[280px] items-center gap-2 border border-slate-300 rounded-lg px-3 py-2 bg-slate-50 focus-within:bg-white focus-within:border-brand transition-all">
+        <div className="flex flex-1 minw-280 items-center gap-2 border border-slate-300 rounded-lg px-3 py-2 bg-slate-50 focus-ring-within smooth">
           <Search size={16} className="text-slate-400 flex-shrink-0" />
           <input
             type="text"
@@ -318,7 +318,7 @@ export function BeneficiaryDemands() {
             <button
               type="button"
               onClick={() => setSearchTerm('')}
-              className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              className="text-slate-400 hover-text-ink cursor-pointer"
               title="Clear search"
             >
               <X size={14} />

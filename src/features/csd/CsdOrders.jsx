@@ -74,7 +74,7 @@ export default function CsdOrders() {
           <span className="font-semibold text-xs block text-ink">
             {row.beneficiaryId?.fullName || row.beneficiaryId?.name || row.beneficiaryName || 'Applicant'}
           </span>
-          <span className="text-[10px] text-muted font-mono">
+          <span className="text-tiny text-muted font-mono">
             {row.beneficiaryId?.serviceNumber || row.serviceNumber || ''}
           </span>
         </div>
@@ -88,7 +88,7 @@ export default function CsdOrders() {
           <span className="font-medium text-xs block text-ink">
             {row.items?.[0]?.name || row.productName || 'AFD Item'}
           </span>
-          <span className="text-[10px] text-muted font-mono">
+          <span className="text-tiny text-muted font-mono">
             SKU: {row.items?.[0]?.sku || row.sku || 'AFD-SKU'}
           </span>
         </div>
@@ -184,9 +184,9 @@ export default function CsdOrders() {
 
       {/* Filter and Search Bar */}
       <Card>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+        <div className="flex flex-col bar-row items-center justify-between gap-4 p-2">
+          <div className="relative w-full bar-search">
+            <Search className="absolute left-3 icon-center-y h-4 w-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search by SO number, Chassis, or Dealer..."
@@ -196,7 +196,7 @@ export default function CsdOrders() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full bar-auto">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -216,7 +216,7 @@ export default function CsdOrders() {
                   setStatusFilter('');
                   setSearchTerm('');
                 }}
-                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded"
+                className="text-xs text-rose-600 hover-text-bad font-medium px-2 py-1 rounded"
               >
                 Reset Filters
               </button>
@@ -259,7 +259,7 @@ export default function CsdOrders() {
 
       {/* Order Dossier Inline Card */}
       {selectedOrder && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Supply Order Dossier: {selectedOrder.orderNo || selectedOrder.id}</h3>

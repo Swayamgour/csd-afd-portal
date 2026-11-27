@@ -140,7 +140,7 @@ export default function OemDealers() {
       {/* Dealer Detail Inline Dossier */}
       {Boolean(selectedDealerId) && (
         <Card
-          className="mb-4 border-primary"
+          className="mb-4 border-accent"
           title={selectedDealer?.name || 'Dealership Dossier'}
           subtitle={`Showroom Code: ${selectedDealer?.code || '—'} · Authorized OEM Representative`}
           headerAction={
@@ -154,7 +154,7 @@ export default function OemDealers() {
           ) : (
             <div className="space-y-4">
               {/* Dealer Details Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">
+              <div className="grid grid-cols-2 cols-md-3 gap-3 p-3 bg-slate-50 rounded-lg text-sm border">
                 <div>
                   <span className="text-muted block text-xs">Dealership Name:</span>
                   <span className="font-semibold">{selectedDealer?.name}</span>
@@ -183,7 +183,7 @@ export default function OemDealers() {
 
               {/* Depot Appointments */}
               <div>
-                <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+                <h4 className="text-sm font-semibold mb-2 flex items-center gap-tight">
                   <Building2 size={16} className="text-brand" />
                   Regional CSD Depot Appointments ({dealerAppointments.length})
                 </h4>
@@ -194,7 +194,7 @@ export default function OemDealers() {
                     No explicit depot appointment records found. Operating under primary OEM dealership scope.
                   </div>
                 ) : (
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                  <div className="stack-tight maxh-md scroll-y">
                     {dealerAppointments.map((app, idx) => (
                       <div
                         key={app._id || idx}
@@ -215,7 +215,7 @@ export default function OemDealers() {
 
               {/* Authorized Products */}
               <div>
-                <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+                <h4 className="text-sm font-semibold mb-2 flex items-center gap-tight">
                   <Package size={16} className="text-brand" />
                   Authorized Vehicle Lineup ({dealerProducts.length})
                 </h4>
@@ -226,7 +226,7 @@ export default function OemDealers() {
                     No individual vehicle allotments configured yet. Use "Dealer Products" tab to map models.
                   </div>
                 ) : (
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                  <div className="stack-tight maxh-md scroll-y">
                     {dealerProducts.map((p, idx) => (
                       <div
                         key={p._id || idx}

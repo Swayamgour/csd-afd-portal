@@ -10,26 +10,28 @@ export function SearchInput({
   size = 'md',
   debounceMs = 0
 }) {
-  const [innerVal, setInnerVal] = useState(value || '');
+  // some pages keep the whole change event in state: always work with the text
+  const valueText = typeof value === 'string' ? value : value?.target?.value ?? '';
+  const [innerVal, setInnerVal] = useState(valueText);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
   // Sync if external value changed (e.g. parent reset)
   useEffect(() => {
-    setInnerVal(value || '');
-  }, [value]);
+    setInnerVal(valueText);
+  }, [valueText]);
 
   // Debounce dispatching to parent only if debounceMs > 0
   useEffect(() => {
     if (debounceMs <= 0) return;
-    if (innerVal === (value || '')) return;
+    if (innerVal === valueText) return;
 
     const timer = setTimeout(() => {
       onChangeRef.current?.({ target: { value: innerVal } });
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  }, [innerVal, debounceMs, value]);
+  }, [innerVal, debounceMs, valueText]);
 
   const handleChange = (e) => {
     const nextVal = e.target.value;

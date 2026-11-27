@@ -162,7 +162,7 @@ export default function CsdContent() {
 
       {/* Publish Policy Circular Inline Card */}
       {modalOpen && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Publish Official Policy Circular</h3>

@@ -83,7 +83,7 @@ export default function CsdDepots() {
       render: (row) => {
         const zone = row.priceZoneId && typeof row.priceZoneId === 'object' ? row.priceZoneId : priceZones.find((z) => (z._id || z.id) === row.priceZoneId);
         return (
-          <span className="portal-code-badge" style={{ background: '#e0e7ff', color: '#3730a3', border: '1px solid #c7d2fe' }}>
+          <span className="zone-chip">
             {zone?.name || zone?.code || '—'}
           </span>
         );
@@ -205,7 +205,7 @@ export default function CsdDepots() {
 
       {/* DEPOT DETAILS INSPECTION INLINE CARD */}
       {selectedDepotForView && (
-        <Card className="mb-3 border-brand">
+        <Card className="mb-3 border-accent">
           <div className="card-header between mb-2">
             <div>
               <h3 className="card-title">Depot Profile: {selectedDepotForView.name}</h3>

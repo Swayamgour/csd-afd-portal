@@ -7,6 +7,8 @@ import Button from '../../components/common/Button.jsx';
 import Modal from '../../components/common/Modal.jsx';
 import ConfirmDialog from '../../components/common/ConfirmDialog.jsx';
 import Tabs from '../../components/common/Tabs.jsx';
+import SearchInput from '../../components/common/SearchInput.jsx';
+import { ProductCell } from '../../components/common/ProductGrid.jsx';
 import { formatCurrency, formatDate } from '../../utils/formatters.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import {
@@ -34,7 +36,7 @@ const Thumbs = ({ urls = [] }) =>
   urls.length ? (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       {urls.slice(0, 8).map((u) => (
-        <img key={u} src={u} alt="" style={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #dde3ee' }} />
+        <img key={u} src={u} alt="" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} style={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #dde3ee' }} />
       ))}
       {urls.length > 8 && <span className="micro muted">+{urls.length - 8} more</span>}
     </div>
@@ -141,15 +143,7 @@ export default function CsdProductApprovals() {
     {
       header: 'Product',
       accessor: 'name',
-      render: (r) => (
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {(r.imageUrl || r.images?.[0]) && <img src={r.imageUrl || r.images[0]} alt="" style={{ width: 44, height: 34, objectFit: 'cover', borderRadius: 6, border: '1px solid #dde3ee' }} />}
-          <div>
-            <b>{r.name}</b>
-            <div className="micro muted">{r.indexNo || r.sku}</div>
-          </div>
-        </div>
-      ),
+      render: (r) => <ProductCell product={r} />,
     },
     { header: 'OEM', accessor: 'oemId', render: (r) => r.oemId?.name || '—' },
     {
@@ -209,9 +203,8 @@ export default function CsdProductApprovals() {
               {summary && c.key ? `${c.label} (${summary[tab]?.[c.key] ?? 0})` : c.label}
             </button>
           ))}
-          <div className="fld" style={{ marginLeft: 'auto', minWidth: 240 }}>
-            <input type="search" placeholder="Search product, SKU…" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} aria-label="Search products" />
-            <Search size={16} aria-hidden />
+          <div className="bar-search" style={{ marginLeft: 'auto' }}>
+            <SearchInput value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Search product, SKU…" debounceMs={300} />
           </div>
           {tab === 'PENDING' && items.length > 1 && (
             <Button size="sm" icon={CheckCircle2} onClick={() => setConfirmAll(true)}>Approve all shown ({items.length})</Button>

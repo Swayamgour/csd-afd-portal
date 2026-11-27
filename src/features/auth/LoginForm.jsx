@@ -309,7 +309,7 @@ export default function LoginForm({ onNeedOtp }) {
         <span>{loading ? 'Checking your details…' : 'Sign in'}</span>
       </button>
 
-      <div className="row align-center gap-1 my-2" aria-hidden>
+      <div className="row align-center gap-1 my-sm" aria-hidden>
         <hr style={{ flex: 1, border: 0, borderTop: '1px solid var(--color-border, #d1d5db)' }} />
         <span className="small muted">or</span>
         <hr style={{ flex: 1, border: 0, borderTop: '1px solid var(--color-border, #d1d5db)' }} />

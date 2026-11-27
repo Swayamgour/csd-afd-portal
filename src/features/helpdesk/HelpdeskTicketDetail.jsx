@@ -283,7 +283,7 @@ export const HelpdeskTicketDetail = () => {
           {/* INLINE WORKFLOW: ASSIGN */}
           {showAssignModal && (
             <Card
-              className="border-primary mb-3"
+              className="border-accent mb-3"
               title="Assign Ticket to Officer"
               headerAction={
                 <Button variant="outline" size="sm" onClick={() => setShowAssignModal(false)}>
@@ -309,7 +309,7 @@ export const HelpdeskTicketDetail = () => {
           {/* INLINE WORKFLOW: ESCALATE */}
           {showEscalateModal && (
             <Card
-              className="border-primary mb-3"
+              className="border-accent mb-3"
               title="Escalate Incident Tier"
               headerAction={
                 <Button variant="outline" size="sm" onClick={() => setShowEscalateModal(false)}>
@@ -349,7 +349,7 @@ export const HelpdeskTicketDetail = () => {
           {/* INLINE WORKFLOW: RESOLVE */}
           {showResolveModal && (
             <Card
-              className="border-primary mb-3"
+              className="border-accent mb-3"
               title="Mark Incident as Resolved"
               headerAction={
                 <Button variant="outline" size="sm" onClick={() => setShowResolveModal(false)}>

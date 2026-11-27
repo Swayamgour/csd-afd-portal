@@ -249,7 +249,7 @@ export function AdminUserDetail() {
               {(user.name || user.username || 'U')[0].toUpperCase()}
             </div>
             <div>
-              <div className="fw-bold fs-md color-ink">{user.name || user.username}</div>
+              <div className="font-bold text-md color-ink">{user.name || user.username}</div>
               <div className="muted fs-xs">
                 <code>{user.username}</code> · {user.email || 'No email registered'} · {user.mobile || user.phone || 'No phone registered'}
               </div>
@@ -258,7 +258,7 @@ export function AdminUserDetail() {
           <div className="row align-center gap-1 flex-wrap">
             <span className="muted fs-xs">Account Status:</span>
             <StatusBadge status={user.status || 'Active'} />
-            <span className="muted fs-xs ml-1">Verification:</span>
+            <span className="muted fs-xs ml-xs">Verification:</span>
             <span className={`badge ${user.verificationStatus === 'APPROVED' || user.verificationStatus === 'VERIFIED' ? 'badge-success' : user.verificationStatus === 'REJECTED' ? 'badge-danger' : 'badge-warning'}`}>
               {user.verificationStatus || 'PENDING'}
             </span>
@@ -328,7 +328,7 @@ export function AdminUserDetail() {
                 <div className="form-grid">
                   <div>
                     <label className="form-label text-muted">Service Number</label>
-                    <div className="font-mono fw-bold">{beneficiary.serviceNumber || user.serviceNumber || 'N/A'}</div>
+                    <div className="font-mono font-bold">{beneficiary.serviceNumber || user.serviceNumber || 'N/A'}</div>
                   </div>
                   <div>
                     <label className="form-label text-muted">Rank / Designation</label>
@@ -495,11 +495,11 @@ export function AdminUserDetail() {
                 </div>
                 <div>
                   <label className="form-label text-muted">Total Profile Edits</label>
-                  <div className="fw-bold">{user.userEditedCount || 0} times</div>
+                  <div className="font-bold">{user.userEditedCount || 0} times</div>
                 </div>
                 <div>
                   <label className="form-label text-muted">Total Status Transitions</label>
-                  <div className="fw-bold">{user.statusChangeCount || 0} times</div>
+                  <div className="font-bold">{user.statusChangeCount || 0} times</div>
                 </div>
               </div>
             </div>

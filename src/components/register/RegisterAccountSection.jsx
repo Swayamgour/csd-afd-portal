@@ -99,8 +99,8 @@ export function RegisterAccountSection({
               onChange={set("pw")}
               aria-invalid={!!shown("pw")}
               className={
-                pwStrength?.label === "Strong" ? "input-valid-strong" : ""
-              }
+ pwStrength?.label === "Strong" ? "input-valid-strong" : ""
+ }
             />
             <button
               type="button"
@@ -118,10 +118,10 @@ export function RegisterAccountSection({
                   <span
                     key={i}
                     className={
-                      i < (PW_RULES || []).filter((r) => r.test(f.pw)).length
-                        ? `on ${pwStrength?.className || ""}`
-                        : ""
-                    }
+ i < (PW_RULES || []).filter((r) => r.test(f.pw)).length
+ ? `on ${pwStrength?.className || ""}`
+ : ""
+ }
                   />
                 ))}
               </div>

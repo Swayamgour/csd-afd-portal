@@ -113,7 +113,7 @@ export default function OemFormPage() {
       />
 
       {errorMsg && (
-        <div className="alert alert-danger mb-3 d-flex align-items-center gap-2">
+        <div className="alert alert-danger mb-3 flex items-center gap-2">
           <AlertCircle size={18} />
           <span>{errorMsg}</span>
         </div>
@@ -122,7 +122,7 @@ export default function OemFormPage() {
       <form onSubmit={handleSubmit}>
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
-            <h3 className="card-title d-flex align-items-center gap-2">
+            <h3 className="card-title flex items-center gap-2">
               <Building2 size={18} className="text-brand" /> OEM Details
             </h3>
           </div>
@@ -166,7 +166,7 @@ export default function OemFormPage() {
 
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
-            <h3 className="card-title d-flex align-items-center gap-2">
+            <h3 className="card-title flex items-center gap-2">
               <Mail size={18} className="text-brand" /> Contact
             </h3>
           </div>
@@ -189,7 +189,7 @@ export default function OemFormPage() {
         {!isEdit && (
           <Card className="mb-3">
             <div className="card-header border-bottom pb-2 mb-3">
-              <h3 className="card-title d-flex align-items-center gap-2">
+              <h3 className="card-title flex items-center gap-2">
                 <Lock size={18} className="text-brand" /> OEM Login Credentials
               </h3>
               <p className="micro muted">Is username/password se OEM login karega (role: OEM)</p>
@@ -198,11 +198,11 @@ export default function OemFormPage() {
           </Card>
         )}
 
-        <div className="d-flex justify-content-between align-items-center mt-4 mb-4">
+        <div className="flex justify-between items-center mt-4 mb-4">
           <Button type="button" variant="outline" onClick={() => navigate('/csd/oems')}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" disabled={isCreating || isUpdating} className="d-flex align-items-center gap-2 px-4">
+          <Button type="submit" variant="primary" disabled={isCreating || isUpdating} className="flex items-center gap-2 px-4">
             <Save size={16} />
             {isCreating || isUpdating ? 'Saving...' : isEdit ? 'Update OEM' : 'Register OEM'}
           </Button>

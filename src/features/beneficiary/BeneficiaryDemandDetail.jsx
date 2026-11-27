@@ -191,8 +191,8 @@ export default function BeneficiaryDemandDetail() {
       {showCancelPrompt && (
         <div className="alert-banner error mb-3 p-3 bg-red-50 border border-red-200 rounded flex items-center justify-between">
           <div>
-            <strong className="text-red-900 block">Are you sure you want to cancel Demand {demand.demandNo || demand._id}?</strong>
-            <p className="text-xs text-red-700 m-0 mt-0.5">This will withdraw the vehicle allocation from the regional depot. This operation cannot be undone.</p>
+            <strong className="text-bad-strong block">Are you sure you want to cancel Demand {demand.demandNo || demand._id}?</strong>
+            <p className="text-xs text-red-700 m-0 mt-hair">This will withdraw the vehicle allocation from the regional depot. This operation cannot be undone.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setShowCancelPrompt(false)}>

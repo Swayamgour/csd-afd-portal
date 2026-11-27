@@ -190,7 +190,7 @@ export default function OemPricingFormPage() {
 
   if ((id && loadingEditDoc) || loadingProducts) {
     return (
-      <div className="py-12">
+      <div className="py-xxl">
         <Loader label="Loading..." />
       </div>
     );
@@ -209,7 +209,7 @@ export default function OemPricingFormPage() {
   );
 
   return (
-    <div className="oem-pricing-form-page space-y-6 max-w-5xl mx-auto">
+    <div className="oem-pricing-form-page space-y-6 maxw-5xl mx-auto">
       <PageHeader
         title="State-wise Price"
         subtitle="Product chuno, har state ka price likho, ek baar Save karo"
@@ -227,15 +227,15 @@ export default function OemPricingFormPage() {
 
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-2">
-          <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+          <AlertCircle size={18} className="mt-hair flex-shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* STEP 1 */}
       <Card title="Step 1 · Product chuno">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="form-field md:col-span-2">
+        <div className="grid grid-cols-1 cols-md-3 gap-4">
+          <div className="form-field span-md-2">
             <label className="form-label font-medium">Product</label>
             <select className="form-control" value={productId} onChange={(e) => setProductId(e.target.value)}>
               <option value="">-- Select product --</option>

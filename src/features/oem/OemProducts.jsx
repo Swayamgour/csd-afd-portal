@@ -97,7 +97,7 @@ export default function OemProducts() {
       render: (r) => (
         <div>
           <div className="font-mono small font-semibold text-brand">{r.indexNo || r.sku}</div>
-          {r.nomenclature && <div className="muted small truncate max-w-xs">{r.nomenclature}</div>}
+          {r.nomenclature && <div className="muted small truncate maxw-xs">{r.nomenclature}</div>}
         </div>
       ),
     },
@@ -235,7 +235,7 @@ export default function OemProducts() {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-emerald-600 hover:text-emerald-800 cursor-pointer"
+            className="text-emerald-600 hover-text-ok cursor-pointer"
           >
             <X size={15} />
           </button>
@@ -251,7 +251,7 @@ export default function OemProducts() {
           <button
             type="button"
             onClick={() => setFormError('')}
-            className="text-red-600 hover:text-red-800 cursor-pointer"
+            className="text-red-600 hover-text-bad cursor-pointer"
           >
             <X size={15} />
           </button>

@@ -142,7 +142,7 @@ export default function UrcFormPage() {
       />
 
       {errorMsg && (
-        <div className="alert alert-danger mb-3 d-flex align-items-center gap-2">
+        <div className="alert alert-danger mb-3 flex items-center gap-2">
           <AlertCircle size={18} />
           <span>{errorMsg}</span>
         </div>
@@ -151,7 +151,7 @@ export default function UrcFormPage() {
       <form onSubmit={handleSubmit}>
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
-            <h3 className="card-title d-flex align-items-center gap-2">
+            <h3 className="card-title flex items-center gap-2">
               <Shield size={18} className="text-brand" /> Canteen Identification & Parent Depot
             </h3>
             <p className="micro muted">State select karke us state ke depot me se parent depot chuno</p>
@@ -178,7 +178,7 @@ export default function UrcFormPage() {
         {!isEdit && (
           <Card className="mb-3">
             <div className="card-header border-bottom pb-2 mb-3">
-              <h3 className="card-title d-flex align-items-center gap-2">
+              <h3 className="card-title flex items-center gap-2">
                 <Lock size={18} className="text-brand" /> URC Login Credentials
               </h3>
               <p className="micro muted">Is username/password se URC login karega (role: URC)</p>
@@ -189,7 +189,7 @@ export default function UrcFormPage() {
 
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
-            <h3 className="card-title d-flex align-items-center gap-2">
+            <h3 className="card-title flex items-center gap-2">
               <Mail size={18} className="text-brand" /> Canteen Officer / Nodal Contact
             </h3>
           </div>
@@ -211,7 +211,7 @@ export default function UrcFormPage() {
 
         <Card className="mb-3">
           <div className="card-header border-bottom pb-2 mb-3">
-            <h3 className="card-title d-flex align-items-center gap-2">
+            <h3 className="card-title flex items-center gap-2">
               <MapPin size={18} className="text-brand" /> Location
             </h3>
           </div>
@@ -225,7 +225,7 @@ export default function UrcFormPage() {
               <input className="form-control" value={formData.address} onChange={(e) => set({ address: e.target.value })} />
             </div>
           </div>
-          <div className="d-flex align-items-center gap-2 mt-4 p-3 bg-light rounded border">
+          <div className="flex items-center gap-2 mt-4 p-3 bg-subtle rounded border">
             <input
               type="checkbox"
               id="urcActiveStatus"
@@ -239,11 +239,11 @@ export default function UrcFormPage() {
           </div>
         </Card>
 
-        <div className="d-flex justify-content-between align-items-center mt-4 mb-4">
+        <div className="flex justify-between items-center mt-4 mb-4">
           <Button type="button" variant="outline" onClick={() => navigate('/csd/urcs')}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" disabled={isCreating || isUpdating} className="d-flex align-items-center gap-2 px-4">
+          <Button type="submit" variant="primary" disabled={isCreating || isUpdating} className="flex items-center gap-2 px-4">
             <Save size={16} />
             {isCreating || isUpdating ? 'Saving...' : isEdit ? 'Update URC Record' : 'Register URC'}
           </Button>
