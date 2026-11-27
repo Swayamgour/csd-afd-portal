@@ -157,10 +157,10 @@ export default function DepotDashboard() {
     <div className="dashboard-page depot-dashboard-page depot-page-pad">
       <PageHeader
         title={`Regional Depot Directorate · ${depotTitle}`}
-        subtitle={`Commanding Officer: ${user?.name || 'Depot Official'} · Area Jurisdictional Operations & Demand Processing Desk`}
+        // subtitle={`Commanding Officer: ${user?.name || 'Depot Official'} · Area Jurisdictional Operations & Demand Processing Desk`}
         actions={
           <div className="portal-flex-center">
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => {
@@ -171,7 +171,7 @@ export default function DepotDashboard() {
             >
               {fetchingDemands ? <Loader variant="inline" size="sm" /> : <RefreshCw size={14} className="depot-refresh-icon" />}
               {fetchingDemands ? 'Syncing...' : 'Sync Demands'}
-            </Button>
+            </Button> */}
             <Link to="/depot/demands">
               <Button variant="primary" size="sm">
                 Open Demand Queue ({totalDemandsCount})

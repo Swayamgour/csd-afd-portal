@@ -160,9 +160,9 @@ export default function BeneficiaryDemandDetail() {
         badge={<StatusBadge status={demand.status} />}
         actions={
           <div className="row gap-1 align-center">
-            <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh">
+            {/* <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh">
               <RefreshCw size={14} />
-            </Button>
+            </Button> */}
             {isApprovedAndPayable && (
               <Button
                 variant="primary"

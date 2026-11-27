@@ -62,7 +62,6 @@ export const ROLE_SIDEBAR_NAV = {
   [ROLES.URC]: [
     { title: 'URC Dashboard', to: '/urc/dashboard', icon: LayoutDashboard },
     { title: 'Local Demands', to: '/urc/demands', icon: FileText },
-    { title: 'Dealer Verification', to: '/urc/dealer-requests', icon: UserPlus },
     // { title: 'Supply Orders', to: '/urc/orders', icon: Truck },
     // { title: 'Entitled Products', to: '/urc/products', icon: Package },
     // { title: 'URC Reports', to: '/urc/reports', icon: FileSpreadsheet },

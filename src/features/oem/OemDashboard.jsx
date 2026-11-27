@@ -230,7 +230,7 @@ export default function OemDashboard() {
       </div> */}
 
       {/* Active Supply Orders Table */}
-      <Card
+      {/* <Card
         title="Active Institutional Supply Orders"
         subtitle="Recent CSD supply orders requiring chassis VIN allocation, invoice Stamping, or dealer delivery"
         actions={
@@ -246,51 +246,10 @@ export default function OemDashboard() {
           emptyTitle="No recent supply orders"
           emptyText="There are currently no supply orders assigned to your OEM."
         />
-      </Card>
+      </Card> */}
 
       {/* Analytics Breakdown Grid */}
-      <div className="grid-2-col gap-2">
-        {/* Top Demanded Products */}
-        <Card title="Top Demanded Products" subtitle="Highest volume models in defence personnel pipeline">
-          {topProducts.length === 0 ? (
-            <p className="muted small py-2">No product demand activity recorded yet.</p>
-          ) : (
-            <div className="info-kv-list">
-              {topProducts.map((p, idx) => (
-                <div key={p.productId || idx} className="kv-row between py-1 border-bottom">
-                  <div>
-                    <span className="font-semibold text-brand mr-1">#{idx + 1}</span>
-                    <span className="font-medium">{p.name || 'Empaneled Model'}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="badge badge-primary mr-2">{p.count} Orders</span>
-                    <span className="muted small">{formatCurrency(p.totalAmount || 0)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        {/* State-Wise Demand Breakdown */}
-        <Card title="State-Wise Defence Demand Distribution" subtitle="Geographic demand across state depots">
-          {stateWise.length === 0 ? (
-            <p className="muted small py-2">No state-level distribution data available.</p>
-          ) : (
-            <div className="info-kv-list">
-              {stateWise.map((s, idx) => (
-                <div key={s.state || idx} className="kv-row between py-1 border-bottom">
-                  <span className="font-medium">{s.state || 'National / Other'}</span>
-                  <div className="text-right">
-                    <span className="badge badge-default mr-2">{s.count} Units</span>
-                    <span className="muted small">{formatCurrency(s.totalAmount || 0)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      </div>
+     
     </div>
   );
 }

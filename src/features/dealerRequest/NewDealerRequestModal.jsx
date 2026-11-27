@@ -429,7 +429,7 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
       isOpen
       onClose={onClose}
       title="New Dealer Appointment Request"
-      subtitle="CSD Letter 902 (12 Documents & Scrutiny) + Letter 201 (Depot Verification)"
+      // subtitle="CSD Letter 902 (12 Documents & Scrutiny) + Letter 201 (Depot Verification)"
       maxWidth="860px"
       footer={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -487,39 +487,7 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
         {activeTab === 'details' && (
           <div>
             {/* Live Scrutiny Banner */}
-            <div
-              style={{
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: 8,
-                padding: '10px 14px',
-                marginBottom: 16,
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 12,
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div className="row align-center gap-1">
-                <ShieldCheck size={18} className="text-brand" />
-                <span className="small font-semibold">Automated Scrutiny (Letter 902 / Letter 201)</span>
-              </div>
-              <div className="row align-center gap-2 flex-wrap">
-                <span className="micro row align-center gap-0-5">
-                  {scrutiny.gstStateMatch ? <CheckCircle2 size={13} className="text-success" /> : <AlertCircle size={13} className="text-muted" />}
-                  GST State Code ({f.stateCode || '--'})
-                </span>
-                <span className="micro row align-center gap-0-5">
-                  {scrutiny.gstPanMatch ? <CheckCircle2 size={13} className="text-success" /> : <AlertCircle size={13} className="text-muted" />}
-                  GST PAN Segment ({f.panNumber || '--'})
-                </span>
-                <span className="micro row align-center gap-0-5">
-                  {scrutiny.mobileValid ? <CheckCircle2 size={13} className="text-success" /> : <AlertCircle size={13} className="text-muted" />}
-                  10-Digit Mobile
-                </span>
-              </div>
-            </div>
+           
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
               <Input
@@ -700,12 +668,7 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
               />
             </div>
 
-            <div style={{ marginTop: 12, padding: '10px 14px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', margin: 0 }}>
-                <input type="checkbox" checked={f.indemnityBondSubmitted} onChange={set('indemnityBondSubmitted')} />
-                <span className="small font-semibold">Indemnity Bond Submitted (as per CSD prescribed format)</span>
-              </label>
-            </div>
+           
 
             <div className="form-field" style={{ marginTop: 12 }}>
               <label htmlFor="dr-remarks" className="form-label">
@@ -727,10 +690,7 @@ export default function NewDealerRequestModal({ onClose, onCreated }) {
         {/* TAB 2: 12 MANDATORY DOCUMENTS CHECKLIST */}
         {activeTab === 'documents' && (
           <div>
-            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 14 }}>
-              <div className="small font-semibold text-success">Mandatory Checklist as per CSD Letter 902 (24 July 2025)</div>
-              <div className="micro muted">OEM submits all 12 documents to CSD HO directly. Depot does not request documents from OEM (Letter 201).</div>
-            </div>
+           
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 12 }}>
               {MANDATORY_DOC_DEFS.map((docDef) => {

@@ -123,8 +123,8 @@ const OemNotifications = lazyImport(() => import('./features/oem/OemNotification
 const OemSupport = lazyImport(() => import('./features/oem/OemSupport.jsx'), 'OemSupport');
 const OemDealerRequests = lazyImport(() => import('./features/oem/OemDealerRequests.jsx'), 'default');
 const CsdDealerRequests = lazyImport(() => import('./features/csd/CsdDealerRequests.jsx'), 'default');
+const NewDealerRequestPage = lazyImport(() => import('./features/dealerRequest/NewDealerRequestPage.jsx'), 'default');
 const DepotDealerRequests = lazyImport(() => import('./features/depot/DepotDealerRequests.jsx'), 'default');
-const UrcDealerRequests = lazyImport(() => import('./features/urc/UrcDealerRequests.jsx'), 'default');
 const OemProfile = lazyImport(() => import('./features/oem/OemProfile.jsx'), 'OemProfile');
 
 // 6. Dealer Pages
@@ -302,7 +302,6 @@ export default function App() {
           <Route path="/urc/notifications" element={<RoleRoute allowedRoles={[ROLES.URC_USER]}><UrcNotifications /></RoleRoute>} />
           <Route path="/urc/support" element={<RoleRoute allowedRoles={[ROLES.URC_USER]}><UrcSupport /></RoleRoute>} />
           <Route path="/urc/profile" element={<RoleRoute allowedRoles={[ROLES.URC_USER]}><UrcProfile /></RoleRoute>} />
-          <Route path="/urc/dealer-requests" element={<RoleRoute allowedRoles={[ROLES.URC_USER]}><UrcDealerRequests /></RoleRoute>} />
 
           {/* 5. OEM PORTAL */}
           <Route path="/oem/dashboard" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDashboard /></RoleRoute>} />
@@ -324,6 +323,7 @@ export default function App() {
           <Route path="/oem/support" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemSupport /></RoleRoute>} />
           <Route path="/oem/profile" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemProfile /></RoleRoute>} />
           <Route path="/oem/dealer-requests" element={<RoleRoute allowedRoles={[ROLES.OEM]}><OemDealerRequests /></RoleRoute>} />
+          <Route path="/oem/dealer-requests/new" element={<RoleRoute allowedRoles={[ROLES.OEM]}><NewDealerRequestPage /></RoleRoute>} />
 
           {/* 6. DEALER PORTAL */}
           <Route path="/dealer/dashboard" element={<RoleRoute allowedRoles={[ROLES.DEALER_USER]}>

@@ -14,7 +14,7 @@ import Loader from '../../components/common/Loader.jsx';
 
 
 
-export default function DealerRequestsBoard({ title, subtitle, breadcrumbs, tabs, renderActions, onNew, newLabel = 'New dealer request', showOem = false, showDepot = false, showUrc = false }) {
+export default function DealerRequestsBoard({ title, subtitle, breadcrumbs, tabs, renderActions, onNew, newLabel = 'New dealer request', showOem = false, showDepot = false, oemView = false, depotView = false }) {
   const [tab, setTab] = useState(tabs[0].id);
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
@@ -59,7 +59,6 @@ export default function DealerRequestsBoard({ title, subtitle, breadcrumbs, tabs
     },
     ...(showOem ? [{ header: 'OEM', accessor: 'oemId', render: (r) => r.oemId?.name || '—' }] : []),
     ...(showDepot ? [{ header: 'Depot', accessor: 'depotId', render: (r) => r.depotId?.name || '—' }] : []),
-    ...(showUrc ? [{ header: 'URC', accessor: 'urcId', render: (r) => r.urcId?.name || '—' }] : []),
     {
       header: 'Status',
       accessor: 'status',
@@ -68,9 +67,6 @@ export default function DealerRequestsBoard({ title, subtitle, breadcrumbs, tabs
         return (
           <div>
             <Badge variant={m.variant}>{m.label}</Badge>
-            {r.status === 'URC_SUBMITTED' && r.verification?.result && (
-              <span className="micro muted block">{r.verification.result === 'VERIFIED' ? 'Verified' : 'Not verified'}</span>
-            )}
           </div>
         );
       },
@@ -94,7 +90,7 @@ export default function DealerRequestsBoard({ title, subtitle, breadcrumbs, tabs
         breadcrumbs={breadcrumbs}
         actions={
           <>
-            <Button variant="outline" size="sm" icon={RefreshCw} loading={isFetching} onClick={() => refetch()}>Refresh</Button>
+            {/* <Button variant="outline" size="sm" icon={RefreshCw} loading={isFetching} onClick={() => refetch()}>Refresh</Button> */}
             {onNew && <Button size="sm" icon={Plus} onClick={onNew}>{newLabel}</Button>}
           </>
         }
@@ -136,7 +132,7 @@ export default function DealerRequestsBoard({ title, subtitle, breadcrumbs, tabs
             <Loader label="Loading" />
           ) : (
             <>
-              <DealerRequestDetail request={detail} />
+              <DealerRequestDetail request={detail} oemView={oemView} depotView={depotView} />
               {renderActions && <div style={{ borderTop: '1px solid var(--border, #e2e8f0)', paddingTop: 14 }}>{renderActions(detail, { close })}</div>}
             </>
           )}

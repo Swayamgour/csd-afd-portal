@@ -254,10 +254,10 @@ export default function AdminBanners() {
         ]}
         actions={
           <div className="portal-flex-align-center-gap-sm">
-            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
+            {/* <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
               {isFetching ? <Loader variant="inline" size="sm" className="mr-xs" /> : <RefreshCw size={14} className="mr-xs" />}
               {isFetching ? 'Refreshing...' : 'Refresh'}
-            </Button>
+            </Button> */}
             <Button variant="primary" size="sm" onClick={openCreateModal}>
               <Plus size={14} className="mr-xs" /> Add Banner
             </Button>

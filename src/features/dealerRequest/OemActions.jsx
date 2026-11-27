@@ -4,7 +4,7 @@ import { useCancelDealerRequestMutation } from '../../redux/api/dealerRequestApi
 import { getErrorMessage } from '../../utils/apiError.js';
 import { ErrorBanner, RemarksField, ActionBox } from './ActionBits.jsx';
 
-// OEM can withdraw a request until it reaches the URC
+// OEM can withdraw a request until the depot has submitted its verification
 export default function OemActions({ request, close }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');

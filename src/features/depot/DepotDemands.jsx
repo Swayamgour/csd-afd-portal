@@ -20,7 +20,7 @@ const TABS = [
 
 export default function DepotDemands() {
   const { data, isLoading, isFetching, refetch } = useGetDemandsQuery();
-  const [tab, setTab] = useState('approval');
+  const [tab, setTab] = useState('all');
   const [q, setQ] = useState('');
   const debouncedQ = useDebounce(q, 300);
   const [sort, setSort] = useState('newest');

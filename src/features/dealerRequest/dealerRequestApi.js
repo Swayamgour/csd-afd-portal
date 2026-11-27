@@ -8,7 +8,7 @@ const listOf = (r) => ({
 
 /**
  * New-dealer onboarding workflow (backend: /api/v1/dealer-requests)
- * OEM raises -> Admin forwards to depot -> Depot forwards to URC -> URC verifies (location + photos) -> Admin creates dealer
+ * OEM raises -> Admin forwards (depot auto-selected by state) -> Depot verifies + uploads -> Admin approves -> dealer auto-created + email
  */
 export const dealerRequestApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -30,9 +30,10 @@ export const dealerRequestApi = api.injectEndpoints({
       transformResponse: unwrap,
       providesTags: [{ type: 'DealerRequest', id: 'LIST' }],
     }),
-    getMyUrcsForDealerRequests: builder.query({
-      query: () => '/dealer-requests/meta/my-urcs',
-      transformResponse: (r) => (Array.isArray(r?.data) ? r.data : []),
+    // admin: depots of the dealer's state + the auto-selected one
+    getDealerRequestDepotOptions: builder.query({
+      query: (id) => `/dealer-requests/${id}/depot-options`,
+      transformResponse: unwrap,
     }),
 
     createDealerRequest: builder.mutation({
@@ -49,19 +50,15 @@ export const dealerRequestApi = api.injectEndpoints({
       invalidatesTags: [{ type: 'DealerRequest', id: 'LIST' }],
     }),
     sendBackDealerRequest: builder.mutation({
-      query: ({ id, depotId, remarks }) => ({ url: `/dealer-requests/${id}/send-back`, method: 'POST', body: { depotId, remarks } }),
+      query: ({ id, remarks }) => ({ url: `/dealer-requests/${id}/send-back`, method: 'POST', body: { remarks } }),
       invalidatesTags: [{ type: 'DealerRequest', id: 'LIST' }],
     }),
     rejectDealerRequest: builder.mutation({
       query: ({ id, reason }) => ({ url: `/dealer-requests/${id}/reject`, method: 'POST', body: { reason } }),
       invalidatesTags: [{ type: 'DealerRequest', id: 'LIST' }],
     }),
-    forwardDealerRequestToUrc: builder.mutation({
-      query: ({ id, urcId, remarks }) => ({ url: `/dealer-requests/${id}/forward-to-urc`, method: 'POST', body: { urcId, remarks } }),
       invalidatesTags: [{ type: 'DealerRequest', id: 'LIST' }],
     }),
-    submitDealerVerification: builder.mutation({
-      query: ({ id, ...body }) => ({ url: `/dealer-requests/${id}/submit-verification`, method: 'POST', body }),
       invalidatesTags: [{ type: 'DealerRequest', id: 'LIST' }],
     }),
     submitDepotVerification: builder.mutation({
@@ -72,8 +69,13 @@ export const dealerRequestApi = api.injectEndpoints({
       query: (id) => ({ url: `/dealer-requests/${id}/scrutiny`, method: 'POST' }),
       invalidatesTags: (_r, _e, id) => [{ type: 'DealerRequest', id }],
     }),
-    createDealerFromRequest: builder.mutation({
-      query: ({ id, ...body }) => ({ url: `/dealer-requests/${id}/create-dealer`, method: 'POST', body }),
+    // approve = dealer + login are created automatically, email goes to the dealer
+    approveDealerRequest: builder.mutation({
+      query: ({ id, ...body }) => ({ url: `/dealer-requests/${id}/approve`, method: 'POST', body }),
+      transformResponse: unwrap,
+      // the new dealer must also show up in the dealer lists
+      invalidatesTags: [{ type: 'DealerRequest', id: 'LIST' }, 'Dealer', 'OemDealer', 'Dashboard'],
+    }),
       transformResponse: unwrap,
       // the new dealer must also show up in the dealer lists
       invalidatesTags: [{ type: 'DealerRequest', id: 'LIST' }, 'Dealer', 'OemDealer', 'Dashboard'],
@@ -91,16 +93,14 @@ export const {
   useGetDealerRequestsQuery,
   useGetDealerRequestByIdQuery,
   useGetDealerRequestSummaryQuery,
-  useGetMyUrcsForDealerRequestsQuery,
+  useGetDealerRequestDepotOptionsQuery,
   useCreateDealerRequestMutation,
   useCancelDealerRequestMutation,
   useForwardDealerRequestToDepotMutation,
   useSendBackDealerRequestMutation,
   useRejectDealerRequestMutation,
-  useForwardDealerRequestToUrcMutation,
-  useSubmitDealerVerificationMutation,
   useSubmitDepotVerificationMutation,
   useRecalculateScrutinyMutation,
-  useCreateDealerFromRequestMutation,
+  useApproveDealerRequestMutation,
   useUploadDealerRequestPhotosMutation,
 } = dealerRequestApi;

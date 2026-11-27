@@ -71,9 +71,9 @@ export default function BeneficiaryOrderDetail() {
         badge={<StatusBadge status={order.status} />}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh">
+            {/* <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh">
               <RefreshCw size={14} />
-            </Button>
+            </Button> */}
             <Button
               variant="outline"
               icon={Download}

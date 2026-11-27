@@ -219,7 +219,7 @@ export function BeneficiaryDemands() {
         subtitle="Track your demands from depot approval and payment to supply order and delivery."
         actions={
           <div className="flex items-center gap-2">
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => refetch()}
@@ -228,7 +228,7 @@ export function BeneficiaryDemands() {
             >
               {isFetching ? <Loader variant="inline" size="sm" /> : <RefreshCw size={14} />}
               <span className="hidden sm:inline">Refresh</span>
-            </Button>
+            </Button> */}
             <Link to="/products" className="btn btn-primary font-bold">
               <PlusCircle size={15} />
               <span>New Demand</span>

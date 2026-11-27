@@ -45,7 +45,7 @@ export function PageHeader({
             <h1 className="page-header-title">{title}</h1>
             {badge && <div className="page-header-badge-wrap inline-block">{badge}</div>}
           </div>
-          {subtitle && <p className="page-header-subtitle muted small mb-0">{subtitle}</p>}
+          {/* {subtitle && <p className="page-header-subtitle muted small mb-0">{subtitle}</p>} */}
         </div>
         {actions && <div className="page-header-actions row gap-1 align-center flex-wrap">{actions}</div>}
       </div>

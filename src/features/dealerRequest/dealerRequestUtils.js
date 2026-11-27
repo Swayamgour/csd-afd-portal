@@ -1,24 +1,25 @@
 // Status labels / colours for the dealer-request workflow
 export const DR_STATUS = {
   PENDING_ADMIN: { label: 'Pending with Admin', variant: 'warning' },
-  WITH_DEPOT: { label: 'With Depot', variant: 'info' },
-  WITH_URC: { label: 'With URC for verification', variant: 'info' },
-  URC_SUBMITTED: { label: 'URC report submitted', variant: 'warning' },
+  WITH_DEPOT: { label: 'With Depot for verification', variant: 'info' },
+  DEPOT_VERIFIED: { label: 'Depot verified - awaiting approval', variant: 'warning' },
   DEALER_CREATED: { label: 'Dealer created', variant: 'success' },
   REJECTED: { label: 'Rejected', variant: 'danger' },
   CANCELLED: { label: 'Cancelled', variant: 'neutral' },
+  // legacy (old URC flow) - only for old records
+  WITH_URC: { label: 'With Depot for verification', variant: 'info' },
+  URC_SUBMITTED: { label: 'With Depot for verification', variant: 'info' },
 };
 
 export const statusMeta = (s) => DR_STATUS[s] || { label: String(s || '—').replace(/_/g, ' '), variant: 'default' };
 
 export const FINAL_STATUSES = ['DEALER_CREATED', 'REJECTED', 'CANCELLED'];
 
-// the 5 stages shown in the progress strip
+// the 4 stages shown in the progress strip
 export const STAGES = [
   { key: 'PENDING_ADMIN', label: 'OEM request' },
   { key: 'WITH_DEPOT', label: 'Admin → Depot' },
-  { key: 'WITH_URC', label: 'Depot → URC' },
-  { key: 'URC_SUBMITTED', label: 'URC verified' },
+  { key: 'DEPOT_VERIFIED', label: 'Depot verified' },
   { key: 'DEALER_CREATED', label: 'Dealer created' },
 ];
 
@@ -39,7 +40,7 @@ export const fmtDateTime = (d) =>
 
 
 export const placeholderPhoto = (label = 'Verification Photo') =>
-  `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="%23f8fafc"/><g fill="%23475569" transform="translate(110, 50)"><rect x="0" y="10" width="80" height="56" rx="8" fill="%23cbd5e1"/><circle cx="40" cy="38" r="17" fill="%23f8fafc"/><circle cx="40" cy="38" r="11" fill="%2364748b"/><rect x="18" y="3" width="24" height="7" rx="2" fill="%2364748b"/></g><text x="150" y="140" font-family="sans-serif" font-size="12" font-weight="600" fill="%23475569" text-anchor="middle">${encodeURIComponent(label)}</text><text x="150" y="158" font-family="sans-serif" font-size="10" fill="%2394a3b8" text-anchor="middle">URC On-Site Verification</text></svg>`;
+  `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="%23f8fafc"/><g fill="%23475569" transform="translate(110, 50)"><rect x="0" y="10" width="80" height="56" rx="8" fill="%23cbd5e1"/><circle cx="40" cy="38" r="17" fill="%23f8fafc"/><circle cx="40" cy="38" r="11" fill="%2364748b"/><rect x="18" y="3" width="24" height="7" rx="2" fill="%2364748b"/></g><text x="150" y="140" font-family="sans-serif" font-size="12" font-weight="600" fill="%23475569" text-anchor="middle">${encodeURIComponent(label)}</text><text x="150" y="158" font-family="sans-serif" font-size="10" fill="%2394a3b8" text-anchor="middle">Depot Verification</text></svg>`;
 
 export const fileSrc = (url) => {
   if (!url) return '';

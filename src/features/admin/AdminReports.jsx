@@ -292,13 +292,13 @@ export const AdminReports = () => {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <button
+            {/* <button
               onClick={() => currentQuery.refetch()}
               className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition"
               title="Refresh Data"
             >
               {currentQuery.isFetching ? <Loader variant="inline" size="sm" /> : <RefreshCw className="w-4 h-4" />}
-            </button>
+            </button> */}
             <ExportButton
               filename={`CSD_AFD_${activeReport.toUpperCase()}_REPORT_${new Date().toISOString().slice(0, 10)}`}
               data={filteredData}

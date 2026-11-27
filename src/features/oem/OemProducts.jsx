@@ -160,7 +160,7 @@ export default function OemProducts() {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               icon={RefreshCw}
@@ -168,7 +168,7 @@ export default function OemProducts() {
               onClick={() => refetch()}
             >
               Sync
-            </Button>
+            </Button> */}
             <Button
               variant="outline"
               size="sm"

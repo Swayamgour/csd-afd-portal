@@ -18,7 +18,7 @@ export const DASHBOARD_ACTIONS = {
   depot: [
     { label: 'Received demands', hint: 'Approve or reject demands', to: '/depot/demands', icon: FileText, tone: 'warning' },
     { label: 'Supply orders', hint: 'Track orders sent out', to: '/depot/orders', icon: Truck },
-    { label: 'Transactions', hint: 'Check payment records', to: '/depot/transactions', icon: CreditCard, tone: 'success' },
+    // { label: 'Transactions', hint: 'Check payment records', to: '/depot/transactions', icon: CreditCard, tone: 'success' },
     { label: 'Depot reports', hint: 'View and download reports', to: '/depot/reports', icon: FileSpreadsheet, tone: 'info' },
   ],
   urc: [

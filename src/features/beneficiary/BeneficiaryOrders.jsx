@@ -76,11 +76,11 @@ export function BeneficiaryOrders() {
       <PageHeader
         title="My Supply Orders"
         subtitle="View certified CSD Supply Orders issued to authorized dealerships and track vehicle allocation"
-        actions={
-          <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh list">
-            <RefreshCw size={14} />
-          </Button>
-        }
+        // actions={
+        //   <Button variant="outline" size="sm" onClick={() => refetch()} title="Refresh list">
+        //     <RefreshCw size={14} />
+        //   </Button>
+        // }
       />
 
       {isError && (

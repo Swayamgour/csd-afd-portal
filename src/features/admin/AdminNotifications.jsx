@@ -93,7 +93,7 @@ export const AdminNotifications = () => {
         ]}
         actions={
           <div className="flex-gap-sm">
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               icon={RefreshCw}
@@ -101,7 +101,7 @@ export const AdminNotifications = () => {
               onClick={() => refetch()}
             >
               Refresh
-            </Button>
+            </Button> */}
             <Button onClick={() => setShowModal(true)}>+ Dispatch Global Bulletin</Button>
           </div>
         }

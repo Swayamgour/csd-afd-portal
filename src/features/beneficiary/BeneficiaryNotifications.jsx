@@ -47,9 +47,9 @@ export default function BeneficiaryNotifications() {
         subtitle="Live alerts on demand status updates, cyber treasury receipts, and supply order dispatches"
         actions={
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => refetch()} title="Refresh">
+            {/* <Button size="sm" variant="outline" onClick={() => refetch()} title="Refresh">
               <RefreshCw size={14} />
-            </Button>
+            </Button> */}
             <Button
               size="sm"
               variant="outline"

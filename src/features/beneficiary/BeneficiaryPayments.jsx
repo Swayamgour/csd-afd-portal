@@ -177,7 +177,7 @@ export default function BeneficiaryPayments() {
                 <span>My Demands</span>
               </Button>
             </Link>
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => {
@@ -188,7 +188,7 @@ export default function BeneficiaryPayments() {
             >
               <RefreshCw size={14} />
               <span>Refresh</span>
-            </Button>
+            </Button> */}
           </div>
         }
       />

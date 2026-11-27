@@ -3,14 +3,12 @@ import { FileText, Camera, Building } from 'lucide-react';
 import Button from '../../components/common/Button.jsx';
 import Select from '../../components/common/Select.jsx';
 import Input from '../../components/common/Input.jsx';
-import Tabs from '../../components/common/Tabs.jsx';
-import { useGetMyUrcsForDealerRequestsQuery, useForwardDealerRequestToUrcMutation, useSubmitDepotVerificationMutation, useUploadDealerRequestPhotosMutation } from '../../redux/api/dealerRequestApi.js';
+import { useSubmitDepotVerificationMutation, useUploadDealerRequestPhotosMutation } from '../../redux/api/dealerRequestApi.js';
+import { fileSrc } from './dealerRequestUtils.js';
 import { getErrorMessage } from '../../utils/apiError.js';
 import { ErrorBanner, RemarksField, ActionBox } from './ActionBits.jsx';
 
 export default function DepotActions({ request, close }) {
-  const [activeTab, setActiveTab] = useState('letter201'); // 'letter201' or 'delegate'
-
   // Letter 201 Form State
   const [officerName, setOfficerName] = useState('');
   const [personnelNo, setPersonnelNo] = useState('');
@@ -21,14 +19,8 @@ export default function DepotActions({ request, close }) {
   const [comments, setComments] = useState('');
   const [uploadingItem, setUploadingItem] = useState(null);
 
-  // Delegate to URC Form State
-  const { data: urcs = [], isLoading: loadingUrcs } = useGetMyUrcsForDealerRequestsQuery(undefined, { skip: request.status !== 'WITH_DEPOT' });
-  const [urcId, setUrcId] = useState('');
-  const [urcRemarks, setUrcRemarks] = useState('');
-
   const [err, setErr] = useState('');
 
-  const [forwardToUrc, { isLoading: forwarding }] = useForwardDealerRequestToUrcMutation();
   const [submitVerification, { isLoading: submitting }] = useSubmitDepotVerificationMutation();
   const [uploadFile] = useUploadDealerRequestPhotosMutation();
 
@@ -79,6 +71,11 @@ export default function DepotActions({ request, close }) {
     if (!personnelNo.trim()) return setErr('Personnel Number is required.');
     if (!reportUrl) return setErr('Physical Verification Report document is required.');
     if (!letterUrl) return setErr('Signed Depot Confirmation Letter is required.');
+    if (!photos.length) return setErr('Upload at least 1 showroom photo.');
+    if (!/^\d{10}$/.test(personnelNo)) {
+      toast.error('Personnel Number must be exactly 10 digits');
+      return;
+    }
 
     try {
       await submitVerification({
@@ -97,33 +94,11 @@ export default function DepotActions({ request, close }) {
     }
   };
 
-  const submitDelegate = async () => {
-    setErr('');
-    if (!urcId) return setErr('Select a URC to verify the dealer.');
-    try {
-      await forwardToUrc({ id: request._id, urcId, remarks: urcRemarks.trim() || undefined }).unwrap();
-      close();
-    } catch (e) {
-      setErr(getErrorMessage(e));
-    }
-  };
-
   return (
-    <ActionBox title="Depot Actions (CSD Letter 201 / URC Verification)">
+    <ActionBox title="Verify dealer & submit to Admin (CSD Letter 201)">
       <ErrorBanner message={err} />
 
-      <div style={{ marginBottom: 12 }}>
-        <Tabs
-          tabs={[
-            { id: 'letter201', label: '1. Depot Physical Verification (Letter 201)' },
-            { id: 'delegate', label: '2. Delegate to Sub-URC' },
-          ]}
-          activeTab={activeTab}
-          onChange={setActiveTab}
-        />
-      </div>
-
-      {activeTab === 'letter201' ? (
+      {(
         <div>
           <div style={{ background: '#f8fafc', padding: 10, borderRadius: 6, marginBottom: 12, border: '1px solid #e2e8f0' }}>
             <div className="small font-semibold">CSD Letter 201 (04 Aug 2026) Direct Physical Verification</div>
@@ -141,15 +116,28 @@ export default function DepotActions({ request, close }) {
               onChange={(e) => setOfficerName(e.target.value)}
               placeholder="e.g. Subedar Major Rajesh Kumar"
             />
-            <Input
+            {/* <Input
               id="depot-officer-no"
               label="Personnel Number"
               required
               value={personnelNo}
               onChange={(e) => setPersonnelNo(e.target.value)}
               placeholder="e.g. JC-123456"
+            /> */}
+
+            <Input
+              id="depot-officer-no"
+              label="Personnel Number"
+              required
+              value={personnelNo}
+              onChange={(e) => setPersonnelNo(e.target.value.replace(/\D/g, '').slice(0, 10))}
+              placeholder="Enter 10-digit personnel number"
+              maxLength={10}
+              inputMode="numeric"
+              pattern="[0-9]{10}"
             />
-            <Select
+
+            {/* <Select
               id="depot-signatory-role"
               label="Signatory Role"
               value={signatoryRole}
@@ -160,7 +148,7 @@ export default function DepotActions({ request, close }) {
                 { value: 'OIC', label: 'Officer-in-Charge (OIC)' },
                 { value: 'OTHER', label: 'Other Authorized Official' },
               ]}
-            />
+            /> */}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 12 }}>
@@ -196,7 +184,7 @@ export default function DepotActions({ request, close }) {
           {/* 2. Showroom Photographs */}
           <div style={{ border: '1px solid #e2e8f0', padding: 10, borderRadius: 6, marginBottom: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span className="small font-semibold">2. Showroom Photographs ({photos.length} uploaded)</span>
+              <span className="small font-semibold">2. Showroom Photographs * ({photos.length} uploaded)</span>
               <input type="file" id="depot-photos-file" accept=".jpg,.jpeg,.png,.webp" multiple style={{ display: 'none' }} onChange={handlePhotosUpload} />
               <Button size="xs" variant="outline" icon={Camera} loading={uploadingItem === 'photos'} onClick={() => document.getElementById('depot-photos-file')?.click()}>
                 Add Photos
@@ -206,7 +194,7 @@ export default function DepotActions({ request, close }) {
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {photos.map((p, i) => (
                   <div key={i} style={{ width: 50, height: 40, borderRadius: 4, overflow: 'hidden', border: '1px solid #cbd5e1' }}>
-                    <img src={p} alt={`Photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={fileSrc(p)} alt={`Photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                 ))}
               </div>
@@ -217,25 +205,7 @@ export default function DepotActions({ request, close }) {
 
           <div style={{ marginTop: 12 }}>
             <Button size="sm" loading={submitting} onClick={submitLetter201}>
-              Submit Depot Physical Verification (Letter 201)
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div>
-          <Select
-            id="depot-urc"
-            label="Select Subordinate URC"
-            required
-            value={urcId}
-            onChange={(e) => setUrcId(e.target.value)}
-            placeholder={loadingUrcs ? 'Loading URCs…' : urcs.length ? 'Select URC' : 'No active URC under this depot'}
-            options={urcs.map((u) => ({ value: u._id, label: `${u.name} (${u.code})${u.city ? ` - ${u.city}` : ''}` }))}
-          />
-          <RemarksField id="depot-remarks" label="Instructions for URC" value={urcRemarks} onChange={setUrcRemarks} />
-          <div style={{ marginTop: 10 }}>
-            <Button size="sm" loading={forwarding} disabled={!urcs.length} onClick={submitDelegate}>
-              Forward to URC for Site Visit
+              Verify & submit to Admin
             </Button>
           </div>
         </div>
