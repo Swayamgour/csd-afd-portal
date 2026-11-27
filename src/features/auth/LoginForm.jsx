@@ -13,15 +13,32 @@ import Loader from '../../components/common/Loader.jsx';
 // Test / demo accounts are visible in development mode only.
 const SHOW_DEMO_ACCOUNTS = Boolean(import.meta.env.DEV);
 
+// const TEST_ACCOUNTS = [
+//   { role: 'ADMIN', label: 'System Admin', tag: 'Admin', icon: Settings, username: 'admincsd', password: 'Test@123456' },
+//   { role: 'CS_DIRECTOR', label: 'CS Director', tag: 'Director', icon: Landmark, username: 'cs_director_test', password: 'Test@123456' },
+//   { role: 'CSD_HO', label: 'CSD HO', tag: 'Head Office', icon: Building2, username: 'csd_ho_test', password: 'Test@123456' },
+//   { role: 'DEPOT_OFFICIAL', label: 'Depot Official', tag: 'Depot', icon: Warehouse, username: 'depot_delhi_test', password: 'Test@123456' },
+//   { role: 'URC', label: 'URC Officer', tag: 'URC', icon: Store, username: 'urc_delhi_test', password: 'Test@123456' },
+//   { role: 'OEM', label: 'OEM (Mahindra)', tag: 'OEM', icon: Factory, username: 'oem_mahindra_test', password: 'Passw0rd!x' },
+//   { role: 'DEALER', label: 'Dealer (Supreme Mobiles)', tag: 'Dealer', icon: Car, username: 'dealer_hisar', password: 'Dealer@123456' },
+//   { role: 'DEALER', label: 'Dealer (Koncept Mahindra)', tag: 'Dealer 2', icon: Car, username: 'dealer_koncept', password: 'Dealer@123456' },
+//   { role: 'BENEFICIARY', label: 'Beneficiary (Rajesh Kumar)', tag: 'Beneficiary', icon: Medal, username: 'rajesh_kumar', password: 'Beneficiary@123456' },
+//   { role: 'BENEFICIARY', label: 'Beneficiary (Pending)', tag: 'Pending', icon: Hourglass, username: 'pending_beneficiary', password: 'Pending@123456' },
+// ];
+
+
 const TEST_ACCOUNTS = [
   { role: 'ADMIN', label: 'System Admin', tag: 'Admin', icon: Settings, username: 'admincsd', password: 'Test@123456' },
   { role: 'CS_DIRECTOR', label: 'CS Director', tag: 'Director', icon: Landmark, username: 'cs_director_test', password: 'Test@123456' },
   { role: 'CSD_HO', label: 'CSD HO', tag: 'Head Office', icon: Building2, username: 'csd_ho_test', password: 'Test@123456' },
-  { role: 'DEPOT_OFFICIAL', label: 'Depot Official', tag: 'Depot', icon: Warehouse, username: 'depot_delhi_test', password: 'Test@123456' },
-  { role: 'URC', label: 'URC Officer', tag: 'URC', icon: Store, username: 'urc_delhi_test', password: 'Test@123456' },
-  { role: 'OEM', label: 'OEM (Mahindra)', tag: 'OEM', icon: Factory, username: 'oem_mahindra_test', password: 'Passw0rd!x' },
-  { role: 'DEALER', label: 'Dealer (Supreme Mobiles)', tag: 'Dealer', icon: Car, username: 'dealer_hisar', password: 'Dealer@123456' },
-  { role: 'DEALER', label: 'Dealer (Koncept Mahindra)', tag: 'Dealer 2', icon: Car, username: 'dealer_koncept', password: 'Dealer@123456' },
+  // { role: 'DEPOT_OFFICIAL', label: 'Depot Official (Delhi)', tag: 'Depot', icon: Warehouse, username: 'depot_delhi_test', password: 'Test@123456' },
+  { role: 'DEPOT_OFFICIAL', label: 'Depot Official (Kapur)', tag: 'Depot 2', icon: Warehouse, username: 'depot_kapur', password: 'Test@123456' },
+  // { role: 'URC', label: 'URC Officer (Delhi)', tag: 'URC', icon: Store, username: 'urc_delhi_test', password: 'Test@123456' },
+  { role: 'URC', label: 'URC Officer (Kanpur)', tag: 'URC 2', icon: Store, username: 'urc_kanpur', password: 'Test@123456' },
+  // { role: 'OEM', label: 'OEM (Mahindra)', tag: 'OEM', icon: Factory, username: 'oem_mahindra_test', password: 'Passw0rd!x' },
+  { role: 'OEM', label: 'OEM (Tata)', tag: 'OEM 2', icon: Factory, username: 'oem_tata_test', password: 'Passw0rd!x' },
+  // { role: 'DEALER', label: 'Dealer (Supreme Mobiles)', tag: 'Dealer', icon: Car, username: 'dealer_hisar', password: 'Dealer@123456' },
+  // { role: 'DEALER', label: 'Dealer (Koncept Mahindra)', tag: 'Dealer 2', icon: Car, username: 'dealer_koncept', password: 'Dealer@123456' },
   { role: 'BENEFICIARY', label: 'Beneficiary (Rajesh Kumar)', tag: 'Beneficiary', icon: Medal, username: 'rajesh_kumar', password: 'Beneficiary@123456' },
   { role: 'BENEFICIARY', label: 'Beneficiary (Pending)', tag: 'Pending', icon: Hourglass, username: 'pending_beneficiary', password: 'Pending@123456' },
 ];
@@ -115,6 +132,7 @@ export default function LoginForm({ onNeedOtp }) {
           password,
           maskedEmail: registeredEmail,
           role: userRole,
+          devOtp: credResult.data?.devOtp || credResult.devOtp || '',
         });
       } else {
         const loggedInUser = await login({ username: cleanUsername, password });

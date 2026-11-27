@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { ROLE_LABELS, ROLE_HOMES, normalizeRole } from '../permissions/roles.js';
-import { User, LogOut, Shield, ChevronDown, Settings, LayoutDashboard } from 'lucide-react';
+import { ROLE_LABELS,  normalizeRole } from '../permissions/roles.js';
+import { User, LogOut,  ChevronDown, } from 'lucide-react';
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
@@ -93,47 +93,7 @@ export default function UserMenu() {
             </div>
           </div>
 
-          <div className="user-dropdown-links">
-            <Link
-              to={normRole === 'beneficiary' ? '/beneficiary/dashboard' : (ROLE_HOMES[normRole] || ROLE_HOMES[role] || '/admin/dashboard')}
-              className="user-dropdown-item row align-center gap-1 small"
-              onClick={() => setOpen(false)}
-              role="menuitem"
-            >
-              <LayoutDashboard size={15} />
-              <span>{normRole === 'beneficiary' ? 'Beneficiary Dashboard' : 'Control Dashboard'}</span>
-            </Link>
-
-            <Link
-              to={getProfileLink()}
-              className="user-dropdown-item row align-center gap-1 small"
-              onClick={() => setOpen(false)}
-              role="menuitem"
-            >
-              <User size={15} />
-              <span>My Profile & Entitlements</span>
-            </Link>
-
-            <Link
-              to="/beneficiary/settings"
-              className="user-dropdown-item row align-center gap-1 small"
-              onClick={() => setOpen(false)}
-              role="menuitem"
-            >
-              <Settings size={15} />
-              <span>Account Security</span>
-            </Link>
-
-            <Link
-              to="/"
-              className="user-dropdown-item row align-center gap-1 small"
-              onClick={() => setOpen(false)}
-              role="menuitem"
-            >
-              <Shield size={15} />
-              <span>CSD AFD Public Portal</span>
-            </Link>
-          </div>
+          
 
           <div className="user-dropdown-footer mt-1 pt-1 border-top">
             <button

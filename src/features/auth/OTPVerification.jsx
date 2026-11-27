@@ -29,6 +29,7 @@ export default function OTPVerification({ sessionData, onBack }) {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [cooldown, setCooldown] = useState(30);
+  const [devOtp, setDevOtp] = useState(sessionData?.devOtp || '');
 
   const inputRefs = useRef([]);
   const [loginMutation] = useLoginMutation();
@@ -132,11 +133,12 @@ export default function OTPVerification({ sessionData, onBack }) {
     setOtp(['', '', '', '', '', '']);
 
     try {
-      await sendOtpMutation({
+      const res = await sendOtpMutation({
         target: sessionData?.username,
         purpose: 'LOGIN',
       }).unwrap();
 
+      setDevOtp(res?.data?.devOtp || res?.devOtp || '');
       setCooldown(30);
       setSuccessMsg(`A fresh 6-digit OTP has been dispatched to ${maskEmail(sessionData?.maskedEmail || sessionData?.email)}.`);
 
@@ -178,6 +180,26 @@ export default function OTPVerification({ sessionData, onBack }) {
           </b>
         </p>
       </div>
+
+      {devOtp && (
+        <div className="dev-otp">
+          <span>
+            <b>Development OTP:</b>{' '}
+            <span className="font-mono ls-wide text-sm font-bold">{devOtp}</span>
+          </span>
+          <button
+            type="button"
+            className="otp-link-btn"
+            onClick={() => {
+              setOtp(devOtp.split('').slice(0, 6));
+              setError('');
+              inputRefs.current[5]?.focus();
+            }}
+          >
+            Auto Fill
+          </button>
+        </div>
+      )}
 
       {successMsg && (
         <div className="alert-banner success small mb-3" role="status">

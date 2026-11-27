@@ -2,8 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 // import { API_BASE_URL } from "../config/env.js";
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "../utils/tokenStorage.js";
 
-// const BASE_URL = 'https://csd-afd-backend.onrender.com/api/v1';
-const BASE_URL = 'http://localhost:5000/api/v1';
+const BASE_URL = 'https://csd-afd-backend.onrender.com/api/v1';
+// const BASE_URL = 'http://localhost:5000/api/v1';
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
