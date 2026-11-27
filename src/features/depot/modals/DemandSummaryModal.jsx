@@ -58,10 +58,11 @@ export default function DemandSummaryModal({ isOpen, onClose, demand }) {
                   <h4 className="mt-2">Price breakup {pb.taxClass ? `(tax class ${pb.taxClass})` : ''}</h4>
                   <table className="table"><tbody>
                     {pb.skuZoneCode && <Row k="SKU-zone code" v={pb.skuZoneCode} />}
-                    <Row k="Sub-total" v={fmtINR(pb.subtotal)} />
-                    <Row k="Additional cost" v={fmtINR(pb.additionalCost)} />
-                    <Row k="Cess" v={fmtINR(pb.cess)} />
-                    <Row k="Incidental charges" v={fmtINR(pb.incidental)} />
+                    <Row k="Price" v={fmtINR(pb.subtotal)} />
+                    <Row k={`CGST @ ${(Number(pb.gstPercent || 0) / 2)}%`} v={fmtINR(pb.cgst)} />
+                    <Row k={`SGST @ ${(Number(pb.gstPercent || 0) / 2)}%`} v={fmtINR(pb.sgst)} />
+                    <Row k={`Incidental charges @ ${pb.incidentalPercent ?? 0}%`} v={fmtINR(pb.incidental)} />
+                    <Row k="TCS @ 1% (above 10 Lakh)" v={fmtINR(pb.tcs)} />
                     <Row k="Net price to be paid" v={fmtINR(pb.net)} />
                     <Row k="Dealer price declared" v={s.dealerPriceDeclared != null ? fmtINR(s.dealerPriceDeclared) : '—'} />
                   </tbody></table>

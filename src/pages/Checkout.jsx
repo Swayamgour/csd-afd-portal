@@ -73,14 +73,13 @@ export default function Checkout() {
 
   // Financial Calculations
   const isCsdRateList = Boolean(product?.basicPrice || product?.priceToCustomer);
+  // subtotal = Sale Price (or Base Price when there is no sale price); GST / incidental / TCS are added on it
   const subtotal = product?.basicPrice || product?.productPrice || 0;
-  const discountVal = (product?.csdDiscountAmount || 0) + (product?.marketScheme || 0);
-  const csdBasic = product?.csdBasicWithDiscount || (subtotal - discountVal);
   const additionalCost = isCsdRateList ? (product?.cgstAmount || 0) : Math.round(subtotal * 0.14);
   const cess = isCsdRateList ? (product?.sgstAmount || 0) : Math.round(subtotal * 0.17);
   const incidentalCharges = isCsdRateList ? (product?.csdProfitAmount || 0) : Math.round(subtotal * 0.005);
   const tcsVal = product?.tcsAmount || 0;
-  const netPrice = product?.priceToCustomer || (csdBasic + additionalCost + cess + incidentalCharges + tcsVal);
+  const netPrice = product?.priceToCustomer || (subtotal + additionalCost + cess + incidentalCharges + tcsVal);
 
   // Form State: Yet to be filled section
   const [prevPurchase, setPrevPurchase] = useState('No');
@@ -441,8 +440,6 @@ export default function Checkout() {
             dealerInfo={dealerInfo}
             isCsdRateList={isCsdRateList}
             subtotal={subtotal}
-            discountVal={discountVal}
-            csdBasic={csdBasic}
             additionalCost={additionalCost}
             cess={cess}
             incidentalCharges={incidentalCharges}

@@ -51,19 +51,11 @@ export function ProductBuyBox({
             className={`select-input pdp-form-select ${checkoutErrors?.color ? "has-error" : ""}`}
           >
             <option value="">-- Select Color --</option>
-            {p.colors.map((cName) => {
-              const co = (p.colorObjs || []).find((x) => x.name === cName);
-              const showPrice =
-                isAuthenticated && p.colorPricing === "PER_COLOR" && co?.price;
-              return (
-                <option key={cName} value={cName}>
-                  {cName}
-                  {showPrice
-                    ? ` - ₹${Number(co.price).toLocaleString("en-IN")}`
-                    : ""}
-                </option>
-              );
-            })}
+            {p.colors.map((cName) => (
+              <option key={cName} value={cName}>
+                {cName}
+              </option>
+            ))}
           </select>
           {checkoutErrors?.color && (
             <span className="micro text-danger pdp-error-text">

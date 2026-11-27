@@ -1,13 +1,14 @@
 import React from 'react';
 import { ShieldCheck } from 'lucide-react';
+import { TAX_CLASS_TABLE, taxClassNo } from '../../config/taxClass.js';
+
+const inr = (n) => `₹ ${Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export function CheckoutOrderSummary({
   product,
   dealerInfo,
   isCsdRateList,
   subtotal,
-  discountVal,
-  csdBasic,
   additionalCost,
   cess,
   incidentalCharges,
@@ -17,6 +18,11 @@ export function CheckoutOrderSummary({
   submitting,
   isPendingApproval,
 }) {
+  const rates = TAX_CLASS_TABLE[taxClassNo(product?.taxClass)];
+  const gstPct = rates ? rates.csdGstPct : 0;
+  const gstHalf = gstPct / 2;
+  const incPct = rates ? rates.incidentalPct : 0;
+
   return (
     <div className="checkout-summary-sticky">
       <div className="checkout-card">
@@ -32,7 +38,7 @@ export function CheckoutOrderSummary({
           <div className="checkout-spec-pill-group">
             <span className="checkout-spec-pill">{product?.sku}</span>
             <span className="checkout-spec-pill badge-green-pill">
-              {product?.taxClass || 'tax-class-8'}
+              {product?.taxClass || 'Tax Class: not set'}
             </span>
           </div>
         </div>
@@ -64,39 +70,25 @@ export function CheckoutOrderSummary({
             {isCsdRateList ? (
               <>
                 <tr>
-                  <td>Basic Price (incl. Dealer Margin)</td>
-                  <td>₹ {Number(subtotal || 0).toLocaleString('en-IN')}</td>
-                </tr>
-                {discountVal > 0 && (
-                  <tr className="row-discount-positive">
-                    <td>CSD Discount & Market Scheme</td>
-                    <td>- ₹ {Number(discountVal || 0).toLocaleString('en-IN')}</td>
-                  </tr>
-                )}
-                <tr>
-                  <td>CSD Basic with Discount</td>
-                  <td className="font-semibold">₹ {Number(csdBasic || 0).toLocaleString('en-IN')}</td>
+                  <td>Price {product?.salePriceUsed === false ? '(Base Price)' : ''}</td>
+                  <td className="font-semibold">{inr(subtotal)}</td>
                 </tr>
                 <tr>
-                  <td>CGST Concession</td>
-                  <td>₹ {Number(additionalCost || 0).toLocaleString('en-IN')}</td>
+                  <td>CGST @ {gstHalf}%</td>
+                  <td>{inr(additionalCost)}</td>
                 </tr>
                 <tr>
-                  <td>SGST Concession</td>
-                  <td>₹ {Number(cess || 0).toLocaleString('en-IN')}</td>
+                  <td>SGST @ {gstHalf}%</td>
+                  <td>{inr(cess)}</td>
                 </tr>
-                {incidentalCharges > 0 && (
-                  <tr>
-                    <td>CSD Profit @ 0.50%</td>
-                    <td>₹ {Number(incidentalCharges || 0).toLocaleString('en-IN')}</td>
-                  </tr>
-                )}
-                {tcsVal > 0 && (
-                  <tr>
-                    <td>TCS @ 1% (Above 10 Lacs)</td>
-                    <td>₹ {Number(tcsVal || 0).toLocaleString('en-IN')}</td>
-                  </tr>
-                )}
+                <tr>
+                  <td>Incidental Charges @ {incPct}%</td>
+                  <td>{inr(incidentalCharges)}</td>
+                </tr>
+                <tr>
+                  <td>TCS @ 1% {tcsVal > 0 ? '' : '(not applicable - total below ₹10 Lakh)'}</td>
+                  <td>{inr(tcsVal)}</td>
+                </tr>
               </>
             ) : (
               <>
@@ -124,7 +116,7 @@ export function CheckoutOrderSummary({
                 <small className="summary-detail-sub">Inclusive of all Taxes and Levies</small>
               </td>
               <td className="demand-summary-net-price">
-                ₹ {Number(netPrice || 0).toLocaleString('en-IN')}
+                {inr(netPrice)}
               </td>
             </tr>
           </tbody>

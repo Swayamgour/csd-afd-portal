@@ -12,6 +12,7 @@ import { useGetOemProductsQuery, useCreateOemProductMutation, useUpdateOemProduc
 import { useGetOemsQuery } from '../../redux/api/orgApi.js';
 import { categoryKind, fieldsFor, KIND_LABEL, COMMON_COLORS } from './categoryFields.js';
 import Loader from '../../components/common/Loader.jsx';
+import { TAX_CLASS_TABLE, computePrice, taxClassNo } from '../../config/taxClass.js';
 
 // colours saved as objects ({name, hex, price}); old products may only have a comma separated string / string array
 function colorsFromProduct(product) {
@@ -75,10 +76,9 @@ export function ProductFormPage() {
     oemId: '',
     variant: '',
     afdType: 'AFD_I',
-    price: '',
-    mrp: '',
-    basicPrice: '',
-    taxPercent: '28',
+    price: '', // Sale Price (optional)
+    basicPrice: '', // Base Price
+    taxClass: '',
     engineCapacity: '',
     fuelType: 'Petrol',
     imageUrl: '',
@@ -87,7 +87,6 @@ export function ProductFormPage() {
     description: '',
     specs: {}, // category specific fields (stored in product.attributes)
     colors: [], // [{ name, hex, price }]
-    colorPricing: 'SAME', // SAME | PER_COLOR
   });
 
   const [errors, setErrors] = useState({});
@@ -110,10 +109,9 @@ export function ProductFormPage() {
         oemId: product.oemId?._id || product.oemId || (oems[0]?._id || ''),
         variant: product.variant || '',
         afdType: product.afdType || 'AFD_I',
-        price: pend.price ?? (product.price || product.priceToCustomer || ''),
-        mrp: pend.mrp ?? (product.mrp || ''),
+        price: pend.price ?? (product.price || ''),
         basicPrice: product.basicPrice || '',
-        taxPercent: product.taxPercent || '28',
+        taxClass: product.taxClass || '',
         engineCapacity: product.engineCapacity || '',
         fuelType: product.fuelType || 'Petrol',
         imageUrl: prodImages[0] || product.imageUrl || '',
@@ -122,7 +120,6 @@ export function ProductFormPage() {
         description: product.description || '',
         specs: { ...(product.attributes || {}) },
         colors: colorsFromProduct(product),
-        colorPricing: product.colorPricing || 'SAME',
       });
     } else if (!isEdit && categories.length > 0) {
       setFormState((prev) => ({
@@ -355,12 +352,8 @@ export function ProductFormPage() {
     const newErrors = {};
     if (!formState.name.trim()) newErrors.name = 'Product name is required';
     if (!formState.sku.trim()) newErrors.sku = 'SKU / Index Number is required';
-    if (!formState.price) newErrors.price = 'CSD Concessional Price is required';
-    const namedColors = formState.colors.filter((c) => c.name.trim());
-    if (formState.colorPricing === 'PER_COLOR') {
-      if (!namedColors.length) newErrors.colors = 'Add at least one colour, or choose "Same price for all colours".';
-      else if (namedColors.some((c) => c.price === '' || Number(c.price) <= 0)) newErrors.colors = 'Every colour needs its own price.';
-    }
+    if (!formState.price && !formState.basicPrice) newErrors.price = 'Enter Sale Price or Base Price';
+    if (!formState.taxClass) newErrors.taxClass = 'Tax Class is required';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -391,21 +384,19 @@ export function ProductFormPage() {
           });
           return { attributes, variant: top.variant || '', engineCapacity: top.engineCapacity, fuelType: top.fuelType };
         })(),
-        colorPricing: formState.colorPricing,
+        colorPricing: 'SAME', // every colour of a variant has the same price
         colors: formState.colors
           .filter((c) => c.name.trim())
           .map((c) => ({
             name: c.name.trim(),
             hex: c.hex || undefined,
             images: (c.images || []).filter(Boolean),
-            ...(formState.colorPricing === 'PER_COLOR' && c.price !== '' ? { price: Number(c.price) } : {}),
           })),
         afdType: formState.afdType,
-        price: Number(formState.price),
-        priceToCustomer: Number(formState.price),
-        mrp: formState.mrp ? Number(formState.mrp) : undefined,
+        // tax, TCS and the final price are calculated by the server from these three
+        price: formState.price ? Number(formState.price) : undefined,
         basicPrice: formState.basicPrice ? Number(formState.basicPrice) : undefined,
-        taxPercent: Number(formState.taxPercent),
+        taxClass: formState.taxClass,
         imageUrl: primaryImage,
         images: allImages,
         ...(isOem ? {} : { status: formState.status }), // OEM can not set the status
@@ -414,9 +405,9 @@ export function ProductFormPage() {
 
       if (isOem) {
         if (isEdit) {
-          // live product: server accepts ONLY price / mrp / images from an OEM
+          // live product: server accepts ONLY price / images from an OEM
           const body = lockedEdit
-            ? { price: payload.price, mrp: payload.mrp, imageUrl: payload.imageUrl, images: payload.images }
+            ? { price: payload.price, imageUrl: payload.imageUrl, images: payload.images }
             : payload;
           await updateOemProduct({ id, ...body }).unwrap();
         } else {
@@ -591,38 +582,25 @@ export function ProductFormPage() {
           <div className="card-body">
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label">CSD Concessional Price (₹) *</label>
+                <label className="form-label">Sale Price (₹)</label>
                 <input
                   type="number"
-                  required
-                  min="100"
-                  placeholder="e.g. 1216296"
+                  min="0"
+                  placeholder="optional - used first when filled"
                   className="form-control font-mono"
                   value={formState.price}
                   onChange={(e) => setFormState({ ...formState, price: e.target.value })}
                 />
                 {errors.price && <span className="form-error">{errors.price}</span>}
-                <span className="muted fs-xs">Final beneficiary payable amount through CSD</span>
+                <span className="muted fs-xs">Tax is charged on the Sale Price. Leave empty to use the Base Price.</span>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Civil Market MRP (₹)</label>
+                <label className="form-label">Base Price (₹)</label>
                 <input
                   type="number"
-                  min="100"
-                  placeholder="e.g. 1420000"
-                  className="form-control font-mono"
-                  value={formState.mrp}
-                  onChange={(e) => setFormState({ ...formState, mrp: e.target.value })}
-                />
-                <span className="muted fs-xs">Standard civil dealership retail price</span>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Basic / Ex-Factory Price (₹)</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 980000"
+                  min="0"
+                  placeholder="e.g. 1468203.87"
                   className="form-control font-mono"
                   value={formState.basicPrice}
                   disabled={lockedEdit}
@@ -631,16 +609,38 @@ export function ProductFormPage() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Applicable Tax / GST Percent (%)</label>
-                <input
-                  type="number"
-                  placeholder="28"
-                  className="form-control font-mono"
-                  value={formState.taxPercent}
+                <label className="form-label">Tax Class *</label>
+                <select
+                  className="form-control"
+                  value={taxClassNo(formState.taxClass) ?? ''}
                   disabled={lockedEdit}
-                  onChange={(e) => setFormState({ ...formState, taxPercent: e.target.value })}
-                />
+                  onChange={(e) => setFormState({ ...formState, taxClass: e.target.value ? `Tax Class ${e.target.value}` : '' })}
+                >
+                  <option value="">Select tax class</option>
+                  {Object.entries(TAX_CLASS_TABLE).map(([no, r]) => (
+                    <option key={no} value={no}>
+                      Tax Class {no} - {r.item} (GST {r.csdGstPct}%)
+                    </option>
+                  ))}
+                </select>
+                {errors.taxClass && <span className="form-error">{errors.taxClass}</span>}
               </div>
+
+              {(() => {
+                const c = computePrice({ salePrice: formState.price, basePrice: formState.basicPrice, taxClass: formState.taxClass });
+                if (!c.taxable) return null;
+                const inr = (n) => `₹ ${Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+                return (
+                  <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                    <label className="form-label">Price to Beneficiary (calculated)</label>
+                    <div className="muted fs-xs">
+                      {c.usedSale ? 'Sale Price' : 'Base Price'} {inr(c.taxable)} + GST {c.gstPct}% {inr(c.gst)} + Incidental {c.incPct}% {inr(c.incidental)}
+                      {c.tcs > 0 ? ` + TCS 1% ${inr(c.tcs)}` : ''}
+                    </div>
+                    <div className="font-mono" style={{ fontWeight: 700, fontSize: '1.1rem' }}>{inr(c.total)}</div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -732,37 +732,7 @@ export function ProductFormPage() {
            
           </div>
           <div className="card-body">
-            <div className="row gap-2 mb-2" style={{ flexWrap: 'wrap' }}>
-              {[
-                ['SAME', 'Same price for all colours'],
-                ['PER_COLOR', 'Different price per colour'],
-              ].map(([val, title, hint]) => (
-                <label
-                  key={val}
-                  className="row gap-1"
-                  style={{
-                    cursor: 'pointer',
-                    padding: '10px 14px',
-                    border: `1px solid ${formState.colorPricing === val ? 'var(--color-primary, #1e4fd8)' : '#d0d5dd'}`,
-                    borderRadius: 8,
-                    flex: '1 1 260px',
-                    background: formState.colorPricing === val ? 'var(--color-primary-soft, #eff6ff)' : 'transparent',
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="colorPricing"
-                    checked={formState.colorPricing === val}
-                    onChange={() => setFormState({ ...formState, colorPricing: val })}
-                  />
-                  <span>
-                    <strong>{title}</strong>
-                    <br />
-                    <span className="muted fs-xs">{hint}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
+          
 
             <div className="row gap-1 mb-2" style={{ flexWrap: 'wrap' }}>
               <span className="muted fs-xs">Quick add:</span>
@@ -783,7 +753,7 @@ export function ProductFormPage() {
               </button>
             </div>
 
-            {formState.colors.length === 0 && <p className="muted fs-xs">Abhi koi colour add nahi hua (optional).</p>}
+            {/* {formState.colors.length === 0 && <p className="muted fs-xs">Abhi koi colour add nahi hua (optional).</p>} */}
             {formState.colors.map((c, i) => (
               <div key={i} className="mb-2" style={{ border: '1px solid #e4e7ec', borderRadius: 8, padding: 10 }}>
                 <div className="row gap-2 align-center" style={{ flexWrap: 'wrap' }}>
@@ -801,17 +771,6 @@ export function ProductFormPage() {
                     value={c.name}
                     onChange={(e) => updateColor(i, { name: e.target.value })}
                   />
-                  {formState.colorPricing === 'PER_COLOR' && (
-                    <input
-                      type="number"
-                      min="0"
-                      className="form-control font-mono"
-                      style={{ flex: '0 1 180px' }}
-                      placeholder="Price (₹)"
-                      value={c.price}
-                      onChange={(e) => updateColor(i, { price: e.target.value })}
-                    />
-                  )}
                   <button type="button" className="oem-photo-toggle-btn" onClick={() => removeColor(i)} aria-label="Remove colour">
                     <Trash2 size={14} />
                   </button>
@@ -848,15 +807,10 @@ export function ProductFormPage() {
                     <Plus size={14} /> Add
                   </button>
                 </div>
-                {!(c.images || []).length && <p className="muted fs-xs mt-1">Is colour ki photo nahi di to product ki main gallery dikhegi.</p>}
+                {/* {!(c.images || []).length && <p className="muted fs-xs mt-1">Is colour ki photo nahi di to product ki main gallery dikhegi.</p>} */}
               </div>
             ))}
             {errors.colors && <span className="form-error">{errors.colors}</span>}
-            {formState.colorPricing === 'PER_COLOR' && (
-              <p className="muted fs-xs mt-1">
-                Colour price = us colour ka national price. State-wise price set ho to state price par (colour price − product price) ka fark jud jaata hai.
-              </p>
-            )}
           </div>
         </div>
 

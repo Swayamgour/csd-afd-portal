@@ -252,7 +252,7 @@ export default function ProductDetails() {
       : [];
 
     const price = Number(prod.priceToCustomer || prod.price || 0) || null;
-    const mrp = Number(prod.mrp || 0) || null;
+    const mrp = null;
 
     return {
       ...prod,
@@ -269,15 +269,9 @@ export default function ProductDetails() {
       mrp,
       indexNo: prod.indexNo || prod.sku || "",
       basicPrice: prod.basicPrice,
-      csdDiscountPercent: prod.csdDiscountPercent || 0,
-      csdDiscountAmount: prod.csdDiscountAmount || 0,
-      marketScheme: prod.marketScheme || 0,
-      csdBasicWithDiscount: prod.csdBasicWithDiscount,
       cgstAmount: prod.cgstAmount || 0,
       sgstAmount: prod.sgstAmount || 0,
-      csdInvoiceAmount: prod.csdInvoiceAmount,
       csdProfitAmount: prod.csdProfitAmount || 0,
-      csdFinalPriceWithConcession: prod.csdFinalPriceWithConcession,
       tcsAmount: prod.tcsAmount || 0,
       priceToCustomer: price,
       dealerRefName: prod.dealerRefName || "",
@@ -717,22 +711,15 @@ export default function ProductDetails() {
       selectedUrc: currentUrc?.name || "",
       productPrice: statePricing?.unitPrice || statePricing?.totalAmount || 0,
       basicPrice: statePricing?.basicPrice ?? p.basicPrice,
-      csdDiscountPercent: p.csdDiscountPercent || 0,
-      csdDiscountAmount: statePricing?.csdDiscountAmount ?? 0,
-      marketScheme: statePricing?.marketScheme ?? 0,
-      csdBasicWithDiscount:
-        statePricing?.csdBasicWithDiscount ?? statePricing?.basicPrice,
-      cgstAmount: 0,
-      sgstAmount: 0,
+      cgstAmount: statePricing?.cgstAmount ?? 0,
+      sgstAmount: statePricing?.sgstAmount ?? 0,
       taxAmount: statePricing?.taxAmount || 0,
       taxPercent: statePricing?.taxPercent || 0,
-      csdInvoiceAmount: p.csdInvoiceAmount,
       csdProfitAmount: statePricing?.csdProfitAmount ?? (p.csdProfitAmount || 0),
-      csdFinalPriceWithConcession: p.csdFinalPriceWithConcession,
       tcsAmount: statePricing?.tcsAmount ?? (p.tcsAmount || 0),
       priceToCustomer: statePricing?.unitPrice || statePricing?.totalAmount,
       quantity: 1,
-      taxClass: currentZone?.taxClass || "tax-class-8",
+      taxClass: p.taxClass || "",
     };
 
     sessionStorage.setItem(

@@ -35,8 +35,7 @@ export default function OemExcelImportPage() {
     : '/api/v1/products/import-template';
 
   const backUrl = isOem ? '/oem/products' : '/csd/products';
-  const pricingUrl = isOem ? '/oem/pricing' : '/csd/products';
-
+  
   const breadcrumbs = isOem
     ? [
         { label: 'OEM Portal', href: '/oem/dashboard' },
@@ -120,8 +119,8 @@ export default function OemExcelImportPage() {
   return (
     <div className="space-y-6" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
       <PageHeader
-        title="OEM Product & State Pricing Excel Import"
-        subtitle="Official CSD Format (Letter 201/902 Compliant) · Automated 8-Point Scrutiny & 39 States Pricing"
+        title="Product Excel Import"
+        subtitle="Sale Price / Base Price + Tax Class · Price to beneficiary is calculated automatically"
         breadcrumbs={breadcrumbs}
         actions={
           <div className="flex items-center gap-2">
@@ -132,7 +131,7 @@ export default function OemExcelImportPage() {
               loading={downloading}
               onClick={handleDownloadTemplate}
             >
-              Download 39-States Sample Template
+              Download Sample Template
             </Button>
             <Button variant="outline" size="sm" icon={ArrowLeft} onClick={() => navigate(backUrl)}>
               Back to Catalog
@@ -147,11 +146,11 @@ export default function OemExcelImportPage() {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-slate-800 font-semibold text-base">
               <ShieldCheck className="text-emerald-600" size={20} />
-              <span>Official CSD Workbook Format Specifications (Letter 201 & 902)</span>
+              <span>Excel Format</span>
             </div>
             <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
-              Upload a single Excel workbook containing two dedicated sheets. The import engine validates all 8 scrutiny
-              checks automatically, extracts model specs, matches colors, cleans formula errors, and maps monthly state-wise concessional prices across all 39 CSD states/UTs.
+              Upload one Excel sheet with one row per product. Price rule: the <b>Sale Price</b> is used; if it is empty the <b>Base Price</b> is used.
+              GST (CSD) and incidental charges are then added as per the product's <b>Tax Class</b> (TCS 1% above ₹10 Lakh), and that final amount is shown to the beneficiary.
             </p>
           </div>
           <Button
@@ -166,24 +165,15 @@ export default function OemExcelImportPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
+        <div className="mt-4 pt-4 border-t border-slate-100">
           <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-lg text-xs space-y-1">
             <div className="font-semibold text-blue-900 flex items-center gap-1.5">
               <Package size={14} className="text-blue-700" />
-              <span>Sheet 1: Products (Consolidated Master List)</span>
+              <span>Columns</span>
             </div>
             <p className="text-blue-800">
-              Columns: <b>Index No</b> (Master Key), <b>Variant / Model Name</b>, <b>Category / Segment</b>, <b>Dimensions</b>, <b>Fuel Type</b>, <b>Colors</b>, <b>Image File / URL</b>.
-            </p>
-          </div>
-
-          <div className="p-3 bg-emerald-50/60 border border-emerald-100 rounded-lg text-xs space-y-1">
-            <div className="font-semibold text-emerald-900 flex items-center gap-1.5">
-              <Layers size={14} className="text-emerald-700" />
-              <span>Sheet 2: Pricing (Price Master File)</span>
-            </div>
-            <p className="text-emerald-800">
-              Columns: <b>Index No</b>, <b>State Name / Code</b> (All 39 CSD States), <b>Base Price</b>, <b>Consumer Promotion</b>, <b>CSD Concessional Price</b>, <b>Civil Minimum Price</b>.
+              <b>Index</b>, <b>Nomenclature</b>, <b>Category</b>, <b>Firm Code</b>, <b>Name of firm</b>, <b>Engine Capacity (in CC)</b>, <b>Fuel Type</b>, <b>HSN Code</b>, <b>Color</b>,
+              {' '}<b>Sale Price</b>, <b>Base Price</b>, <b>Tax Class</b> (e.g. Tax Class 15), <b>Description</b>, <b>sku_image</b>, <b>Additional Images</b>, <b>Empanelment Status</b>, <b>Quantity</b>, <b>Dealer Ref Name</b>, <b>Price List Ref</b>.
             </p>
           </div>
         </div>
@@ -241,9 +231,9 @@ export default function OemExcelImportPage() {
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 text-sm flex items-center gap-3">
                 <Loader variant="inline" size="md" />
                 <div>
-                  <div className="font-semibold text-blue-950">Processing Workbook & Running Automated 8-Point Scrutiny...</div>
+                  <div className="font-semibold text-blue-950">Processing workbook...</div>
                   <div className="text-xs text-blue-700 mt-0.5">
-                    Validating mandatory columns, checking 39 CSD states coverage, calculating promotional parity, and synchronizing catalog database.
+                    Validating columns, applying Tax Class and calculating the price to beneficiary.
                   </div>
                 </div>
               </div>
@@ -282,13 +272,13 @@ export default function OemExcelImportPage() {
               <div>
                 <h3 className="font-bold text-lg">Excel Workbook Successfully Processed</h3>
                 <p className="text-xs text-emerald-700 mt-0.5">
-                  Manufacturer / OEM: <b>{result.oemName || 'Identified OEM'}</b> · All products and pricing records synchronized.
+                  Manufacturer / OEM: <b>{result.oemName || 'Identified OEM'}</b> · All products synchronized.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
-                <ShieldCheck size={16} /> Section A6 Scrutiny Passed
+                <ShieldCheck size={16} /> Import Complete
               </span>
               <Button variant="outline" size="sm" icon={RefreshCw} onClick={handleReset}>
                 Import Another File
@@ -297,7 +287,7 @@ export default function OemExcelImportPage() {
           </div>
 
           {/* Metric Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm text-center">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Products Created</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">{result.productsCreated || 0}</p>
@@ -305,14 +295,6 @@ export default function OemExcelImportPage() {
             <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm text-center">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Products Updated</p>
               <p className="text-2xl font-bold text-slate-900 mt-1">{result.productsUpdated || 0}</p>
-            </div>
-            <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm text-center">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">State Prices Created</p>
-              <p className="text-2xl font-bold text-emerald-600 mt-1">{result.pricingCreated || 0}</p>
-            </div>
-            <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm text-center">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">State Prices Updated</p>
-              <p className="text-2xl font-bold text-blue-600 mt-1">{result.pricingUpdated || 0}</p>
             </div>
           </div>
 
@@ -333,26 +315,20 @@ export default function OemExcelImportPage() {
             {/* TAB 1: SUMMARY */}
             {activeTab === 'summary' && (
               <div className="space-y-5">
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-semibold text-slate-800 text-sm">39 CSD States & UTs Coverage:</span>
-                    <Badge variant={scrutiny?.missingStatesCount === 0 ? 'success' : 'warning'}>
-                      {scrutiny?.missingStatesCount === 0 ? '39 / 39 States Covered' : `${39 - (scrutiny?.missingStatesCount || 0)} / 39 States Covered`}
-                    </Badge>
+                {scrutiny?.invalidTaxClasses?.length > 0 && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                    <b>{scrutiny.invalidTaxClasses.length}</b> product(s) have a missing / unknown Tax Class, so no tax was added: {scrutiny.invalidTaxClasses.slice(0, 10).map((t) => t.index).join(', ')}
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {scrutiny?.missingStatesCount === 0
-                      ? '✓ All 39 standard CSD pricing territories including Tricity, Greater Mumbai, and Delhi NCR were detected and processed with zero missing states.'
-                      : `Notice: ${scrutiny?.missingStatesCount} states were not found in the pricing file.`}
-                  </p>
-                </div>
+                )}
+                {result.errors?.length > 0 && (
+                  <ul className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 list-disc pl-6">
+                    {result.errors.slice(0, 10).map((e, i) => <li key={i}>{e}</li>)}
+                  </ul>
+                )}
 
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <Button variant="primary" icon={Package} onClick={() => navigate(backUrl)}>
                     View in Product Catalog
-                  </Button>
-                  <Button variant="outline" icon={Layers} onClick={() => navigate(pricingUrl)}>
-                    View State Pricing Matrix
                   </Button>
                 </div>
               </div>
@@ -362,27 +338,27 @@ export default function OemExcelImportPage() {
             {activeTab === 'scrutiny' && (
               <div className="space-y-4">
                 <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-lg text-xs text-blue-900">
-                  <span className="font-semibold">Section A6 Automated Scrutiny Verification (Letter 201/902):</span>{' '}
+                  <span className="font-semibold">Automated checks:</span>{' '}
                   All rules are automatically applied during file intake to prevent pricing discrepancies, formula breaks, and duplicate rows.
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {(scrutiny?.checks || []).map((chk) => (
                     <div
-                      key={chk.rule}
+                      key={chk.id}
                       className="p-3 rounded-lg border flex items-start gap-2.5 bg-slate-50 border-slate-200"
                     >
-                      {chk.status === 'PASS' ? (
+                      {chk.status === 'PASSED' ? (
                         <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
                       ) : (
                         <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" />
                       )}
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-800 text-xs">Rule {chk.rule}: {chk.name}</span>
+                          <span className="font-semibold text-slate-800 text-xs">{chk.name}</span>
                           <span
                             className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                              chk.status === 'PASS' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                              chk.status === 'PASSED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                             }`}
                           >
                             {chk.status}
@@ -414,7 +390,8 @@ export default function OemExcelImportPage() {
                       <th className="py-2.5 px-3">Index No</th>
                       <th className="py-2.5 px-3">Vehicle Model / Variant</th>
                       <th className="py-2.5 px-3">Category</th>
-                      <th className="py-2.5 px-3 text-right">CSD Base Price</th>
+                      <th className="py-2.5 px-3 text-right">Price (Sale / Base)</th>
+                      <th className="py-2.5 px-3 text-right">Price to Beneficiary</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-800">
@@ -425,6 +402,9 @@ export default function OemExcelImportPage() {
                         <td className="py-2 px-3">{p.category || 'CAR'}</td>
                         <td className="py-2 px-3 text-right font-medium">
                           {p.price ? `₹${Number(p.price).toLocaleString('en-IN')}` : '—'}
+                        </td>
+                        <td className="py-2 px-3 text-right font-bold">
+                          {p.priceToCustomer ? `₹${Number(p.priceToCustomer).toLocaleString('en-IN')}` : '—'}
                         </td>
                       </tr>
                     ))}
