@@ -39,8 +39,8 @@ const TEST_ACCOUNTS = [
   { role: 'OEM', label: 'OEM (Tata)', tag: 'OEM 2', icon: Factory, username: 'oem_tata_test', password: 'Passw0rd!x' },
   // { role: 'DEALER', label: 'Dealer (Supreme Mobiles)', tag: 'Dealer', icon: Car, username: 'dealer_hisar', password: 'Dealer@123456' },
   // { role: 'DEALER', label: 'Dealer (Koncept Mahindra)', tag: 'Dealer 2', icon: Car, username: 'dealer_koncept', password: 'Dealer@123456' },
-  { role: 'BENEFICIARY', label: 'Beneficiary (Rajesh Kumar)', tag: 'Beneficiary', icon: Medal, username: 'rajesh_kumar', password: 'Beneficiary@123456' },
-  { role: 'BENEFICIARY', label: 'Beneficiary (Pending)', tag: 'Pending', icon: Hourglass, username: 'pending_beneficiary', password: 'Pending@123456' },
+  { role: 'BENEFICIARY', label: 'Beneficiary (Rajesh Kumar)', tag: 'Beneficiary', icon: Medal, username: 'demo006', password: 'Admin@123' },
+  { role: 'BENEFICIARY', label: 'Beneficiary (Pending)', tag: 'Pending', icon: Hourglass, username: 'demo005', password: 'Admin@123' },
 ];
 
 // Same Field markup as the Register page
