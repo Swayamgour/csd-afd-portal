@@ -1273,7 +1273,7 @@
 
    & .helpdesk-kb-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
       gap: 1.25rem;
    }
 
@@ -1867,7 +1867,7 @@
 
    & .admin-settings-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
       gap: 1.5rem;
    }
 
@@ -2531,7 +2531,7 @@
 
    & .dashboard-charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
       gap: 1.5rem;
    }
 
@@ -4789,7 +4789,7 @@
       display: grid;
       gap: 1.25rem;
       padding: 1.25rem;
-      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
    }
 
    & .catalog-card {
@@ -6037,3 +6037,147 @@
 
 .app-shell-root .table-pagination-footer { padding: .75rem .25rem 0; border-top: 0; background: transparent; }
 .app-shell-root .enterprise-card .card-header { margin-bottom: 1rem; }
+
+
+/* =====================================================================
+   RESPONSIVE FIX LAYER  (keep this block LAST in admin.css)
+   - Compact header / breadcrumb / dashboard banner on small screens
+   - Buttons in banner wrap instead of overflowing the card
+   - Phone-safe inputs, dropdowns, tables, long text
+   Breakpoints: 1024 (tablet) · 768 · 640 (phone) · 400 (small phone)
+   ===================================================================== */
+
+/* ---------- A. Never let the shell scroll sideways ---------- */
+.app-shell-root { max-width: 100vw; overflow-x: clip; }
+.app-shell-root .app-main-wrapper { min-width: 0; max-width: 100%; overflow-x: clip; }
+.app-shell-root .app-content-body { min-width: 0; overflow-wrap: anywhere; }
+.app-shell-root .app-content-body :is(img, video, canvas, iframe) { max-width: 100%; }
+.app-shell-root .app-content-body :is(.card, .panel, .enterprise-card, .page-header-box, .stat-card) { min-width: 0; max-width: 100%; }
+
+/* ---------- B. Banner buttons wrap instead of spilling out ---------- */
+.app-shell-root .page-header-main { min-width: 0; }
+.app-shell-root .page-header-actions { min-width: 0; max-width: 100%; flex-wrap: wrap; }
+.app-shell-root .page-header-actions > :is(.row, div) { flex-wrap: wrap !important; min-width: 0; max-width: 100%; }
+.app-shell-root .page-header-actions .btn { max-width: 100%; }
+
+/* ---------- C. Tablet and below (sidebar becomes a drawer) ---------- */
+@media (max-width: 1024px) {
+  /* avatar-only user button should be a circle, not a wide oval */
+  .app-shell-root .user-menu-trigger { padding: 2px; gap: 0; border-radius: 50%; }
+  .app-shell-root .user-avatar-circle { width: 34px; height: 34px; }
+  .app-shell-root .app-header-bar { gap: .5rem; }
+  .app-shell-root .header-left { flex: 0 0 auto; }
+  .app-shell-root .header-right { flex: 1 1 auto; min-width: 0; justify-content: flex-end; }
+}
+
+/* ---------- D. Tablet portrait ---------- */
+@media (max-width: 768px) {
+  .app-shell-root .page-header-main { flex-direction: column; align-items: stretch !important; gap: .75rem; }
+  .app-shell-root .page-header-left { flex: 0 0 auto; width: 100%; }
+  .app-shell-root .page-header-actions { width: 100%; justify-content: flex-start; }
+
+  /* top breadcrumb bar already shows the trail: drop the duplicate inside banners
+     (the dashboard has no top trail, so its banner keeps it) */
+  .app-shell-root .page-header-box .page-header-breadcrumbs { display: none; }
+  .app-shell-root .dashboard-page > .page-header-box .page-header-breadcrumbs { display: block; margin-bottom: .25rem !important; }
+
+  .app-shell-root .dashboard-page { gap: 1.1rem; }
+}
+
+/* ---------- E. Phones ---------- */
+@media (max-width: 640px) {
+  .app-shell-root { --adm-header-h: 56px; }
+
+  /* header: 64px -> 56px, tighter gaps, smaller controls */
+  .app-shell-root .app-header-bar { padding: 0 .6rem; gap: .4rem; }
+  .app-shell-root .header-right { gap: .3rem; }
+  .app-shell-root .header-icon-btn,
+  .app-shell-root .header-menu-btn { width: 36px; height: 36px; border-radius: 50%; }
+  .app-shell-root .header-icon-btn svg { width: 17px; height: 17px; }
+  .app-shell-root .notif-badge-dot { top: -5px; right: -5px; min-width: 16px; height: 16px; font-size: .6rem; }
+  .app-shell-root .user-avatar-circle { width: 32px; height: 32px; }
+
+  /* A- A A+ : compact, no separators */
+  .app-shell-root .app-header-bar .font-resizer-control { padding: 2px 3px; gap: 1px; border-radius: 8px; }
+  .app-shell-root .font-resizer-sep { display: none; }
+  .app-shell-root .font-resizer-btn { padding: 3px 5px; font-size: .78rem; }
+
+  /* breadcrumb row: one slim line, scrolls horizontally if long */
+  .app-shell-root .app-breadcrumb-bar { padding: .35rem .75rem; overflow-x: auto; scrollbar-width: none; }
+  .app-shell-root .app-breadcrumb-bar::-webkit-scrollbar { display: none; }
+  .app-shell-root .enterprise-bc ol { flex-wrap: nowrap; white-space: nowrap; font-size: .76rem; }
+
+  /* content + banner */
+  .app-shell-root .app-content-body { padding: .75rem .75rem 1.5rem; }
+  .app-shell-root .page-header-box,
+  .app-shell-root .dashboard-page > .page-header-box { padding: .95rem 1rem; border-radius: 14px; }
+  .app-shell-root .dashboard-page > .page-header-box .page-header-title,
+  .app-shell-root .page-header-title { font-size: 1.2rem; line-height: 1.25; overflow-wrap: anywhere; }
+  .app-shell-root .page-header-box::before { top: .9rem; bottom: .9rem; }
+
+  .app-shell-root .page-header-actions { gap: .5rem; }
+  .app-shell-root .page-header-actions > :is(.row, div) { width: 100%; gap: .5rem; }
+  .app-shell-root .page-header-actions .btn {
+    flex: 1 1 auto;
+    min-height: 38px;
+    padding: .45rem .8rem;
+    font-size: .84rem;
+    white-space: normal;
+    text-align: center;
+    justify-content: center;
+    line-height: 1.2;
+  }
+
+  .app-shell-root .dashboard-page { gap: 1rem; }
+  .app-shell-root .quick-actions-title { margin-bottom: .5rem; }
+  .app-shell-root .quick-action { padding: .8rem .9rem; }
+  .app-shell-root .stat-card { padding: .9rem 1rem; }
+  .app-shell-root .stat-value { font-size: 1.5rem; }
+
+  /* 16px inputs stop iOS Safari zooming on focus */
+  .app-shell-root :is(input, select, textarea, .form-control) { font-size: 16px; }
+
+  /* toolbars/filters stack full width */
+  .app-shell-root :is(.filter-search-col, .filter-select-col, .csd-search-wrap, .catalog-toolbar-search, .search-wrap-min, .minw-280, .pos-relative-min-w-240) { min-width: 0 !important; flex: 1 1 100%; width: 100%; }
+  .app-shell-root .toolbar input[type="text"],
+  .app-shell-root .demands-search-input,
+  .app-shell-root .field-inline .form-control { min-width: 0; width: 100%; }
+
+  /* cards & dropdowns */
+  .app-shell-root .card-header { flex-wrap: wrap; gap: .5rem; }
+  .app-shell-root .user-dropdown-menu { min-width: 220px; max-width: calc(100vw - 1.25rem); }
+  .app-shell-root .profile-completion-box { min-width: 0; width: 100%; }
+  .app-shell-root .pagination,
+  .app-shell-root .table-pagination-footer { flex-wrap: wrap; justify-content: center; gap: .5rem; }
+
+  /* wide tables keep scrolling inside their own wrapper */
+  .app-shell-root .data-table { min-width: 640px; }
+  .app-shell-root .data-table th,
+  .app-shell-root .data-table td { padding: .6rem .7rem; }
+}
+
+/* ---------- F. Very small phones (<= 400px) ---------- */
+@media (max-width: 400px) {
+  .app-shell-root .app-header-bar { padding: 0 .45rem; gap: .3rem; }
+  .app-shell-root .header-right { gap: .22rem; }
+  .app-shell-root .header-icon-btn,
+  .app-shell-root .header-menu-btn { width: 34px; height: 34px; }
+  .app-shell-root .user-avatar-circle { width: 30px; height: 30px; }
+  .app-shell-root .font-resizer-btn { padding: 3px 4px; font-size: .74rem; }
+  .app-shell-root .app-content-body { padding: .6rem .6rem 1.25rem; }
+  .app-shell-root .page-header-actions .btn { flex-basis: 100%; }
+}
+
+/* ---------- G. Landscape phones: reclaim vertical space ---------- */
+@media (max-height: 480px) and (orientation: landscape) {
+  .app-shell-root { --adm-header-h: 48px; }
+  .app-shell-root .app-header-bar { position: static; }
+  .app-shell-root .page-header-box { padding-block: .7rem; }
+}
+
+/* ---------- H. Touch devices: comfortable tap targets ---------- */
+@media (pointer: coarse) {
+  .app-shell-root .btn,
+  .app-shell-root .sidebar-nav-link,
+  .app-shell-root .user-dropdown-item { min-height: 40px; }
+}

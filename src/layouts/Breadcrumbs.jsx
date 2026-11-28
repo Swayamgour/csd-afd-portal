@@ -49,6 +49,10 @@ export default function Breadcrumbs({ customItems }) {
   const segments = location.pathname.split('/').filter(Boolean);
   if (segments.length <= 1) return null;
 
+  // On a role's landing page the trail would read "Dashboard > Dashboard".
+  // Hide it so the header does not waste a full row of vertical space.
+  if (segments[segments.length - 1] === 'dashboard') return null;
+
   return (
     <nav className="enterprise-bc" aria-label="Breadcrumb">
       <ol className="row align-center gap-1">
